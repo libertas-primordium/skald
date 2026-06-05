@@ -72,6 +72,10 @@ import com.libertasprimordium.skald.domain.privacy.PrivacyRisk
 import com.libertasprimordium.skald.domain.privacy.PrivacyRiskLevel
 import com.libertasprimordium.skald.domain.quote.OperationQuote
 import com.libertasprimordium.skald.domain.recovery.RecoveryStatus
+import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
+import com.libertasprimordium.skald.security.SecureSecretStorage
+import com.libertasprimordium.skald.security.SecureStorageUiStatus
+import com.libertasprimordium.skald.security.toUiStatus
 import com.libertasprimordium.skald.settings.InMemorySettingsStorage
 import com.libertasprimordium.skald.settings.PersistentSettingsRepository
 import com.libertasprimordium.skald.settings.SettingsRepository
@@ -92,6 +96,7 @@ import com.libertasprimordium.skald.ui.theme.SkaldWhite
 @Composable
 fun SkaldApp(
     settingsRepository: SettingsRepository = PersistentSettingsRepository(InMemorySettingsStorage()),
+    secureStorage: SecureSecretStorage = DisabledSecureSecretStorage(),
 ) {
     val repository = remember { DemoPortfolioRepository() }
     val snapshot = remember { repository.loadPortfolioSnapshot() }
@@ -100,6 +105,7 @@ fun SkaldApp(
     val cashuMints = remember { repository.cashuMints() }
     val nostrIntents = remember { repository.nostrPaymentIntents() }
     val networks = remember { repository.developmentNetworks() }
+    val secureStorageStatus = remember { secureStorage.capability.toUiStatus() }
     var selectedScreen by remember { mutableStateOf(AppScreen.Overview) }
     var backendSettings by remember { mutableStateOf(settingsRepository.loadBitcoinBackendSettings()) }
     var backendValidation by remember { mutableStateOf<BackendProfileValidationResult?>(null) }
@@ -204,16 +210,23 @@ fun SkaldApp(
                             AppScreen.Lightning -> LightningScreen(lightningConnectors)
                             AppScreen.Cashu -> CashuScreen(cashuMints)
                             AppScreen.Nostr -> NostrScreen(nostrIntents)
-                            AppScreen.Recovery -> RecoveryScreen(snapshot.recoveryStatus)
+                            AppScreen.Recovery -> RecoveryScreen(
+                                recovery = snapshot.recoveryStatus,
+                                secureStorageStatus = secureStorageStatus,
+                            )
                             AppScreen.Nodes -> NodesScreen(
                                 settings = backendSettings,
                                 validation = backendValidation,
                                 message = backendMessage,
+                                secureStorageStatus = secureStorageStatus,
                                 onSaveProfile = ::saveBackendProfile,
                                 onSelectProfile = ::selectBackendProfile,
                                 onDeleteProfile = ::deleteBackendProfile,
                             )
-                            AppScreen.Settings -> SettingsScreen(networks)
+                            AppScreen.Settings -> SettingsScreen(
+                                networks = networks,
+                                secureStorageStatus = secureStorageStatus,
+                            )
                         }
                     }
                 }
@@ -759,9 +772,13 @@ private fun NostrScreen(intents: List<NostrPaymentIntent>) {
 }
 
 @Composable
-private fun RecoveryScreen(recovery: RecoveryStatus) {
+private fun RecoveryScreen(
+    recovery: RecoveryStatus,
+    secureStorageStatus: SecureStorageUiStatus,
+) {
     ScreenTitle("Recovery", "First-class recovery status model.")
     WarningStrip(recovery.seedWarning)
+    WarningStrip("Secret storage is disabled. No seeds, imported keys, Lightning credentials, Cashu proof material, or backup encryption keys can be stored yet.")
     SkaldCard(title = recovery.headline, state = "required before real wallet flows") {
         BulletList(
             listOf(
@@ -783,6 +800,7 @@ private fun RecoveryScreen(recovery: RecoveryStatus) {
             }
         }
     }
+    SecureStorageStatusCard(secureStorageStatus)
     recovery.onChainRecoveryStatus?.let { onChainRecovery ->
         OnChainRecoverySection(onChainRecovery)
     }
@@ -793,6 +811,7 @@ private fun NodesScreen(
     settings: BitcoinBackendSettingsState,
     validation: BackendProfileValidationResult?,
     message: String,
+    secureStorageStatus: SecureStorageUiStatus,
     onSaveProfile: (EditableBitcoinBackendProfileInput) -> Unit,
     onSelectProfile: (BitcoinBackendProfileId) -> Unit,
     onDeleteProfile: (BitcoinBackendProfileId) -> Unit,
@@ -801,9 +820,10 @@ private fun NodesScreen(
 
     ScreenTitle("Nodes", "User-selected infrastructure only.")
     WarningStrip("No Skald-operated backend exists. Configure your own Bitcoin Core, Electrum, or Esplora endpoint.")
-    WarningStrip("Credentials are intentionally out of scope in this pass. Do not paste RPC passwords, cookies, tokens, macaroons, runes, NWC secrets, or other secrets here.")
+    WarningStrip("Credential storage is not implemented. Do not paste RPC passwords, cookie contents, macaroons, runes, NWC secrets, Phoenixd tokens, or other secrets into backend settings.")
     SkaldCard(title = "Bitcoin backend settings", state = "non-secret local configuration") {
         Text(message, color = SkaldOrangeSoft, lineHeight = 20.sp)
+        SecureStorageInlineStatus(secureStorageStatus)
         BackendSettingsSummary(settings)
         BackendProfileList(
             profiles = settings.profiles,
@@ -1269,7 +1289,10 @@ private fun BitcoinBackendProfile.toFormState(): BackendSettingsFormState {
 }
 
 @Composable
-private fun SettingsScreen(networks: List<NetworkEnvironment>) {
+private fun SettingsScreen(
+    networks: List<NetworkEnvironment>,
+    secureStorageStatus: SecureStorageUiStatus,
+) {
     ScreenTitle("Settings", "Non-functional settings placeholders.")
     CardGrid {
         SkaldCard(title = "Network", state = "regtest/signet/testnet only") {
@@ -1278,6 +1301,7 @@ private fun SettingsScreen(networks: List<NetworkEnvironment>) {
                 RailBalanceRow(network.label, 0, state)
             }
         }
+        SecureStorageStatusCard(secureStorageStatus)
         SkaldCard(title = "Theme", state = "Skald dark") {
             BulletList(
                 listOf(
@@ -1296,10 +1320,50 @@ private fun SettingsScreen(networks: List<NetworkEnvironment>) {
                     "Backup/export planned",
                     "Advanced warnings always enabled",
                     "Developer/testnet mode enabled",
-                    "No plaintext secret storage implemented",
+                    "Secret storage boundary exists but rejects all writes, reads, and deletes",
                 ),
             )
         }
+    }
+}
+
+@Composable
+private fun SecureStorageStatusCard(status: SecureStorageUiStatus) {
+    SkaldCard(title = status.title, state = status.state) {
+        Text(status.detail, color = SkaldWarning, lineHeight = 20.sp)
+        Text(
+            text = "Future secret-bearing features must use the secure storage boundary before they can be enabled.",
+            color = SkaldMutedText,
+            lineHeight = 20.sp,
+        )
+        Text("Planned secret classes", color = SkaldWhite, fontWeight = FontWeight.Bold)
+        BulletList(status.plannedSecretClasses)
+        Text("Locked actions", color = SkaldWhite, fontWeight = FontWeight.Bold)
+        status.disabledActions.forEach { action ->
+            InfoBlock(
+                title = action,
+                state = "disabled",
+            ) {
+                LockedAction("SECRET_STORAGE_NOT_IMPLEMENTED")
+            }
+        }
+    }
+}
+
+@Composable
+private fun SecureStorageInlineStatus(status: SecureStorageUiStatus) {
+    InfoBlock(
+        title = status.title,
+        state = status.state,
+    ) {
+        Text(status.detail, color = SkaldWarning, lineHeight = 20.sp)
+        BulletList(
+            listOf(
+                "Backend profile settings remain non-secret only.",
+                "Credential references cannot unlock connection testing in this pass.",
+                "Secret writes, reads, and deletes fail closed.",
+            ),
+        )
     }
 }
 
