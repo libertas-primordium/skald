@@ -10,12 +10,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfile
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendSettingsState
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftId
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftSettingsState
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflowReview
 import com.libertasprimordium.skald.domain.onchain.CoinControlPolicy
 import com.libertasprimordium.skald.domain.onchain.CoinSelectionDraft
+import com.libertasprimordium.skald.domain.onchain.DemoUtxo
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfile
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflowReview
+import com.libertasprimordium.skald.domain.onchain.EditableCoinControlDraftInput
 import com.libertasprimordium.skald.domain.onchain.EditableDescriptorWalletProfileInput
 import com.libertasprimordium.skald.domain.onchain.OnChainRecoveryStatus
 import com.libertasprimordium.skald.domain.onchain.OnChainWalletProfile
@@ -41,10 +46,17 @@ fun OnChainScreen(
     descriptorWalletSettings: DescriptorWalletSettingsState,
     descriptorWalletReview: DescriptorWalletWorkflowReview?,
     descriptorWalletMessage: String,
+    coinControlDraftSettings: CoinControlDraftSettingsState,
+    coinControlDraftReview: CoinControlDraftWorkflowReview?,
+    coinControlDraftMessage: String,
+    demoUtxos: List<DemoUtxo>,
     secureStorageStatus: SecureStorageUiStatus,
     onSaveDescriptorWalletProfile: (EditableDescriptorWalletProfileInput) -> Unit,
     onSelectDescriptorWalletProfile: (DescriptorWalletProfileId) -> Unit,
     onDeleteDescriptorWalletProfile: (DescriptorWalletProfileId) -> Unit,
+    onSaveCoinControlDraft: (EditableCoinControlDraftInput) -> Unit,
+    onSelectCoinControlDraft: (CoinControlDraftId) -> Unit,
+    onDeleteCoinControlDraft: (CoinControlDraftId) -> Unit,
 ) {
     ScreenTitle("On-chain", "Phase 1 descriptor-native foundation model.")
     WarningStrip("No real keys, descriptors, addresses, UTXOs, PSBTs, signatures, or transactions are created in this pass.")
@@ -63,6 +75,17 @@ fun OnChainScreen(
         onSaveProfile = onSaveDescriptorWalletProfile,
         onSelectProfile = onSelectDescriptorWalletProfile,
         onDeleteProfile = onDeleteDescriptorWalletProfile,
+    )
+
+    CoinControlDraftPlannerSection(
+        settings = coinControlDraftSettings,
+        descriptorWalletSettings = descriptorWalletSettings,
+        review = coinControlDraftReview,
+        message = coinControlDraftMessage,
+        demoUtxos = demoUtxos,
+        onSaveDraft = onSaveCoinControlDraft,
+        onSelectDraft = onSelectCoinControlDraft,
+        onDeleteDraft = onDeleteCoinControlDraft,
     )
 
     SkaldCard(title = "Descriptor wallet architecture templates", state = "static placeholders") {

@@ -3,9 +3,16 @@ package com.libertasprimordium.skald.settings
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfile
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendSettingsState
+import com.libertasprimordium.skald.domain.onchain.BroadcastState
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraft
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftId
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftSettingsState
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletMetadataProfile
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
+import com.libertasprimordium.skald.domain.onchain.PsbtConstructionState
+import com.libertasprimordium.skald.domain.onchain.PsbtDraftState
+import com.libertasprimordium.skald.domain.onchain.SigningState
 
 interface SettingsRepository {
     fun loadBitcoinBackendSettings(): BitcoinBackendSettingsState
@@ -21,8 +28,16 @@ interface DescriptorWalletSettingsRepository {
     fun deleteDescriptorWalletProfile(id: DescriptorWalletProfileId): DescriptorWalletSettingsWriteResult
 }
 
+interface CoinControlDraftSettingsRepository {
+    fun loadCoinControlDraftSettings(): CoinControlDraftSettingsState
+    fun saveCoinControlDraft(draft: CoinControlDraft): CoinControlDraftSettingsWriteResult
+    fun selectCoinControlDraft(id: CoinControlDraftId): CoinControlDraftSettingsWriteResult
+    fun deleteCoinControlDraft(id: CoinControlDraftId): CoinControlDraftSettingsWriteResult
+}
+
 interface SkaldSettingsRepository : SettingsRepository,
-    DescriptorWalletSettingsRepository
+    DescriptorWalletSettingsRepository,
+    CoinControlDraftSettingsRepository
 
 sealed interface SettingsWriteResult {
     data class Saved(val state: BitcoinBackendSettingsState) : SettingsWriteResult
@@ -34,12 +49,18 @@ sealed interface DescriptorWalletSettingsWriteResult {
     data class Rejected(val reason: String) : DescriptorWalletSettingsWriteResult
 }
 
+sealed interface CoinControlDraftSettingsWriteResult {
+    data class Saved(val state: CoinControlDraftSettingsState) : CoinControlDraftSettingsWriteResult
+    data class Rejected(val reason: String) : CoinControlDraftSettingsWriteResult
+}
+
 enum class SettingsStorageKey(
     val preferenceKey: String,
     val fileName: String,
 ) {
     BitcoinBackendSettings("bitcoin_backend_settings_v1", "backend-settings.txt"),
     DescriptorWalletSettings("descriptor_wallet_settings_v1", "descriptor-wallet-settings.txt"),
+    CoinControlDraftSettings("coin_control_draft_settings_v1", "coin-control-draft-settings.txt"),
 }
 
 interface SettingsStorage {
@@ -177,6 +198,71 @@ class PersistentSettingsRepository(
         } catch (error: Exception) {
             DescriptorWalletSettingsWriteResult.Rejected(error.message ?: "Descriptor wallet settings write failed.")
         }
+
+    override fun loadCoinControlDraftSettings(): CoinControlDraftSettingsState =
+        CoinControlDraftSettingsCodec.decode(storage.readText(SettingsStorageKey.CoinControlDraftSettings))
+            .withConsistentSelection()
+
+    override fun saveCoinControlDraft(
+        draft: CoinControlDraft,
+    ): CoinControlDraftSettingsWriteResult {
+        val current = loadCoinControlDraftSettings()
+        val sanitizedDraft = draft.copy(
+            selectedInputs = emptyList(),
+            privacyWarnings = emptyList(),
+            placeholderPsbt = "PSBT_NOT_CREATED",
+            psbtDraftState = PsbtDraftState.PsbtConstructionBlocked,
+            psbtConstructionState = PsbtConstructionState.NotImplemented,
+            signingState = SigningState.Disabled,
+            broadcastState = BroadcastState.Disabled,
+            isNonOperationalDraft = true,
+            isExecutable = false,
+        )
+        val updatedDrafts = current.drafts
+            .filterNot { it.id == draft.id } + sanitizedDraft
+        return writeCoinControlDraftSettings(
+            current.copy(drafts = updatedDrafts).withConsistentSelection(),
+        )
+    }
+
+    override fun selectCoinControlDraft(
+        id: CoinControlDraftId,
+    ): CoinControlDraftSettingsWriteResult {
+        val current = loadCoinControlDraftSettings()
+        if (current.drafts.none { it.id == id }) {
+            return CoinControlDraftSettingsWriteResult.Rejected("Coin-control draft metadata is not saved.")
+        }
+        return writeCoinControlDraftSettings(current.copy(selectedDraftId = id).withConsistentSelection())
+    }
+
+    override fun deleteCoinControlDraft(
+        id: CoinControlDraftId,
+    ): CoinControlDraftSettingsWriteResult {
+        val current = loadCoinControlDraftSettings()
+        val updatedDrafts = current.drafts.filterNot { it.id == id }
+        val updatedSelected = current.selectedDraftId?.takeIf { selected ->
+            selected != id && updatedDrafts.any { it.id == selected }
+        }
+        return writeCoinControlDraftSettings(
+            current.copy(
+                drafts = updatedDrafts,
+                selectedDraftId = updatedSelected,
+            ).withConsistentSelection(),
+        )
+    }
+
+    private fun writeCoinControlDraftSettings(
+        state: CoinControlDraftSettingsState,
+    ): CoinControlDraftSettingsWriteResult =
+        try {
+            storage.writeText(
+                SettingsStorageKey.CoinControlDraftSettings,
+                CoinControlDraftSettingsCodec.encode(state.withConsistentSelection()),
+            )
+            CoinControlDraftSettingsWriteResult.Saved(loadCoinControlDraftSettings())
+        } catch (error: Exception) {
+            CoinControlDraftSettingsWriteResult.Rejected(error.message ?: "Coin-control draft settings write failed.")
+        }
 }
 
 fun BitcoinBackendSettingsState.withConsistentSelection(): BitcoinBackendSettingsState {
@@ -200,5 +286,15 @@ fun DescriptorWalletSettingsState.withConsistentSelection(): DescriptorWalletSet
         profiles = profiles.map { profile ->
             profile.copy(isSelected = profile.id == validSelectedId)
         },
+    )
+}
+
+fun CoinControlDraftSettingsState.withConsistentSelection(): CoinControlDraftSettingsState {
+    val validSelectedId = selectedDraftId?.takeIf { selected ->
+        drafts.any { it.id == selected }
+    }
+    return copy(
+        selectedDraftId = validSelectedId,
+        drafts = drafts,
     )
 }
