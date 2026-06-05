@@ -2,14 +2,17 @@ package com.libertasprimordium.skald.demo
 
 import com.libertasprimordium.skald.domain.onchain.BackendCredentialPolicy
 import com.libertasprimordium.skald.domain.onchain.BackendEndpointValidationState
+import com.libertasprimordium.skald.domain.onchain.BackendNotConfigured
 import com.libertasprimordium.skald.domain.onchain.BackupArtifactType
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendCapability
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendPrivacyLevel
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfile
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendRepository
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendStatus
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendTrustModel
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendType
+import com.libertasprimordium.skald.domain.core.NetworkEnvironment
 import com.libertasprimordium.skald.domain.onchain.ChangeOutputPlan
 import com.libertasprimordium.skald.domain.onchain.ChangeOutputState
 import com.libertasprimordium.skald.domain.onchain.CoinControlApprovalState
@@ -237,59 +240,68 @@ class DemoOnChainRepository :
     private fun demoBackendProfiles(): List<BitcoinBackendProfile> =
         listOf(
             BitcoinBackendProfile(
-                id = "bitcoin-core-rpc-placeholder",
+                id = BitcoinBackendProfileId("bitcoin-core-rpc-placeholder"),
+                label = "Bitcoin Core RPC placeholder",
                 type = BitcoinBackendType.BitcoinCoreRpc,
+                network = NetworkEnvironment.Testnet4,
+                endpoint = BackendNotConfigured,
                 status = BitcoinBackendStatus.NotConfigured,
                 trustModel = BitcoinBackendTrustModel.UserOwnedNode,
                 privacyLevel = BitcoinBackendPrivacyLevel.UserOwnedNodePreferred,
                 credentialPolicy = BackendCredentialPolicy.RequiresSecureStorageBeforeUse,
                 endpointValidationState = BackendEndpointValidationState.Empty,
                 credentialReference = null,
-                endpointDisplay = "BACKEND_NOT_CONFIGURED",
                 capabilities = listOf(
                     BitcoinBackendCapability.SyncWallet,
                     BitcoinBackendCapability.BroadcastTransaction,
                     BitcoinBackendCapability.FeeEstimates,
                     BitcoinBackendCapability.DescriptorWalletRpc,
                 ),
-                noDefaultEndpoint = true,
                 warnings = listOf("No RPC endpoint or credential is configured."),
+                isSelected = false,
+                isUserEditable = false,
             ),
             BitcoinBackendProfile(
-                id = "electrum-placeholder",
+                id = BitcoinBackendProfileId("electrum-placeholder"),
+                label = "Electrum placeholder",
                 type = BitcoinBackendType.Electrum,
+                network = NetworkEnvironment.Testnet4,
+                endpoint = BackendNotConfigured,
                 status = BitcoinBackendStatus.NotConfigured,
                 trustModel = BitcoinBackendTrustModel.TrustedThirdParty,
                 privacyLevel = BitcoinBackendPrivacyLevel.TrustedNodeStillSeesQueries,
                 credentialPolicy = BackendCredentialPolicy.NoCredentialStored,
                 endpointValidationState = BackendEndpointValidationState.Empty,
                 credentialReference = null,
-                endpointDisplay = "BACKEND_NOT_CONFIGURED",
                 capabilities = listOf(
                     BitcoinBackendCapability.SyncWallet,
                     BitcoinBackendCapability.BroadcastTransaction,
                     BitcoinBackendCapability.FeeEstimates,
                 ),
-                noDefaultEndpoint = true,
                 warnings = listOf("A trusted Electrum server still observes wallet queries."),
+                isSelected = false,
+                isUserEditable = false,
             ),
             BitcoinBackendProfile(
-                id = "esplora-placeholder",
+                id = BitcoinBackendProfileId("esplora-placeholder"),
+                label = "Esplora placeholder",
                 type = BitcoinBackendType.Esplora,
+                network = NetworkEnvironment.Testnet4,
+                endpoint = BackendNotConfigured,
                 status = BitcoinBackendStatus.NotConfigured,
                 trustModel = BitcoinBackendTrustModel.PublicBackend,
                 privacyLevel = BitcoinBackendPrivacyLevel.PublicBackendLeaksWalletQueries,
                 credentialPolicy = BackendCredentialPolicy.PublicEndpointNoCredentialStillLeaks,
                 endpointValidationState = BackendEndpointValidationState.Empty,
                 credentialReference = null,
-                endpointDisplay = "BACKEND_NOT_CONFIGURED",
                 capabilities = listOf(
                     BitcoinBackendCapability.SyncWallet,
                     BitcoinBackendCapability.BroadcastTransaction,
                     BitcoinBackendCapability.MempoolView,
                 ),
-                noDefaultEndpoint = true,
                 warnings = listOf("Public Esplora backends can link wallet queries unless mitigated by future transport/privacy design."),
+                isSelected = false,
+                isUserEditable = false,
             ),
         )
 
