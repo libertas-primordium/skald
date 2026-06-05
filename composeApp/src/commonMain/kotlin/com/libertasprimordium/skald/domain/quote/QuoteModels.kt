@@ -1,4 +1,7 @@
-package com.libertasprimordium.skald.domain
+package com.libertasprimordium.skald.domain.quote
+
+import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.core.WalletRail
 
 data class QuoteRequest(
     val sourceRail: WalletRail,

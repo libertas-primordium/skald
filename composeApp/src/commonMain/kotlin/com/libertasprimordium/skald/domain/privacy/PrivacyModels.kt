@@ -1,4 +1,7 @@
-package com.libertasprimordium.skald.domain
+package com.libertasprimordium.skald.domain.privacy
+
+import com.libertasprimordium.skald.domain.core.WalletRail
+import com.libertasprimordium.skald.domain.portfolio.PortfolioSnapshot
 
 enum class PrivacyRiskLevel(val label: String) {
     Info("info"),

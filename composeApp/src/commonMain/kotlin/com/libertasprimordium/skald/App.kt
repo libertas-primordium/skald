@@ -43,17 +43,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.libertasprimordium.skald.demo.DemoPortfolioRepository
-import com.libertasprimordium.skald.domain.BackendConnectionStatus
-import com.libertasprimordium.skald.domain.CashuMintProfile
-import com.libertasprimordium.skald.domain.LightningConnectorProfile
-import com.libertasprimordium.skald.domain.NetworkEnvironment
-import com.libertasprimordium.skald.domain.NostrPaymentIntent
-import com.libertasprimordium.skald.domain.OnChainWalletProfile
-import com.libertasprimordium.skald.domain.OperationQuote
-import com.libertasprimordium.skald.domain.PortfolioSnapshot
-import com.libertasprimordium.skald.domain.PrivacyRisk
-import com.libertasprimordium.skald.domain.PrivacyRiskLevel
-import com.libertasprimordium.skald.domain.RecoveryStatus
+import com.libertasprimordium.skald.domain.cashu.CashuMintProfile
+import com.libertasprimordium.skald.domain.core.BackendConnectionStatus
+import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.lightning.LightningConnectorProfile
+import com.libertasprimordium.skald.domain.nostr.NostrPaymentIntent
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfile
+import com.libertasprimordium.skald.domain.onchain.CoinControlPolicy
+import com.libertasprimordium.skald.domain.onchain.CoinSelectionDraft
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfile
+import com.libertasprimordium.skald.domain.onchain.OnChainRecoveryStatus
+import com.libertasprimordium.skald.domain.onchain.OnChainWalletProfile
+import com.libertasprimordium.skald.domain.onchain.PsbtWorkflowPlan
+import com.libertasprimordium.skald.domain.portfolio.PortfolioSnapshot
+import com.libertasprimordium.skald.domain.privacy.PrivacyRisk
+import com.libertasprimordium.skald.domain.privacy.PrivacyRiskLevel
+import com.libertasprimordium.skald.domain.quote.OperationQuote
+import com.libertasprimordium.skald.domain.recovery.RecoveryStatus
 import com.libertasprimordium.skald.ui.theme.SkaldBlack
 import com.libertasprimordium.skald.ui.theme.SkaldCharcoal
 import com.libertasprimordium.skald.ui.theme.SkaldDanger
@@ -402,41 +408,170 @@ private fun OverviewScreen(snapshot: PortfolioSnapshot) {
 
 @Composable
 private fun OnChainScreen(profile: OnChainWalletProfile) {
-    ScreenTitle("On-chain", "Descriptor-native architecture placeholder.")
+    ScreenTitle("On-chain", "Phase 1 descriptor-native foundation model.")
+    WarningStrip("No real keys, descriptors, addresses, UTXOs, PSBTs, signatures, or transactions are created in this pass.")
     SkaldCard(
         title = profile.label,
         state = profile.status.label,
     ) {
-        Text(
-            text = "No real keys, descriptors, addresses, UTXOs, PSBTs, signatures, or transactions are created in this pass.",
-            color = SkaldWarning,
-            fontWeight = FontWeight.SemiBold,
-            lineHeight = 20.sp,
-        )
-        Spacer(Modifier.height(12.dp))
         BulletList(profile.plannedCapabilities)
     }
 
-    SkaldCard(title = "Coin control invariant", state = "mandatory") {
-        BulletList(
-            listOf(
-                "Manual input selection review: ${profile.coinControlPolicy.requiresManualInputReview}",
-                "Fee and change review: ${profile.coinControlPolicy.requiresFeeAndChangeReview}",
-                "Explicit signing approval: ${profile.coinControlPolicy.requiresExplicitSigningApproval}",
-                "Explicit broadcast approval: ${profile.coinControlPolicy.requiresExplicitBroadcastApproval}",
-            ),
-        )
-        Text(profile.coinControlPolicy.note, color = SkaldMutedText, lineHeight = 20.sp)
+    SkaldCard(title = "Descriptor wallets", state = "demo/planned profiles") {
+        profile.descriptorWallets.forEach { wallet ->
+            DescriptorWalletBlock(wallet)
+        }
     }
 
-    SkaldCard(title = "Backend", state = profile.backendStatus.label) {
-        Text(profile.utxoSummary.note, color = SkaldMutedText, lineHeight = 20.sp)
+    SkaldCard(title = "Backend configuration", state = "no default endpoint") {
+        profile.backendProfiles.forEach { backend ->
+            BackendProfileBlock(backend)
+        }
     }
+
+    CoinControlSection(
+        draft = profile.coinSelectionDraft,
+        policy = profile.coinControlPolicy,
+    )
+
+    PsbtWorkflowSection(profile.psbtWorkflow)
+
+    OnChainRecoverySection(profile.recoveryStatus)
 
     DisabledActionArea(
-        title = "Locked action area",
+        title = "Locked on-chain actions",
         actions = profile.disabledActions.map { it.label to it.reason },
     )
+}
+
+@Composable
+private fun DescriptorWalletBlock(wallet: DescriptorWalletProfile) {
+    InfoBlock(
+        title = wallet.label.value,
+        state = wallet.status.label,
+    ) {
+        DetailLine("Origin", wallet.origin.label)
+        DetailLine("Script policy", wallet.scriptPolicy.label)
+        DetailLine("Descriptor", wallet.descriptorDisplay.redactedDescriptor)
+        DetailLine("Backup", wallet.backupStatus.label)
+        DetailLine("Export", wallet.exportState.label)
+        DetailLine("Spending", if (wallet.canSpend) "available after implementation" else "disabled or unavailable")
+        wallet.importedKeyPolicy?.let { DetailLine("Imported-key policy", it.label) }
+        wallet.watchOnlyPolicy?.let { DetailLine("Watch-only policy", it.label) }
+        if (wallet.warnings.isNotEmpty()) {
+            BulletList(wallet.warnings)
+        }
+    }
+}
+
+@Composable
+private fun BackendProfileBlock(backend: BitcoinBackendProfile) {
+    InfoBlock(
+        title = backend.type.label,
+        state = backend.status.label,
+    ) {
+        DetailLine("Endpoint", backend.endpointDisplay)
+        DetailLine("Trust", backend.trustModel.label)
+        DetailLine("Privacy", backend.privacyLevel.label)
+        DetailLine("Credential policy", backend.credentialPolicy.label)
+        DetailLine("Endpoint validation", backend.endpointValidationState.label)
+        DetailLine("Default endpoint", if (backend.noDefaultEndpoint) "none" else "configured")
+        BulletList(backend.capabilities.map { it.label })
+        if (backend.warnings.isNotEmpty()) {
+            backend.warnings.forEach { warning ->
+                Text(warning, color = SkaldWarning, lineHeight = 20.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CoinControlSection(
+    draft: CoinSelectionDraft,
+    policy: CoinControlPolicy,
+) {
+    SkaldCard(title = "UTXO / coin-control model", state = "strict manual review") {
+        BulletList(
+            listOf(
+                "Manual input selection review: ${policy.requiresManualInputReview}",
+                "Fee and change review: ${policy.requiresFeeAndChangeReview}",
+                "Explicit signing approval: ${policy.requiresExplicitSigningApproval}",
+                "Explicit broadcast approval: ${policy.requiresExplicitBroadcastApproval}",
+                "Cross-wallet selection: ${policy.crossWalletSelectionPolicy.label}",
+            ),
+        )
+        Text(policy.note, color = SkaldMutedText, lineHeight = 20.sp)
+        InfoBlock(
+            title = "Demo coin-control draft - no real UTXOs",
+            state = if (draft.isExecutable) "executable" else "disabled placeholder",
+        ) {
+            DetailLine("Intent", draft.intent.label)
+            DetailLine("Approval state", draft.review.approvalState.label)
+            draft.review.selectedInputs.forEach { selected ->
+                DetailLine(
+                    selected.utxo.label.value,
+                    "${selected.utxo.outPoint.txidDisplay}:${selected.utxo.outPoint.voutDisplay} - ${selected.utxo.spendabilityState.label}",
+                )
+            }
+            draft.review.outputPlan.forEach { output ->
+                DetailLine(output.label, output.addressDisplay)
+            }
+            DetailLine("Change", "${draft.review.changePlan.state.label} - ${draft.review.changePlan.warning}")
+            DetailLine("Fee", draft.review.feePlaceholder.reason)
+            draft.review.privacyWarnings.forEach { warning ->
+                Text(
+                    text = "${warning.level.label.uppercase()} - ${warning.title}",
+                    color = riskColor(warning.level),
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(warning.detail, color = SkaldMutedText, lineHeight = 20.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PsbtWorkflowSection(workflow: PsbtWorkflowPlan) {
+    SkaldCard(title = "PSBT workflow", state = workflow.currentState.label) {
+        BulletList(
+            listOf(
+                "Draft",
+                "Coin review",
+                "Fee review",
+                "PSBT construction",
+                "External signing",
+                "Final review",
+                "Broadcast",
+            ),
+        )
+        DetailLine("Placeholder PSBT", workflow.review.draft.placeholderPsbt)
+        DetailLine("Signing policy", workflow.signingPolicy.label)
+        DetailLine("Broadcast policy", workflow.broadcastPolicy.label)
+        DetailLine("Export/import", if (workflow.exportImportPlanned) "planned, not implemented" else "unavailable")
+        workflow.review.failureModes.forEach { mode ->
+            Text(mode.label, color = SkaldWarning, lineHeight = 20.sp)
+        }
+    }
+}
+
+@Composable
+private fun OnChainRecoverySection(recovery: OnChainRecoveryStatus) {
+    SkaldCard(title = "On-chain recovery requirements", state = recovery.headline) {
+        recovery.checklistItems.forEach { item ->
+            InfoBlock(
+                title = item.artifactType.label,
+                state = item.state.label,
+            ) {
+                DetailLine("Requirement", item.requirement.label)
+                Text(item.detail, color = SkaldMutedText, lineHeight = 20.sp)
+                if (item.blockingIssues.isNotEmpty()) {
+                    BulletList(item.blockingIssues.map { it.label })
+                }
+            }
+        }
+        Text("Recovery transitions", color = SkaldWhite, fontWeight = FontWeight.Bold)
+        BulletList(recovery.transitions.map { it.label })
+    }
 }
 
 @Composable
@@ -537,6 +672,9 @@ private fun RecoveryScreen(recovery: RecoveryStatus) {
                 Text(item.detail, color = riskColor(item.riskLevel), lineHeight = 20.sp)
             }
         }
+    }
+    recovery.onChainRecoveryStatus?.let { onChainRecovery ->
+        OnChainRecoverySection(onChainRecovery)
     }
 }
 
@@ -696,6 +834,43 @@ private fun RailBalanceRow(label: String, sats: Long, detail: String) {
         if (sats > 0) {
             Text("${sats.toSatsText()} sats", color = SkaldOrangeSoft, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun InfoBlock(
+    title: String,
+    state: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, SkaldDarkGray, RoundedCornerShape(8.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Text(title, color = SkaldWhite, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text(state, color = SkaldOrangeSoft, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+        content()
+    }
+}
+
+@Composable
+private fun DetailLine(label: String, detail: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(label, color = SkaldWhite, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.42f))
+        Text(detail, color = SkaldMutedText, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.weight(0.58f))
     }
 }
 
