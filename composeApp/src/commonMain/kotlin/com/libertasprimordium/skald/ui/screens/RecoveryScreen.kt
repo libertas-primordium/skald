@@ -3,20 +3,25 @@ package com.libertasprimordium.skald.ui.screens
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
 import com.libertasprimordium.skald.domain.recovery.RecoveryStatus
 import com.libertasprimordium.skald.security.SecureStorageUiStatus
 import com.libertasprimordium.skald.ui.components.BulletList
 import com.libertasprimordium.skald.ui.components.CardGrid
+import com.libertasprimordium.skald.ui.components.DetailLine
+import com.libertasprimordium.skald.ui.components.InfoBlock
 import com.libertasprimordium.skald.ui.components.ScreenTitle
 import com.libertasprimordium.skald.ui.components.SecureStorageStatusCard
 import com.libertasprimordium.skald.ui.components.SkaldCard
 import com.libertasprimordium.skald.ui.components.WarningStrip
 import com.libertasprimordium.skald.ui.components.riskColor
+import com.libertasprimordium.skald.ui.theme.SkaldMutedText
 
 @Composable
 fun RecoveryScreen(
     recovery: RecoveryStatus,
     secureStorageStatus: SecureStorageUiStatus,
+    descriptorWalletSettings: DescriptorWalletSettingsState,
 ) {
     ScreenTitle("Recovery", "First-class recovery status model.")
     WarningStrip(recovery.seedWarning)
@@ -43,7 +48,45 @@ fun RecoveryScreen(
         }
     }
     SecureStorageStatusCard(secureStorageStatus)
+    DescriptorWalletMetadataRecoverySection(descriptorWalletSettings)
     recovery.onChainRecoveryStatus?.let { onChainRecovery ->
         OnChainRecoverySection(onChainRecovery)
+    }
+}
+
+@Composable
+private fun DescriptorWalletMetadataRecoverySection(
+    settings: DescriptorWalletSettingsState,
+) {
+    SkaldCard(
+        title = "Saved descriptor profile recovery",
+        state = if (settings.profiles.isEmpty()) "no saved metadata" else "${settings.profiles.size} metadata profile(s)",
+    ) {
+        if (settings.profiles.isEmpty()) {
+            Text(
+                text = "No user-created descriptor wallet metadata profiles exist yet.",
+                color = SkaldMutedText,
+                lineHeight = 20.sp,
+            )
+            return@SkaldCard
+        }
+        settings.profiles.forEach { profile ->
+            InfoBlock(
+                title = profile.label.value,
+                state = profile.backupRequirement.label,
+            ) {
+                DetailLine("Origin", profile.origin.label)
+                DetailLine("Workflow", profile.workflowState.label)
+                DetailLine("Operational", profile.isOperational.toString())
+                DetailLine("Descriptor", profile.descriptorTextState)
+                DetailLine("Key material", profile.keyMaterialState)
+                if (profile.riskAcknowledgements.isNotEmpty()) {
+                    BulletList(profile.riskAcknowledgements.map { it.label })
+                }
+                if (profile.blockingIssues.isNotEmpty()) {
+                    BulletList(profile.blockingIssues.map { it.label })
+                }
+            }
+        }
     }
 }

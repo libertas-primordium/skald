@@ -9,14 +9,19 @@ import com.libertasprimordium.skald.demo.DemoPortfolioRepository
 import com.libertasprimordium.skald.domain.onchain.BackendProfileValidationResult
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflow
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflowReview
 import com.libertasprimordium.skald.domain.onchain.EditableBitcoinBackendProfileInput
+import com.libertasprimordium.skald.domain.onchain.EditableDescriptorWalletProfileInput
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.SecureSecretStorage
 import com.libertasprimordium.skald.security.toUiStatus
+import com.libertasprimordium.skald.settings.DescriptorWalletSettingsWriteResult
 import com.libertasprimordium.skald.settings.InMemorySettingsStorage
 import com.libertasprimordium.skald.settings.PersistentSettingsRepository
-import com.libertasprimordium.skald.settings.SettingsRepository
 import com.libertasprimordium.skald.settings.SettingsWriteResult
+import com.libertasprimordium.skald.settings.SkaldSettingsRepository
 import com.libertasprimordium.skald.ui.components.SkaldAppScaffold
 import com.libertasprimordium.skald.ui.navigation.AppScreen
 import com.libertasprimordium.skald.ui.screens.CashuScreen
@@ -30,7 +35,7 @@ import com.libertasprimordium.skald.ui.screens.SettingsScreen
 
 @Composable
 fun SkaldApp(
-    settingsRepository: SettingsRepository = PersistentSettingsRepository(InMemorySettingsStorage()),
+    settingsRepository: SkaldSettingsRepository = PersistentSettingsRepository(InMemorySettingsStorage()),
     secureStorage: SecureSecretStorage = DisabledSecureSecretStorage(),
 ) {
     val repository = remember { DemoPortfolioRepository() }
@@ -43,13 +48,22 @@ fun SkaldApp(
     val secureStorageStatus = remember { secureStorage.capability.toUiStatus() }
     var selectedScreen by remember { mutableStateOf(AppScreen.Overview) }
     var backendSettings by remember { mutableStateOf(settingsRepository.loadBitcoinBackendSettings()) }
+    var descriptorWalletSettings by remember { mutableStateOf(settingsRepository.loadDescriptorWalletSettings()) }
     var backendValidation by remember { mutableStateOf<BackendProfileValidationResult?>(null) }
+    var descriptorWalletReview by remember { mutableStateOf<DescriptorWalletWorkflowReview?>(null) }
     var backendMessage by remember {
         mutableStateOf("Backend profiles are local non-secret settings only. Connection testing is disabled.")
+    }
+    var descriptorWalletMessage by remember {
+        mutableStateOf("Descriptor wallet profiles are non-secret metadata only. No wallet material is created.")
     }
 
     fun reloadBackendSettings() {
         backendSettings = settingsRepository.loadBitcoinBackendSettings()
+    }
+
+    fun reloadDescriptorWalletSettings() {
+        descriptorWalletSettings = settingsRepository.loadDescriptorWalletSettings()
     }
 
     fun saveBackendProfile(input: EditableBitcoinBackendProfileInput) {
@@ -98,19 +112,76 @@ fun SkaldApp(
         }
     }
 
+    fun saveDescriptorWalletProfile(input: EditableDescriptorWalletProfileInput) {
+        val review = DescriptorWalletWorkflow.review(input, secureStorage.capability)
+        descriptorWalletReview = review
+        val profile = review.profile
+        if (profile == null) {
+            descriptorWalletMessage = "Profile metadata not saved. Fix validation errors and acknowledgements first."
+            return
+        }
+        when (val result = settingsRepository.saveDescriptorWalletProfile(profile)) {
+            is DescriptorWalletSettingsWriteResult.Saved -> {
+                descriptorWalletSettings = result.state
+                descriptorWalletMessage = "Saved non-operational descriptor wallet metadata. No keys, descriptors, addresses, or funds were created."
+            }
+            is DescriptorWalletSettingsWriteResult.Rejected -> {
+                descriptorWalletMessage = result.reason
+                reloadDescriptorWalletSettings()
+            }
+        }
+    }
+
+    fun selectDescriptorWalletProfile(id: DescriptorWalletProfileId) {
+        when (val result = settingsRepository.selectDescriptorWalletProfile(id)) {
+            is DescriptorWalletSettingsWriteResult.Saved -> {
+                descriptorWalletSettings = result.state
+                descriptorWalletMessage = "Selected descriptor wallet metadata for review only. No wallet operation was enabled."
+            }
+            is DescriptorWalletSettingsWriteResult.Rejected -> {
+                descriptorWalletMessage = result.reason
+                reloadDescriptorWalletSettings()
+            }
+        }
+    }
+
+    fun deleteDescriptorWalletProfile(id: DescriptorWalletProfileId) {
+        when (val result = settingsRepository.deleteDescriptorWalletProfile(id)) {
+            is DescriptorWalletSettingsWriteResult.Saved -> {
+                descriptorWalletSettings = result.state
+                descriptorWalletMessage = "Deleted descriptor wallet metadata. Selected profile was cleared if needed."
+            }
+            is DescriptorWalletSettingsWriteResult.Rejected -> {
+                descriptorWalletMessage = result.reason
+                reloadDescriptorWalletSettings()
+            }
+        }
+    }
+
     SkaldAppScaffold(
         selectedScreen = selectedScreen,
         onSelectedScreen = { selectedScreen = it },
     ) { screen ->
         when (screen) {
             AppScreen.Overview -> OverviewScreen(snapshot)
-            AppScreen.OnChain -> OnChainScreen(onChainProfile, backendSettings)
+            AppScreen.OnChain -> OnChainScreen(
+                profile = onChainProfile,
+                backendSettings = backendSettings,
+                descriptorWalletSettings = descriptorWalletSettings,
+                descriptorWalletReview = descriptorWalletReview,
+                descriptorWalletMessage = descriptorWalletMessage,
+                secureStorageStatus = secureStorageStatus,
+                onSaveDescriptorWalletProfile = ::saveDescriptorWalletProfile,
+                onSelectDescriptorWalletProfile = ::selectDescriptorWalletProfile,
+                onDeleteDescriptorWalletProfile = ::deleteDescriptorWalletProfile,
+            )
             AppScreen.Lightning -> LightningScreen(lightningConnectors)
             AppScreen.Cashu -> CashuScreen(cashuMints)
             AppScreen.Nostr -> NostrScreen(nostrIntents)
             AppScreen.Recovery -> RecoveryScreen(
                 recovery = snapshot.recoveryStatus,
                 secureStorageStatus = secureStorageStatus,
+                descriptorWalletSettings = descriptorWalletSettings,
             )
             AppScreen.Nodes -> NodesScreen(
                 settings = backendSettings,

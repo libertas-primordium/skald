@@ -3,21 +3,24 @@ package com.libertasprimordium.skald.settings
 import java.io.File
 
 class DesktopSettingsStorage(
-    private val settingsFile: File = defaultSettingsFile(),
+    private val settingsDirectory: File = defaultSettingsDirectory(),
 ) : SettingsStorage {
-    override fun readText(): String? =
-        settingsFile.takeIf { it.exists() }?.readText()
+    override fun readText(key: SettingsStorageKey): String? =
+        settingsFile(key).takeIf { it.exists() }?.readText()
 
-    override fun writeText(value: String) {
-        settingsFile.parentFile?.mkdirs()
-        settingsFile.writeText(value)
+    override fun writeText(key: SettingsStorageKey, value: String) {
+        settingsDirectory.mkdirs()
+        settingsFile(key).writeText(value)
     }
+
+    private fun settingsFile(key: SettingsStorageKey): File =
+        File(settingsDirectory, key.fileName)
 }
 
-private fun defaultSettingsFile(): File {
+private fun defaultSettingsDirectory(): File {
     val configRoot = System.getenv("XDG_CONFIG_HOME")
         ?.takeIf { it.isNotBlank() }
         ?.let(::File)
         ?: File(System.getProperty("user.home"), ".config")
-    return File(configRoot, "skald/backend-settings.txt")
+    return File(configRoot, "skald")
 }
