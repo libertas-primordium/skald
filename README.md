@@ -60,7 +60,7 @@ The scaffold includes no Skald-operated defaults for:
 
 ## Architecture Notes
 
-- `composeApp/src/commonMain` holds shared domain models and the shared Compose UI.
+- `composeApp/src/commonMain` holds shared domain models and the shared Compose UI. The UI is split into app shell/navigation, reusable Skald components, and focused screen files.
 - `composeApp/src/androidMain` holds the Android launcher.
 - `composeApp/src/desktopMain` holds the Linux desktop launcher.
 - Domain packages now separate core rails/network state, descriptor-native on-chain models, backend configuration models, strict coin-control models, disabled PSBT workflow models, recovery state, quote modeling, privacy warnings, and Lightning/Cashu/Nostr placeholders.
