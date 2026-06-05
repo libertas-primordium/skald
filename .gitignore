@@ -1,0 +1,177 @@
+# -----------------------------------------------------------------------------
+# Skald Vault .gitignore
+# -----------------------------------------------------------------------------
+
+# Local agent/design/planning files — intentionally not committed
+/DESIGN_INTENT.md
+/AGENTS.md
+/BUILD_HISTORY.md
+/ROADMAP.md
+/.codex/
+/.codex-local/
+*.local.md
+*.scratch.md
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets/
+local.properties
+signing.properties
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.crt
+*.csr
+*.token
+*.nwc
+*.macaroon
+*.rune
+*.nsec
+*.mnemonic
+*.seed
+*.wallet
+*.descriptor
+*.psbt.secret
+
+google-services.json
+service-account*.json
+firebase*.json
+
+# Wallet/runtime data — never commit live or test wallet state
+wallet-data/
+wallets/
+local-data/
+testnet-data/
+mainnet-data/
+chain-data/
+lightning-data/
+cashu-data/
+nostr-data/
+cashu-proofs/
+nwc-secrets/
+nostr-keys/
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.bak
+*.backup
+
+# Logs and diagnostics
+*.log
+logs/
+crashlytics-build.properties
+hs_err_pid*
+replay_pid*
+
+# Android / Gradle
+.gradle/
+build/
+**/build/
+.kotlin/
+.ksp/
+.externalNativeBuild/
+.cxx/
+captures/
+outputs/
+*.apk
+*.ap_
+*.aab
+*.aar
+*.idsig
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Kotlin / JVM
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+
+# Rust / native build outputs
+/target/
+**/target/
+Cargo.lock.bak
+
+# CMake / native build intermediates
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+compile_commands.json
+Makefile
+
+# Linux / Debian packaging outputs
+*.deb
+*.udeb
+*.ddeb
+*.changes
+*.buildinfo
+*.dsc
+*.orig.tar.*
+*.debian.tar.*
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.tar.zst
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars
+debian/*.log
+debian/tmp/
+debian/*/DEBIAN/
+obj-*/
+.pc/
+
+# AppImage / Linux desktop packaging outputs, if used later
+*.AppImage
+*.flatpak
+*.snap
+
+# Node / web tooling, if introduced later
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+coverage/
+
+# Python tooling, if introduced for scripts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.vscode/
+*.code-workspace
+
+# Temporary files
+/tmp/
+tmp/
+*.tmp
+*.temp
