@@ -46,7 +46,7 @@ gradle wrapper --gradle-version 8.11.1
 - Backend profiles, UTXO views, coin-control drafts, and PSBT workflows are non-operational placeholder models only.
 - Bitcoin backend profiles are local non-secret configuration state only. The app does not store backend credentials, run real backend connection tests, sync wallets, scan chains, derive addresses, sign, or broadcast.
 - The backend connection-test harness is simulated validation only. It checks profile metadata and planned future test steps, but it does not perform DNS, socket, RPC, Electrum, Esplora, HTTP, Tor/proxy, chain-sync, fee-estimation, wallet-query, or broadcast network calls.
-- A secure-storage abstraction exists for future secret-bearing features, but all secret storage is disabled/not implemented. Secret writes, reads, metadata listing, and deletes fail closed.
+- A secure-storage abstraction exists for future secret-bearing features, but all secret storage is disabled/not implemented. Secret writes, reads, metadata listing, and deletes fail closed. The future secure-storage design is documented in [`docs/SECURE_STORAGE_DESIGN.md`](docs/SECURE_STORAGE_DESIGN.md).
 
 ## No Managed Infrastructure
 
@@ -69,5 +69,6 @@ The scaffold includes no Skald-operated defaults for:
 - Domain packages now separate core rails/network state, descriptor-native on-chain models, backend configuration models, strict coin-control models, disabled PSBT workflow models, recovery state, quote modeling, privacy warnings, and Lightning/Cashu/Nostr placeholders.
 - `settings` holds small repositories/codecs for user-editable, persistent, non-secret Bitcoin backend profiles, descriptor wallet profile metadata, and coin-control/PSBT draft metadata. Android uses SharedPreferences and desktop uses local config files; these stores only hold non-secret labels, enum/status values, development network choices, backend endpoint fields, trust classification, demo UTXO IDs, draft notes/amounts, acknowledgements, blockers, and disabled workflow states.
 - `security` holds the secure-storage service boundary and disabled platform implementations. Android and Linux desktop currently report secure storage as unavailable and do not store seeds, private keys, Nostr nsecs, node credentials, Cashu material, or backup keys.
+- `docs/SECURE_STORAGE_DESIGN.md` defines the future Android/Linux secure-storage design gates. It is a design document only; it does not enable real secret persistence.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
 - `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.
