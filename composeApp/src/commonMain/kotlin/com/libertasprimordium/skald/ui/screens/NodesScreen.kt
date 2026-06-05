@@ -24,6 +24,9 @@ import com.libertasprimordium.skald.domain.core.BackendConnectionStatus
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
 import com.libertasprimordium.skald.domain.onchain.BackendNotConfigured
 import com.libertasprimordium.skald.domain.onchain.BackendProfileValidationResult
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestFinding
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestFindingLevel
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestResult
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfile
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendSettingsState
@@ -61,7 +64,9 @@ fun NodesScreen(
     settings: BitcoinBackendSettingsState,
     validation: BackendProfileValidationResult?,
     message: String,
+    connectionTestResult: BitcoinBackendConnectionTestResult?,
     secureStorageStatus: SecureStorageUiStatus,
+    onRunSimulatedConnectionTest: () -> Unit,
     onSaveProfile: (EditableBitcoinBackendProfileInput) -> Unit,
     onSelectProfile: (BitcoinBackendProfileId) -> Unit,
     onDeleteProfile: (BitcoinBackendProfileId) -> Unit,
@@ -75,6 +80,11 @@ fun NodesScreen(
         Text(message, color = SkaldOrangeSoft, lineHeight = 20.sp)
         SecureStorageInlineStatus(secureStorageStatus)
         BackendSettingsSummary(settings)
+        BackendConnectionTestCard(
+            selectedProfile = settings.selectedProfile,
+            result = connectionTestResult,
+            onRunSimulatedConnectionTest = onRunSimulatedConnectionTest,
+        )
         BackendProfileList(
             profiles = settings.profiles,
             onEdit = { profile -> form = profile.toFormState() },
@@ -88,7 +98,7 @@ fun NodesScreen(
             onSave = { onSaveProfile(form.toInput()) },
             onReset = { form = BackendSettingsFormState.blank() },
         )
-        LockedAction("CONNECTION_TEST_NOT_IMPLEMENTED - connection testing and wallet sync are not implemented yet.")
+        LockedAction("REAL_NETWORK_DISABLED - real Bitcoin Core, Electrum, and Esplora connection tests are not implemented yet.")
     }
 
     CardGrid {
@@ -151,7 +161,7 @@ private fun BackendProfileList(
                 DetailLine("Network", profile.network.label)
                 DetailLine("Endpoint", profile.endpointDisplay)
                 DetailLine("Trust", profile.trustModel.label)
-                DetailLine("Connection test", "CONNECTION_TEST_NOT_IMPLEMENTED")
+                DetailLine("Connection test", "simulated validation only - real networking disabled")
                 if (profile.warnings.isNotEmpty()) {
                     profile.warnings.forEach { warning ->
                         Text(warning, color = SkaldWarning, lineHeight = 20.sp)
@@ -201,7 +211,7 @@ private fun BackendProfileForm(
         state = "non-secret fields only",
     ) {
         Text(
-            text = "Connection testing and wallet sync are not implemented yet.",
+            text = "Real connection testing and wallet sync are not implemented yet.",
             color = SkaldWarning,
             lineHeight = 20.sp,
         )
@@ -285,10 +295,100 @@ private fun BackendProfileForm(
                 ),
                 modifier = Modifier.weight(1f),
             ) {
-                Text("Test disabled")
+                Text("Real test disabled")
             }
         }
     }
+}
+
+@Composable
+private fun BackendConnectionTestCard(
+    selectedProfile: BitcoinBackendProfile?,
+    result: BitcoinBackendConnectionTestResult?,
+    onRunSimulatedConnectionTest: () -> Unit,
+) {
+    InfoBlock(
+        title = "Backend connection test",
+        state = result?.state?.label ?: "simulated only",
+    ) {
+        Text(
+            text = "Simulated only. No network connection was attempted.",
+            color = SkaldWarning,
+            lineHeight = 20.sp,
+        )
+        Text(
+            text = "Real backend connection testing is not implemented yet.",
+            color = SkaldMutedText,
+            lineHeight = 20.sp,
+        )
+        if (selectedProfile == null) {
+            Text(
+                text = "Select or create a backend profile before running a simulated test.",
+                color = SkaldWarning,
+                lineHeight = 20.sp,
+            )
+        } else {
+            DetailLine("Selected profile", selectedProfile.label)
+            DetailLine("Backend type", selectedProfile.type.label)
+            DetailLine("Endpoint", selectedProfile.endpointDisplay)
+            DetailLine("Network", selectedProfile.network.label)
+            if (selectedProfile.trustModel == BitcoinBackendTrustModel.PublicBackend ||
+                selectedProfile.trustModel == BitcoinBackendTrustModel.TrustedThirdParty
+            ) {
+                Text(
+                    text = "Public backends can observe wallet queries. Prefer a user-owned node.",
+                    color = SkaldWarning,
+                    lineHeight = 20.sp,
+                )
+            }
+        }
+        SkaldSmallButton(
+            label = "Run simulated test",
+            selected = true,
+            onClick = onRunSimulatedConnectionTest,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (result != null) {
+            DetailLine("Mode", result.mode.label)
+            DetailLine("Result", result.state.label)
+            DetailLine("Real network", if (result.noRealNetworkAttempted) "not attempted" else "blocked")
+            if (result.blockingIssues.isNotEmpty()) {
+                Text("Blockers", color = SkaldWarning, fontWeight = FontWeight.Bold)
+                BulletList(result.blockingIssues.map { it.label })
+            }
+            if (result.warnings.isNotEmpty()) {
+                Text("Warnings", color = SkaldWarning, fontWeight = FontWeight.Bold)
+                result.warnings.forEach { warning ->
+                    Text(warning, color = SkaldWarning, lineHeight = 20.sp)
+                }
+            }
+            Text("Simulated findings", color = SkaldWhite, fontWeight = FontWeight.Bold)
+            result.findings.forEach { finding ->
+                ConnectionFindingLine(finding)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConnectionFindingLine(finding: BitcoinBackendConnectionTestFinding) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = "${finding.level.label.uppercase()} - ${finding.step.label}",
+            color = connectionFindingColor(finding.level),
+            fontWeight = FontWeight.Bold,
+        )
+        Text(finding.detail, color = SkaldMutedText, lineHeight = 20.sp)
+    }
+}
+
+private fun connectionFindingColor(
+    level: BitcoinBackendConnectionTestFindingLevel,
+) = when (level) {
+    BitcoinBackendConnectionTestFindingLevel.Passed -> SkaldSuccess
+    BitcoinBackendConnectionTestFindingLevel.Warning -> SkaldWarning
+    BitcoinBackendConnectionTestFindingLevel.Blocker -> SkaldDanger
+    BitcoinBackendConnectionTestFindingLevel.Planned -> SkaldOrangeSoft
 }
 
 @Composable
