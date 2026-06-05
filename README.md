@@ -42,6 +42,7 @@ gradle wrapper --gradle-version 8.11.1
 - Development networks are regtest, signet, testnet, and testnet4.
 - A seed phrase alone cannot restore every rail; Recovery Center modeling is first-class even in the scaffold.
 - Descriptor wallet profiles are non-secret metadata only. The app can save planned profile records, but it does not store descriptor text, xpubs, xprvs, private keys, seeds, nsecs, PSBTs, transaction data, or wallet funds.
+- Descriptor/key-management implementation is still absent. The future integration design is documented in [`docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md`](docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md); no Bitcoin protocol library has been added.
 - Coin-control and PSBT draft planning uses demo UTXO placeholders only. No real UTXOs are scanned, no transaction is constructed, no PSBT is created, and signing/broadcasting remain disabled.
 - Backend profiles, UTXO views, coin-control drafts, and PSBT workflows are non-operational placeholder models only.
 - Bitcoin backend profiles are local non-secret configuration state only. The app does not store backend credentials, run real backend connection tests, sync wallets, scan chains, derive addresses, sign, or broadcast.
@@ -70,5 +71,6 @@ The scaffold includes no Skald-operated defaults for:
 - `settings` holds small repositories/codecs for user-editable, persistent, non-secret Bitcoin backend profiles, descriptor wallet profile metadata, and coin-control/PSBT draft metadata. Android uses SharedPreferences and desktop uses local config files; these stores only hold non-secret labels, enum/status values, development network choices, backend endpoint fields, trust classification, demo UTXO IDs, draft notes/amounts, acknowledgements, blockers, and disabled workflow states.
 - `security` holds the secure-storage service boundary and disabled platform implementations. Android and Linux desktop currently report secure storage as unavailable and do not store seeds, private keys, Nostr nsecs, node credentials, Cashu material, or backup keys.
 - `docs/SECURE_STORAGE_DESIGN.md` defines the future Android/Linux secure-storage design gates. It is a design document only; it does not enable real secret persistence.
+- `docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md` defines the future descriptor parser, wallet, key-management, PSBT, recovery, and protocol-library integration gates. It is a design document only; it does not enable descriptor parsing, key management, address derivation, or wallet operations.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
 - `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.
