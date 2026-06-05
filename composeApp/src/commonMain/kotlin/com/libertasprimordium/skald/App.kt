@@ -3,7 +3,6 @@ package com.libertasprimordium.skald
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -11,17 +10,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -81,7 +86,8 @@ fun SkaldApp() {
                     Brush.verticalGradient(
                         colors = listOf(SkaldBlack, SkaldNearBlack, SkaldCharcoal),
                     ),
-                ),
+                )
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
         ) {
             BoxWithConstraints(
                 modifier = Modifier
@@ -93,9 +99,14 @@ fun SkaldApp() {
                     verticalArrangement = Arrangement.spacedBy(18.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    SkaldHeader(compact = compact)
-                    ScreenTabs(
+                    SkaldHeader(
+                        compact = compact,
                         selected = selectedScreen,
+                        onSelected = { selectedScreen = it },
+                    )
+                    PrimaryNavigation(
+                        selected = selectedScreen,
+                        compact = compact,
                         onSelected = { selectedScreen = it },
                     )
                     WarningStrip(
@@ -136,11 +147,39 @@ private enum class AppScreen(val label: String) {
     Settings("Settings"),
 }
 
+private val primaryScreens = listOf(
+    AppScreen.Overview,
+    AppScreen.OnChain,
+    AppScreen.Lightning,
+    AppScreen.Cashu,
+)
+
+private val menuScreens = listOf(
+    AppScreen.Nostr,
+    AppScreen.Recovery,
+    AppScreen.Nodes,
+    AppScreen.Settings,
+)
+
 @Composable
-private fun SkaldHeader(compact: Boolean) {
+private fun SkaldHeader(
+    compact: Boolean,
+    selected: AppScreen,
+    onSelected: (AppScreen) -> Unit,
+) {
     if (compact) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Wordmark()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Wordmark(Modifier.weight(1f))
+                OverflowMenuNavigation(
+                    selected = selected,
+                    onSelected = onSelected,
+                )
+            }
             StatusPill("DEVELOPMENT TESTNET")
         }
     } else {
@@ -152,13 +191,17 @@ private fun SkaldHeader(compact: Boolean) {
             Wordmark()
             Spacer(Modifier.weight(1f))
             StatusPill("DEVELOPMENT TESTNET")
+            OverflowMenuNavigation(
+                selected = selected,
+                onSelected = onSelected,
+            )
         }
     }
 }
 
 @Composable
-private fun Wordmark() {
-    Column {
+private fun Wordmark(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         Text(
             text = "sk\u00e4ld",
             color = SkaldWhite,
@@ -175,42 +218,136 @@ private fun Wordmark() {
 }
 
 @Composable
-private fun ScreenTabs(
+private fun PrimaryNavigation(
+    selected: AppScreen,
+    compact: Boolean,
+    onSelected: (AppScreen) -> Unit,
+) {
+    if (compact) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            primaryScreens.chunked(2).forEach { rowScreens ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    rowScreens.forEach { screen ->
+                        PrimaryTabButton(
+                            screen = screen,
+                            selected = selected == screen,
+                            onSelected = onSelected,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                        )
+                    }
+                    if (rowScreens.size == 1) {
+                        Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    } else {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            primaryScreens.forEach { screen ->
+                PrimaryTabButton(
+                    screen = screen,
+                    selected = selected == screen,
+                    onSelected = onSelected,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrimaryTabButton(
+    screen: AppScreen,
+    selected: Boolean,
+    onSelected: (AppScreen) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (selected) {
+        Button(
+            onClick = { onSelected(screen) },
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = SkaldOrange,
+                contentColor = SkaldBlack,
+            ),
+            modifier = modifier,
+        ) {
+            Text(screen.label, fontWeight = FontWeight.Bold)
+        }
+    } else {
+        OutlinedButton(
+            onClick = { onSelected(screen) },
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, SkaldOrange),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = SkaldBlack,
+                contentColor = SkaldOrange,
+            ),
+            modifier = modifier,
+        ) {
+            Text(screen.label, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+@Composable
+private fun OverflowMenuNavigation(
     selected: AppScreen,
     onSelected: (AppScreen) -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-    ) {
-        AppScreen.entries.forEach { screen ->
-            if (screen == selected) {
-                Button(
-                    onClick = { onSelected(screen) },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SkaldOrange,
-                        contentColor = SkaldBlack,
-                    ),
-                    modifier = Modifier.widthIn(min = 112.dp),
-                ) {
-                    Text(screen.label, fontWeight = FontWeight.Bold)
-                }
-            } else {
-                OutlinedButton(
-                    onClick = { onSelected(screen) },
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, SkaldOrange),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = SkaldBlack,
-                        contentColor = SkaldOrange,
-                    ),
-                    modifier = Modifier.widthIn(min = 112.dp),
-                ) {
-                    Text(screen.label, fontWeight = FontWeight.Medium)
-                }
+    var expanded by remember { mutableStateOf(false) }
+    val activeMenuScreen = selected.takeIf { it in menuScreens }
+    val buttonLabel = activeMenuScreen?.let { "Menu: ${it.label}" } ?: "Menu"
+
+    Box {
+        OutlinedButton(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, SkaldOrange),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = SkaldBlack,
+                contentColor = SkaldOrange,
+            ),
+            modifier = Modifier.widthIn(min = 96.dp),
+        ) {
+            Text(buttonLabel, fontWeight = FontWeight.Bold)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = SkaldCharcoal,
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, SkaldOrange),
+        ) {
+            menuScreens.forEach { screen ->
+                val isActive = selected == screen
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = screen.label,
+                            color = if (isActive) SkaldBlack else SkaldWhite,
+                            fontWeight = if (isActive) FontWeight.Black else FontWeight.Medium,
+                        )
+                    },
+                    onClick = {
+                        onSelected(screen)
+                        expanded = false
+                    },
+                    modifier = Modifier.background(if (isActive) SkaldOrange else SkaldCharcoal),
+                )
             }
         }
     }
