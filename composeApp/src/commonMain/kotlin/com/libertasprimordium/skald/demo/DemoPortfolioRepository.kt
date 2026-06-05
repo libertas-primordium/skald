@@ -1,33 +1,28 @@
 package com.libertasprimordium.skald.demo
 
-import com.libertasprimordium.skald.domain.BackendConnectionStatus
-import com.libertasprimordium.skald.domain.CashuMintProfile
-import com.libertasprimordium.skald.domain.CashuMintTrustModel
-import com.libertasprimordium.skald.domain.CoinControlPolicy
-import com.libertasprimordium.skald.domain.DescriptorWalletStatus
-import com.libertasprimordium.skald.domain.DisabledWalletAction
-import com.libertasprimordium.skald.domain.LightningConnectorProfile
-import com.libertasprimordium.skald.domain.LightningConnectorType
-import com.libertasprimordium.skald.domain.LightningPermissionScope
-import com.libertasprimordium.skald.domain.NetworkEnvironment
-import com.libertasprimordium.skald.domain.NostrKeyMode
-import com.libertasprimordium.skald.domain.NostrPaymentIntent
-import com.libertasprimordium.skald.domain.OnChainWalletProfile
-import com.libertasprimordium.skald.domain.PlaceholderPrivacyAnalyzer
-import com.libertasprimordium.skald.domain.PlaceholderQuoteEngine
-import com.libertasprimordium.skald.domain.PortfolioSnapshot
-import com.libertasprimordium.skald.domain.PrivacyRiskLevel
-import com.libertasprimordium.skald.domain.QuoteRequest
-import com.libertasprimordium.skald.domain.RailBalance
-import com.libertasprimordium.skald.domain.RecoveryItem
-import com.libertasprimordium.skald.domain.RecoveryItemState
-import com.libertasprimordium.skald.domain.RecoveryStatus
-import com.libertasprimordium.skald.domain.SecuritySummary
-import com.libertasprimordium.skald.domain.SetupComplexity
-import com.libertasprimordium.skald.domain.UtxoSummary
-import com.libertasprimordium.skald.domain.WalletRail
+import com.libertasprimordium.skald.domain.cashu.CashuMintProfile
+import com.libertasprimordium.skald.domain.cashu.CashuMintTrustModel
+import com.libertasprimordium.skald.domain.core.BackendConnectionStatus
+import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.core.WalletRail
+import com.libertasprimordium.skald.domain.lightning.LightningConnectorProfile
+import com.libertasprimordium.skald.domain.lightning.LightningConnectorType
+import com.libertasprimordium.skald.domain.lightning.LightningPermissionScope
+import com.libertasprimordium.skald.domain.lightning.SetupComplexity
+import com.libertasprimordium.skald.domain.nostr.NostrKeyMode
+import com.libertasprimordium.skald.domain.nostr.NostrPaymentIntent
+import com.libertasprimordium.skald.domain.onchain.OnChainWalletProfile
+import com.libertasprimordium.skald.domain.portfolio.PortfolioSnapshot
+import com.libertasprimordium.skald.domain.portfolio.RailBalance
+import com.libertasprimordium.skald.domain.portfolio.SecuritySummary
+import com.libertasprimordium.skald.domain.privacy.PlaceholderPrivacyAnalyzer
+import com.libertasprimordium.skald.domain.quote.PlaceholderQuoteEngine
+import com.libertasprimordium.skald.domain.quote.QuoteRequest
+import com.libertasprimordium.skald.domain.recovery.RecoveryStatus
 
 class DemoPortfolioRepository(
+    private val onChainRepository: DemoOnChainRepository = DemoOnChainRepository(),
+    private val recoveryRepository: DemoRecoveryRepository = DemoRecoveryRepository(onChainRepository),
     private val quoteEngine: PlaceholderQuoteEngine = PlaceholderQuoteEngine(),
     private val privacyAnalyzer: PlaceholderPrivacyAnalyzer = PlaceholderPrivacyAnalyzer(),
 ) {
@@ -102,39 +97,7 @@ class DemoPortfolioRepository(
     }
 
     fun onChainProfile(): OnChainWalletProfile =
-        OnChainWalletProfile(
-            label = "Descriptor-native wallet foundation",
-            status = DescriptorWalletStatus.NotCreated,
-            coinControlPolicy = CoinControlPolicy(
-                requiresManualInputReview = true,
-                requiresFeeAndChangeReview = true,
-                requiresExplicitSigningApproval = true,
-                requiresExplicitBroadcastApproval = true,
-                note = "Future sends must show selected UTXOs, labels, change, fee rate, backend, PSBT export, and privacy warnings before signing.",
-            ),
-            backendStatus = BackendConnectionStatus.NotConfigured,
-            utxoSummary = UtxoSummary(
-                confirmedUtxos = 0,
-                confirmedSats = 0,
-                unconfirmedSats = 0,
-                note = "No real wallet, descriptor, address index, UTXO set, or backend sync exists in this scaffold.",
-            ),
-            plannedCapabilities = listOf(
-                "Descriptor-native wallet architecture",
-                "Strict coin control",
-                "PSBT import/export",
-                "Payjoin with user-selected endpoint or directory",
-                "Silent payments later",
-                "Nostr-derived Taproot key support",
-                "User-selected Bitcoin Core, Electrum, or Esplora backend",
-            ),
-            disabledActions = listOf(
-                DisabledWalletAction("Create descriptor wallet", "Requires descriptor wallet implementation"),
-                DisabledWalletAction("Import descriptor", "Requires descriptor parser and recovery tracking"),
-                DisabledWalletAction("Import npub/nsec", "Requires isolated Nostr key handling and privacy warnings"),
-                DisabledWalletAction("Build PSBT", "Requires UTXO selection, fee quote, and explicit approval flow"),
-            ),
-        )
+        onChainRepository.loadOnChainProfile()
 
     fun lightningConnectors(): List<LightningConnectorProfile> =
         listOf(
@@ -242,54 +205,7 @@ class DemoPortfolioRepository(
         )
 
     fun recoveryStatus(): RecoveryStatus =
-        RecoveryStatus(
-            headline = "Recovery Center incomplete",
-            seedWarning = "A seed phrase alone cannot restore every rail.",
-            items = listOf(
-                RecoveryItem(
-                    label = "App seed",
-                    state = RecoveryItemState.NotCreated,
-                    detail = "Native on-chain keys may be seed-restorable after a real seed system exists.",
-                    riskLevel = PrivacyRiskLevel.Warning,
-                ),
-                RecoveryItem(
-                    label = "On-chain descriptors",
-                    state = RecoveryItemState.NotExported,
-                    detail = "Descriptor export is required for watch-only and external signing workflows.",
-                    riskLevel = PrivacyRiskLevel.Warning,
-                ),
-                RecoveryItem(
-                    label = "Imported keys",
-                    state = RecoveryItemState.SeparateBackupRequired,
-                    detail = "Imported keys must be backed up separately.",
-                    riskLevel = PrivacyRiskLevel.Danger,
-                ),
-                RecoveryItem(
-                    label = "Lightning channel state",
-                    state = RecoveryItemState.NotConfigured,
-                    detail = "Lightning recovery requires current channel state or remote-node backups.",
-                    riskLevel = PrivacyRiskLevel.Danger,
-                ),
-                RecoveryItem(
-                    label = "Cashu recovery",
-                    state = RecoveryItemState.MintDependent,
-                    detail = "Cashu recovery depends on mint support and proof state.",
-                    riskLevel = PrivacyRiskLevel.Warning,
-                ),
-                RecoveryItem(
-                    label = "Remote node balances",
-                    state = RecoveryItemState.ExternalBackupRequired,
-                    detail = "Remote-node funds are not backed up by Skald Vault.",
-                    riskLevel = PrivacyRiskLevel.Danger,
-                ),
-                RecoveryItem(
-                    label = "Metadata backup",
-                    state = RecoveryItemState.NotConfigured,
-                    detail = "Encrypted metadata backup is planned; plaintext export is not implemented.",
-                    riskLevel = PrivacyRiskLevel.Warning,
-                ),
-            ),
-        )
+        recoveryRepository.recoveryStatus()
 
     fun developmentNetworks(): List<NetworkEnvironment> =
         listOf(
