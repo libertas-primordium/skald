@@ -2,7 +2,7 @@
 
 Skald Vault is a sovereign multi-rail Bitcoin wallet application for advanced users who keep their own keys, choose their own infrastructure, and need explicit custody, privacy, fee, and recovery boundaries.
 
-Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, and a fail-closed secure-storage abstraction started. This repository does not yet implement real wallet functionality. Do not use it with real funds.
+Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, and a fail-closed secure-storage abstraction started. This repository does not yet implement real wallet functionality. Do not use it with real funds.
 
 ## Targets
 
@@ -44,7 +44,8 @@ gradle wrapper --gradle-version 8.11.1
 - Descriptor wallet profiles are non-secret metadata only. The app can save planned profile records, but it does not store descriptor text, xpubs, xprvs, private keys, seeds, nsecs, PSBTs, transaction data, or wallet funds.
 - Coin-control and PSBT draft planning uses demo UTXO placeholders only. No real UTXOs are scanned, no transaction is constructed, no PSBT is created, and signing/broadcasting remain disabled.
 - Backend profiles, UTXO views, coin-control drafts, and PSBT workflows are non-operational placeholder models only.
-- Bitcoin backend profiles are local non-secret configuration state only. The app does not store backend credentials, test connections, sync wallets, scan chains, derive addresses, sign, or broadcast.
+- Bitcoin backend profiles are local non-secret configuration state only. The app does not store backend credentials, run real backend connection tests, sync wallets, scan chains, derive addresses, sign, or broadcast.
+- The backend connection-test harness is simulated validation only. It checks profile metadata and planned future test steps, but it does not perform DNS, socket, RPC, Electrum, Esplora, HTTP, Tor/proxy, chain-sync, fee-estimation, wallet-query, or broadcast network calls.
 - A secure-storage abstraction exists for future secret-bearing features, but all secret storage is disabled/not implemented. Secret writes, reads, metadata listing, and deletes fail closed.
 
 ## No Managed Infrastructure
@@ -69,4 +70,4 @@ The scaffold includes no Skald-operated defaults for:
 - `settings` holds small repositories/codecs for user-editable, persistent, non-secret Bitcoin backend profiles, descriptor wallet profile metadata, and coin-control/PSBT draft metadata. Android uses SharedPreferences and desktop uses local config files; these stores only hold non-secret labels, enum/status values, development network choices, backend endpoint fields, trust classification, demo UTXO IDs, draft notes/amounts, acknowledgements, blockers, and disabled workflow states.
 - `security` holds the secure-storage service boundary and disabled platform implementations. Android and Linux desktop currently report secure storage as unavailable and do not store seeds, private keys, Nostr nsecs, node credentials, Cashu material, or backup keys.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
-- `DemoOnChainRepository`, `DemoCoinControlRepository`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.
+- `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.

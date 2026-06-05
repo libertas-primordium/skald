@@ -18,10 +18,10 @@ fun BackendSettingsSummary(settings: BitcoinBackendSettingsState) {
         if (selected != null) {
             DetailLine("Selected endpoint", selected.endpointDisplay)
             DetailLine("Trust", selected.trustModel.label)
-            DetailLine("Connection test", "CONNECTION_TEST_NOT_IMPLEMENTED")
+            DetailLine("Connection test", "simulated validation only - real networking disabled")
         }
         Text(
-            text = "Use Nodes to add, edit, select, or remove local non-secret backend profiles. No connection is attempted.",
+            text = "Use Nodes to add, edit, select, remove, or run simulated validation on local non-secret backend profiles. No real connection is attempted.",
             color = SkaldMutedText,
             lineHeight = 20.sp,
         )

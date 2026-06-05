@@ -6,8 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.libertasprimordium.skald.demo.DemoCoinControlRepository
+import com.libertasprimordium.skald.demo.FakeBitcoinBackendConnectionTester
 import com.libertasprimordium.skald.demo.DemoPortfolioRepository
 import com.libertasprimordium.skald.domain.onchain.BackendProfileValidationResult
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestMode
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestRequest
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestResult
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestState
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftId
@@ -46,6 +51,7 @@ fun SkaldApp(
 ) {
     val repository = remember { DemoPortfolioRepository() }
     val coinControlRepository = remember { DemoCoinControlRepository() }
+    val backendConnectionTester = remember { FakeBitcoinBackendConnectionTester() }
     val snapshot = remember { repository.loadPortfolioSnapshot() }
     val onChainProfile = remember { repository.onChainProfile() }
     val lightningConnectors = remember { repository.lightningConnectors() }
@@ -58,13 +64,14 @@ fun SkaldApp(
     var descriptorWalletSettings by remember { mutableStateOf(settingsRepository.loadDescriptorWalletSettings()) }
     var coinControlDraftSettings by remember { mutableStateOf(settingsRepository.loadCoinControlDraftSettings()) }
     var backendValidation by remember { mutableStateOf<BackendProfileValidationResult?>(null) }
+    var backendConnectionTestResult by remember { mutableStateOf<BitcoinBackendConnectionTestResult?>(null) }
     var descriptorWalletReview by remember { mutableStateOf<DescriptorWalletWorkflowReview?>(null) }
     var coinControlDraftReview by remember { mutableStateOf<CoinControlDraftWorkflowReview?>(null) }
     val demoUtxos = remember(descriptorWalletSettings.profiles) {
         coinControlRepository.demoUtxosFor(descriptorWalletSettings.profiles)
     }
     var backendMessage by remember {
-        mutableStateOf("Backend profiles are local non-secret settings only. Connection testing is disabled.")
+        mutableStateOf("Backend profiles are local non-secret settings only. Simulated validation is available; real networking is disabled.")
     }
     var descriptorWalletMessage by remember {
         mutableStateOf("Descriptor wallet profiles are non-secret metadata only. No wallet material is created.")
@@ -96,7 +103,8 @@ fun SkaldApp(
         when (val result = settingsRepository.saveBitcoinBackendProfile(profile)) {
             is SettingsWriteResult.Saved -> {
                 backendSettings = result.state
-                backendMessage = "Saved non-secret backend profile. Connection testing and wallet sync remain disabled."
+                backendConnectionTestResult = null
+                backendMessage = "Saved non-secret backend profile. Simulated validation is available; wallet sync remains disabled."
             }
             is SettingsWriteResult.Rejected -> {
                 backendMessage = result.reason
@@ -109,6 +117,7 @@ fun SkaldApp(
         when (val result = settingsRepository.selectBitcoinBackendProfile(id)) {
             is SettingsWriteResult.Saved -> {
                 backendSettings = result.state
+                backendConnectionTestResult = null
                 backendMessage = "Selected backend profile for future testnet-only use. No connection was attempted."
             }
             is SettingsWriteResult.Rejected -> {
@@ -122,12 +131,39 @@ fun SkaldApp(
         when (val result = settingsRepository.deleteBitcoinBackendProfile(id)) {
             is SettingsWriteResult.Saved -> {
                 backendSettings = result.state
+                backendConnectionTestResult = null
                 backendMessage = "Deleted backend profile. Selected profile was cleared if needed."
             }
             is SettingsWriteResult.Rejected -> {
                 backendMessage = result.reason
                 reloadBackendSettings()
             }
+        }
+    }
+
+    fun runSimulatedBackendConnectionTest() {
+        val result = backendConnectionTester.run(
+            BitcoinBackendConnectionTestRequest(
+                profile = backendSettings.selectedProfile,
+                mode = BitcoinBackendConnectionTestMode.SimulatedOnly,
+                secureStorageCapability = secureStorage.capability,
+            ),
+        )
+        backendConnectionTestResult = result
+        backendMessage = when (result.state) {
+            BitcoinBackendConnectionTestState.SimulatedSuccess ->
+                "Simulated backend validation completed. No network connection was attempted."
+            BitcoinBackendConnectionTestState.NotStarted ->
+                "Select or create a backend profile before running a simulated test."
+            BitcoinBackendConnectionTestState.BlockedByInvalidProfile,
+            BitcoinBackendConnectionTestState.BlockedByMainnetDisabled,
+            BitcoinBackendConnectionTestState.BlockedByCredentialsUnavailable,
+            BitcoinBackendConnectionTestState.BlockedByRealNetworkDisabled,
+            BitcoinBackendConnectionTestState.SimulatedFailure,
+            -> "Simulated backend validation stopped on a blocker. No network connection was attempted."
+            BitcoinBackendConnectionTestState.ReadyForSimulatedTest,
+            BitcoinBackendConnectionTestState.Cancelled,
+            -> "Simulated backend validation did not run. No network connection was attempted."
         }
     }
 
@@ -263,7 +299,9 @@ fun SkaldApp(
                 settings = backendSettings,
                 validation = backendValidation,
                 message = backendMessage,
+                connectionTestResult = backendConnectionTestResult,
                 secureStorageStatus = secureStorageStatus,
+                onRunSimulatedConnectionTest = ::runSimulatedBackendConnectionTest,
                 onSaveProfile = ::saveBackendProfile,
                 onSelectProfile = ::selectBackendProfile,
                 onDeleteProfile = ::deleteBackendProfile,
