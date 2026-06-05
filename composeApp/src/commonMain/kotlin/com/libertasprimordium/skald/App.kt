@@ -5,18 +5,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.libertasprimordium.skald.demo.DemoCoinControlRepository
 import com.libertasprimordium.skald.demo.DemoPortfolioRepository
 import com.libertasprimordium.skald.domain.onchain.BackendProfileValidationResult
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftId
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflow
+import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflowReview
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflow
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflowReview
 import com.libertasprimordium.skald.domain.onchain.EditableBitcoinBackendProfileInput
+import com.libertasprimordium.skald.domain.onchain.EditableCoinControlDraftInput
 import com.libertasprimordium.skald.domain.onchain.EditableDescriptorWalletProfileInput
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.SecureSecretStorage
 import com.libertasprimordium.skald.security.toUiStatus
+import com.libertasprimordium.skald.settings.CoinControlDraftSettingsWriteResult
 import com.libertasprimordium.skald.settings.DescriptorWalletSettingsWriteResult
 import com.libertasprimordium.skald.settings.InMemorySettingsStorage
 import com.libertasprimordium.skald.settings.PersistentSettingsRepository
@@ -39,6 +45,7 @@ fun SkaldApp(
     secureStorage: SecureSecretStorage = DisabledSecureSecretStorage(),
 ) {
     val repository = remember { DemoPortfolioRepository() }
+    val coinControlRepository = remember { DemoCoinControlRepository() }
     val snapshot = remember { repository.loadPortfolioSnapshot() }
     val onChainProfile = remember { repository.onChainProfile() }
     val lightningConnectors = remember { repository.lightningConnectors() }
@@ -49,13 +56,21 @@ fun SkaldApp(
     var selectedScreen by remember { mutableStateOf(AppScreen.Overview) }
     var backendSettings by remember { mutableStateOf(settingsRepository.loadBitcoinBackendSettings()) }
     var descriptorWalletSettings by remember { mutableStateOf(settingsRepository.loadDescriptorWalletSettings()) }
+    var coinControlDraftSettings by remember { mutableStateOf(settingsRepository.loadCoinControlDraftSettings()) }
     var backendValidation by remember { mutableStateOf<BackendProfileValidationResult?>(null) }
     var descriptorWalletReview by remember { mutableStateOf<DescriptorWalletWorkflowReview?>(null) }
+    var coinControlDraftReview by remember { mutableStateOf<CoinControlDraftWorkflowReview?>(null) }
+    val demoUtxos = remember(descriptorWalletSettings.profiles) {
+        coinControlRepository.demoUtxosFor(descriptorWalletSettings.profiles)
+    }
     var backendMessage by remember {
         mutableStateOf("Backend profiles are local non-secret settings only. Connection testing is disabled.")
     }
     var descriptorWalletMessage by remember {
         mutableStateOf("Descriptor wallet profiles are non-secret metadata only. No wallet material is created.")
+    }
+    var coinControlDraftMessage by remember {
+        mutableStateOf("Coin-control drafts are non-operational planner metadata only. No transaction or PSBT is created.")
     }
 
     fun reloadBackendSettings() {
@@ -64,6 +79,10 @@ fun SkaldApp(
 
     fun reloadDescriptorWalletSettings() {
         descriptorWalletSettings = settingsRepository.loadDescriptorWalletSettings()
+    }
+
+    fun reloadCoinControlDraftSettings() {
+        coinControlDraftSettings = settingsRepository.loadCoinControlDraftSettings()
     }
 
     fun saveBackendProfile(input: EditableBitcoinBackendProfileInput) {
@@ -158,6 +177,56 @@ fun SkaldApp(
         }
     }
 
+    fun saveCoinControlDraft(input: EditableCoinControlDraftInput) {
+        val review = CoinControlDraftWorkflow.review(
+            input = input,
+            walletSettings = descriptorWalletSettings,
+            demoUtxos = demoUtxos,
+        )
+        coinControlDraftReview = review
+        val draft = review.draft
+        if (draft == null) {
+            coinControlDraftMessage = "Draft metadata not saved. Fix validation errors and acknowledgements first."
+            return
+        }
+        when (val result = settingsRepository.saveCoinControlDraft(draft)) {
+            is CoinControlDraftSettingsWriteResult.Saved -> {
+                coinControlDraftSettings = result.state
+                coinControlDraftMessage = "Saved non-operational coin-control draft metadata. No transaction, PSBT, signature, or broadcast path was created."
+            }
+            is CoinControlDraftSettingsWriteResult.Rejected -> {
+                coinControlDraftMessage = result.reason
+                reloadCoinControlDraftSettings()
+            }
+        }
+    }
+
+    fun selectCoinControlDraft(id: CoinControlDraftId) {
+        when (val result = settingsRepository.selectCoinControlDraft(id)) {
+            is CoinControlDraftSettingsWriteResult.Saved -> {
+                coinControlDraftSettings = result.state
+                coinControlDraftMessage = "Selected saved draft metadata for review only. No wallet operation was enabled."
+            }
+            is CoinControlDraftSettingsWriteResult.Rejected -> {
+                coinControlDraftMessage = result.reason
+                reloadCoinControlDraftSettings()
+            }
+        }
+    }
+
+    fun deleteCoinControlDraft(id: CoinControlDraftId) {
+        when (val result = settingsRepository.deleteCoinControlDraft(id)) {
+            is CoinControlDraftSettingsWriteResult.Saved -> {
+                coinControlDraftSettings = result.state
+                coinControlDraftMessage = "Deleted coin-control draft metadata. Selected draft was cleared if needed."
+            }
+            is CoinControlDraftSettingsWriteResult.Rejected -> {
+                coinControlDraftMessage = result.reason
+                reloadCoinControlDraftSettings()
+            }
+        }
+    }
+
     SkaldAppScaffold(
         selectedScreen = selectedScreen,
         onSelectedScreen = { selectedScreen = it },
@@ -170,10 +239,17 @@ fun SkaldApp(
                 descriptorWalletSettings = descriptorWalletSettings,
                 descriptorWalletReview = descriptorWalletReview,
                 descriptorWalletMessage = descriptorWalletMessage,
+                coinControlDraftSettings = coinControlDraftSettings,
+                coinControlDraftReview = coinControlDraftReview,
+                coinControlDraftMessage = coinControlDraftMessage,
+                demoUtxos = demoUtxos,
                 secureStorageStatus = secureStorageStatus,
                 onSaveDescriptorWalletProfile = ::saveDescriptorWalletProfile,
                 onSelectDescriptorWalletProfile = ::selectDescriptorWalletProfile,
                 onDeleteDescriptorWalletProfile = ::deleteDescriptorWalletProfile,
+                onSaveCoinControlDraft = ::saveCoinControlDraft,
+                onSelectCoinControlDraft = ::selectCoinControlDraft,
+                onDeleteCoinControlDraft = ::deleteCoinControlDraft,
             )
             AppScreen.Lightning -> LightningScreen(lightningConnectors)
             AppScreen.Cashu -> CashuScreen(cashuMints)
