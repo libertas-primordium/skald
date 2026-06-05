@@ -10,16 +10,12 @@ class AndroidSettingsStorage(
         Context.MODE_PRIVATE,
     )
 
-    override fun readText(): String? =
-        preferences.getString(BitcoinBackendSettingsKey, null)
+    override fun readText(key: SettingsStorageKey): String? =
+        preferences.getString(key.preferenceKey, null)
 
-    override fun writeText(value: String) {
+    override fun writeText(key: SettingsStorageKey, value: String) {
         preferences.edit()
-            .putString(BitcoinBackendSettingsKey, value)
+            .putString(key.preferenceKey, value)
             .apply()
-    }
-
-    private companion object {
-        const val BitcoinBackendSettingsKey = "bitcoin_backend_settings_v1"
     }
 }

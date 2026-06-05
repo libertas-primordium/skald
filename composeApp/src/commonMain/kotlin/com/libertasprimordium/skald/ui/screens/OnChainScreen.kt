@@ -13,9 +13,14 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinBackendSettingsState
 import com.libertasprimordium.skald.domain.onchain.CoinControlPolicy
 import com.libertasprimordium.skald.domain.onchain.CoinSelectionDraft
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfile
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflowReview
+import com.libertasprimordium.skald.domain.onchain.EditableDescriptorWalletProfileInput
 import com.libertasprimordium.skald.domain.onchain.OnChainRecoveryStatus
 import com.libertasprimordium.skald.domain.onchain.OnChainWalletProfile
 import com.libertasprimordium.skald.domain.onchain.PsbtWorkflowPlan
+import com.libertasprimordium.skald.security.SecureStorageUiStatus
 import com.libertasprimordium.skald.ui.components.BackendSettingsSummary
 import com.libertasprimordium.skald.ui.components.BulletList
 import com.libertasprimordium.skald.ui.components.DetailLine
@@ -33,6 +38,13 @@ import com.libertasprimordium.skald.ui.theme.SkaldWhite
 fun OnChainScreen(
     profile: OnChainWalletProfile,
     backendSettings: BitcoinBackendSettingsState,
+    descriptorWalletSettings: DescriptorWalletSettingsState,
+    descriptorWalletReview: DescriptorWalletWorkflowReview?,
+    descriptorWalletMessage: String,
+    secureStorageStatus: SecureStorageUiStatus,
+    onSaveDescriptorWalletProfile: (EditableDescriptorWalletProfileInput) -> Unit,
+    onSelectDescriptorWalletProfile: (DescriptorWalletProfileId) -> Unit,
+    onDeleteDescriptorWalletProfile: (DescriptorWalletProfileId) -> Unit,
 ) {
     ScreenTitle("On-chain", "Phase 1 descriptor-native foundation model.")
     WarningStrip("No real keys, descriptors, addresses, UTXOs, PSBTs, signatures, or transactions are created in this pass.")
@@ -43,7 +55,17 @@ fun OnChainScreen(
         BulletList(profile.plannedCapabilities)
     }
 
-    SkaldCard(title = "Descriptor wallets", state = "demo/planned profiles") {
+    DescriptorWalletProfilesSection(
+        settings = descriptorWalletSettings,
+        review = descriptorWalletReview,
+        message = descriptorWalletMessage,
+        secureStorageStatus = secureStorageStatus,
+        onSaveProfile = onSaveDescriptorWalletProfile,
+        onSelectProfile = onSelectDescriptorWalletProfile,
+        onDeleteProfile = onDeleteDescriptorWalletProfile,
+    )
+
+    SkaldCard(title = "Descriptor wallet architecture templates", state = "static placeholders") {
         profile.descriptorWallets.forEach { wallet ->
             DescriptorWalletBlock(wallet)
         }
