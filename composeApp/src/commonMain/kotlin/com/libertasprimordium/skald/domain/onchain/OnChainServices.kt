@@ -54,7 +54,7 @@ class PlaceholderDescriptorWalletService : DescriptorWalletService {
 
 class PlaceholderBitcoinBackendConnectionTester : BitcoinBackendConnectionTester {
     override fun testConnection(profile: BitcoinBackendProfile): WalletOperationResult<BitcoinBackendStatus> =
-        WalletOperationResult.Disabled("Requires user-supplied endpoint validation and network transport implementation.")
+        WalletOperationResult.Disabled("CONNECTION_TEST_NOT_IMPLEMENTED - no backend connection or network request is attempted.")
 }
 
 class PlaceholderCoinControlPlanner(
