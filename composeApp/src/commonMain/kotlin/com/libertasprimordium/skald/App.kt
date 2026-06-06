@@ -309,9 +309,11 @@ fun SkaldApp(
             )
             AppScreen.Nodes -> NodesScreen(
                 settings = backendSettings,
+                descriptorWalletSettings = descriptorWalletSettings,
                 validation = backendValidation,
                 message = backendMessage,
                 connectionTestResult = backendConnectionTestResult,
+                secureStorageCapability = secureStorage.capability,
                 secureStorageStatus = secureStorageStatus,
                 onRunSimulatedConnectionTest = ::runSimulatedBackendConnectionTest,
                 onSaveProfile = ::saveBackendProfile,

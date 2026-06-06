@@ -33,12 +33,22 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendSettingsState
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendTrustModel
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendType
+import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
+import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncRequest
+import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncResult
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
+import com.libertasprimordium.skald.domain.onchain.DisabledBitcoinWalletSyncService
 import com.libertasprimordium.skald.domain.onchain.EditableBitcoinBackendProfileInput
 import com.libertasprimordium.skald.domain.onchain.HttpEndpoint
+import com.libertasprimordium.skald.domain.onchain.ReceiveAddressDerivationIndex
+import com.libertasprimordium.skald.domain.onchain.ReceiveAddressState
+import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletContext
 import com.libertasprimordium.skald.domain.onchain.TcpEndpoint
 import com.libertasprimordium.skald.domain.onchain.toDisplayHost
+import com.libertasprimordium.skald.security.SecureStorageCapability
 import com.libertasprimordium.skald.security.SecureStorageUiStatus
 import com.libertasprimordium.skald.ui.components.BackendSettingsSummary
+import com.libertasprimordium.skald.ui.components.BitcoinWalletSyncStatusUiMapper
 import com.libertasprimordium.skald.ui.components.BulletList
 import com.libertasprimordium.skald.ui.components.CardGrid
 import com.libertasprimordium.skald.ui.components.DetailLine
@@ -64,9 +74,11 @@ import com.libertasprimordium.skald.ui.theme.SkaldWhite
 @Composable
 fun NodesScreen(
     settings: BitcoinBackendSettingsState,
+    descriptorWalletSettings: DescriptorWalletSettingsState,
     validation: BackendProfileValidationResult?,
     message: String,
     connectionTestResult: BitcoinBackendConnectionTestResult?,
+    secureStorageCapability: SecureStorageCapability,
     secureStorageStatus: SecureStorageUiStatus,
     onRunSimulatedConnectionTest: () -> Unit,
     onSaveProfile: (EditableBitcoinBackendProfileInput) -> Unit,
@@ -74,6 +86,14 @@ fun NodesScreen(
     onDeleteProfile: (BitcoinBackendProfileId) -> Unit,
 ) {
     var form by remember { mutableStateOf(BackendSettingsFormState.blank()) }
+    val syncService = remember { DisabledBitcoinWalletSyncService() }
+    val syncPreflightResult = syncService.sync(
+        disabledSyncRequest(
+            settings = settings,
+            descriptorWalletSettings = descriptorWalletSettings,
+            secureStorageCapability = secureStorageCapability,
+        ),
+    )
 
     ScreenTitle("Nodes", "User-selected infrastructure only.")
     WarningStrip("No Skald-operated backend exists. Configure your own Bitcoin Core, Electrum, or Esplora endpoint.")
@@ -87,6 +107,7 @@ fun NodesScreen(
             result = connectionTestResult,
             onRunSimulatedConnectionTest = onRunSimulatedConnectionTest,
         )
+        ProductionSyncPreflightCard(syncPreflightResult)
         BackendProfileList(
             profiles = settings.profiles,
             onEdit = { profile -> form = profile.toFormState() },
@@ -135,6 +156,34 @@ fun NodesScreen(
                 ),
             )
         }
+    }
+}
+
+@Composable
+private fun ProductionSyncPreflightCard(result: BitcoinWalletSyncResult) {
+    val model = BitcoinWalletSyncStatusUiMapper.from(result)
+    InfoBlock(
+        title = model.title,
+        state = model.state,
+    ) {
+        Text(
+            text = model.summary,
+            color = SkaldWarning,
+            lineHeight = 20.sp,
+        )
+        DetailLine("Backend profile", model.backendProfile)
+        DetailLine("Wallet profile", model.walletProfile)
+        DetailLine("Network", model.requestedNetwork)
+        DetailLine("Network attempt", if (model.networkAttempted) "attempted" else "not attempted")
+        if (model.blockers.isNotEmpty()) {
+            Text("Blockers", color = SkaldWarning, fontWeight = FontWeight.Bold)
+            BulletList(model.blockers)
+        }
+        if (model.warnings.isNotEmpty()) {
+            Text("Warnings", color = SkaldWarning, fontWeight = FontWeight.Bold)
+            BulletList(model.warnings)
+        }
+        LockedAction(model.lockedActionLabel)
     }
 }
 
@@ -424,6 +473,57 @@ private fun connectionFindingColor(
     BitcoinBackendConnectionTestFindingLevel.Blocker -> SkaldDanger
     BitcoinBackendConnectionTestFindingLevel.Planned -> SkaldOrangeSoft
 }
+
+private fun disabledSyncRequest(
+    settings: BitcoinBackendSettingsState,
+    descriptorWalletSettings: DescriptorWalletSettingsState,
+    secureStorageCapability: SecureStorageCapability,
+): BitcoinWalletSyncRequest {
+    val walletContext = descriptorWalletSettings.selectedProfile?.let(ReceiveAddressWalletContext::fromProfile)
+    return BitcoinWalletSyncRequest(
+        backendProfile = settings.selectedProfile,
+        backendValidation = settings.selectedProfile?.toValidationResult(),
+        wallet = walletContext,
+        candidate = walletContext?.let { wallet ->
+            ReceiveAddressState.placeholderReserved(
+                wallet = wallet,
+                derivationIndex = ReceiveAddressDerivationIndex(0),
+            ).markDisplayed()
+        },
+        secureStorageCapability = secureStorageCapability,
+    )
+}
+
+private fun BitcoinBackendProfile.toValidationResult(): BackendProfileValidationResult =
+    BitcoinBackendValidator.validate(
+        EditableBitcoinBackendProfileInput(
+            id = id,
+            label = label,
+            type = type,
+            network = network,
+            host = when (endpoint) {
+                BackendNotConfigured -> ""
+                is HttpEndpoint -> endpoint.host
+                is TcpEndpoint -> endpoint.host
+            },
+            portText = when (endpoint) {
+                BackendNotConfigured -> ""
+                is HttpEndpoint -> endpoint.port?.toString().orEmpty()
+                is TcpEndpoint -> endpoint.port.toString()
+            },
+            useTls = when (endpoint) {
+                BackendNotConfigured -> false
+                is HttpEndpoint -> endpoint.useTls
+                is TcpEndpoint -> endpoint.useTls
+            },
+            path = when (endpoint) {
+                BackendNotConfigured -> ""
+                is HttpEndpoint -> endpoint.path.orEmpty()
+                is TcpEndpoint -> ""
+            },
+            trustModel = trustModel,
+        ),
+    )
 
 @Composable
 private fun BackendTypeSelector(

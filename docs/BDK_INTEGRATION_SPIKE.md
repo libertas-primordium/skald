@@ -151,7 +151,7 @@ That boundary defines Skald-owned adapter request/result/error types and a share
 
 The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
 
-That facade composes endpoint policy, backend profile metadata, the disabled production backend adapter, receive-address policy, secure-storage capability, and `BackendObservationSummary` into a Skald-owned preflight/result boundary. It remains fail-closed and does not create production wallet sync, backend clients, BDK scan calls, observation persistence, app receive UI, signing, broadcasting, public defaults, or mainnet.
+That facade composes endpoint policy, backend profile metadata, the disabled production backend adapter, receive-address policy, secure-storage capability, and `BackendObservationSummary` into a Skald-owned preflight/result boundary. Nodes now has a read-only preflight/status surface for that disabled result. It remains fail-closed and does not create production wallet sync, backend clients, BDK scan calls, observation persistence, app receive UI, signing, broadcasting, public defaults, or mainnet.
 
 ## Local Electrum Regtest Harness Boundary
 
@@ -163,4 +163,4 @@ The current local environment validates with local `electrs` `v0.11.1` supplied 
 
 ## Next Step
 
-The next implementation pass should decide how to surface disabled sync preflight state or prepare recovery/privacy integration without enabling production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material.
+The next implementation pass should prepare recovery/privacy integration or the production observation persistence boundary without enabling production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material.
