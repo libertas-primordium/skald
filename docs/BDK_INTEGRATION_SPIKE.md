@@ -103,6 +103,14 @@ The spike adds boundary tests for:
 
 Android BDK linkage is verified by compile, build, APK assembly, and packaging checks rather than an instrumented test.
 
+## Regtest Harness Layer
+
+The next rollout layer after this packaging spike is documented in [`REGTEST_HARNESS.md`](REGTEST_HARNESS.md).
+
+That harness is opt-in desktop test/development infrastructure. It starts a local `bitcoind` regtest node with a temporary datadir, checks readiness with `bitcoin-cli`, reads regtest chain metadata, generates a regtest block through a temporary `bitcoind` test wallet, shuts down, and cleans up temporary state where practical.
+
+The regtest harness does not create a Skald wallet, create a BDK wallet, enable BDK persistence, connect the app UI to a backend, sync app wallets, sign, broadcast, or enable mainnet.
+
 ## Next Step
 
-The next implementation pass should add a local `bitcoind` regtest harness. That pass should still avoid production storage, mainnet, hidden backend defaults, and any persisted key material.
+The next implementation pass should use the local regtest harness for seed-backed regtest wallet creation and recovery behind Skald-owned BDK adapter APIs. That pass should still avoid production storage, mainnet, hidden backend defaults, and persisted production key material.
