@@ -155,39 +155,47 @@ object BdkRegtestSeedWalletValidation {
                 checks += BdkRegtestWalletValidationCheck.RuntimeEntropyCreated
             }
             try {
-                val created = createIdentity(entropy, checks, recovered = false)
-                val recovered = createIdentity(entropy.copyOf(), checks, recovered = true)
-                val matched = created == recovered
-                if (matched) {
-                    checks += BdkRegtestWalletValidationCheck.SanitizedIdentityMatched
-                }
-                checks += BdkRegtestWalletValidationCheck.NoProductionStorageUsed
+                val createdEntropy = entropy.copyOf()
+                val recoveredEntropy = entropy.copyOf()
+                try {
+                    val created = createIdentity(createdEntropy, checks, recovered = false)
+                    val recovered = createIdentity(recoveredEntropy, checks, recovered = true)
+                    val mismatchFields = created.mismatchFields(recovered)
+                    val matched = mismatchFields.isEmpty()
+                    if (matched) {
+                        checks += BdkRegtestWalletValidationCheck.SanitizedIdentityMatched
+                    }
+                    checks += BdkRegtestWalletValidationCheck.NoProductionStorageUsed
 
-                BdkRegtestWalletValidationResult(
-                    state = if (matched) {
-                        BdkRegtestWalletValidationState.Completed
-                    } else {
-                        BdkRegtestWalletValidationState.Failed
-                    },
-                    checks = checks.distinct(),
-                    capabilities = defaultCapabilities(),
-                    identity = SanitizedRegtestWalletIdentity(
-                        network = BdkRegtestWalletValidationNetwork.Regtest,
-                        recoveredMatchesCreated = matched,
-                        descriptorMaterialExposed = false,
-                        secretMaterialExposed = false,
-                        publicAddressExposed = false,
-                    ),
-                    error = if (matched) {
-                        null
-                    } else {
-                        BdkRegtestWalletValidationError(
-                            code = "BDK_REGTEST_WALLET_IDENTITY_MISMATCH",
-                            safeDetail = "Recovered test-only BDK wallet identity did not match the created identity.",
-                        )
-                    },
-                    diagnostic = "Test-only seed-backed BDK regtest wallet creation and recovery validation completed without exposing wallet material.",
-                )
+                    BdkRegtestWalletValidationResult(
+                        state = if (matched) {
+                            BdkRegtestWalletValidationState.Completed
+                        } else {
+                            BdkRegtestWalletValidationState.Failed
+                        },
+                        checks = checks.distinct(),
+                        capabilities = defaultCapabilities(),
+                        identity = SanitizedRegtestWalletIdentity(
+                            network = BdkRegtestWalletValidationNetwork.Regtest,
+                            recoveredMatchesCreated = matched,
+                            descriptorMaterialExposed = false,
+                            secretMaterialExposed = false,
+                            publicAddressExposed = false,
+                        ),
+                        error = if (matched) {
+                            null
+                        } else {
+                            BdkRegtestWalletValidationError(
+                                code = "BDK_REGTEST_WALLET_IDENTITY_MISMATCH",
+                                safeDetail = "Recovered test-only BDK wallet identity did not match the created identity. Mismatched redacted fields: ${mismatchFields.joinToString()}.",
+                            )
+                        },
+                        diagnostic = "Test-only seed-backed BDK regtest wallet creation and recovery validation completed without exposing wallet material.",
+                    )
+                } finally {
+                    createdEntropy.fill(0)
+                    recoveredEntropy.fill(0)
+                }
             } finally {
                 entropy.fill(0)
             }
@@ -321,7 +329,16 @@ private data class InternalWalletIdentity(
     val internalDescriptorId: String,
     val externalDescriptorChecksum: String,
     val internalDescriptorChecksum: String,
-)
+) {
+    fun mismatchFields(other: InternalWalletIdentity): List<String> =
+        buildList {
+            if (networkName != other.networkName) add("network")
+            if (externalDescriptorId != other.externalDescriptorId) add("external descriptor id")
+            if (internalDescriptorId != other.internalDescriptorId) add("internal descriptor id")
+            if (externalDescriptorChecksum != other.externalDescriptorChecksum) add("external descriptor checksum")
+            if (internalDescriptorChecksum != other.internalDescriptorChecksum) add("internal descriptor checksum")
+        }
+}
 
 private class BdkValidationStageException(
     val safeStage: String,
