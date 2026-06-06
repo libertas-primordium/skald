@@ -1,9 +1,18 @@
 package com.libertasprimordium.skald.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -16,6 +25,7 @@ import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflowRevie
 import com.libertasprimordium.skald.domain.onchain.CoinControlPolicy
 import com.libertasprimordium.skald.domain.onchain.CoinSelectionDraft
 import com.libertasprimordium.skald.domain.onchain.DemoUtxo
+import com.libertasprimordium.skald.domain.onchain.DescriptorWalletMetadataProfile
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfile
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
@@ -31,10 +41,13 @@ import com.libertasprimordium.skald.ui.components.BulletList
 import com.libertasprimordium.skald.ui.components.DetailLine
 import com.libertasprimordium.skald.ui.components.DisabledActionArea
 import com.libertasprimordium.skald.ui.components.InfoBlock
-import com.libertasprimordium.skald.ui.components.ScreenTitle
+import com.libertasprimordium.skald.ui.components.RailScreenHeader
 import com.libertasprimordium.skald.ui.components.SkaldCard
+import com.libertasprimordium.skald.ui.components.SkaldSmallButton
 import com.libertasprimordium.skald.ui.components.WarningStrip
 import com.libertasprimordium.skald.ui.components.riskColor
+import com.libertasprimordium.skald.ui.navigation.AppScreen
+import com.libertasprimordium.skald.ui.navigation.RailTabOptionId
 import com.libertasprimordium.skald.ui.theme.SkaldMutedText
 import com.libertasprimordium.skald.ui.theme.SkaldWarning
 import com.libertasprimordium.skald.ui.theme.SkaldWhite
@@ -57,36 +70,161 @@ fun OnChainScreen(
     onSaveCoinControlDraft: (EditableCoinControlDraftInput) -> Unit,
     onSelectCoinControlDraft: (CoinControlDraftId) -> Unit,
     onDeleteCoinControlDraft: (CoinControlDraftId) -> Unit,
+    onNavigate: (AppScreen) -> Unit,
 ) {
-    ScreenTitle("On-chain", "Phase 1 descriptor-native foundation model.")
+    var selectedOption by remember { mutableStateOf(RailTabOptionId.DefaultView) }
+
+    RailScreenHeader(
+        screen = AppScreen.OnChain,
+        subtitle = "Descriptor wallet metadata first; advanced planning behind options.",
+        selectedOptionId = selectedOption,
+        onOptionSelected = { selectedOption = it },
+        onNavigate = onNavigate,
+    )
     WarningStrip("No real keys, descriptors, addresses, UTXOs, PSBTs, signatures, or transactions are created in this pass.")
+    when (selectedOption) {
+        RailTabOptionId.OnChainWalletProfileManager -> DescriptorWalletProfilesSection(
+            settings = descriptorWalletSettings,
+            review = descriptorWalletReview,
+            message = descriptorWalletMessage,
+            secureStorageStatus = secureStorageStatus,
+            onSaveProfile = onSaveDescriptorWalletProfile,
+            onSelectProfile = onSelectDescriptorWalletProfile,
+            onDeleteProfile = onDeleteDescriptorWalletProfile,
+        )
+        RailTabOptionId.OnChainCoinControlPlanner -> CoinControlDraftPlannerSection(
+            settings = coinControlDraftSettings,
+            descriptorWalletSettings = descriptorWalletSettings,
+            review = coinControlDraftReview,
+            message = coinControlDraftMessage,
+            demoUtxos = demoUtxos,
+            onSaveDraft = onSaveCoinControlDraft,
+            onSelectDraft = onSelectCoinControlDraft,
+            onDeleteDraft = onDeleteCoinControlDraft,
+        )
+        RailTabOptionId.OnChainRecoveryRequirements -> OnChainRecoverySection(profile.recoveryStatus)
+        RailTabOptionId.OnChainPrivacyWarnings -> {
+            CoinControlSection(
+                draft = profile.coinSelectionDraft,
+                policy = profile.coinControlPolicy,
+            )
+            PsbtWorkflowSection(profile.psbtWorkflow)
+        }
+        RailTabOptionId.OnChainLockedActions -> DisabledActionArea(
+            title = "Locked on-chain actions",
+            actions = profile.disabledActions.map { it.label to it.reason },
+        )
+        RailTabOptionId.OnChainArchitecturePlaceholders -> OnChainArchitectureDetails(
+            profile = profile,
+            backendSettings = backendSettings,
+        )
+        else -> OnChainDefaultView(
+            descriptorWalletSettings = descriptorWalletSettings,
+            descriptorWalletReview = descriptorWalletReview,
+            descriptorWalletMessage = descriptorWalletMessage,
+            secureStorageStatus = secureStorageStatus,
+            onSaveDescriptorWalletProfile = onSaveDescriptorWalletProfile,
+            onSelectDescriptorWalletProfile = onSelectDescriptorWalletProfile,
+            onDeleteDescriptorWalletProfile = onDeleteDescriptorWalletProfile,
+        )
+    }
+}
+
+@Composable
+private fun OnChainDefaultView(
+    descriptorWalletSettings: DescriptorWalletSettingsState,
+    descriptorWalletReview: DescriptorWalletWorkflowReview?,
+    descriptorWalletMessage: String,
+    secureStorageStatus: SecureStorageUiStatus,
+    onSaveDescriptorWalletProfile: (EditableDescriptorWalletProfileInput) -> Unit,
+    onSelectDescriptorWalletProfile: (DescriptorWalletProfileId) -> Unit,
+    onDeleteDescriptorWalletProfile: (DescriptorWalletProfileId) -> Unit,
+) {
+    if (descriptorWalletSettings.profiles.isEmpty()) {
+        DescriptorWalletProfilesSection(
+            settings = descriptorWalletSettings,
+            review = descriptorWalletReview,
+            message = "No on-chain wallet metadata exists. Create or import a non-operational descriptor wallet profile below.",
+            secureStorageStatus = secureStorageStatus,
+            onSaveProfile = onSaveDescriptorWalletProfile,
+            onSelectProfile = onSelectDescriptorWalletProfile,
+            onDeleteProfile = onDeleteDescriptorWalletProfile,
+        )
+    } else {
+        SavedDescriptorWalletProfilesDefault(
+            profiles = descriptorWalletSettings.profiles,
+            message = descriptorWalletMessage,
+            onSelectProfile = onSelectDescriptorWalletProfile,
+            onDeleteProfile = onDeleteDescriptorWalletProfile,
+        )
+    }
+}
+
+@Composable
+private fun SavedDescriptorWalletProfilesDefault(
+    profiles: List<DescriptorWalletMetadataProfile>,
+    message: String,
+    onSelectProfile: (DescriptorWalletProfileId) -> Unit,
+    onDeleteProfile: (DescriptorWalletProfileId) -> Unit,
+) {
+    SkaldCard(title = "Descriptor wallet profiles", state = "metadata only") {
+        Text(message, color = SkaldMutedText, lineHeight = 20.sp)
+        Text(
+            text = "Profiles remain non-operational. Receive, spend, descriptor export, PSBT construction, signing, and broadcast are disabled.",
+            color = SkaldWarning,
+            lineHeight = 20.sp,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            profiles.forEach { profile ->
+                InfoBlock(
+                    title = profile.label.value,
+                    state = if (profile.isSelected) "selected metadata" else profile.profileStatus.label,
+                ) {
+                    DetailLine("Origin", profile.origin.label)
+                    DetailLine("Network", profile.network.label)
+                    DetailLine("Descriptor", profile.descriptorTextState)
+                    DetailLine("Key material", profile.keyMaterialState)
+                    DetailLine("Operational", profile.isOperational.toString())
+                    if (profile.blockingIssues.isNotEmpty()) {
+                        BulletList(profile.blockingIssues.map { it.label })
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        SkaldSmallButton(
+                            label = if (profile.isSelected) "Selected" else "Select",
+                            selected = profile.isSelected,
+                            enabled = !profile.isSelected,
+                            onClick = { onSelectProfile(profile.id) },
+                            modifier = Modifier.weight(1f),
+                        )
+                        SkaldSmallButton(
+                            label = "Delete",
+                            selected = false,
+                            danger = true,
+                            onClick = { onDeleteProfile(profile.id) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnChainArchitectureDetails(
+    profile: OnChainWalletProfile,
+    backendSettings: BitcoinBackendSettingsState,
+) {
     SkaldCard(
         title = profile.label,
         state = profile.status.label,
     ) {
         BulletList(profile.plannedCapabilities)
     }
-
-    DescriptorWalletProfilesSection(
-        settings = descriptorWalletSettings,
-        review = descriptorWalletReview,
-        message = descriptorWalletMessage,
-        secureStorageStatus = secureStorageStatus,
-        onSaveProfile = onSaveDescriptorWalletProfile,
-        onSelectProfile = onSelectDescriptorWalletProfile,
-        onDeleteProfile = onDeleteDescriptorWalletProfile,
-    )
-
-    CoinControlDraftPlannerSection(
-        settings = coinControlDraftSettings,
-        descriptorWalletSettings = descriptorWalletSettings,
-        review = coinControlDraftReview,
-        message = coinControlDraftMessage,
-        demoUtxos = demoUtxos,
-        onSaveDraft = onSaveCoinControlDraft,
-        onSelectDraft = onSelectCoinControlDraft,
-        onDeleteDraft = onDeleteCoinControlDraft,
-    )
 
     SkaldCard(title = "Descriptor wallet architecture templates", state = "static placeholders") {
         profile.descriptorWallets.forEach { wallet ->
@@ -103,19 +241,6 @@ fun OnChainScreen(
         }
     }
 
-    CoinControlSection(
-        draft = profile.coinSelectionDraft,
-        policy = profile.coinControlPolicy,
-    )
-
-    PsbtWorkflowSection(profile.psbtWorkflow)
-
-    OnChainRecoverySection(profile.recoveryStatus)
-
-    DisabledActionArea(
-        title = "Locked on-chain actions",
-        actions = profile.disabledActions.map { it.label to it.reason },
-    )
 }
 
 @Composable

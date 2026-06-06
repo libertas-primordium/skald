@@ -268,7 +268,10 @@ fun SkaldApp(
         onSelectedScreen = { selectedScreen = it },
     ) { screen ->
         when (screen) {
-            AppScreen.Overview -> OverviewScreen(snapshot)
+            AppScreen.Overview -> OverviewScreen(
+                snapshot = snapshot,
+                onNavigate = { selectedScreen = it },
+            )
             AppScreen.OnChain -> OnChainScreen(
                 profile = onChainProfile,
                 backendSettings = backendSettings,
@@ -286,9 +289,16 @@ fun SkaldApp(
                 onSaveCoinControlDraft = ::saveCoinControlDraft,
                 onSelectCoinControlDraft = ::selectCoinControlDraft,
                 onDeleteCoinControlDraft = ::deleteCoinControlDraft,
+                onNavigate = { selectedScreen = it },
             )
-            AppScreen.Lightning -> LightningScreen(lightningConnectors)
-            AppScreen.Cashu -> CashuScreen(cashuMints)
+            AppScreen.Lightning -> LightningScreen(
+                connectors = lightningConnectors,
+                onNavigate = { selectedScreen = it },
+            )
+            AppScreen.Cashu -> CashuScreen(
+                mints = cashuMints,
+                onNavigate = { selectedScreen = it },
+            )
             AppScreen.Nostr -> NostrScreen(nostrIntents)
             AppScreen.Recovery -> RecoveryScreen(
                 recovery = snapshot.recoveryStatus,

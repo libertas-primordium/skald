@@ -49,7 +49,7 @@ fun SkaldAppScaffold(
             ) {
                 val compact = maxWidth < 760.dp
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(if (compact) 12.dp else 16.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     SkaldHeader(
@@ -70,7 +70,7 @@ fun SkaldAppScaffold(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(bottom = 40.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         content(selectedScreen)
                     }
