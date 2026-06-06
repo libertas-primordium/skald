@@ -42,7 +42,8 @@ class BdkDesktopAdapterProbeTest {
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .filterNot { path ->
                 path == "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/domain/onchain/bdk/AndroidBdkAdapterProbe.kt" ||
-                    path == "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/domain/onchain/bdk/DesktopBdkAdapterProbe.kt"
+                    path == "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/domain/onchain/bdk/DesktopBdkAdapterProbe.kt" ||
+                    path.startsWith("composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/")
             }
             .toList()
 
