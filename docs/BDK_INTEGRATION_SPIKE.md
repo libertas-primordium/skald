@@ -111,6 +111,12 @@ That harness is opt-in desktop test/development infrastructure. It starts a loca
 
 The regtest harness does not create a Skald wallet, create a BDK wallet, enable BDK persistence, connect the app UI to a backend, sync app wallets, sign, broadcast, or enable mainnet.
 
+## Seed-Backed Regtest Validation Layer
+
+The follow-up seed-backed regtest wallet validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md).
+
+That boundary remains desktop-test-only, regtest-only, opt-in, redacted, and disconnected from production app wallet flows. On the current Linux desktop target, completed BDK wallet validation is blocked because the resolved pinned `bdk-jvm:2.3.1` artifact contains a Darwin ARM native binding and no Linux `.so`.
+
 ## Next Step
 
-The next implementation pass should use the local regtest harness for seed-backed regtest wallet creation and recovery behind Skald-owned BDK adapter APIs. That pass should still avoid production storage, mainnet, hidden backend defaults, and persisted production key material.
+The next implementation pass should resolve the BDK JVM native binding strategy for Linux before attempting address derivation, wallet sync, or seed-backed wallet activation. Do not enable production storage, mainnet, hidden backend defaults, or persisted production key material as part of that decision.

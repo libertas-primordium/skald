@@ -10,7 +10,7 @@ This harness is test/development infrastructure only. It does not enable product
 
 The harness proves that the development environment can start a local regtest node, check readiness, read chain metadata, generate a regtest block, shut down cleanly, and remove temporary state.
 
-It exists to support the next BDK rollout layer: seed-backed regtest wallet creation and recovery behind Skald-owned adapter APIs. That next layer has not been implemented yet.
+It exists to support BDK rollout layers such as seed-backed regtest wallet creation and recovery behind Skald-owned adapter APIs. The current seed-backed BDK validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md) and is blocked on Linux by the pinned BDK JVM native binding artifact.
 
 ## Source Location
 
@@ -98,4 +98,4 @@ Runtime regtest addresses and block hashes may be produced by `bitcoind` during 
 
 ## Next Step
 
-The next focused pass should use this harness for seed-backed regtest wallet creation and recovery behind Skald-owned BDK adapter APIs. That pass must remain regtest-only, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should resolve the BDK JVM native binding strategy for Linux. Only after that decision should Skald attempt completed seed-backed regtest wallet recovery, address derivation, or backend scan validation. Those passes must remain regtest/signet first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
