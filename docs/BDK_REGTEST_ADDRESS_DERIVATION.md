@@ -8,6 +8,8 @@ This is not production wallet functionality. It is not wired into the app UI, de
 
 The validation currently passes on the Linux desktop target with pinned `org.bitcoindevkit:bdk-jvm:2.3.0`. The JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md).
 
+The production-safe receive-address state and reuse-prevention policy is documented separately in [`RECEIVE_ADDRESS_POLICY.md`](RECEIVE_ADDRESS_POLICY.md). That policy layer is pure Skald-owned Kotlin and does not call BDK address APIs.
+
 ## Source Location
 
 The validation code lives under desktop test sources:
@@ -115,9 +117,6 @@ Mainnet requests are rejected before runtime wallet material is created.
 
 ## Next Step
 
-The next focused pass should choose between:
+The next focused pass should be a regtest UTXO scan validation path using the local `bitcoind` harness and the receive-address policy model as the state foundation.
 
-- address reuse prevention and receive-address state modeling, still without production secret storage, or
-- a regtest UTXO scan validation path using the local `bitcoind` harness.
-
-Either path must keep production app flows disabled until the secure-storage and recovery boundaries are ready.
+That path must keep production app flows disabled until the secure-storage and recovery boundaries are ready.
