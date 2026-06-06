@@ -133,16 +133,16 @@ That boundary remains desktop-test-only, opt-in, redacted, offline, and disconne
 
 The test-only regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
 
-That boundary currently reports a safe blocked state. BDK `2.3.0` exposes wallet scan request types and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from the existing local `bitcoind` harness alone. No production wallet sync, backend client, UTXO scan, signing, broadcasting, or mainnet behavior is enabled.
+That boundary now includes a desktop-test-only BDK Electrum scan adapter. Without the local Electrum opt-in it reports a safe local-indexer-required state. With both opt-ins and a local `electrs` binary, it uses only a localhost regtest Electrum endpoint from the test harness. The combined path now observes a funded runtime regtest UTXO through BDK and applies Skald-owned receive-address used-state policy. No production wallet sync, backend client, UTXO scan, signing, broadcasting, or mainnet behavior is enabled.
 
 ## Local Electrum Regtest Harness Boundary
 
 The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).
 
-That harness discovers a local `electrs` binary through `SKALD_ELECTRS` or `PATH`, starts it only against the temporary local `bitcoind` regtest harness when explicitly opted in, waits for localhost Electrum readiness, and cleans up temporary state. It does not add production Electrum support, public backend defaults, app wallet sync, BDK wallet material, signing, broadcasting, or mainnet.
+That harness discovers a local `electrs` binary through `SKALD_ELECTRS` or `PATH`, starts it only against the temporary local `bitcoind` regtest harness when explicitly opted in, waits for localhost Electrum readiness, and cleans up temporary state. For the Electrum harness path, temporary `bitcoind` exposes only a localhost-bound P2P listener so electrs can index local regtest blocks. It does not add production Electrum support, public backend defaults, app wallet sync, BDK wallet material, signing, broadcasting, or mainnet.
 
-The current local environment for this pass does not have `electrs` installed, so the opt-in harness reports unavailable until a local indexer binary is installed or configured. Full BDK UTXO observation remains blocked until a separate adapter pass wires BDK's Electrum scan API through this local harness.
+The current local environment validates with local `electrs` `v0.11.1` supplied through `SKALD_ELECTRS`.
 
 ## Next Step
 
-The next implementation pass should run the local Electrum harness with a verified `electrs` binary and attempt the smallest safe BDK Electrum scan adapter path. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should design the production-safe backend observation state boundary before any production sync work. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.

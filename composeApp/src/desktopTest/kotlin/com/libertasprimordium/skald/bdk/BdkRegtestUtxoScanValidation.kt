@@ -10,6 +10,7 @@ import com.libertasprimordium.skald.domain.onchain.ReceiveAddressPolicyRequest
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressState
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletContext
 import com.libertasprimordium.skald.domain.onchain.bdk.BdkAdapterVersion
+import com.libertasprimordium.skald.regtest.RegtestElectrumIndexerIntegrationPolicy
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -21,6 +22,8 @@ enum class BdkRegtestUtxoScanValidationNetwork(val label: String) {
 enum class BdkRegtestUtxoScanValidationState(val label: String) {
     Disabled("disabled"),
     BlockedRequiresLocalIndexer("blocked: local indexer required"),
+    BlockedLocalElectrumUnavailable("blocked: local Electrum unavailable"),
+    Completed("completed"),
     RejectedMainnet("rejected mainnet"),
     Failed("failed"),
 }
@@ -31,6 +34,9 @@ enum class BdkRegtestUtxoScanValidationCheck(val label: String) {
     BdkJvmArtifactInventoryInspected("BDK JVM artifact inventory inspected"),
     DirectLocalNodeScanBackendAbsent("direct local-node scan backend absent"),
     IndexedBackendsDetected("indexed scan backends detected"),
+    LocalElectrumAdapterRequested("local Electrum scan adapter requested"),
+    LocalElectrumUnavailable("local Electrum scan adapter unavailable"),
+    LocalElectrumScanCompleted("local Electrum scan completed"),
     ReceivePolicyTransitionModelAvailable("receive-address policy transition model available"),
     NoProductionStorageUsed("no production storage used"),
 }
@@ -43,6 +49,8 @@ enum class BdkRegtestUtxoScanValidationCapability(val label: String) {
     RedactedDiagnostics("redacted diagnostics"),
     ReceiveAddressPolicyIntegration("receive-address policy integration"),
     BlockedWithoutLocalIndexer("blocked without a local indexed scan backend"),
+    LocalElectrumScanAdapter("local Electrum scan adapter"),
+    BlockedWithoutLocalElectrumBinary("blocked without local electrs binary"),
     NoProductionStorage("no production storage"),
     NoProductionNetworking("no production networking"),
     NoSigning("no signing"),
@@ -105,14 +113,16 @@ data class BdkRegtestUtxoScanValidationResult(
     val capabilities: Set<BdkRegtestUtxoScanValidationCapability>,
     val backendInventory: BdkRegtestUtxoScanBackendInventory?,
     val scanSummary: SanitizedRegtestScanSummary?,
+    val electrumScanResult: BdkRegtestElectrumScanResult?,
     val error: BdkRegtestUtxoScanValidationError?,
     val diagnostic: String,
 ) {
     val completed: Boolean
-        get() = false
+        get() = state == BdkRegtestUtxoScanValidationState.Completed
 
     val requiresLocalIndexer: Boolean
-        get() = state == BdkRegtestUtxoScanValidationState.BlockedRequiresLocalIndexer
+        get() = state == BdkRegtestUtxoScanValidationState.BlockedRequiresLocalIndexer ||
+            state == BdkRegtestUtxoScanValidationState.BlockedLocalElectrumUnavailable
 
     val usesProductionStorage: Boolean
         get() = state != BdkRegtestUtxoScanValidationState.Disabled &&
@@ -149,10 +159,12 @@ object BdkRegtestUtxoScanValidation {
                 enabled = BdkRegtestUtxoScanValidationPolicy.fromEnvironment(environment).enabled,
                 network = BdkRegtestUtxoScanValidationNetwork.Regtest,
             ),
+            environment = environment,
         )
 
     fun run(
         request: BdkRegtestUtxoScanValidationRequest,
+        environment: Map<String, String> = System.getenv(),
     ): BdkRegtestUtxoScanValidationResult {
         if (!request.enabled) {
             return BdkRegtestUtxoScanValidationResult(
@@ -162,6 +174,7 @@ object BdkRegtestUtxoScanValidation {
                 capabilities = emptySet(),
                 backendInventory = null,
                 scanSummary = null,
+                electrumScanResult = null,
                 error = BdkRegtestUtxoScanValidationError(
                     code = "BDK_REGTEST_UTXO_SCAN_VALIDATION_DISABLED",
                     safeDetail = "Set ${BdkRegtestUtxoScanValidationPolicy.EnvironmentVariable}=1 to run the test-only regtest UTXO scan validation boundary.",
@@ -178,6 +191,7 @@ object BdkRegtestUtxoScanValidation {
                 capabilities = defaultCapabilities(),
                 backendInventory = null,
                 scanSummary = null,
+                electrumScanResult = null,
                 error = BdkRegtestUtxoScanValidationError(
                     code = "BDK_REGTEST_UTXO_SCAN_MAINNET_REJECTED",
                     safeDetail = "Mainnet is disabled. Test-only BDK UTXO scan validation is allowed only for regtest.",
@@ -202,6 +216,22 @@ object BdkRegtestUtxoScanValidation {
             checks += BdkRegtestUtxoScanValidationCheck.ReceivePolicyTransitionModelAvailable
             checks += BdkRegtestUtxoScanValidationCheck.NoProductionStorageUsed
 
+            if (RegtestElectrumIndexerIntegrationPolicy.fromEnvironment(environment).enabled) {
+                checks += BdkRegtestUtxoScanValidationCheck.LocalElectrumAdapterRequested
+                val electrumScan = BdkRegtestElectrumScanAdapter.run(
+                    request = BdkRegtestElectrumScanRequest(
+                        enabled = true,
+                        localElectrumEnabled = true,
+                        network = BdkRegtestUtxoScanValidationNetwork.Regtest,
+                    ),
+                    environment = environment,
+                )
+                return@runCatching electrumScan.toValidationResult(
+                    checks = checks,
+                    inventory = inventory,
+                )
+            }
+
             BdkRegtestUtxoScanValidationResult(
                 state = BdkRegtestUtxoScanValidationState.BlockedRequiresLocalIndexer,
                 network = BdkRegtestUtxoScanValidationNetwork.Regtest,
@@ -209,9 +239,10 @@ object BdkRegtestUtxoScanValidation {
                 capabilities = defaultCapabilities(),
                 backendInventory = inventory,
                 scanSummary = null,
+                electrumScanResult = null,
                 error = BdkRegtestUtxoScanValidationError(
                     code = "BDK_REGTEST_UTXO_SCAN_REQUIRES_LOCAL_INDEXER",
-                    safeDetail = "BDK ${BdkAdapterVersion.Pinned.version} exposes wallet scan requests, but the resolved JVM artifact does not expose a direct local-node RPC scan backend. A local indexed backend harness is required before BDK can observe funded regtest UTXOs.",
+                    safeDetail = "BDK ${BdkAdapterVersion.Pinned.version} exposes wallet scan requests and indexed backends, but the local Electrum scan adapter is not enabled. Set ${RegtestElectrumIndexerIntegrationPolicy.EnvironmentVariable}=1 with ${BdkRegtestUtxoScanValidationPolicy.EnvironmentVariable}=1 to attempt local regtest UTXO observation.",
                 ),
                 diagnostic = "Test-only UTXO scan validation stopped before creating wallet material, funding addresses, syncing, signing, broadcasting, or using production storage.",
             )
@@ -223,6 +254,7 @@ object BdkRegtestUtxoScanValidation {
                 capabilities = defaultCapabilities(),
                 backendInventory = null,
                 scanSummary = null,
+                electrumScanResult = null,
                 error = BdkRegtestUtxoScanValidationError(
                     code = "BDK_REGTEST_UTXO_SCAN_VALIDATION_FAILED",
                     safeDetail = "BDK UTXO scan validation failed while inspecting the Skald-owned backend inventory. Raw library and environment details were not exposed.",
@@ -281,6 +313,8 @@ object BdkRegtestUtxoScanValidation {
             BdkRegtestUtxoScanValidationCapability.RedactedDiagnostics,
             BdkRegtestUtxoScanValidationCapability.ReceiveAddressPolicyIntegration,
             BdkRegtestUtxoScanValidationCapability.BlockedWithoutLocalIndexer,
+            BdkRegtestUtxoScanValidationCapability.LocalElectrumScanAdapter,
+            BdkRegtestUtxoScanValidationCapability.BlockedWithoutLocalElectrumBinary,
             BdkRegtestUtxoScanValidationCapability.NoProductionStorage,
             BdkRegtestUtxoScanValidationCapability.NoProductionNetworking,
             BdkRegtestUtxoScanValidationCapability.NoSigning,
@@ -288,6 +322,70 @@ object BdkRegtestUtxoScanValidation {
             BdkRegtestUtxoScanValidationCapability.NoMainnet,
         )
 }
+
+private fun BdkRegtestElectrumScanResult.toValidationResult(
+    checks: List<BdkRegtestUtxoScanValidationCheck>,
+    inventory: BdkRegtestUtxoScanBackendInventory,
+): BdkRegtestUtxoScanValidationResult {
+    val extraChecks = when (state) {
+        BdkRegtestElectrumScanState.Completed ->
+            listOf(BdkRegtestUtxoScanValidationCheck.LocalElectrumScanCompleted)
+        BdkRegtestElectrumScanState.Unavailable ->
+            listOf(BdkRegtestUtxoScanValidationCheck.LocalElectrumUnavailable)
+        else -> emptyList()
+    }
+    val validationState = when (state) {
+        BdkRegtestElectrumScanState.Completed -> BdkRegtestUtxoScanValidationState.Completed
+        BdkRegtestElectrumScanState.Unavailable -> BdkRegtestUtxoScanValidationState.BlockedLocalElectrumUnavailable
+        BdkRegtestElectrumScanState.RejectedMainnet -> BdkRegtestUtxoScanValidationState.RejectedMainnet
+        BdkRegtestElectrumScanState.Disabled -> BdkRegtestUtxoScanValidationState.BlockedRequiresLocalIndexer
+        BdkRegtestElectrumScanState.Failed -> BdkRegtestUtxoScanValidationState.Failed
+    }
+    return BdkRegtestUtxoScanValidationResult(
+        state = validationState,
+        network = BdkRegtestUtxoScanValidationNetwork.Regtest,
+        checks = (checks + extraChecks).distinct(),
+        capabilities = BdkRegtestUtxoScanValidation.defaultResultCapabilitiesForElectrumAdapter(state),
+        backendInventory = inventory,
+        scanSummary = scanSummary,
+        electrumScanResult = this,
+        error = when (state) {
+            BdkRegtestElectrumScanState.Completed -> null
+            BdkRegtestElectrumScanState.Unavailable -> BdkRegtestUtxoScanValidationError(
+                code = error?.code ?: "BDK_REGTEST_ELECTRUM_SCAN_UNAVAILABLE",
+                safeDetail = error?.safeDetail
+                    ?: "Local Electrum regtest adapter is unavailable. Install electrs or set the local indexer binary environment variable.",
+            )
+            else -> BdkRegtestUtxoScanValidationError(
+                code = error?.code ?: "BDK_REGTEST_ELECTRUM_SCAN_BLOCKED",
+                safeDetail = error?.safeDetail
+                    ?: "Local Electrum regtest scan adapter did not complete. Raw backend and wallet details were not exposed.",
+            )
+        },
+        diagnostic = diagnostic,
+    )
+}
+
+private fun BdkRegtestUtxoScanValidation.defaultResultCapabilitiesForElectrumAdapter(
+    scanState: BdkRegtestElectrumScanState,
+): Set<BdkRegtestUtxoScanValidationCapability> =
+    buildSet {
+        add(BdkRegtestUtxoScanValidationCapability.TestOnlyRegtestUtxoScanValidation)
+        add(BdkRegtestUtxoScanValidationCapability.LocalRegtestOnly)
+        add(BdkRegtestUtxoScanValidationCapability.BdkWalletAddressValidationAlreadyAvailable)
+        add(BdkRegtestUtxoScanValidationCapability.SkaldOwnedResultTypes)
+        add(BdkRegtestUtxoScanValidationCapability.RedactedDiagnostics)
+        add(BdkRegtestUtxoScanValidationCapability.ReceiveAddressPolicyIntegration)
+        add(BdkRegtestUtxoScanValidationCapability.LocalElectrumScanAdapter)
+        add(BdkRegtestUtxoScanValidationCapability.NoProductionStorage)
+        add(BdkRegtestUtxoScanValidationCapability.NoProductionNetworking)
+        add(BdkRegtestUtxoScanValidationCapability.NoSigning)
+        add(BdkRegtestUtxoScanValidationCapability.NoBroadcasting)
+        add(BdkRegtestUtxoScanValidationCapability.NoMainnet)
+        if (scanState == BdkRegtestElectrumScanState.Unavailable) {
+            add(BdkRegtestUtxoScanValidationCapability.BlockedWithoutLocalElectrumBinary)
+        }
+    }
 
 private object BdkRegtestUtxoScanBackendInventoryInspector {
     fun currentClasspathInventory(): BdkRegtestUtxoScanBackendInventory {

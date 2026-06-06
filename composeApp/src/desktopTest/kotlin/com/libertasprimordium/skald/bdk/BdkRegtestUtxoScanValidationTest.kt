@@ -11,6 +11,7 @@ import com.libertasprimordium.skald.domain.onchain.ReceiveAddressSource
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressState
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletContext
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletOperationalState
+import com.libertasprimordium.skald.regtest.RegtestElectrumIndexerCheck
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -29,6 +30,7 @@ class BdkRegtestUtxoScanValidationTest {
         assertFalse(result.completed)
         assertNull(result.backendInventory)
         assertNull(result.scanSummary)
+        assertNull(result.electrumScanResult)
         assertNotNull(result.error)
         assertTrue(result.error.safeDetail.contains(BdkRegtestUtxoScanValidationPolicy.EnvironmentVariable))
         assertFalse(result.usesProductionStorage)
@@ -49,6 +51,7 @@ class BdkRegtestUtxoScanValidationTest {
         assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.ExplicitOptIn)
         assertNull(result.backendInventory)
         assertNull(result.scanSummary)
+        assertNull(result.electrumScanResult)
         assertNotNull(result.error)
         assertTrue(result.error.safeDetail.contains("Mainnet is disabled"))
         assertFalse(result.usesProductionStorage)
@@ -58,10 +61,68 @@ class BdkRegtestUtxoScanValidationTest {
     }
 
     @Test
-    fun optInUtxoScanValidationReportsLocalIndexerBlockerForCurrentBdkJvmArtifact() {
+    fun optInUtxoScanValidationReportsLocalIndexerBlockerOrCompletesThroughLocalElectrum() {
         val result = BdkRegtestUtxoScanValidation.runFromEnvironment(System.getenv())
         if (result.state == BdkRegtestUtxoScanValidationState.Disabled) {
             assertFalse(result.completed)
+            return
+        }
+
+        if (result.state == BdkRegtestUtxoScanValidationState.BlockedLocalElectrumUnavailable) {
+            assertFalse(result.completed)
+            assertTrue(result.requiresLocalIndexer)
+            assertFalse(result.usesProductionStorage)
+            assertFalse(result.usesProductionNetworking)
+            assertFalse(result.mainnetScanEnabled)
+            assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.LocalElectrumAdapterRequested)
+            assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.LocalElectrumUnavailable)
+            assertContains(result.capabilities, BdkRegtestUtxoScanValidationCapability.LocalElectrumScanAdapter)
+            assertContains(result.capabilities, BdkRegtestUtxoScanValidationCapability.BlockedWithoutLocalElectrumBinary)
+            val electrumScan = requireNotNull(result.electrumScanResult)
+            assertEquals(BdkRegtestElectrumScanState.Unavailable, electrumScan.state)
+            assertNotNull(result.error)
+            assertRedacted(result.toString())
+            return
+        }
+
+        if (result.state == BdkRegtestUtxoScanValidationState.Completed) {
+            assertTrue(result.completed)
+            assertFalse(result.requiresLocalIndexer)
+            assertFalse(result.usesProductionStorage)
+            assertFalse(result.usesProductionNetworking)
+            assertFalse(result.mainnetScanEnabled)
+            assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.LocalElectrumAdapterRequested)
+            assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.LocalElectrumScanCompleted)
+            val electrumScan = requireNotNull(result.electrumScanResult)
+            assertEquals(BdkRegtestElectrumScanState.Completed, electrumScan.state)
+            assertTrue(electrumScan.completed)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.BitcoindStarted)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.NodeReady)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.ElectrumIndexerStarted)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.ElectrumIndexerReady)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.FundingTransactionSent)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.FundingConfirmationMined)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.CleanShutdown)
+            assertContains(electrumScan.harnessChecks, RegtestElectrumIndexerCheck.TemporaryDatadirsCleaned)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.LocalElectrumHarnessReady)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.RuntimeEntropyCreated)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.BdkWalletCreated)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.ReceiveAddressRevealed)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.LocalRegtestAddressFunded)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.ElectrumClientCreated)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.ElectrumPingCompleted)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.FullScanRequestBuilt)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.ElectrumFullScanCompleted)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.WalletUpdateApplied)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.UtxosObserved)
+            assertContains(electrumScan.checks, BdkRegtestElectrumScanCheck.ReceivePolicyTransitionApplied)
+            assertTrue(electrumScan.observedUtxoCount > 0)
+            assertTrue(electrumScan.observedAmountSats > 0)
+            val summary = requireNotNull(result.scanSummary)
+            assertTrue(summary.addressMarkedUsed)
+            assertEquals(ReceiveAddressPolicyDecisionState.WarningRequired, summary.reuseDecision.state)
+            assertNull(result.error)
+            assertRedacted(result.toString())
             return
         }
 
@@ -99,8 +160,57 @@ class BdkRegtestUtxoScanValidationTest {
         assertTrue(inventory.compactFilterClientAvailable)
         assertTrue(inventory.hasIndexedScanBackend)
         assertNull(result.scanSummary)
+        assertNull(result.electrumScanResult)
         assertNotNull(result.error)
         assertEquals("BDK_REGTEST_UTXO_SCAN_REQUIRES_LOCAL_INDEXER", result.error.code)
+        assertRedacted(result.toString())
+    }
+
+    @Test
+    fun localElectrumAdapterReportsUnavailableWhenElectrsIsMissing() {
+        val result = BdkRegtestUtxoScanValidation.runFromEnvironment(
+            environment = mapOf(
+                BdkRegtestUtxoScanValidationPolicy.EnvironmentVariable to "1",
+                com.libertasprimordium.skald.regtest.RegtestElectrumIndexerIntegrationPolicy.EnvironmentVariable to "1",
+                "PATH" to "",
+            ),
+        )
+
+        assertEquals(BdkRegtestUtxoScanValidationState.BlockedLocalElectrumUnavailable, result.state)
+        assertFalse(result.completed)
+        assertTrue(result.requiresLocalIndexer)
+        assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.LocalElectrumAdapterRequested)
+        assertContains(result.checks, BdkRegtestUtxoScanValidationCheck.LocalElectrumUnavailable)
+        assertNull(result.scanSummary)
+        val electrumScan = requireNotNull(result.electrumScanResult)
+        assertEquals(BdkRegtestElectrumScanState.Unavailable, electrumScan.state)
+        assertFalse(electrumScan.usesPublicEndpoint)
+        assertFalse(electrumScan.usesProductionStorage)
+        assertFalse(electrumScan.mainnetScanEnabled)
+        assertNotNull(result.error)
+        assertTrue(result.error.safeDetail.contains("electrs"))
+        assertRedacted(result.toString())
+    }
+
+    @Test
+    fun bdkElectrumScanAdapterRejectsMainnetBeforeWalletOrEndpointMaterialExists() {
+        val result = BdkRegtestElectrumScanAdapter.run(
+            request = BdkRegtestElectrumScanRequest(
+                enabled = true,
+                localElectrumEnabled = true,
+                network = BdkRegtestUtxoScanValidationNetwork.MainnetDisabled,
+            ),
+            environment = emptyMap(),
+        )
+
+        assertEquals(BdkRegtestElectrumScanState.RejectedMainnet, result.state)
+        assertFalse(result.completed)
+        assertNull(result.scanSummary)
+        assertNotNull(result.error)
+        assertTrue(result.error.safeDetail.contains("Mainnet is disabled"))
+        assertFalse(result.usesPublicEndpoint)
+        assertFalse(result.usesProductionStorage)
+        assertFalse(result.mainnetScanEnabled)
         assertRedacted(result.toString())
     }
 
@@ -219,6 +329,27 @@ class BdkRegtestUtxoScanValidationTest {
     }
 
     @Test
+    fun bdkElectrumScanAdapterUsesOnlyApprovedTestOnlyBdkScanApis() {
+        val root = repositoryRoot()
+        val adapter = File(root, ElectrumScanAdapterFile).readText()
+
+        assertContains(adapter, "ElectrumClient")
+        assertContains(adapter, "startFullScan")
+        assertContains(adapter, "fullScan")
+        assertContains(adapter, "applyUpdate")
+        assertContains(adapter, "listUnspent")
+        assertFalse(adapter.contains("transactionBroadcast"))
+        assertFalse(Regex("""\bsign\(""").containsMatchIn(adapter))
+        assertFalse(adapter.contains("finalizePsbt"))
+        assertFalse(adapter.contains("TxBuilder"))
+        assertFalse(adapter.contains("Psbt"))
+        assertFalse(adapter.contains("Persister.newSqlite"))
+        assertFalse(adapter.contains("persist("))
+        assertFalse(adapter.contains("EsploraClient"))
+        assertFalse(adapter.contains("CbfClient"))
+    }
+
+    @Test
     fun sourceDocsAndTestsContainNoHardcodedUtxoScanAddressOrTxidFixtures() {
         val root = repositoryRoot()
         val roots = listOf(
@@ -283,4 +414,9 @@ class BdkRegtestUtxoScanValidationTest {
     private fun repositoryRoot(): File =
         generateSequence(File(".").absoluteFile) { file -> file.parentFile }
             .first { candidate -> File(candidate, "settings.gradle.kts").exists() }
+
+    private companion object {
+        const val ElectrumScanAdapterFile =
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/BdkRegtestElectrumScanAdapter.kt"
+    }
 }

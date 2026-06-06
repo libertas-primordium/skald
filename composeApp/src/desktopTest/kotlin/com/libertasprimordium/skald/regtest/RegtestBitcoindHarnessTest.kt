@@ -69,11 +69,37 @@ class RegtestBitcoindHarnessTest {
         assertContains(command.arguments, "-datadir=${datadir.absolutePath}")
         assertContains(command.arguments, "-server=1")
         assertContains(command.arguments, "-listen=0")
+        assertContains(command.arguments, "-discover=0")
         assertContains(command.arguments, "-dnsseed=0")
         assertContains(command.arguments, "-fixedseeds=0")
         assertContains(command.arguments, "-rpcbind=127.0.0.1")
         assertContains(command.arguments, "-rpcallowip=127.0.0.1")
         assertContains(command.arguments, "-rpcport=18443")
+        assertContains(command.arguments, "-port=18444")
+        assertFalse(command.arguments.any { it.contains("mainnet", ignoreCase = true) })
+        assertFalse(command.arguments.any { it == "-testnet" || it.startsWith("-testnet=") })
+    }
+
+    @Test
+    fun bitcoindCommandCanExposeLocalhostOnlyP2pForLocalIndexerHarness() {
+        val command = RegtestBitcoindCommands.bitcoind(
+            paths = RegtestBinaryPaths(
+                bitcoind = File("/usr/bin/bitcoind"),
+                bitcoinCli = File("/usr/bin/bitcoin-cli"),
+            ),
+            config = RegtestBitcoindLaunchConfig(
+                datadir = File("/tmp/skald-regtest-electrum-p2p-command-test"),
+                rpcPort = 18443,
+                p2pPort = 18444,
+                p2pListen = true,
+            ),
+        )
+
+        assertContains(command.arguments, "-listen=1")
+        assertContains(command.arguments, "-bind=127.0.0.1")
+        assertContains(command.arguments, "-discover=0")
+        assertContains(command.arguments, "-dnsseed=0")
+        assertContains(command.arguments, "-fixedseeds=0")
         assertContains(command.arguments, "-port=18444")
         assertFalse(command.arguments.any { it.contains("mainnet", ignoreCase = true) })
         assertFalse(command.arguments.any { it == "-testnet" || it.startsWith("-testnet=") })

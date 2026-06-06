@@ -107,8 +107,8 @@ The validation must remain:
 
 The later regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
 
-That boundary currently reports a safe blocked state because BDK `2.3.0` does not expose a direct Bitcoin Core RPC scan client in the resolved JVM artifact. The local Electrum-compatible regtest indexer harness boundary is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md), but full UTXO observation still needs a local indexer binary and a focused BDK Electrum scan adapter pass.
+That boundary now includes a desktop-test-only BDK Electrum scan adapter because BDK `2.3.0` does not expose a direct Bitcoin Core RPC scan client in the resolved JVM artifact. The local Electrum-compatible regtest indexer harness boundary is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md). With local `electrs` configured through `SKALD_ELECTRS`, the combined opt-in path now observes a funded runtime regtest UTXO through BDK and applies Skald-owned receive-address used-state policy.
 
 ## Next Step
 
-The next pass should run the local Electrum harness with a verified indexer binary and attempt a desktop-test-only BDK Electrum scan adapter. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.
+The next pass should design production-safe backend observation state before operational wallet sync. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.

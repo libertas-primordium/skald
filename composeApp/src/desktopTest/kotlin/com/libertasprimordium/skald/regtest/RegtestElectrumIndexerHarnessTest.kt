@@ -64,6 +64,7 @@ class RegtestElectrumIndexerHarnessTest {
         assertContains(command.arguments, "--network=regtest")
         assertContains(command.arguments, "--daemon-dir=${bitcoindDatadir.absolutePath}")
         assertContains(command.arguments, "--daemon-rpc-addr=127.0.0.1:18443")
+        assertContains(command.arguments, "--daemon-p2p-addr=127.0.0.1:18444")
         assertContains(command.arguments, "--db-dir=${indexerDatadir.absolutePath}")
         assertContains(command.arguments, "--electrum-rpc-addr=127.0.0.1:50001")
         assertFalse(command.arguments.any { it.contains("mainnet", ignoreCase = true) })
@@ -157,16 +158,13 @@ class RegtestElectrumIndexerHarnessTest {
     }
 
     @Test
-    fun electrumProcessExecutionAndBinaryNamesStayInDesktopRegtestHarnessOnly() {
+    fun electrumProcessExecutionStaysInDesktopRegtestHarnessOnly() {
         val root = repositoryRoot()
         val sourceRoot = File(root, "composeApp/src")
         val patterns = listOf(
             Regex("""\bProcessBuilder\b"""),
             Regex("""\bServerSocket\b"""),
             Regex("""\bSocket\b"""),
-            Regex("""\bbitcoind\b"""),
-            Regex("""\bbitcoin-cli\b"""),
-            Regex("""\belectrs\b"""),
         )
         val offenders = sourceRoot
             .walkTopDown()
@@ -177,6 +175,27 @@ class RegtestElectrumIndexerHarnessTest {
             .toList()
 
         assertTrue(offenders.isEmpty(), "Regtest process harness leaked outside desktop test code: $offenders")
+    }
+
+    @Test
+    fun regtestBinaryNamesStayInDesktopTestHarnessOrAdapterCodeOnly() {
+        val root = repositoryRoot()
+        val sourceRoot = File(root, "composeApp/src")
+        val patterns = listOf(
+            Regex("""\bbitcoind\b"""),
+            Regex("""\bbitcoin-cli\b"""),
+            Regex("""\belectrs\b"""),
+        )
+        val offenders = sourceRoot
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .filter { file -> patterns.any { pattern -> pattern.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .filterNot { path -> path.startsWith("composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/regtest/") }
+            .filterNot { path -> path.startsWith("composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/") }
+            .toList()
+
+        assertTrue(offenders.isEmpty(), "Regtest binary names leaked outside desktop test harness/adapter code: $offenders")
     }
 
     @Test
