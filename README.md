@@ -2,7 +2,7 @@
 
 Skald Vault is a sovereign multi-rail Bitcoin wallet application for advanced users who keep their own keys, choose their own infrastructure, and need explicit custody, privacy, fee, and recovery boundaries.
 
-Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, a fail-closed secure-storage abstraction, a pinned BDK adapter packaging spike, a local `bitcoind` regtest harness, a resolved BDK JVM/Linux binding decision, a desktop-test-only BDK regtest wallet validation boundary, a desktop-test-only BDK regtest/signet address derivation validation boundary, receive-address state/reuse policy modeling, and a desktop-test-only BDK regtest UTXO scan validation boundary that currently reports a local-indexer blocker. This repository does not yet implement real wallet functionality. Do not use it with real funds.
+Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, a fail-closed secure-storage abstraction, a pinned BDK adapter packaging spike, a local `bitcoind` regtest harness, a desktop-test-only local Electrum-compatible regtest indexer harness boundary, a resolved BDK JVM/Linux binding decision, a desktop-test-only BDK regtest wallet validation boundary, a desktop-test-only BDK regtest/signet address derivation validation boundary, receive-address state/reuse policy modeling, and a desktop-test-only BDK regtest UTXO scan validation boundary that currently reports a local-indexer blocker. This repository does not yet implement real wallet functionality. Do not use it with real funds.
 
 ## Targets
 
@@ -46,6 +46,12 @@ The test-only BDK regtest UTXO scan validation boundary is opt-in and desktop-te
 SKALD_RUN_BDK_REGTEST_UTXO_SCAN=1 ./gradlew :composeApp:desktopTest --tests '*Utxo*' --rerun-tasks
 ```
 
+The local Electrum-compatible regtest indexer harness is opt-in and desktop-test-only. It expects a local `electrs` binary plus `bitcoind` and `bitcoin-cli`; if `electrs` is missing it reports unavailable rather than using a public backend:
+
+```bash
+SKALD_RUN_LOCAL_ELECTRUM_REGTEST=1 ./gradlew :composeApp:desktopTest --tests '*Electrum*' --rerun-tasks
+```
+
 Linux packaging requires a JDK that includes `jpackage`. If Gradle selects an Android Studio JBR without `jpackage`, run:
 
 ```bash
@@ -72,7 +78,8 @@ gradle wrapper --gradle-version 8.11.1
 - A desktop-test-only seed-backed BDK regtest wallet validation boundary exists and is documented in [`docs/BDK_REGTEST_WALLET_VALIDATION.md`](docs/BDK_REGTEST_WALLET_VALIDATION.md). It completes on the current Linux desktop target through an opt-in, redacted, test-only path and does not expose or persist wallet material.
 - A desktop-test-only BDK regtest/signet address derivation validation boundary exists and is documented in [`docs/BDK_REGTEST_ADDRESS_DERIVATION.md`](docs/BDK_REGTEST_ADDRESS_DERIVATION.md). It derives runtime-generated test addresses only under explicit opt-in and does not add app receive UI, address index persistence, backend sync, signing, broadcasting, production wallet storage, or mainnet.
 - Receive-address state and reuse-prevention policy modeling exists and is documented in [`docs/RECEIVE_ADDRESS_POLICY.md`](docs/RECEIVE_ADDRESS_POLICY.md). It distinguishes displayed/reserved addresses from backend-observed used addresses, but production receive address generation, BDK-derived app addresses, address index persistence, backend observation, and real receive UI remain disabled.
-- A desktop-test-only BDK regtest UTXO scan validation boundary exists and is documented in [`docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md). The current BDK JVM artifact exposes wallet scan requests and indexed backends, but no direct local-node RPC scan backend, so full UTXO observation is blocked until a local indexed backend harness or equivalent adapter strategy is added. No production wallet sync or app UTXO scan is enabled.
+- A desktop-test-only local Electrum-compatible regtest indexer harness boundary exists and is documented in [`docs/LOCAL_ELECTRUM_REGTEST_HARNESS.md`](docs/LOCAL_ELECTRUM_REGTEST_HARNESS.md). It is opt-in test infrastructure only. In the current local environment, `electrs` was not found, so the harness reports unavailable until a local indexer binary is installed or provided through `SKALD_ELECTRS`.
+- A desktop-test-only BDK regtest UTXO scan validation boundary exists and is documented in [`docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md). The current BDK JVM artifact exposes wallet scan requests and indexed backends, but no direct local-node RPC scan backend, so full UTXO observation remains blocked until the local Electrum harness is installed/verified and connected through a focused BDK Electrum scan adapter. No production wallet sync or app UTXO scan is enabled.
 - A local `bitcoind` regtest harness exists for desktop development tests only. It is documented in [`docs/REGTEST_HARNESS.md`](docs/REGTEST_HARNESS.md). It uses temporary regtest state and does not connect the app UI to a backend, create a Skald or BDK wallet, persist wallet databases, sync app wallets, sign, broadcast, or enable mainnet.
 - Coin-control and PSBT draft planning uses demo UTXO placeholders only. No real UTXOs are scanned, no transaction is constructed, no PSBT is created, and signing/broadcasting remain disabled.
 - Backend profiles, UTXO views, coin-control drafts, and PSBT workflows are non-operational placeholder models only.
@@ -105,11 +112,12 @@ The scaffold includes no Skald-operated defaults for:
 - `docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md` defines the future descriptor parser, wallet, key-management, PSBT, recovery, and protocol-library integration gates. It is a design document only; it does not enable descriptor parsing, key management, address derivation, or wallet operations.
 - `docs/BDK_INTEGRATION_SPIKE.md` records the first BDK packaging spike. BDK is present only as platform dependencies behind a Skald-owned adapter probe; common UI/domain/settings models still do not expose BDK types.
 - `docs/REGTEST_HARNESS.md` records the local `bitcoind` regtest harness. The harness is opt-in desktop test infrastructure and does not add production backend networking or app wallet behavior.
+- `docs/LOCAL_ELECTRUM_REGTEST_HARNESS.md` records the local Electrum-compatible regtest indexer harness boundary. The harness is opt-in desktop test infrastructure and does not add production Electrum support, public backend defaults, or app wallet sync.
 - `docs/BDK_JVM_LINUX_BINDING_DECISION.md` records the BDK JVM/Linux native binding decision and the accepted `2.3.0` pin.
 - `docs/BDK_REGTEST_WALLET_VALIDATION.md` records the desktop-test-only seed-backed BDK regtest wallet validation boundary.
 - `docs/BDK_REGTEST_ADDRESS_DERIVATION.md` records the desktop-test-only BDK regtest/signet address derivation validation boundary. The app still has no production receive-address flow or address index persistence.
 - `docs/RECEIVE_ADDRESS_POLICY.md` records the production-safe receive-address state model and reuse-prevention policy. It is a policy/model document only; it does not enable production address derivation, address persistence, backend sync, or receive UI.
-- `docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md` records the desktop-test-only BDK regtest UTXO scan validation boundary and the current local-indexer blocker. It does not enable production sync or app UTXO scanning.
+- `docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md` records the desktop-test-only BDK regtest UTXO scan validation boundary and the current local-indexer/adapter blocker. It does not enable production sync or app UTXO scanning.
 - `docs/PHASE1_COMPLETION_AUDIT.md` records the Phase 1 hardening/completion audit. It is an audit artifact only; it does not enable wallet functionality.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
 - `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.

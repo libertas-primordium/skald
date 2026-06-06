@@ -6,6 +6,8 @@ Skald Vault now has a desktop-test-only BDK regtest UTXO scan validation boundar
 
 The boundary is intentionally blocked in the current source tree. BDK `2.3.0` on JVM exposes wallet scan request types and indexed backend clients, but the resolved Maven artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from the existing local `bitcoind` harness alone.
 
+A desktop-test-only local Electrum-compatible regtest indexer harness boundary now exists and is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md). In the current local environment, `electrs` is not installed, so the harness reports unavailable until a local indexer binary is installed or provided through `SKALD_ELECTRS`.
+
 This is not production wallet sync. It is not wired into the app UI, settings repositories, descriptor wallet profile metadata, Recovery Center state, backend settings, coin-control drafts, or persisted app models.
 
 ## Source Location
@@ -41,7 +43,7 @@ Because the current harness starts only a temporary local `bitcoind` node and do
 BDK_REGTEST_UTXO_SCAN_REQUIRES_LOCAL_INDEXER
 ```
 
-This blocked result is deliberate. It prevents hidden fallback to public infrastructure and avoids pretending that app wallet sync exists.
+This blocked result is deliberate. It prevents hidden fallback to public infrastructure and avoids pretending that app wallet sync exists. The local Electrum harness creates the safe local indexed-backend path, but this UTXO validation boundary still does not call BDK Electrum scan APIs in this pass.
 
 ## Receive-Address Policy Link
 
@@ -74,6 +76,14 @@ GRADLE_USER_HOME=/tmp/skald-gradle-home SKALD_RUN_BDK_REGTEST_UTXO_SCAN=1 ./grad
 ```
 
 The opt-in command currently passes by asserting the blocked state. It does not fund a BDK wallet address, call BDK sync, apply a wallet update, or query public infrastructure.
+
+The local Electrum-compatible harness command is documented separately:
+
+```bash
+SKALD_RUN_LOCAL_ELECTRUM_REGTEST=1 ./gradlew :composeApp:desktopTest --tests '*Electrum*' --rerun-tasks
+```
+
+If `electrs` is absent, the command reports the missing binary instead of using a public backend.
 
 ## Explicit Non-Capabilities
 
@@ -120,7 +130,8 @@ The existing local harness uses `bitcoind` and `bitcoin-cli` to start a temporar
 
 The available BDK scan clients require one of these next decisions:
 
-- add a local Electrum or Esplora indexer harness for regtest,
+- install/verify a local `electrs` binary and connect BDK's Electrum scan API to the desktop-test-only harness,
+- add a local Esplora indexer harness if Electrum proves unsuitable,
 - design a compact-filter local peer harness separately,
 - adapt the BDK test adapter around a different safe local chain-source strategy,
 - evaluate whether a newer BDK version changes the backend API enough to justify migration.
@@ -129,6 +140,6 @@ None of those options should be added implicitly. They require a focused pass be
 
 ## Next Step
 
-The next focused branch should decide and implement a local indexed regtest backend harness, or explicitly revise the BDK adapter strategy before attempting UTXO scan validation again.
+The next focused branch should be a BDK Electrum scan adapter spike using the local Electrum-compatible regtest harness, or explicitly revise the BDK adapter strategy before attempting UTXO scan validation again.
 
 Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until this local scan backend decision is resolved.

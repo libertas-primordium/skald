@@ -135,6 +135,14 @@ The test-only regtest UTXO scan validation boundary is documented in [`BDK_REGTE
 
 That boundary currently reports a safe blocked state. BDK `2.3.0` exposes wallet scan request types and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from the existing local `bitcoind` harness alone. No production wallet sync, backend client, UTXO scan, signing, broadcasting, or mainnet behavior is enabled.
 
+## Local Electrum Regtest Harness Boundary
+
+The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).
+
+That harness discovers a local `electrs` binary through `SKALD_ELECTRS` or `PATH`, starts it only against the temporary local `bitcoind` regtest harness when explicitly opted in, waits for localhost Electrum readiness, and cleans up temporary state. It does not add production Electrum support, public backend defaults, app wallet sync, BDK wallet material, signing, broadcasting, or mainnet.
+
+The current local environment for this pass does not have `electrs` installed, so the opt-in harness reports unavailable until a local indexer binary is installed or configured. Full BDK UTXO observation remains blocked until a separate adapter pass wires BDK's Electrum scan API through this local harness.
+
 ## Next Step
 
-The next implementation pass should decide the local indexed regtest backend strategy, such as a local Electrum or Esplora harness, a compact-filter harness, or a revised BDK adapter strategy. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should run the local Electrum harness with a verified `electrs` binary and attempt the smallest safe BDK Electrum scan adapter path. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.

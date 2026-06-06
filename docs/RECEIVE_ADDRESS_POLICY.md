@@ -190,10 +190,12 @@ The follow-up regtest UTXO scan validation boundary is documented in [`BDK_REGTE
 
 That boundary uses this receive-address policy as the state foundation for backend-observed address usage, but it currently reports a safe local-indexer blocker because BDK `2.3.0` does not expose a direct Bitcoin Core RPC scan client in the resolved JVM artifact.
 
+The local Electrum-compatible regtest indexer harness boundary is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md). It remains desktop-test-only and does not yet complete BDK UTXO observation.
+
 Recommended next pass:
 
 ```text
-local indexed regtest backend harness decision
+BDK Electrum scan adapter spike using the local regtest indexer harness
 ```
 
 That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, and mainnet.

@@ -76,7 +76,7 @@ This validation remains:
 
 The follow-up opt-in desktop validation also derives deterministic runtime-generated receive addresses on regtest and signet through the Skald-owned test boundary documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md). That added evidence still does not enable production app receive addresses, address index persistence, backend sync, signing, broadcasting, or mainnet.
 
-The later UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md). It confirms that the accepted JVM artifact exposes BDK scan request types plus Electrum, Esplora, and compact-filter clients, but no direct Bitcoin Core RPC scan client under the inspected class names. That boundary therefore reports a safe local-indexer blocker and does not enable production wallet sync.
+The later UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md). It confirms that the accepted JVM artifact exposes BDK scan request types plus Electrum, Esplora, and compact-filter clients, but no direct Bitcoin Core RPC scan client under the inspected class names. The local Electrum-compatible regtest harness boundary is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md), but full BDK UTXO observation remains blocked until a local indexer binary is installed/verified and BDK's Electrum scan API is wired through that test-only harness.
 
 ## Additional Harness Fix
 
@@ -115,4 +115,4 @@ This decision does not enable:
 
 ## Next Step
 
-The next BDK rollout layer should decide the local indexed regtest backend strategy before attempting full UTXO observation again. It must remain non-production unless explicitly approved, keep BDK types out of common UI/settings/persisted models, avoid production storage, avoid public backend defaults, and keep mainnet disabled.
+The next BDK rollout layer should run the local Electrum harness with a verified indexer binary and attempt the smallest safe BDK Electrum scan adapter path before attempting full UTXO observation again. It must remain non-production unless explicitly approved, keep BDK types out of common UI/settings/persisted models, avoid production storage, avoid public backend defaults, and keep mainnet disabled.
