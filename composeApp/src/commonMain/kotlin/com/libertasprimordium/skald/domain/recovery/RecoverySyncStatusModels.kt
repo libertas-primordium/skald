@@ -4,7 +4,10 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncBlocker
 import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncResult
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
 import com.libertasprimordium.skald.domain.privacy.PrivacyRiskLevel
+import com.libertasprimordium.skald.security.SecureMetadataPersistenceCapability
+import com.libertasprimordium.skald.security.SecureMetadataPersistencePolicy
 import com.libertasprimordium.skald.security.SecureStorageCapability
+import com.libertasprimordium.skald.security.commonDisabledSecureMetadataCapability
 
 enum class RecoverySyncItemState(val label: String) {
     Disabled("disabled"),
@@ -29,6 +32,7 @@ data class RecoverySyncStatus(
     val lockedActionLabel: String,
     val productionSyncEnabled: Boolean,
     val productionObservationPersistenceEnabled: Boolean,
+    val secureMetadataPersistenceEnabled: Boolean,
     val testValidationCountsAsProductionRecovery: Boolean,
 )
 
@@ -37,6 +41,7 @@ object RecoverySyncStatusPolicy {
         syncResult: BitcoinWalletSyncResult,
         descriptorWalletSettings: DescriptorWalletSettingsState,
         secureStorageCapability: SecureStorageCapability,
+        secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
     ): RecoverySyncStatus =
         RecoverySyncStatus(
             title = "Sync and observation recovery",
@@ -46,14 +51,38 @@ object RecoverySyncStatusPolicy {
                 syncResult = syncResult,
                 descriptorWalletSettings = descriptorWalletSettings,
                 secureStorageCapability = secureStorageCapability,
+                secureMetadataCapability = secureMetadataCapability,
             ),
             lockedActionLabel = "RECOVERY_SYNC_STATUS_ONLY - no production sync, observation persistence, wallet activation, signing, or broadcast path exists.",
             productionSyncEnabled = false,
             productionObservationPersistenceEnabled = false,
+            secureMetadataPersistenceEnabled = false,
             testValidationCountsAsProductionRecovery = false,
         )
 
     private fun recoveryItems(
+        syncResult: BitcoinWalletSyncResult,
+        descriptorWalletSettings: DescriptorWalletSettingsState,
+        secureStorageCapability: SecureStorageCapability,
+        secureMetadataCapability: SecureMetadataPersistenceCapability,
+    ): List<RecoverySyncStatusItem> {
+        val metadataDecision = SecureMetadataPersistencePolicy.evaluate(secureMetadataCapability)
+        return buildList {
+            if (!metadataDecision.canPersistSensitiveMetadata) {
+                add(
+                    RecoverySyncStatusItem(
+                        label = "Secure metadata vault",
+                        state = RecoverySyncItemState.DeferredUntilEncryptedVault,
+                        detail = "The app-controlled encrypted local vault is not implemented. OS keyrings are not used as primary wallet metadata storage, and sensitive metadata is not persisted.",
+                        riskLevel = PrivacyRiskLevel.Danger,
+                    ),
+                )
+            }
+            addAll(recoveryItemsWithoutMetadataVault(syncResult, descriptorWalletSettings, secureStorageCapability))
+        }
+    }
+
+    private fun recoveryItemsWithoutMetadataVault(
         syncResult: BitcoinWalletSyncResult,
         descriptorWalletSettings: DescriptorWalletSettingsState,
         secureStorageCapability: SecureStorageCapability,
@@ -78,6 +107,16 @@ object RecoverySyncStatusPolicy {
                         label = "Observation and UTXO persistence",
                         state = RecoverySyncItemState.DeferredUntilEncryptedVault,
                         detail = "Observed addresses, UTXOs, labels, transaction notes, backend metadata, and wallet history are sensitive metadata and must wait for encrypted vault storage.",
+                        riskLevel = PrivacyRiskLevel.Danger,
+                    ),
+                )
+            }
+            if (BitcoinWalletSyncBlocker.AddressIndexPersistenceUnavailable in syncResult.blockers) {
+                add(
+                    RecoverySyncStatusItem(
+                        label = "UTXO state persistence",
+                        state = RecoverySyncItemState.DeferredUntilEncryptedVault,
+                        detail = "Production UTXO state, outpoints, labels, and transaction notes are not persisted. Future sync must target encrypted metadata storage before Recovery Center can treat observations as recoverable state.",
                         riskLevel = PrivacyRiskLevel.Danger,
                     ),
                 )

@@ -10,7 +10,7 @@ The implemented models live in common Kotlin under the on-chain domain package a
 
 The production backend adapter interface and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). That boundary targets this observation model but remains disabled/fail-closed.
 
-The production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes endpoint policy, backend adapter results, secure-storage capability, receive-address policy, and this observation model into a disabled preflight/result boundary. Nodes now displays a read-only preflight/status surface from that boundary. Recovery Center and the Privacy Analyzer now also surface disabled sync and observation blockers as documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). These surfaces still do not persist observations or sync wallets.
+The production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes endpoint policy, backend adapter results, secure-storage capability, secure metadata persistence capability, receive-address policy, and this observation model into a disabled preflight/result boundary. Nodes now displays a read-only preflight/status surface from that boundary. Recovery Center and the Privacy Analyzer now also surface disabled sync and observation blockers as documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). These surfaces still do not persist observations or sync wallets.
 
 ## Purpose
 
@@ -156,9 +156,11 @@ This pass does not persist:
 
 Future persistence must be separately designed and must remain compatible with encrypted storage requirements before real wallet data is stored.
 
-Observed addresses, labels, UTXOs, outpoints, transaction notes, backend metadata, wallet history, address index state, and privacy-analysis state are sensitive wallet metadata. Production observation persistence is explicitly deferred until the app-controlled encrypted local vault, or an equivalent approved encrypted metadata boundary, is implemented and reviewed.
+Observed addresses, labels, UTXOs, outpoints, transaction notes, backend metadata, wallet history, address index state, recovery metadata, identity-linkage metadata, and privacy-analysis state are sensitive wallet metadata. Production observation persistence is explicitly deferred until the app-controlled encrypted local vault is implemented and reviewed.
 
-Recovery Center now shows this as `Observation and UTXO persistence: deferred until encrypted vault`. The Privacy Analyzer now shows `Observation persistence deferred` as a policy-only warning. These are status surfaces only, not storage implementations.
+The disabled secure metadata repository is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). It rejects all sensitive metadata reads, writes, listing, and deletes; it does not use settings storage, plaintext files, OS keyrings, BDK persistence, or platform config files.
+
+Recovery Center now shows this as `Secure metadata vault: deferred until encrypted vault`, `Observation and UTXO persistence: deferred until encrypted vault`, `Address index state: deferred until encrypted vault`, and `UTXO state persistence: deferred until encrypted vault`. The Privacy Analyzer now shows `Secure metadata storage unavailable` and `Observation persistence deferred` as policy-only warnings. These are status surfaces only, not storage implementations.
 
 ## BDK Boundary
 
@@ -198,6 +200,6 @@ That path remains test-only. It does not create app wallet sync, app receive UI,
 
 The production backend adapter interface and endpoint normalization boundary has been added and documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It defines disabled adapter request/result models and a parser for a single address input that recognizes IPv4, IPv6 including bracketed host/port forms, DNS hostnames, and `.onion` hosts while rejecting credentials and userinfo.
 
-The backend settings UI now uses the unified address field backed by the endpoint parser, and the disabled production sync service facade plus Nodes preflight/status surface has been added in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md).
+The backend settings UI now uses the unified address field backed by the endpoint parser, and the disabled production sync service facade plus Nodes preflight/status surface has been added in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). The disabled secure metadata persistence boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md).
 
 The next focused pass should design encrypted production observation persistence or continue Recovery/Privacy planning for future regtest/signet wallet activation. Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, endpoint persistence, and observation persistence boundaries are explicitly reviewed.

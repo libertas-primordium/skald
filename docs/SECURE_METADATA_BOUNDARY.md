@@ -1,0 +1,151 @@
+# Secure Metadata Boundary
+
+## Status
+
+Skald Vault now has a Skald-owned secure metadata persistence boundary for future production observation and wallet-history storage.
+
+This boundary is disabled and fail-closed. It does not implement an encrypted vault, production sync, production UTXO persistence, production address index persistence, wallet activation, descriptor persistence, signing, broadcasting, Nostr parsing, Lightning, Cashu, Payjoin, public endpoints, Skald-operated infrastructure, or mainnet.
+
+## Source Location
+
+Production-safe common models:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt
+```
+
+Integration points:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/recovery/RecoverySyncStatusModels.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/privacy/PrivacySyncStatusModels.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/App.kt
+```
+
+Tests:
+
+```text
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/SecureMetadataBoundaryTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncServiceTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RecoveryPrivacySyncStatusTest.kt
+composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
+```
+
+## Sensitive Metadata Classes
+
+The boundary classifies these wallet metadata categories as sensitive:
+
+- address index state,
+- receive-address lifecycle state,
+- observed address usage,
+- observed UTXO state,
+- wallet labels,
+- UTXO labels,
+- transaction notes,
+- backend observation history,
+- privacy-sensitive backend endpoint metadata,
+- Nostr identity-linkage metadata,
+- Privacy Analyzer metadata,
+- Recovery metadata.
+
+All of these categories require app-controlled encrypted metadata storage before production persistence can succeed.
+
+## Storage Policy
+
+The primary future storage model is an app-controlled encrypted local vault.
+
+OS keyrings are not treated as primary wallet metadata storage. They may later wrap keys only after explicit design review. Existing non-secret settings storage remains for general backend profile configuration and non-operational metadata only. It is not a wallet observation, address index, UTXO, label, transaction note, or wallet-history store.
+
+The disabled capability reports:
+
+- encrypted vault unavailable,
+- metadata persistence disabled,
+- no metadata listing,
+- no metadata writes,
+- no metadata reads,
+- no metadata deletes.
+
+The disabled repository rejects all sensitive metadata operations. It does not write files, use SharedPreferences, use desktop config files, call OS keyrings, use BDK persistence, serialize real observations, or return success for production wallet metadata.
+
+## Sync Integration
+
+The disabled production sync facade now receives a `SecureMetadataPersistenceCapability`.
+
+Preflight remains blocked when secure metadata persistence is unavailable. The blockers distinguish:
+
+- secure secret storage unavailable,
+- secure metadata persistence unavailable,
+- observation persistence unavailable,
+- address index persistence unavailable.
+
+Future production sync must target Skald-owned `BackendObservationSummary` and then persist any sensitive observation/address/UTXO metadata only through an approved encrypted metadata repository.
+
+## Recovery And Privacy Integration
+
+Recovery Center now surfaces:
+
+- secure metadata vault unavailable,
+- production observation history not persisted,
+- address index state not persisted,
+- UTXO state, labels, outpoints, and transaction notes not persisted,
+- test-only BDK regtest validation does not create recoverable production wallet state.
+
+Privacy Analyzer now surfaces:
+
+- secure metadata storage unavailable,
+- Privacy Analyzer state/history not persisted,
+- public-backend and identity-linkage observations remain runtime/test-only until encrypted metadata storage exists.
+
+These are status-only surfaces. They do not persist observations, display real UTXOs, query backends, derive production addresses, parse Nostr keys, sign, broadcast, or enable mainnet.
+
+## Relationship To Secure Storage
+
+`SecureSecretStorage` covers secret payloads such as seeds, private keys, Nostr private-key material, Lightning credentials, Cashu proof material, backend credentials, backup keys, and metadata encryption keys.
+
+`SecureWalletMetadataRepository` covers sensitive wallet metadata that may not be secret key material but can reveal wallet behavior, balances, privacy state, labels, endpoints, address reuse, and recovery history.
+
+Both boundaries are disabled. Future metadata persistence depends on both an encrypted metadata store and the key material required to protect it.
+
+## Explicit Non-Capabilities
+
+This boundary does not enable:
+
+- encrypted vault storage,
+- plaintext metadata persistence,
+- production observation persistence,
+- production UTXO persistence,
+- production address index persistence,
+- production sync,
+- production backend clients,
+- production BDK sync,
+- app receive address generation,
+- app UTXO display,
+- descriptor persistence,
+- wallet activation,
+- secure secret storage,
+- signing,
+- broadcasting,
+- Nostr, Lightning, Cashu, or Payjoin behavior,
+- public backend defaults,
+- Skald-operated infrastructure,
+- mainnet.
+
+## Testing
+
+Tests verify that:
+
+- every sensitive metadata kind requires encrypted metadata storage,
+- the disabled repository rejects writes, reads, listing, and deletes,
+- disabled repository operations never return success,
+- payload display and `toString()` are redacted,
+- mainnet metadata persistence cannot succeed,
+- sync preflight includes secure metadata, observation, and address-index persistence blockers,
+- Recovery status includes secure metadata vault and UTXO-state persistence blockers,
+- Privacy status includes secure metadata storage unavailable,
+- non-secret settings storage does not add a secure metadata store key,
+- secure metadata production source remains BDK/client/process/persistence free.
+
+## Next Step
+
+The next focused pass should design the encrypted vault format and key-management requirements, or prepare a secure metadata migration plan, before any production sync or observation persistence is enabled. Do not add plaintext observation storage, production backend clients, address persistence, signing, broadcasting, public endpoints, or mainnet as part of that work.

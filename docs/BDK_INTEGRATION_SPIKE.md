@@ -161,6 +161,14 @@ Recovery Center and the Privacy Analyzer now surface disabled sync, backend obse
 
 These surfaces remain BDK-free and do not enable production sync, persistence, app receive UI, Nostr parsing, signing, broadcasting, public endpoints, or mainnet.
 
+## Secure Metadata Persistence Boundary
+
+The disabled secure metadata persistence boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md).
+
+That boundary classifies address index state, receive-address lifecycle state, observed address usage, observed UTXO state, labels, transaction notes, backend observation history, endpoint metadata, identity-linkage metadata, Privacy Analyzer metadata, and Recovery metadata as sensitive wallet metadata. The only implementation is disabled/fail-closed and rejects reads, writes, listing, and deletes until app-controlled encrypted vault storage exists. It does not write settings files, SharedPreferences, desktop config files, OS keyrings, BDK persistence, or plaintext wallet metadata.
+
+The desktop-test BDK Electrum scan validation remains runtime-only and does not create production metadata persistence.
+
 ## Local Electrum Regtest Harness Boundary
 
 The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).

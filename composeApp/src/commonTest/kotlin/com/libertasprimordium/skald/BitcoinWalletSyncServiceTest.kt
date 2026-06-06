@@ -49,8 +49,11 @@ class BitcoinWalletSyncServiceTest {
         assertContains(result.blockers, BitcoinWalletSyncBlocker.BackendNotConfigured)
         assertContains(result.blockers, BitcoinWalletSyncBlocker.SyncDisabled)
         assertContains(result.blockers, BitcoinWalletSyncBlocker.ProductionBackendDisabled)
+        assertContains(result.blockers, BitcoinWalletSyncBlocker.SecureMetadataPersistenceUnavailable)
         assertContains(result.blockers, BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable)
+        assertContains(result.blockers, BitcoinWalletSyncBlocker.AddressIndexPersistenceUnavailable)
         assertContains(result.warnings, BitcoinWalletSyncWarning.NoNetworkAttempted)
+        assertContains(result.warnings, BitcoinWalletSyncWarning.NoSecureMetadataPersisted)
         assertNull(result.backendObservationResult)
         assertNull(result.observationSummary)
         assertFalse(result.productionNetworkingEnabled)
@@ -212,6 +215,7 @@ class BitcoinWalletSyncServiceTest {
         )
 
         assertContains(result.blockers, BitcoinWalletSyncBlocker.ProductionBackendDisabled)
+        assertContains(result.blockers, BitcoinWalletSyncBlocker.SecureMetadataPersistenceUnavailable)
         assertContains(result.blockers, BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable)
         val summary = assertNotNull(result.observationSummary)
         assertEquals(BackendObservationStatus.NotStarted, summary.status)
@@ -233,6 +237,8 @@ class BitcoinWalletSyncServiceTest {
         )
 
         assertTrue(BitcoinWalletSyncCapability.FutureProductionSync in result.capabilities)
+        assertTrue(BitcoinWalletSyncCapability.SecureMetadataPersistenceBoundary in result.capabilities)
+        assertTrue(BitcoinWalletSyncCapability.FutureAddressIndexPersistence in result.capabilities)
         assertFalse(result.capabilities.any { it.enabledInProduction && it.name.startsWith("Future") })
         assertFalse(result.productionNetworkingEnabled)
         assertFalse(result.productionSyncEnabled)

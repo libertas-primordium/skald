@@ -134,7 +134,7 @@ This pass proves only that:
 - mainnet is rejected,
 - sanitized placeholder observations can be represented through Skald-owned `BackendObservationSummary`.
 
-No production adapter currently produces real observations. No production observation repository exists, and observed-address/UTXO persistence is deferred until encrypted vault or equivalent approved secure metadata storage exists.
+No production adapter currently produces real observations. No production observation repository exists, and observed-address/UTXO persistence is deferred until app-controlled encrypted vault storage exists. The disabled secure metadata repository boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md); it rejects sensitive wallet metadata reads, writes, listing, and deletes until an encrypted implementation is approved.
 
 ## Mainnet Policy
 
@@ -180,6 +180,6 @@ This boundary does not enable:
 
 The disabled production sync service facade and Nodes preflight/status surface are now documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
 
-The next focused pass should design encrypted production observation persistence or prepare future regtest/signet wallet activation behind the existing disabled sync and Recovery/Privacy status boundaries.
+The next focused pass should design the encrypted vault format or prepare future regtest/signet wallet activation behind the existing disabled sync, secure metadata, and Recovery/Privacy status boundaries.
 
 Do not add production sync, signing, broadcasting, public endpoint defaults, secret persistence, or mainnet until those boundaries are explicitly reviewed.

@@ -1,7 +1,10 @@
 package com.libertasprimordium.skald.domain.onchain
 
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.security.SecureMetadataPersistenceCapability
+import com.libertasprimordium.skald.security.SecureMetadataPersistencePolicy
 import com.libertasprimordium.skald.security.SecureStorageCapability
+import com.libertasprimordium.skald.security.commonDisabledSecureMetadataCapability
 
 @JvmInline
 value class BitcoinWalletSyncServiceId(val value: String) {
@@ -26,8 +29,10 @@ enum class BitcoinWalletSyncCapability(val label: String, val enabledInProductio
     BackendObservationSummaryTarget("backend observation summary target", enabledInProduction = true),
     ReceiveAddressPolicyBoundary("receive-address policy boundary", enabledInProduction = true),
     CredentialReferenceMetadataOnly("credential reference metadata only", enabledInProduction = true),
+    SecureMetadataPersistenceBoundary("secure metadata persistence boundary", enabledInProduction = true),
     FutureProductionSync("future production sync", enabledInProduction = false),
     FutureObservationPersistence("future observation persistence", enabledInProduction = false),
+    FutureAddressIndexPersistence("future address index persistence", enabledInProduction = false),
     NoProductionNetworking("no production networking", enabledInProduction = true),
     NoSigning("no signing", enabledInProduction = true),
     NoBroadcasting("no broadcasting", enabledInProduction = true),
@@ -46,7 +51,9 @@ enum class BitcoinWalletSyncBlocker(val label: String) {
     SecureStorageUnavailable("secure storage unavailable"),
     ProductionBackendDisabled("production backend disabled"),
     CredentialsUnavailable("credentials unavailable"),
+    SecureMetadataPersistenceUnavailable("secure metadata persistence unavailable"),
     ObservationPersistenceUnavailable("observation persistence unavailable"),
+    AddressIndexPersistenceUnavailable("address index persistence unavailable"),
     ReceiveAddressPolicyBlocked("receive-address policy blocked"),
 }
 
@@ -54,6 +61,7 @@ enum class BitcoinWalletSyncWarning(val label: String) {
     ProductionSyncDisabled("production sync disabled"),
     NoNetworkAttempted("no network attempted"),
     NoObservationPersisted("no observation persisted"),
+    NoSecureMetadataPersisted("no secure metadata persisted"),
     EndpointPolicyOnly("endpoint parsing is policy-only"),
     PublicBackendPrivacyLeak("public backend can observe wallet queries"),
     BackendCanLinkWalletQueries("backend can link wallet queries"),
@@ -61,6 +69,7 @@ enum class BitcoinWalletSyncWarning(val label: String) {
     TorTransportNotImplemented("Tor transport not implemented"),
     UserOwnedNodePreferred("user-owned node preferred"),
     CredentialsRequireSecureStorage("credentials require secure storage"),
+    MetadataRequiresEncryptedVault("metadata requires encrypted vault"),
     ReceiveAddressPolicyRequired("receive-address policy required"),
     CoinControlRequiredBeforeSpend("coin control required before spending"),
     NoSkaldManagedInfrastructure("no Skald-managed infrastructure"),
@@ -110,6 +119,7 @@ data class BitcoinWalletSyncRequest(
     val wallet: ReceiveAddressWalletContext?,
     val candidate: ReceiveAddressState? = null,
     val secureStorageCapability: SecureStorageCapability,
+    val secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
     val observationPersistenceAvailable: Boolean = false,
     val networkPolicy: BitcoinBackendNetworkPolicy = BitcoinBackendNetworkPolicy.DevelopmentOnly,
     val connectionPolicy: BitcoinBackendConnectionPolicy = BitcoinBackendConnectionPolicy.Disabled,
@@ -172,6 +182,7 @@ object BitcoinWalletSyncRequestFactory {
         backendSettings: BitcoinBackendSettingsState,
         descriptorWalletSettings: DescriptorWalletSettingsState,
         secureStorageCapability: SecureStorageCapability,
+        secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
     ): BitcoinWalletSyncRequest {
         val walletContext = descriptorWalletSettings.selectedProfile?.let(ReceiveAddressWalletContext::fromProfile)
         return BitcoinWalletSyncRequest(
@@ -185,6 +196,7 @@ object BitcoinWalletSyncRequestFactory {
                 ).markDisplayed()
             },
             secureStorageCapability = secureStorageCapability,
+            secureMetadataCapability = secureMetadataCapability,
         )
     }
 
@@ -234,7 +246,9 @@ object BitcoinWalletSyncPolicy {
             BitcoinWalletSyncWarning.ProductionSyncDisabled,
             BitcoinWalletSyncWarning.NoNetworkAttempted,
             BitcoinWalletSyncWarning.NoObservationPersisted,
+            BitcoinWalletSyncWarning.NoSecureMetadataPersisted,
             BitcoinWalletSyncWarning.EndpointPolicyOnly,
+            BitcoinWalletSyncWarning.MetadataRequiresEncryptedVault,
             BitcoinWalletSyncWarning.ReceiveAddressPolicyRequired,
             BitcoinWalletSyncWarning.NoSkaldManagedInfrastructure,
         )
@@ -245,6 +259,15 @@ object BitcoinWalletSyncPolicy {
 
         if (!request.observationPersistenceAvailable) {
             blockers += BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable
+            blockers += BitcoinWalletSyncBlocker.AddressIndexPersistenceUnavailable
+        }
+        val metadataDecision = SecureMetadataPersistencePolicy.evaluate(request.secureMetadataCapability)
+        if (!metadataDecision.canPersistSensitiveMetadata) {
+            blockers += BitcoinWalletSyncBlocker.SecureMetadataPersistenceUnavailable
+            blockers += BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable
+            blockers += BitcoinWalletSyncBlocker.AddressIndexPersistenceUnavailable
+            warnings += BitcoinWalletSyncWarning.NoSecureMetadataPersisted
+            warnings += BitcoinWalletSyncWarning.MetadataRequiresEncryptedVault
         }
         if (!request.connectionPolicy.productionSyncAllowed || !request.connectionPolicy.productionNetworkingAllowed) {
             blockers += BitcoinWalletSyncBlocker.SyncDisabled
@@ -375,8 +398,10 @@ object BitcoinWalletSyncPolicy {
             BitcoinWalletSyncCapability.BackendObservationSummaryTarget,
             BitcoinWalletSyncCapability.ReceiveAddressPolicyBoundary,
             BitcoinWalletSyncCapability.CredentialReferenceMetadataOnly,
+            BitcoinWalletSyncCapability.SecureMetadataPersistenceBoundary,
             BitcoinWalletSyncCapability.FutureProductionSync,
             BitcoinWalletSyncCapability.FutureObservationPersistence,
+            BitcoinWalletSyncCapability.FutureAddressIndexPersistence,
             BitcoinWalletSyncCapability.NoProductionNetworking,
             BitcoinWalletSyncCapability.NoSigning,
             BitcoinWalletSyncCapability.NoBroadcasting,
