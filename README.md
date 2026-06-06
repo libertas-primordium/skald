@@ -2,7 +2,7 @@
 
 Skald Vault is a sovereign multi-rail Bitcoin wallet application for advanced users who keep their own keys, choose their own infrastructure, and need explicit custody, privacy, fee, and recovery boundaries.
 
-Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, a fail-closed secure-storage abstraction, a pinned BDK adapter packaging spike, a local `bitcoind` regtest harness, a resolved BDK JVM/Linux binding decision, and a desktop-test-only BDK regtest wallet validation boundary. This repository does not yet implement real wallet functionality. Do not use it with real funds.
+Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, a fail-closed secure-storage abstraction, a pinned BDK adapter packaging spike, a local `bitcoind` regtest harness, a resolved BDK JVM/Linux binding decision, a desktop-test-only BDK regtest wallet validation boundary, and a desktop-test-only BDK regtest/signet address derivation validation boundary. This repository does not yet implement real wallet functionality. Do not use it with real funds.
 
 ## Targets
 
@@ -34,6 +34,12 @@ The seed-backed BDK regtest wallet validation boundary is also opt-in and deskto
 SKALD_RUN_BDK_REGTEST_WALLET_VALIDATION=1 ./gradlew :composeApp:desktopTest --tests '*Bdk*' --rerun-tasks
 ```
 
+The test-only BDK regtest/signet address derivation validation boundary is opt-in and desktop-test-only:
+
+```bash
+SKALD_RUN_BDK_REGTEST_ADDRESS_DERIVATION=1 ./gradlew :composeApp:desktopTest --tests '*AddressDerivation*' --rerun-tasks
+```
+
 Linux packaging requires a JDK that includes `jpackage`. If Gradle selects an Android Studio JBR without `jpackage`, run:
 
 ```bash
@@ -55,9 +61,10 @@ gradle wrapper --gradle-version 8.11.1
 - A seed phrase alone cannot restore every rail; Recovery Center modeling is first-class even in the scaffold.
 - Descriptor wallet profiles are non-secret metadata only. The app can save planned profile records, but it does not store descriptor text, xpubs, xprvs, private keys, seeds, nsecs, PSBTs, transaction data, or wallet funds.
 - Descriptor/key-management implementation is still absent. The future integration design is documented in [`docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md`](docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md).
-- A BDK dependency/adapter packaging spike exists with pinned `org.bitcoindevkit:bdk-android:2.3.0` and `org.bitcoindevkit:bdk-jvm:2.3.0` platform dependencies behind Skald-owned adapter models. It is documented in [`docs/BDK_INTEGRATION_SPIKE.md`](docs/BDK_INTEGRATION_SPIKE.md). It does not enable wallet creation, key generation, descriptors, address derivation, backend sync, PSBTs, signing, broadcasting, persistence, or mainnet.
+- A BDK dependency/adapter packaging spike exists with pinned `org.bitcoindevkit:bdk-android:2.3.0` and `org.bitcoindevkit:bdk-jvm:2.3.0` platform dependencies behind Skald-owned adapter models. It is documented in [`docs/BDK_INTEGRATION_SPIKE.md`](docs/BDK_INTEGRATION_SPIKE.md). It does not enable production wallet creation, key generation, descriptors, app receive addresses, backend sync, PSBTs, signing, broadcasting, persistence, or mainnet.
 - The BDK JVM/Linux binding decision is documented in [`docs/BDK_JVM_LINUX_BINDING_DECISION.md`](docs/BDK_JVM_LINUX_BINDING_DECISION.md). The accepted `2.3.0` JVM artifact contains a Linux x86_64 native binding; the previously pinned `2.3.1` artifact was rejected for Linux desktop wallet validation.
 - A desktop-test-only seed-backed BDK regtest wallet validation boundary exists and is documented in [`docs/BDK_REGTEST_WALLET_VALIDATION.md`](docs/BDK_REGTEST_WALLET_VALIDATION.md). It completes on the current Linux desktop target through an opt-in, redacted, test-only path and does not expose or persist wallet material.
+- A desktop-test-only BDK regtest/signet address derivation validation boundary exists and is documented in [`docs/BDK_REGTEST_ADDRESS_DERIVATION.md`](docs/BDK_REGTEST_ADDRESS_DERIVATION.md). It derives runtime-generated test addresses only under explicit opt-in and does not add app receive UI, address index persistence, backend sync, signing, broadcasting, production wallet storage, or mainnet.
 - A local `bitcoind` regtest harness exists for desktop development tests only. It is documented in [`docs/REGTEST_HARNESS.md`](docs/REGTEST_HARNESS.md). It uses temporary regtest state and does not connect the app UI to a backend, create a Skald or BDK wallet, persist wallet databases, sync app wallets, sign, broadcast, or enable mainnet.
 - Coin-control and PSBT draft planning uses demo UTXO placeholders only. No real UTXOs are scanned, no transaction is constructed, no PSBT is created, and signing/broadcasting remain disabled.
 - Backend profiles, UTXO views, coin-control drafts, and PSBT workflows are non-operational placeholder models only.
@@ -92,6 +99,7 @@ The scaffold includes no Skald-operated defaults for:
 - `docs/REGTEST_HARNESS.md` records the local `bitcoind` regtest harness. The harness is opt-in desktop test infrastructure and does not add production backend networking or app wallet behavior.
 - `docs/BDK_JVM_LINUX_BINDING_DECISION.md` records the BDK JVM/Linux native binding decision and the accepted `2.3.0` pin.
 - `docs/BDK_REGTEST_WALLET_VALIDATION.md` records the desktop-test-only seed-backed BDK regtest wallet validation boundary.
+- `docs/BDK_REGTEST_ADDRESS_DERIVATION.md` records the desktop-test-only BDK regtest/signet address derivation validation boundary. The app still has no production receive-address flow or address index persistence.
 - `docs/PHASE1_COMPLETION_AUDIT.md` records the Phase 1 hardening/completion audit. It is an audit artifact only; it does not enable wallet functionality.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
 - `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.

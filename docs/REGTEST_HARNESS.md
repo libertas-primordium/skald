@@ -10,7 +10,7 @@ This harness is test/development infrastructure only. It does not enable product
 
 The harness proves that the development environment can start a local regtest node, check readiness, read chain metadata, generate a regtest block, shut down cleanly, and remove temporary state.
 
-It exists to support BDK rollout layers such as seed-backed regtest wallet creation and recovery behind Skald-owned adapter APIs. The current seed-backed BDK validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md), and the JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md).
+It exists to support BDK rollout layers such as seed-backed regtest wallet creation and recovery behind Skald-owned adapter APIs. The current seed-backed BDK validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md), the test-only address derivation boundary is documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md), and the JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md).
 
 ## Source Location
 
@@ -96,6 +96,12 @@ The harness must not:
 
 Runtime regtest addresses and block hashes may be produced by `bitcoind` during the smoke test, but they are not committed, documented as fixtures, or persisted by Skald.
 
+## Relationship To Address Derivation
+
+The BDK regtest/signet address derivation validation does not require this harness because BDK can derive the tested receive addresses offline from runtime-only test wallet material.
+
+The local `bitcoind` harness remains the expected base for later regtest UTXO scan, fee, and transaction-validation work.
+
 ## Next Step
 
-The next focused pass should introduce test-only regtest/signet address derivation behind Skald-owned adapter APIs. Those passes must remain regtest/signet first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should introduce address reuse prevention/receive-address state modeling or a regtest UTXO scan validation path. Those passes must remain regtest/signet first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.

@@ -8,6 +8,8 @@ The boundary is not production wallet functionality. It is not wired into the ap
 
 On the current Linux desktop target, the opt-in validation completes with pinned `org.bitcoindevkit:bdk-jvm:2.3.0`. The JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md). The previously pinned `2.3.1` JVM artifact was rejected because it lacked a Linux native binding.
 
+The follow-up address derivation validation boundary is documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md). It remains separate, desktop-test-only, opt-in, and disconnected from production receive flows.
+
 ## Source Location
 
 The test-only validation code lives under:
@@ -74,7 +76,7 @@ This validation boundary does not enable:
 - production BDK persistence,
 - secure storage,
 - descriptor storage,
-- address derivation in app flows,
+- production address derivation in app flows,
 - backend sync,
 - UTXO scanning,
 - fee estimation,
@@ -99,8 +101,8 @@ The validation must remain:
 - free of committed secret fixtures,
 - free of production storage paths,
 - free of backend networking,
-- free of address derivation, signing, and broadcasting.
+- free of production app address derivation, signing, and broadcasting.
 
 ## Next Step
 
-The next pass can introduce test-only regtest/signet address derivation behind Skald-owned adapter APIs. That pass must not wire receive addresses into production app UI, enable BDK persistence, sync wallets, sign, broadcast, store secrets, or enable mainnet.
+The next pass can introduce address reuse prevention/receive-address state modeling or regtest UTXO scan validation. That pass must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.
