@@ -157,7 +157,7 @@ That facade composes endpoint policy, backend profile metadata, the disabled pro
 
 Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md).
 
-Recovery Center and the Privacy Analyzer now surface disabled sync, backend observation, receive-address, secure-storage, and observation-persistence blockers through read-only status models. They explicitly state that desktop-test BDK regtest validation does not create recoverable production wallet state and that production observation/UTXO persistence is deferred until encrypted vault storage or equivalent approved encrypted metadata storage exists.
+Recovery Center and the Privacy Analyzer now surface disabled sync, backend observation, receive-address, secure-storage, and observation-persistence blockers through read-only status models. They explicitly state that desktop-test BDK regtest validation does not create recoverable production wallet state and that production observation/UTXO persistence is deferred until app-controlled encrypted local vault storage exists and is approved.
 
 These surfaces remain BDK-free and do not enable production sync, persistence, app receive UI, Nostr parsing, signing, broadcasting, public endpoints, or mainnet.
 
@@ -169,6 +169,12 @@ That boundary classifies address index state, receive-address lifecycle state, o
 
 The desktop-test BDK Electrum scan validation remains runtime-only and does not create production metadata persistence.
 
+## Encrypted Local Vault Design
+
+The app-controlled encrypted local vault architecture is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md).
+
+Future production BDK persistence, if required at all, must be encrypted inside or protected by that approved vault boundary. BDK must not create hidden production wallet databases, hidden backend defaults, hidden mainnet paths, hidden signing/broadcast behavior, or persistence that bypasses Skald-owned secure secret and secure metadata repositories.
+
 ## Local Electrum Regtest Harness Boundary
 
 The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).
@@ -179,4 +185,4 @@ The current local environment validates with local `electrs` `v0.11.1` supplied 
 
 ## Next Step
 
-The next implementation pass should design encrypted production observation persistence or prepare future regtest/signet wallet activation behind the existing boundaries without enabling production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material.
+The next implementation pass should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices behind the existing boundaries without enabling production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material.

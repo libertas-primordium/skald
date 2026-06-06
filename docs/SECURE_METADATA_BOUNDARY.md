@@ -6,6 +6,8 @@ Skald Vault now has a Skald-owned secure metadata persistence boundary for futur
 
 This boundary is disabled and fail-closed. It does not implement an encrypted vault, production sync, production UTXO persistence, production address index persistence, wallet activation, descriptor persistence, signing, broadcasting, Nostr parsing, Lightning, Cashu, Payjoin, public endpoints, Skald-operated infrastructure, or mainnet.
 
+The app-controlled encrypted local vault architecture required before this boundary can return success is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). That design does not implement storage; it defines the threat model, key hierarchy, platform strategy, session lifecycle, migration/corruption requirements, Tor metadata implications, recovery implications, and acceptance criteria.
+
 ## Source Location
 
 Production-safe common models:
@@ -148,4 +150,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should design the encrypted vault format and key-management requirements, or prepare a secure metadata migration plan, before any production sync or observation persistence is enabled. Do not add plaintext observation storage, production backend clients, address persistence, signing, broadcasting, public endpoints, or mainnet as part of that work.
+The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the KDF/AEAD/platform wrapping dependency choices before any production sync or observation persistence is enabled. Do not add plaintext observation storage, production backend clients, address persistence, signing, broadcasting, public endpoints, or mainnet as part of that work.

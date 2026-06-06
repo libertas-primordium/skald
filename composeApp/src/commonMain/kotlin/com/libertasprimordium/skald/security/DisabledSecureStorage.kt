@@ -48,6 +48,6 @@ fun androidDisabledSecureStorageCapability(): SecureStorageCapability =
 fun desktopDisabledSecureStorageCapability(): SecureStorageCapability =
     commonDisabledSecureStorageCapability().copy(
         platform = SecureStoragePlatform.DesktopLinuxDisabled,
-        implementationNote = "Linux desktop secret storage is disabled. Future work should use an audited system keyring or encrypted vault design, not plaintext config files.",
-        futureImplementationHint = "libsecret, KWallet, or passphrase-encrypted vault designs may be evaluated later, but no secret persistence exists in this pass.",
+        implementationNote = "Linux desktop secret storage is disabled. Future work should use the app-controlled encrypted local vault design, not plaintext config files or OS keyrings as primary storage.",
+        futureImplementationHint = "libsecret or KWallet may be evaluated later only as optional vault-key wrapping helpers after explicit design review; no secret persistence exists in this pass.",
     )
