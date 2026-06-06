@@ -6,13 +6,7 @@ Skald Vault now has a desktop-test-only boundary for seed-backed BDK regtest wal
 
 The boundary is not production wallet functionality. It is not wired into the app UI, settings repositories, descriptor profile metadata, Recovery Center state, backend settings, coin-control drafts, or any persisted app model.
 
-On the current Linux desktop target, the opt-in validation is blocked by BDK JVM native binding availability for pinned `org.bitcoindevkit:bdk-jvm:2.3.1`. Local artifact inspection found the resolved JVM jar contains:
-
-```text
-darwin-aarch64/libbdkffi.dylib
-```
-
-and no Linux `.so` native binding. The validation therefore reports a Skald-owned blocked result before completing BDK wallet creation/recovery on Linux. It does not silently upgrade BDK or move secret-bearing code into production paths.
+On the current Linux desktop target, the opt-in validation completes with pinned `org.bitcoindevkit:bdk-jvm:2.3.0`. The JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md). The previously pinned `2.3.1` JVM artifact was rejected because it lacked a Linux native binding.
 
 ## Source Location
 
@@ -40,17 +34,15 @@ When explicitly enabled, the validation attempts to:
 
 The result model exposes no mnemonic words, seed bytes, private descriptors, xprvs, private keys, WIFs, addresses, PSBTs, transaction hex, or wallet database contents.
 
-## Current Linux Blocker
+## Linux Binding Resolution
 
-The current Linux desktop environment cannot complete the BDK wallet validation with pinned BDK `2.3.1` because the resolved `bdk-jvm` artifact does not provide a Linux native library for BDK FFI wallet calls.
-
-Normal BDK packaging/linkage tests still pass because the existing adapter probe only reads JVM enum metadata. Wallet APIs require the native binding and therefore report:
+The Linux desktop environment completes the BDK wallet validation with pinned BDK `2.3.0` because the resolved `bdk-jvm` artifact provides:
 
 ```text
-BDK_REGTEST_WALLET_VALIDATION_NATIVE_BINDING_UNAVAILABLE
+linux-x86-64/libbdkffi.so
 ```
 
-This is a dependency/runtime packaging blocker, not a reason to add production persistence, enable mainnet, use public infrastructure, or store wallet material.
+The test boundary still handles native-binding failures as a Skald-owned blocked result for future artifact regressions, but the current accepted dependency no longer hits that blocker on Linux.
 
 ## How To Run
 
@@ -72,7 +64,7 @@ In sandboxed environments that need a writable Gradle cache and IPv4 preference:
 GRADLE_USER_HOME=/tmp/skald-gradle-home SKALD_RUN_BDK_REGTEST_WALLET_VALIDATION=1 ./gradlew --no-daemon -Djava.net.preferIPv4Stack=true :composeApp:desktopTest --tests '*Bdk*' --rerun-tasks
 ```
 
-On the current Linux target, this command passes by verifying the explicit native-binding blocked state and safety invariants. It does not prove completed seed-backed BDK wallet recovery until a Linux-compatible BDK JVM native binding is available.
+On the current Linux target with BDK `2.3.0`, this command completes the seed-backed regtest wallet validation through the test-only boundary.
 
 ## Explicit Non-Capabilities
 
@@ -111,9 +103,4 @@ The validation must remain:
 
 ## Next Step
 
-Before address derivation or seed-backed wallet work can proceed on Linux, the next pass should decide how to obtain a Linux-compatible BDK native binding without broadening production wallet behavior. Options to evaluate:
-
-- confirm whether BDK `2.3.1` publishes a Linux JVM artifact/classifier elsewhere,
-- evaluate BDK `3.0.0` packaging on Android and Linux,
-- alter the source-set/native packaging strategy if BDK supports it,
-- defer Linux JVM BDK wallet validation until the dependency strategy is resolved.
+The next pass can introduce test-only regtest/signet address derivation behind Skald-owned adapter APIs. That pass must not wire receive addresses into production app UI, enable BDK persistence, sync wallets, sign, broadcast, store secrets, or enable mainnet.

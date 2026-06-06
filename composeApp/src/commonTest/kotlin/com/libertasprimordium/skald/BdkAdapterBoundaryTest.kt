@@ -20,9 +20,9 @@ class BdkAdapterBoundaryTest {
     fun pinnedBdkVersionMetadataIsExplicit() {
         val version = BdkAdapterVersion.Pinned
 
-        assertEquals("2.3.1", version.version)
-        assertEquals("org.bitcoindevkit:bdk-android:2.3.1", version.androidArtifact)
-        assertEquals("org.bitcoindevkit:bdk-jvm:2.3.1", version.desktopArtifact)
+        assertEquals("2.3.0", version.version)
+        assertEquals("org.bitcoindevkit:bdk-android:2.3.0", version.androidArtifact)
+        assertEquals("org.bitcoindevkit:bdk-jvm:2.3.0", version.desktopArtifact)
     }
 
     @Test

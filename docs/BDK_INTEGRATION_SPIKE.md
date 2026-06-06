@@ -11,14 +11,14 @@ It does not enable wallet functionality. Skald Vault still does not create walle
 Pinned BDK version:
 
 ```text
-2.3.1
+2.3.0
 ```
 
 Artifacts:
 
 ```text
-org.bitcoindevkit:bdk-android:2.3.1
-org.bitcoindevkit:bdk-jvm:2.3.1
+org.bitcoindevkit:bdk-android:2.3.0
+org.bitcoindevkit:bdk-jvm:2.3.0
 ```
 
 The versions are declared in `gradle/libs.versions.toml`. The artifacts are intentionally placed in platform source sets only:
@@ -111,12 +111,18 @@ That harness is opt-in desktop test/development infrastructure. It starts a loca
 
 The regtest harness does not create a Skald wallet, create a BDK wallet, enable BDK persistence, connect the app UI to a backend, sync app wallets, sign, broadcast, or enable mainnet.
 
+## JVM/Linux Binding Decision
+
+The Linux desktop JVM native-binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md).
+
+Skald pins BDK `2.3.0` because `bdk-jvm:2.3.0` contains `linux-x86-64/libbdkffi.so`. The previously pinned `2.3.1` JVM artifact did not contain a Linux native binding and blocked opt-in BDK wallet API validation on Linux. BDK `3.0.0` was inspected and contains a Linux native binding, but it was deferred because `2.3.0` resolves the blocker without a major-version migration.
+
 ## Seed-Backed Regtest Validation Layer
 
 The follow-up seed-backed regtest wallet validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md).
 
-That boundary remains desktop-test-only, regtest-only, opt-in, redacted, and disconnected from production app wallet flows. On the current Linux desktop target, completed BDK wallet validation is blocked because the resolved pinned `bdk-jvm:2.3.1` artifact contains a Darwin ARM native binding and no Linux `.so`.
+That boundary remains desktop-test-only, regtest-only, opt-in, redacted, and disconnected from production app wallet flows. With the accepted `2.3.0` pin, the opt-in Linux desktop validation completes through the Skald-owned redacted test boundary. It still does not enable production wallet creation, app address derivation, backend sync, BDK persistence, signing, broadcasting, or mainnet.
 
 ## Next Step
 
-The next implementation pass should resolve the BDK JVM native binding strategy for Linux before attempting address derivation, wallet sync, or seed-backed wallet activation. Do not enable production storage, mainnet, hidden backend defaults, or persisted production key material as part of that decision.
+The next implementation pass should introduce test-only regtest/signet address derivation behind Skald-owned adapter APIs. Do not enable production storage, mainnet, hidden backend defaults, wallet sync, signing, broadcasting, or persisted production key material as part of that work.

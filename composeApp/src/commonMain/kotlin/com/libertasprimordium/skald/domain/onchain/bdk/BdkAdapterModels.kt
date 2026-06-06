@@ -9,9 +9,9 @@ data class BdkAdapterVersion(
 ) {
     companion object {
         val Pinned: BdkAdapterVersion = BdkAdapterVersion(
-            version = "2.3.1",
-            androidArtifact = "org.bitcoindevkit:bdk-android:2.3.1",
-            desktopArtifact = "org.bitcoindevkit:bdk-jvm:2.3.1",
+            version = "2.3.0",
+            androidArtifact = "org.bitcoindevkit:bdk-android:2.3.0",
+            desktopArtifact = "org.bitcoindevkit:bdk-jvm:2.3.0",
         )
     }
 }
