@@ -4,7 +4,7 @@
 
 This spike adds pinned BDK Kotlin platform dependencies and a Skald-owned adapter probe. It proves that the current Android and Linux desktop source sets can compile and package with BDK present.
 
-It does not enable wallet functionality. Skald Vault still does not create wallets, generate keys, parse descriptors, derive addresses, scan UTXOs, construct PSBTs, sign, broadcast, store secrets, use BDK persistence, connect to backends, or operate on mainnet.
+It does not enable wallet functionality. Skald Vault still does not create production wallets, generate production keys, parse app descriptors, derive app receive addresses, scan UTXOs, construct PSBTs, sign, broadcast, store secrets, use production BDK persistence, connect to backends, or operate on mainnet.
 
 ## Pinned Dependencies
 
@@ -74,7 +74,7 @@ This spike leaves these capabilities disabled:
 - Wallet creation.
 - Key generation.
 - Descriptor parsing or validation.
-- Address derivation.
+- Production/app address derivation.
 - Wallet sync.
 - Backend networking.
 - BDK persistence or wallet databases.
@@ -123,6 +123,12 @@ The follow-up seed-backed regtest wallet validation boundary is documented in [`
 
 That boundary remains desktop-test-only, regtest-only, opt-in, redacted, and disconnected from production app wallet flows. With the accepted `2.3.0` pin, the opt-in Linux desktop validation completes through the Skald-owned redacted test boundary. It still does not enable production wallet creation, app address derivation, backend sync, BDK persistence, signing, broadcasting, or mainnet.
 
+## Address Derivation Validation Layer
+
+The test-only regtest/signet address derivation validation boundary is documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md).
+
+That boundary remains desktop-test-only, opt-in, redacted, offline, and disconnected from production app wallet flows. It proves deterministic receive-address derivation from the same runtime-only test seed on regtest and signet. It still does not enable app receive UI, production address derivation, address index persistence, backend sync, UTXO scan, signing, broadcasting, production storage, or mainnet.
+
 ## Next Step
 
-The next implementation pass should introduce test-only regtest/signet address derivation behind Skald-owned adapter APIs. Do not enable production storage, mainnet, hidden backend defaults, wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should introduce either address reuse prevention/receive-address state modeling or a regtest UTXO scan validation path. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
