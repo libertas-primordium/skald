@@ -6,7 +6,7 @@ Skald Vault now has a Skald-owned secure metadata persistence boundary for futur
 
 This boundary is disabled and fail-closed. It does not implement an encrypted vault, production sync, production UTXO persistence, production address index persistence, wallet activation, descriptor persistence, signing, broadcasting, Nostr parsing, Lightning, Cashu, Payjoin, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The app-controlled encrypted local vault architecture required before this boundary can return success is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). That design does not implement storage; it defines the threat model, key hierarchy, platform strategy, session lifecycle, migration/corruption requirements, Tor metadata implications, recovery implications, and acceptance criteria.
+The app-controlled encrypted local vault architecture required before this boundary can return success is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). These documents do not implement storage; they define the threat model, target KDF/AEAD policy, key hierarchy, platform strategy, session lifecycle, migration/corruption requirements, Tor metadata implications, recovery implications, and acceptance criteria.
 
 ## Source Location
 
@@ -150,4 +150,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the KDF/AEAD/platform wrapping dependency choices before any production sync or observation persistence is enabled. Do not add plaintext observation storage, production backend clients, address persistence, signing, broadcasting, public endpoints, or mainnet as part of that work.
+The next focused pass should turn the encrypted vault design and crypto decision into code-level readiness/policy models or run the dependency spike for Argon2id/XChaCha20-Poly1305 support before any production sync or observation persistence is enabled. Do not add plaintext observation storage, production backend clients, address persistence, signing, broadcasting, public endpoints, or mainnet as part of that work.

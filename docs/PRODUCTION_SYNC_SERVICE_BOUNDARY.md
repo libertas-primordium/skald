@@ -172,7 +172,7 @@ This pass defines only the service boundary and blocked preflight state. It does
 
 Production observation persistence remains explicitly deferred until app-controlled encrypted vault storage exists. Observed addresses, labels, UTXOs, transaction notes, backend metadata, wallet history, address index state, recovery metadata, Privacy Analyzer metadata, and identity-linkage metadata are sensitive metadata and are not persisted by the current facade. The disabled secure metadata repository is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md).
 
-The vault architecture and key-lifecycle plan required before any production observation persistence is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). That design keeps the app-controlled encrypted local vault as the primary storage model, treats OS keyrings only as optional future key-wrapping helpers, and keeps production sync blocked until secure secret storage and secure metadata persistence are both approved.
+The vault architecture and key-lifecycle plan required before any production observation persistence is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). Those documents keep the app-controlled encrypted local vault as the primary storage model, treat OS keyrings only as optional future key-wrapping helpers, target Argon2id plus XChaCha20-Poly1305 pending dependency review, and keep production sync blocked until secure secret storage and secure metadata persistence are both approved.
 
 ## Explicit Non-Capabilities
 
@@ -231,4 +231,4 @@ The source guard includes the sync facade, status UI files, and secure metadata 
 
 ## Next Step
 
-The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices. Production backend clients and observation persistence should remain deferred until secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.
+The next focused pass should turn the encrypted vault design and crypto decision into code-level readiness/policy models or run the dependency spike for Argon2id/XChaCha20-Poly1305 support and platform wrapping. Production backend clients and observation persistence should remain deferred until secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.

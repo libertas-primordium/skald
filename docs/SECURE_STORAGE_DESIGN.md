@@ -8,7 +8,7 @@ The current codebase has a common `SecureSecretStorage` interface, typed secret 
 
 The current codebase also has a disabled/fail-closed secure wallet metadata persistence boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). That boundary classifies observation history, address index state, labels, backend metadata, UTXO state, wallet notes, transaction notes, recovery metadata, Privacy Analyzer metadata, and identity-linkage metadata as sensitive wallet metadata. It rejects all metadata reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
 
-The detailed app-controlled encrypted local vault architecture and key-lifecycle plan is now documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). That design is the required primary storage model for both secrets and sensitive wallet metadata. OS keyrings are not primary storage; they may later wrap vault keys only after explicit design review.
+The detailed app-controlled encrypted local vault architecture and key-lifecycle plan is now documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). These documents define the required primary storage model for both secrets and sensitive wallet metadata. OS keyrings are not primary storage; they may later wrap vault keys only after explicit design review.
 
 This document is a design prerequisite before any implementation enables secret storage. It does not enable wallet creation, credential storage, signing, broadcasting, backend networking, Cashu proof persistence, Lightning credential persistence, Nostr key storage, backup encryption, or mainnet behavior.
 
@@ -497,7 +497,7 @@ Until these gates are met, the disabled/fail-closed implementation remains the o
 
 - Should Android use Android Keystore only, or combine Keystore-wrapped keys with a user passphrase-encrypted layer?
 - Should biometric unlock be optional convenience or required for specific secret classes?
-- Which crypto dependency should provide KDF and AEAD primitives for the app-controlled encrypted local vault?
+- Which exact dependency stack should provide Argon2id and XChaCha20-Poly1305 primitives for the app-controlled encrypted local vault, as narrowed in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md)?
 - Should Android and Linux share the same vault container format and record format?
 - Should Linux offer libsecret/KWallet key wrapping at all, given already-unlocked-session risk?
 - How should the app present passphrase-only unlock versus optional platform wrapping?
@@ -511,8 +511,8 @@ Until these gates are met, the disabled/fail-closed implementation remains the o
 
 ## Implementation sequence
 
-1. Finalize and review this design plus [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md).
-2. Resolve vault dependency, KDF, AEAD, and platform wrapping choices through explicit review.
+1. Finalize and review this design plus [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md) and [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
+2. Resolve the exact vault dependency stack, Argon2id calibration parameters, AEAD test vectors, and platform wrapping choices through explicit review.
 3. Expand common secure-storage interface tests for versioning, redaction, deletion, and failure states.
 4. Add code-level vault readiness/policy models without storage success paths.
 5. Implement encrypted vault storage behind a disabled feature flag.

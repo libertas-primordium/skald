@@ -13,6 +13,8 @@ Current runtime behavior remains fail-closed:
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
+The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping dependency selection and implementation disabled.
+
 ## Design Principles
 
 - The encrypted local vault is the primary storage model for secrets and sensitive wallet metadata.
@@ -199,7 +201,9 @@ Platform wrapping is optional defense-in-depth. It must not replace the app-cont
 
 ## Key Derivation
 
-Future implementation must use a reviewed password-based key derivation function. Candidate families include memory-hard KDFs such as Argon2id or scrypt. Platform constraints may require a reviewed fallback, but weaker KDF parameters must not be chosen silently.
+Future implementation must use Argon2id as the target password-based key derivation function. scrypt is a reviewed compatibility fallback only. PBKDF2 is not acceptable as the default production vault KDF because it is not memory-hard.
+
+The detailed decision, fallback policy, and dependency gates are in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
 
 Requirements:
 
@@ -214,7 +218,9 @@ Requirements:
 
 ## Record Encryption
 
-Future record encryption must use authenticated encryption. Candidate AEAD families may include AES-GCM where hardware support and nonce discipline are acceptable, or XChaCha20-Poly1305 where dependency and platform support are reviewed.
+Future record encryption must use authenticated encryption. The target vault record AEAD is XChaCha20-Poly1305 with a random per-record nonce if dependency review confirms stable Android and Linux desktop support. AES-GCM or AES-GCM-SIV may be used for platform wrapping or as a reviewed fallback, but XChaCha20-Poly1305 is the preferred record-envelope design.
+
+The detailed nonce, associated-data, envelope, and dependency policy is in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
 
 Requirements:
 
@@ -509,8 +515,10 @@ Tests must use deterministic local fakes, regtest, signet, or obvious sentinel v
 Production secret or sensitive metadata persistence may not be enabled until:
 
 - this design is reviewed,
+- [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md) is reviewed,
 - crypto dependency choice is reviewed,
 - KDF and AEAD parameters are reviewed,
+- known-answer vectors are identified for the selected KDF and AEAD,
 - vault container format is implemented and tested,
 - Android strategy is tested if Android storage is enabled,
 - Linux strategy is tested if Linux storage is enabled,
@@ -528,12 +536,12 @@ Production secret or sensitive metadata persistence may not be enabled until:
 
 ## Open Questions
 
-- Which crypto dependency should provide KDF and AEAD primitives for Kotlin Multiplatform, Android, and Linux desktop?
-- Should the vault use Argon2id, scrypt, or another reviewed KDF for passphrase/PIN unlock?
-- Should Android require hardware-backed wrapping where available or make it an optional risk label?
+- Which exact dependency stack should provide Argon2id and XChaCha20-Poly1305 for Android and Linux desktop?
+- What exact Argon2id starting parameters and calibration policy should ship after platform measurement?
+- Should Android require hardware-backed wrapping for specific secret classes or make it an optional risk label?
 - How should Linux vault files be located, permissioned, backed up, and migrated?
-- Should OS keyring wrapping be offered on Linux, and how should already-unlocked-session risk be displayed?
-- Should Skald support PIN-only unlock, passphrase-only unlock, or both?
+- Should optional Linux OS keyring wrapping be offered after v1, and how should already-unlocked-session risk be displayed?
+- Should Skald ever support PIN-only unlock after hardware-backed wrapping review, or keep passphrase unlock mandatory?
 - How should backup/export keys be generated, rotated, and recovered?
 - Should BDK persistence ever be allowed directly, or should Skald translate all necessary state into Skald-owned encrypted records?
 - How should all-wallet-traffic-through-Tor policy interact with background sync once sync exists?
@@ -545,17 +553,18 @@ Production secret or sensitive metadata persistence may not be enabled until:
 
 Recommended next implementation sequence:
 
-1. Review this design and resolve open dependency/KDF/AEAD questions.
+1. Review this design plus [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
 2. Add code-level vault policy/readiness models without storage success paths.
 3. Add tests proving secure storage and secure metadata remain disabled.
-4. Select crypto dependencies through explicit review.
-5. Implement a disabled vault container parser/validator without storing real secrets.
-6. Implement encrypted vault storage behind a disabled feature gate.
-7. Add lock/session lifecycle tests.
-8. Add Android wrapping tests where applicable.
-9. Add Linux file-permission and optional keyring-wrapping tests where applicable.
-10. Add migration, corruption, and partial-write tests.
-11. Update Recovery/Privacy/Sync status surfaces.
-12. Enable only the smallest low-risk persistence path after explicit approval.
+4. Run a dependency spike for the selected KDF/AEAD target without enabling persistence.
+5. Select crypto dependencies through explicit review.
+6. Implement a disabled vault container parser/validator without storing real secrets.
+7. Implement encrypted vault storage behind a disabled feature gate.
+8. Add lock/session lifecycle tests.
+9. Add Android wrapping tests where applicable.
+10. Add Linux file-permission and optional keyring-wrapping tests where applicable.
+11. Add migration, corruption, and partial-write tests.
+12. Update Recovery/Privacy/Sync status surfaces.
+13. Enable only the smallest low-risk persistence path after explicit approval.
 
 Do not enable production wallet creation, production sync, production address derivation, production UTXO persistence, signing, broadcasting, Nostr secret-bearing flows, public endpoint defaults, or mainnet as part of vault design work.
