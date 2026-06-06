@@ -15,6 +15,7 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestR
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestState
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendProfileId
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
+import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncRequestFactory
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftId
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflow
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflowReview
@@ -22,9 +23,12 @@ import com.libertasprimordium.skald.domain.onchain.bdk.BdkAdapterProbe
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflow
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflowReview
+import com.libertasprimordium.skald.domain.onchain.DisabledBitcoinWalletSyncService
 import com.libertasprimordium.skald.domain.onchain.EditableBitcoinBackendProfileInput
 import com.libertasprimordium.skald.domain.onchain.EditableCoinControlDraftInput
 import com.libertasprimordium.skald.domain.onchain.EditableDescriptorWalletProfileInput
+import com.libertasprimordium.skald.domain.privacy.PrivacySyncStatusAnalyzer
+import com.libertasprimordium.skald.domain.recovery.RecoverySyncStatusPolicy
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.SecureSecretStorage
 import com.libertasprimordium.skald.security.toUiStatus
@@ -53,6 +57,7 @@ fun SkaldApp(
     val repository = remember { DemoPortfolioRepository() }
     val coinControlRepository = remember { DemoCoinControlRepository() }
     val backendConnectionTester = remember { FakeBitcoinBackendConnectionTester() }
+    val syncService = remember { DisabledBitcoinWalletSyncService() }
     val snapshot = remember { repository.loadPortfolioSnapshot() }
     val onChainProfile = remember { repository.onChainProfile() }
     val lightningConnectors = remember { repository.lightningConnectors() }
@@ -72,6 +77,19 @@ fun SkaldApp(
     val demoUtxos = remember(descriptorWalletSettings.profiles) {
         coinControlRepository.demoUtxosFor(descriptorWalletSettings.profiles)
     }
+    val syncPreflightResult = syncService.sync(
+        BitcoinWalletSyncRequestFactory.disabledPreflightRequest(
+            backendSettings = backendSettings,
+            descriptorWalletSettings = descriptorWalletSettings,
+            secureStorageCapability = secureStorage.capability,
+        ),
+    )
+    val recoverySyncStatus = RecoverySyncStatusPolicy.from(
+        syncResult = syncPreflightResult,
+        descriptorWalletSettings = descriptorWalletSettings,
+        secureStorageCapability = secureStorage.capability,
+    )
+    val privacySyncStatus = PrivacySyncStatusAnalyzer.analyze(syncPreflightResult)
     var backendMessage by remember {
         mutableStateOf("Backend profiles are local non-secret settings only. Simulated validation is available; real networking is disabled.")
     }
@@ -272,6 +290,7 @@ fun SkaldApp(
         when (screen) {
             AppScreen.Overview -> OverviewScreen(
                 snapshot = snapshot,
+                privacySyncStatus = privacySyncStatus,
                 onNavigate = { selectedScreen = it },
             )
             AppScreen.OnChain -> OnChainScreen(
@@ -306,15 +325,15 @@ fun SkaldApp(
                 recovery = snapshot.recoveryStatus,
                 secureStorageStatus = secureStorageStatus,
                 descriptorWalletSettings = descriptorWalletSettings,
+                syncStatus = recoverySyncStatus,
             )
             AppScreen.Nodes -> NodesScreen(
                 settings = backendSettings,
-                descriptorWalletSettings = descriptorWalletSettings,
                 validation = backendValidation,
                 message = backendMessage,
                 connectionTestResult = backendConnectionTestResult,
-                secureStorageCapability = secureStorage.capability,
                 secureStorageStatus = secureStorageStatus,
+                syncPreflightResult = syncPreflightResult,
                 onRunSimulatedConnectionTest = ::runSimulatedBackendConnectionTest,
                 onSaveProfile = ::saveBackendProfile,
                 onSelectProfile = ::selectBackendProfile,

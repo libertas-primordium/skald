@@ -4,12 +4,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletSettingsState
+import com.libertasprimordium.skald.domain.recovery.RecoverySyncStatus
 import com.libertasprimordium.skald.domain.recovery.RecoveryStatus
 import com.libertasprimordium.skald.security.SecureStorageUiStatus
 import com.libertasprimordium.skald.ui.components.BulletList
 import com.libertasprimordium.skald.ui.components.CardGrid
 import com.libertasprimordium.skald.ui.components.DetailLine
 import com.libertasprimordium.skald.ui.components.InfoBlock
+import com.libertasprimordium.skald.ui.components.LockedAction
 import com.libertasprimordium.skald.ui.components.ScreenTitle
 import com.libertasprimordium.skald.ui.components.SecureStorageStatusCard
 import com.libertasprimordium.skald.ui.components.SkaldCard
@@ -22,6 +24,7 @@ fun RecoveryScreen(
     recovery: RecoveryStatus,
     secureStorageStatus: SecureStorageUiStatus,
     descriptorWalletSettings: DescriptorWalletSettingsState,
+    syncStatus: RecoverySyncStatus,
 ) {
     ScreenTitle("Recovery", "First-class recovery status model.")
     WarningStrip(recovery.seedWarning)
@@ -48,9 +51,39 @@ fun RecoveryScreen(
         }
     }
     SecureStorageStatusCard(secureStorageStatus)
+    RecoverySyncStatusCard(syncStatus)
     DescriptorWalletMetadataRecoverySection(descriptorWalletSettings)
     recovery.onChainRecoveryStatus?.let { onChainRecovery ->
         OnChainRecoverySection(onChainRecovery)
+    }
+}
+
+@Composable
+private fun RecoverySyncStatusCard(status: RecoverySyncStatus) {
+    SkaldCard(title = status.title, state = status.state) {
+        Text(status.summary, color = SkaldMutedText, lineHeight = 20.sp)
+        DetailLine("Production sync", if (status.productionSyncEnabled) "enabled" else "disabled")
+        DetailLine(
+            "Observation persistence",
+            if (status.productionObservationPersistenceEnabled) "enabled" else "deferred until encrypted vault",
+        )
+        DetailLine(
+            "Test validation",
+            if (status.testValidationCountsAsProductionRecovery) {
+                "production recovery state"
+            } else {
+                "test-only, not recoverable production state"
+            },
+        )
+        status.items.forEach { item ->
+            InfoBlock(
+                title = item.label,
+                state = item.state.label,
+            ) {
+                Text(item.detail, color = riskColor(item.riskLevel), lineHeight = 20.sp)
+            }
+        }
+        LockedAction(status.lockedActionLabel)
     }
 }
 

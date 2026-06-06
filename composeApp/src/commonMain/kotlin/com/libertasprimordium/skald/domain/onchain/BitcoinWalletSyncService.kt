@@ -167,6 +167,59 @@ data class BitcoinWalletSyncResult(
     val usesSkaldManagedInfrastructure: Boolean = false
 }
 
+object BitcoinWalletSyncRequestFactory {
+    fun disabledPreflightRequest(
+        backendSettings: BitcoinBackendSettingsState,
+        descriptorWalletSettings: DescriptorWalletSettingsState,
+        secureStorageCapability: SecureStorageCapability,
+    ): BitcoinWalletSyncRequest {
+        val walletContext = descriptorWalletSettings.selectedProfile?.let(ReceiveAddressWalletContext::fromProfile)
+        return BitcoinWalletSyncRequest(
+            backendProfile = backendSettings.selectedProfile,
+            backendValidation = backendSettings.selectedProfile?.toSyncValidationResult(),
+            wallet = walletContext,
+            candidate = walletContext?.let { wallet ->
+                ReceiveAddressState.placeholderReserved(
+                    wallet = wallet,
+                    derivationIndex = ReceiveAddressDerivationIndex(0),
+                ).markDisplayed()
+            },
+            secureStorageCapability = secureStorageCapability,
+        )
+    }
+
+    private fun BitcoinBackendProfile.toSyncValidationResult(): BackendProfileValidationResult =
+        BitcoinBackendValidator.validate(
+            EditableBitcoinBackendProfileInput(
+                id = id,
+                label = label,
+                type = type,
+                network = network,
+                host = when (endpoint) {
+                    BackendNotConfigured -> ""
+                    is HttpEndpoint -> endpoint.host
+                    is TcpEndpoint -> endpoint.host
+                },
+                portText = when (endpoint) {
+                    BackendNotConfigured -> ""
+                    is HttpEndpoint -> endpoint.port?.toString().orEmpty()
+                    is TcpEndpoint -> endpoint.port.toString()
+                },
+                useTls = when (endpoint) {
+                    BackendNotConfigured -> false
+                    is HttpEndpoint -> endpoint.useTls
+                    is TcpEndpoint -> endpoint.useTls
+                },
+                path = when (endpoint) {
+                    BackendNotConfigured -> ""
+                    is HttpEndpoint -> endpoint.path.orEmpty()
+                    is TcpEndpoint -> ""
+                },
+                trustModel = trustModel,
+            ),
+        )
+}
+
 interface BitcoinWalletSyncService {
     val id: BitcoinWalletSyncServiceId
 

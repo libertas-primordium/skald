@@ -30,6 +30,16 @@ Future secure storage must cover secret persistence for:
 - Backup encryption keys.
 - Metadata encryption keys.
 
+Future encrypted metadata storage must also cover sensitive wallet metadata before production observation persistence is enabled:
+
+- Observed addresses.
+- Address index state.
+- UTXO sets and outpoints.
+- Wallet labels and clusters.
+- Transaction notes and wallet history.
+- Backend observation metadata.
+- Privacy Analyzer state.
+
 The secure-storage boundary must also support metadata-only references that let non-secret settings point to secret records without embedding the secret payload in settings storage.
 
 ## Non-goals
@@ -259,6 +269,8 @@ Metadata must not include:
 - Backup encryption keys.
 - Authentication cookies, tokens, or headers.
 
+Observed addresses, address index state, UTXO sets, outpoints, backend observation metadata, labels, transaction notes, and wallet history are sensitive metadata even when they are not secret key material. Production persistence for that data is deferred until the encrypted local vault or another approved encrypted metadata boundary exists.
+
 Rules:
 
 - Metadata may identify that a secret exists.
@@ -444,6 +456,7 @@ Required test groups:
 - Concurrent access tests.
 - Deletion/wipe behavior tests.
 - Recovery Center state updates.
+- Recovery Center and Privacy Analyzer status for disabled sync, observation persistence, and encrypted metadata blockers.
 - UI tests or scripted verification for reveal/export/deletion warnings.
 
 Testing must use local deterministic harnesses, regtest, signet, testnet/testnet4, or explicit placeholders. Mainnet must never be used for wallet/security-sensitive tests.

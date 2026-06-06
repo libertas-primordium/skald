@@ -12,7 +12,7 @@ Future production sync code must target Skald-owned state rather than BDK, Elect
 
 The adapter boundary defines how a future backend implementation will accept a user-selected backend profile and eventually return a `BackendObservationSummary`. For now the only production adapter implementation is disabled and returns Skald-owned blocked results.
 
-The production sync service facade and Nodes status surface are documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). The facade currently calls only the disabled adapter boundary and returns fail-closed preflight/result state.
+The production sync service facade and Nodes status surface are documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). The facade currently calls only the disabled adapter boundary and returns fail-closed preflight/result state.
 
 ## Source Location
 
@@ -134,7 +134,7 @@ This pass proves only that:
 - mainnet is rejected,
 - sanitized placeholder observations can be represented through Skald-owned `BackendObservationSummary`.
 
-No production adapter currently produces real observations.
+No production adapter currently produces real observations. No production observation repository exists, and observed-address/UTXO persistence is deferred until encrypted vault or equivalent approved secure metadata storage exists.
 
 ## Mainnet Policy
 
@@ -180,6 +180,6 @@ This boundary does not enable:
 
 The disabled production sync service facade and Nodes preflight/status surface are now documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
 
-The next focused pass should integrate disabled sync status with recovery/privacy planning or design production observation persistence.
+The next focused pass should design encrypted production observation persistence or prepare future regtest/signet wallet activation behind the existing disabled sync and Recovery/Privacy status boundaries.
 
 Do not add production sync, signing, broadcasting, public endpoint defaults, secret persistence, or mainnet until those boundaries are explicitly reviewed.
