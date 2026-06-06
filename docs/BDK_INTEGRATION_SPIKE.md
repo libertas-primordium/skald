@@ -129,6 +129,12 @@ The test-only regtest/signet address derivation validation boundary is documente
 
 That boundary remains desktop-test-only, opt-in, redacted, offline, and disconnected from production app wallet flows. It proves deterministic receive-address derivation from the same runtime-only test seed on regtest and signet. It still does not enable app receive UI, production address derivation, address index persistence, backend sync, UTXO scan, signing, broadcasting, production storage, or mainnet.
 
+## UTXO Scan Validation Boundary
+
+The test-only regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
+
+That boundary currently reports a safe blocked state. BDK `2.3.0` exposes wallet scan request types and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from the existing local `bitcoind` harness alone. No production wallet sync, backend client, UTXO scan, signing, broadcasting, or mainnet behavior is enabled.
+
 ## Next Step
 
-The next implementation pass should introduce either address reuse prevention/receive-address state modeling or a regtest UTXO scan validation path. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should decide the local indexed regtest backend strategy, such as a local Electrum or Esplora harness, a compact-filter harness, or a revised BDK adapter strategy. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.

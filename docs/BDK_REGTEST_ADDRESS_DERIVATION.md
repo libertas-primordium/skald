@@ -115,8 +115,14 @@ The validation must remain:
 
 Mainnet requests are rejected before runtime wallet material is created.
 
+## UTXO Scan Follow-Up
+
+The follow-up regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
+
+That boundary currently reports a safe blocked state. BDK `2.3.0` exposes wallet scan requests and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from the existing local `bitcoind` harness alone.
+
 ## Next Step
 
-The next focused pass should be a regtest UTXO scan validation path using the local `bitcoind` harness and the receive-address policy model as the state foundation.
+The next focused pass should decide and implement a local indexed regtest backend harness, or revise the BDK adapter strategy before attempting full UTXO observation again.
 
-That path must keep production app flows disabled until the secure-storage and recovery boundaries are ready.
+That path must keep production app flows disabled until the secure-storage, recovery, and backend-trust boundaries are ready.

@@ -10,7 +10,7 @@ This harness is test/development infrastructure only. It does not enable product
 
 The harness proves that the development environment can start a local regtest node, check readiness, read chain metadata, generate a regtest block, shut down cleanly, and remove temporary state.
 
-It exists to support BDK rollout layers such as seed-backed regtest wallet creation and recovery behind Skald-owned adapter APIs. The current seed-backed BDK validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md), the test-only address derivation boundary is documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md), and the JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md).
+It exists to support BDK rollout layers such as seed-backed regtest wallet creation and recovery behind Skald-owned adapter APIs. The current seed-backed BDK validation boundary is documented in [`BDK_REGTEST_WALLET_VALIDATION.md`](BDK_REGTEST_WALLET_VALIDATION.md), the test-only address derivation boundary is documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md), the test-only UTXO scan boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md), and the JVM/Linux binding decision is documented in [`BDK_JVM_LINUX_BINDING_DECISION.md`](BDK_JVM_LINUX_BINDING_DECISION.md).
 
 ## Source Location
 
@@ -100,8 +100,12 @@ Runtime regtest addresses and block hashes may be produced by `bitcoind` during 
 
 The BDK regtest/signet address derivation validation does not require this harness because BDK can derive the tested receive addresses offline from runtime-only test wallet material.
 
-The local `bitcoind` harness remains the expected base for later regtest UTXO scan, fee, and transaction-validation work.
+## Relationship To UTXO Scan Validation
+
+The BDK regtest UTXO scan validation boundary currently reports a blocked result. BDK `2.3.0` exposes wallet scan requests and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from this local `bitcoind` harness alone.
+
+The local harness remains useful as the base regtest node for a future local Electrum, Esplora, compact-filter, or revised chain-source harness. It does not by itself make BDK wallet UTXO observation available.
 
 ## Next Step
 
-The next focused pass should introduce address reuse prevention/receive-address state modeling or a regtest UTXO scan validation path. Those passes must remain regtest/signet first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should decide the local indexed regtest backend strategy before attempting full BDK UTXO observation again. That pass must remain regtest-only, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
