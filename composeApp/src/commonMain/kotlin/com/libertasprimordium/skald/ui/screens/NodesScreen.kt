@@ -211,7 +211,7 @@ private fun BackendProfileForm(
         state = "non-secret fields only",
     ) {
         Text(
-            text = "Real connection testing and wallet sync are not implemented yet.",
+            text = "Real connection testing and wallet sync are not implemented yet. The address field accepts hostnames, IPv4, IPv6, and .onion metadata only.",
             color = SkaldWarning,
             lineHeight = 20.sp,
         )
@@ -235,12 +235,12 @@ private fun BackendProfileForm(
             onValueChange = { onFormChanged(form.copy(label = it)) },
         )
         SkaldTextField(
-            label = "Host",
+            label = "Address / host",
             value = form.host,
             onValueChange = { onFormChanged(form.copy(host = it)) },
         )
         SkaldTextField(
-            label = if (form.type == BitcoinBackendType.Esplora) "Port (optional)" else "Port",
+            label = if (form.type == BitcoinBackendType.Esplora) "Port (optional)" else "Port (or include in address)",
             value = form.portText,
             onValueChange = { onFormChanged(form.copy(portText = it)) },
         )

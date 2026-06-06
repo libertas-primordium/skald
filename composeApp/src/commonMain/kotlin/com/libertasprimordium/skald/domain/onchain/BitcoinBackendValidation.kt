@@ -22,11 +22,17 @@ object BitcoinBackendValidator {
         val endpointResult = endpointFor(input, normalizedHostInput, normalizedPathInput)
         errors += endpointResult.errors
 
+        val profileWarnings = (
+            warningsFor(input.trustModel) +
+                endpointResult.warnings.map(::warningTextFor) +
+                implementationWarningsFor(input.type)
+            ).distinct()
+
         if (errors.isNotEmpty()) {
             return BackendProfileValidationResult(
                 normalizedProfile = null,
                 errors = errors.distinct(),
-                warnings = warningsFor(input.trustModel),
+                warnings = profileWarnings,
             )
         }
 
@@ -44,7 +50,7 @@ object BitcoinBackendValidator {
             endpointValidationState = BackendEndpointValidationState.NotValidated,
             credentialReference = null,
             capabilities = capabilitiesFor(input.type),
-            warnings = warningsFor(input.trustModel) + implementationWarningsFor(input.type),
+            warnings = profileWarnings,
             isSelected = false,
             isUserEditable = true,
         )
@@ -64,18 +70,20 @@ object BitcoinBackendValidator {
         normalizedHostInput: String,
         normalizedPathInput: String,
     ): EndpointValidation {
-        if (normalizedHostInput.isBlank()) {
-            return EndpointValidation(
-                endpoint = null,
-                errors = listOf(BackendProfileValidationError.MissingHost),
-            )
-        }
-
-        return when (input.type) {
-            BitcoinBackendType.BitcoinCoreRpc -> tcpEndpoint(input, normalizedHostInput, supportsUrlScheme = false)
-            BitcoinBackendType.Electrum -> tcpEndpoint(input, normalizedHostInput, supportsUrlScheme = false)
-            BitcoinBackendType.Esplora -> httpEndpoint(input, normalizedHostInput, normalizedPathInput)
-        }
+        val parsed = BitcoinBackendEndpointParser.parse(
+            BitcoinBackendEndpointParseInput(
+                backendType = input.type,
+                address = normalizedHostInput,
+                explicitPort = input.portText,
+                useTls = input.useTls,
+                path = normalizedPathInput,
+            ),
+        )
+        return EndpointValidation(
+            endpoint = parsed.normalizedEndpoint?.toBackendEndpoint(),
+            errors = parsed.errors.map(::profileErrorFor),
+            warnings = parsed.warnings,
+        )
     }
 
     private fun tcpEndpoint(
@@ -265,6 +273,43 @@ object BitcoinBackendValidator {
             BitcoinBackendType.Esplora -> listOf("Connection testing and wallet sync are not implemented yet.")
         }
 
+    private fun warningTextFor(warning: BitcoinBackendEndpointWarning): String =
+        when (warning) {
+            BitcoinBackendEndpointWarning.LocalLoopbackEndpoint ->
+                "Endpoint is local loopback metadata; production sync remains disabled."
+            BitcoinBackendEndpointWarning.PrivateLanEndpoint ->
+                "Endpoint is private LAN metadata; backend trust still requires user review."
+            BitcoinBackendEndpointWarning.PublicEndpointPrivacyLeak ->
+                "Public or DNS endpoints can observe wallet queries. A user-owned node is preferred."
+            BitcoinBackendEndpointWarning.OnionEndpointRequiresTor ->
+                "Onion endpoint metadata preserves Tor labeling; Tor/proxy transport remains future work."
+            BitcoinBackendEndpointWarning.DnsEndpointNeedsTrustReview ->
+                "DNS endpoint metadata requires backend trust and privacy review."
+            BitcoinBackendEndpointWarning.CredentialsReferenceOnly ->
+                "Credential values are rejected; future credentials must use secure-storage references."
+            BitcoinBackendEndpointWarning.ProductionSyncDisabled ->
+                "Production backend sync is disabled."
+        }
+
+    private fun profileErrorFor(error: BitcoinBackendEndpointParseError): BackendProfileValidationError =
+        when (error) {
+            BitcoinBackendEndpointParseError.BlankAddress -> BackendProfileValidationError.MissingHost
+            BitcoinBackendEndpointParseError.UserInfoRejected,
+            BitcoinBackendEndpointParseError.CredentialMaterialRejected,
+            -> BackendProfileValidationError.CredentialMaterialRejected
+            BitcoinBackendEndpointParseError.UnsupportedScheme -> BackendProfileValidationError.UnsupportedScheme
+            BitcoinBackendEndpointParseError.PathUnsupported -> BackendProfileValidationError.UnsupportedPath
+            BitcoinBackendEndpointParseError.MalformedBracketedIpv6,
+            BitcoinBackendEndpointParseError.AmbiguousUnbracketedIpv6Port,
+            BitcoinBackendEndpointParseError.UnsupportedHost,
+            -> BackendProfileValidationError.MalformedEndpoint
+            BitcoinBackendEndpointParseError.AmbiguousEndpointPort -> BackendProfileValidationError.AmbiguousEndpointPort
+            BitcoinBackendEndpointParseError.MissingPort -> BackendProfileValidationError.MissingPort
+            BitcoinBackendEndpointParseError.InvalidPort -> BackendProfileValidationError.InvalidPort
+            BitcoinBackendEndpointParseError.MainnetDefaultEndpointRejected ->
+                BackendProfileValidationError.MainnetDefaultEndpointRejected
+        }
+
     private fun generateProfileId(
         type: BitcoinBackendType,
         label: String,
@@ -288,6 +333,7 @@ object BitcoinBackendValidator {
     private data class EndpointValidation(
         val endpoint: BackendEndpoint?,
         val errors: List<BackendProfileValidationError>,
+        val warnings: Set<BitcoinBackendEndpointWarning> = emptySet(),
     )
 
     private data class ParsedPort(

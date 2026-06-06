@@ -8,6 +8,8 @@ This is a domain/model/policy boundary only. It does not enable production walle
 
 The implemented models live in common Kotlin under the on-chain domain package and do not import BDK.
 
+The production backend adapter interface and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). That boundary targets this observation model but remains disabled/fail-closed.
+
 ## Purpose
 
 The boundary defines how future backend adapters should hand chain observations to Skald without leaking BDK, Electrum, Esplora, Bitcoin Core RPC, process, or platform-specific types into common UI, settings, persisted models, Recovery Center state, coin-control models, or public app services.
@@ -36,6 +38,14 @@ Tests:
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BackendObservationStateTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/BackendObservationSourceGuardTest.kt
+```
+
+Related production backend adapter boundary tests:
+
+```text
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterBoundaryTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BackendEndpointPolicyTest.kt
+composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
 
 Optional desktop-test mapping from the BDK Electrum validation result remains under:
@@ -180,6 +190,6 @@ That path remains test-only. It does not create app wallet sync, app receive UI,
 
 ## Next Step
 
-The next focused pass should design the production backend adapter interface and endpoint normalization boundary, including the single address input requirement for IPv4, IPv6 including bracketed host/port forms, and `.onion` hosts.
+The production backend adapter interface and endpoint normalization boundary has been added and documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It defines disabled adapter request/result models and a parser for a single address input that recognizes IPv4, IPv6 including bracketed host/port forms, DNS hostnames, and `.onion` hosts while rejecting credentials and userinfo.
 
-Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
+The next focused pass should migrate backend settings UI toward the unified address field if needed or design a disabled production sync service facade over the adapter boundary. Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, endpoint persistence, and observation persistence boundaries are explicitly reviewed.

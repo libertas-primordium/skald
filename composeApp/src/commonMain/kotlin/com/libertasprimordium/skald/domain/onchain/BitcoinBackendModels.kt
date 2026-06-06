@@ -88,7 +88,7 @@ data class HttpEndpoint(
                 ?.takeIf { it.isNotBlank() }
                 ?.let { if (it.startsWith("/")) it else "/$it" }
                 ?: ""
-            return "$scheme://${host.trim()}$portText$pathText"
+            return "$scheme://${host.trim().toDisplayHost()}$portText$pathText"
         }
 }
 
@@ -104,7 +104,7 @@ data class TcpEndpoint(
         get() {
             if (!isConfigured) return BackendNotConfigured.displayText
             val scheme = if (useTls) "tls" else "tcp"
-            return "$scheme://${host.trim()}:$port"
+            return "$scheme://${host.trim().toDisplayHost()}:$port"
         }
 }
 
