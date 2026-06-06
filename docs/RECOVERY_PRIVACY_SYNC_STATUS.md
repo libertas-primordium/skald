@@ -2,7 +2,7 @@
 
 ## Status
 
-Skald Vault now surfaces disabled production sync, backend observation, receive-address policy, secure-storage, and observation-persistence blockers in Recovery Center and the Privacy Analyzer.
+Skald Vault now surfaces disabled production sync, backend observation, receive-address policy, secure-storage, secure metadata, and observation-persistence blockers in Recovery Center and the Privacy Analyzer.
 
 This is a status integration only. It does not enable production wallet sync, production backend clients, production observation persistence, app receive UI, wallet activation, descriptor persistence, address index persistence, UTXO persistence, secure storage, signing, broadcasting, Nostr parsing, Lightning, Cashu, Payjoin, public endpoint defaults, Skald-operated infrastructure, or mainnet.
 
@@ -43,10 +43,12 @@ Recovery Center includes a read-only `Sync and observation recovery` card.
 It shows:
 
 - production sync disabled,
+- secure metadata vault unavailable,
 - observation and UTXO persistence deferred until encrypted vault storage,
 - secure storage unavailable,
 - descriptor wallet profiles remain metadata-only/non-operational,
 - production address index state is not persisted,
+- production UTXO state is not persisted,
 - desktop regtest BDK validation is test-only and does not create recoverable production wallet state.
 
 The card keeps the core recovery warning intact: a seed phrase alone does not restore every rail. Current test-only regtest validation does not store a production seed, descriptor, address index, UTXO set, backend metadata, wallet history, Lightning state, Cashu proof material, Nostr key material, or backup encryption key.
@@ -59,6 +61,7 @@ It can show policy findings for:
 
 - production sync disabled,
 - no production backend query attempted,
+- secure metadata storage unavailable,
 - observation persistence deferred,
 - public backend wallet-query privacy risk,
 - backend query linkage,
@@ -78,12 +81,12 @@ Production observation persistence is intentionally deferred.
 
 Observed addresses, labels, UTXOs, outpoints, transaction notes, backend metadata, wallet history, address index state, and privacy-analysis state are sensitive wallet metadata. They can reveal wallet structure, timing, balances, backend choices, address reuse, identity-linked funds, and future spending plans.
 
-Skald must not persist that metadata in plaintext. Production observation persistence must wait for one of:
+Skald must not persist that metadata in plaintext. Production observation persistence must wait for:
 
 - the app-controlled encrypted local vault described in `SECURE_STORAGE_DESIGN.md`,
-- or another explicitly reviewed encrypted metadata boundary approved for Skald wallet state.
+- the disabled secure metadata boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md) to be replaced by an approved encrypted implementation.
 
-Current desktop-test BDK observations remain runtime-only test state. No production observation repository exists.
+Current desktop-test BDK observations remain runtime-only test state. No production observation repository exists. The current `DisabledSecureWalletMetadataRepository` rejects all sensitive metadata reads, writes, listing, and deletes.
 
 ## Relationship To Existing Boundaries
 
@@ -93,6 +96,7 @@ Recovery/Privacy status consumes Skald-owned models only:
 - backend observation summary shape,
 - receive-address policy state,
 - secure-storage capability,
+- secure metadata persistence capability,
 - descriptor wallet metadata settings.
 
 It does not consume BDK types, Electrum/Esplora/Bitcoin Core clients, process handles, sockets, HTTP clients, or platform-native APIs.
@@ -110,6 +114,8 @@ BackendObservationSummary
         ↓
 Receive-address policy
         ↓
+Secure metadata persistence boundary
+        ↓
 Encrypted observation persistence
         ↓
 Recovery and Privacy status
@@ -126,6 +132,7 @@ This status integration does not enable:
 - production connection testing,
 - production observation persistence,
 - production UTXO display,
+- secure metadata persistence,
 - app receive address generation,
 - production receive UI,
 - address index persistence,
@@ -150,9 +157,11 @@ Tests verify that:
 
 - Recovery status reports production sync disabled,
 - Recovery status reports observation persistence deferred until encrypted vault storage,
+- Recovery status reports secure metadata vault and UTXO-state persistence unavailable,
 - Recovery status reports secure storage unavailable,
 - Recovery status does not treat test-only BDK validation as production recovery state,
 - Privacy status reports public backend warnings,
+- Privacy status reports secure metadata storage unavailable,
 - Privacy status reports onion/Tor labeling without claiming Tor transport is implemented,
 - Privacy status distinguishes displayed addresses from backend-observed used addresses,
 - Privacy status reports address reuse warnings after observed use,
@@ -161,4 +170,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should design production observation persistence around encrypted vault storage or continue Recovery/Privacy planning for future regtest/signet wallet activation. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
+The next focused pass should design the encrypted vault format or continue Recovery/Privacy planning for future regtest/signet wallet activation. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.

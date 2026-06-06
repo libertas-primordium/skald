@@ -47,7 +47,9 @@ object BitcoinWalletSyncStatusUiMapper {
             BitcoinWalletSyncBlocker.SecureStorageUnavailable -> "Secure storage is unavailable."
             BitcoinWalletSyncBlocker.ProductionBackendDisabled -> "Production backend adapter is disabled."
             BitcoinWalletSyncBlocker.CredentialsUnavailable -> "Backend credentials are unavailable."
+            BitcoinWalletSyncBlocker.SecureMetadataPersistenceUnavailable -> "Secure metadata persistence is unavailable."
             BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable -> "Observation persistence is unavailable."
+            BitcoinWalletSyncBlocker.AddressIndexPersistenceUnavailable -> "Address index persistence is unavailable."
             BitcoinWalletSyncBlocker.ReceiveAddressPolicyBlocked -> "Receive-address policy blocks sync preflight."
         }
 
@@ -56,6 +58,7 @@ object BitcoinWalletSyncStatusUiMapper {
             BitcoinWalletSyncWarning.ProductionSyncDisabled -> "Production sync remains disabled."
             BitcoinWalletSyncWarning.NoNetworkAttempted -> "No network connection is attempted."
             BitcoinWalletSyncWarning.NoObservationPersisted -> "No backend observation is persisted."
+            BitcoinWalletSyncWarning.NoSecureMetadataPersisted -> "No sensitive wallet metadata is persisted."
             BitcoinWalletSyncWarning.EndpointPolicyOnly -> "Endpoint parsing is policy-only."
             BitcoinWalletSyncWarning.PublicBackendPrivacyLeak -> "Public backends can observe wallet queries."
             BitcoinWalletSyncWarning.BackendCanLinkWalletQueries -> "The selected backend can link wallet queries."
@@ -63,6 +66,7 @@ object BitcoinWalletSyncStatusUiMapper {
             BitcoinWalletSyncWarning.TorTransportNotImplemented -> "Tor transport is not implemented."
             BitcoinWalletSyncWarning.UserOwnedNodePreferred -> "A user-owned node is preferred."
             BitcoinWalletSyncWarning.CredentialsRequireSecureStorage -> "Credential references require secure storage."
+            BitcoinWalletSyncWarning.MetadataRequiresEncryptedVault -> "Sensitive wallet metadata requires encrypted vault storage."
             BitcoinWalletSyncWarning.ReceiveAddressPolicyRequired -> "Receive-address policy is required before sync."
             BitcoinWalletSyncWarning.CoinControlRequiredBeforeSpend -> "Coin control is required before any future spend."
             BitcoinWalletSyncWarning.NoSkaldManagedInfrastructure -> "No Skald-managed infrastructure is configured."

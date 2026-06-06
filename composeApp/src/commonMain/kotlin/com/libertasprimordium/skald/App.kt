@@ -29,8 +29,10 @@ import com.libertasprimordium.skald.domain.onchain.EditableCoinControlDraftInput
 import com.libertasprimordium.skald.domain.onchain.EditableDescriptorWalletProfileInput
 import com.libertasprimordium.skald.domain.privacy.PrivacySyncStatusAnalyzer
 import com.libertasprimordium.skald.domain.recovery.RecoverySyncStatusPolicy
+import com.libertasprimordium.skald.security.DisabledSecureWalletMetadataRepository
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.SecureSecretStorage
+import com.libertasprimordium.skald.security.SecureWalletMetadataRepository
 import com.libertasprimordium.skald.security.toUiStatus
 import com.libertasprimordium.skald.settings.CoinControlDraftSettingsWriteResult
 import com.libertasprimordium.skald.settings.DescriptorWalletSettingsWriteResult
@@ -53,6 +55,7 @@ import com.libertasprimordium.skald.ui.screens.SettingsScreen
 fun SkaldApp(
     settingsRepository: SkaldSettingsRepository = PersistentSettingsRepository(InMemorySettingsStorage()),
     secureStorage: SecureSecretStorage = DisabledSecureSecretStorage(),
+    secureMetadataRepository: SecureWalletMetadataRepository = DisabledSecureWalletMetadataRepository(),
 ) {
     val repository = remember { DemoPortfolioRepository() }
     val coinControlRepository = remember { DemoCoinControlRepository() }
@@ -82,14 +85,19 @@ fun SkaldApp(
             backendSettings = backendSettings,
             descriptorWalletSettings = descriptorWalletSettings,
             secureStorageCapability = secureStorage.capability,
+            secureMetadataCapability = secureMetadataRepository.capability,
         ),
     )
     val recoverySyncStatus = RecoverySyncStatusPolicy.from(
         syncResult = syncPreflightResult,
         descriptorWalletSettings = descriptorWalletSettings,
         secureStorageCapability = secureStorage.capability,
+        secureMetadataCapability = secureMetadataRepository.capability,
     )
-    val privacySyncStatus = PrivacySyncStatusAnalyzer.analyze(syncPreflightResult)
+    val privacySyncStatus = PrivacySyncStatusAnalyzer.analyze(
+        syncResult = syncPreflightResult,
+        secureMetadataCapability = secureMetadataRepository.capability,
+    )
     var backendMessage by remember {
         mutableStateOf("Backend profiles are local non-secret settings only. Simulated validation is available; real networking is disabled.")
     }

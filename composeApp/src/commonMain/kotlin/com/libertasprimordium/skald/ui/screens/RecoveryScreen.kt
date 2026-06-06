@@ -68,6 +68,10 @@ private fun RecoverySyncStatusCard(status: RecoverySyncStatus) {
             if (status.productionObservationPersistenceEnabled) "enabled" else "deferred until encrypted vault",
         )
         DetailLine(
+            "Secure metadata",
+            if (status.secureMetadataPersistenceEnabled) "enabled" else "disabled / encrypted vault unavailable",
+        )
+        DetailLine(
             "Test validation",
             if (status.testValidationCountsAsProductionRecovery) {
                 "production recovery state"

@@ -6,12 +6,16 @@ import com.libertasprimordium.skald.domain.onchain.BackendObservationWarning
 import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncBlocker
 import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncResult
 import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncWarning
+import com.libertasprimordium.skald.security.SecureMetadataPersistenceCapability
+import com.libertasprimordium.skald.security.SecureMetadataPersistencePolicy
+import com.libertasprimordium.skald.security.commonDisabledSecureMetadataCapability
 
 enum class PrivacySyncFindingCategory(val label: String) {
     ProductionSync("production sync"),
     BackendTrust("backend trust"),
     TorLabeling("Tor/onion labeling"),
     ObservationPersistence("observation persistence"),
+    SecureMetadata("secure metadata"),
     AddressUsage("address usage"),
     AddressReuse("address reuse"),
     IdentityLinkage("identity linkage"),
@@ -39,12 +43,13 @@ object PrivacySyncStatusAnalyzer {
     fun analyze(
         syncResult: BitcoinWalletSyncResult,
         observationSummary: BackendObservationSummary? = syncResult.observationSummary,
+        secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
     ): PrivacySyncStatus =
         PrivacySyncStatus(
             title = "Backend observation privacy",
             state = "preflight only",
             summary = "Privacy status is policy-only. No production backend query, chain scan, address derivation, observation persistence, or cluster analysis is performed.",
-            findings = findings(syncResult, observationSummary),
+            findings = findings(syncResult, observationSummary, secureMetadataCapability),
             canRunAnalysis = false,
             productionObservationPersistenceEnabled = false,
             torTransportImplemented = false,
@@ -63,6 +68,7 @@ object PrivacySyncStatusAnalyzer {
     private fun findings(
         syncResult: BitcoinWalletSyncResult,
         observationSummary: BackendObservationSummary?,
+        secureMetadataCapability: SecureMetadataPersistenceCapability,
     ): List<PrivacySyncFinding> =
         buildList {
             add(
@@ -83,6 +89,19 @@ object PrivacySyncStatusAnalyzer {
                         level = PrivacyRiskLevel.Warning,
                         title = "Observation persistence deferred",
                         detail = "Observed addresses, UTXOs, backend metadata, labels, and wallet history are sensitive metadata and are not persisted before encrypted vault storage exists.",
+                    ),
+                )
+            }
+            if (
+                BitcoinWalletSyncBlocker.SecureMetadataPersistenceUnavailable in syncResult.blockers ||
+                !SecureMetadataPersistencePolicy.evaluate(secureMetadataCapability).canPersistSensitiveMetadata
+            ) {
+                add(
+                    PrivacySyncFinding(
+                        category = PrivacySyncFindingCategory.SecureMetadata,
+                        level = PrivacyRiskLevel.Danger,
+                        title = "Secure metadata storage unavailable",
+                        detail = "Privacy Analyzer state, public-backend observations, identity-linkage metadata, address indexes, labels, and UTXO history are not persisted until encrypted vault storage exists.",
                     ),
                 )
             }

@@ -67,6 +67,8 @@ The disabled production sync service facade is documented in [`PRODUCTION_SYNC_S
 
 Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). Those surfaces explicitly state that this desktop-test validation does not create recoverable production wallet state and that production observation/UTXO persistence is deferred until encrypted vault storage or an equivalent approved encrypted metadata boundary exists.
 
+The disabled secure metadata persistence boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). Runtime observations from this desktop-test validation are not written through that repository; the production boundary rejects all sensitive metadata reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
+
 ## Receive-Address Policy Link
 
 The tests also exercise the Skald-owned receive-address policy with sanitized fake scan observations:
@@ -162,7 +164,7 @@ Runtime-generated regtest addresses or transaction identifiers may be used only 
 
 Observed runtime UTXOs are represented as sanitized Skald-owned state. Observation does not authorize spending, does not make a UTXO spendable without coin-control review, and does not enable production sync.
 
-Observed runtime UTXOs from this validation are not persisted into production app storage and are not Recovery Center state.
+Observed runtime UTXOs from this validation are not persisted into production app storage, secure metadata storage, non-secret settings, or Recovery Center state.
 
 ## Local Indexer Decision
 

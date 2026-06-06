@@ -6,6 +6,8 @@ Skald Vault secure storage is currently disabled and fail-closed.
 
 The current codebase has a common `SecureSecretStorage` interface, typed secret metadata models, and Android/Linux desktop implementations that delegate to disabled storage. Those implementations reject secret writes, reads, metadata listing, and deletes. No real secret persistence exists yet.
 
+The current codebase also has a disabled/fail-closed secure wallet metadata persistence boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). That boundary classifies observation history, address index state, labels, backend metadata, UTXO state, wallet notes, transaction notes, recovery metadata, Privacy Analyzer metadata, and identity-linkage metadata as sensitive wallet metadata. It rejects all metadata reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
+
 This document is a design prerequisite before any implementation enables secret storage. It does not enable wallet creation, credential storage, signing, broadcasting, backend networking, Cashu proof persistence, Lightning credential persistence, Nostr key storage, backup encryption, or mainnet behavior.
 
 ## Scope
@@ -269,7 +271,7 @@ Metadata must not include:
 - Backup encryption keys.
 - Authentication cookies, tokens, or headers.
 
-Observed addresses, address index state, UTXO sets, outpoints, backend observation metadata, labels, transaction notes, and wallet history are sensitive metadata even when they are not secret key material. Production persistence for that data is deferred until the encrypted local vault or another approved encrypted metadata boundary exists.
+Observed addresses, address index state, UTXO sets, outpoints, backend observation metadata, labels, transaction notes, wallet history, privacy-analysis state, recovery metadata, and identity-linkage metadata are sensitive metadata even when they are not secret key material. Production persistence for that data is deferred until the app-controlled encrypted local vault exists. The disabled secure metadata boundary rejects all operations and does not use non-secret settings, OS keyrings, BDK persistence, plaintext files, SharedPreferences, or desktop config files as a metadata store.
 
 Rules:
 
