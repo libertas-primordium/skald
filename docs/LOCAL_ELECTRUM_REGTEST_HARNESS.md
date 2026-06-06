@@ -126,12 +126,14 @@ With local `electrs` configured through `SKALD_ELECTRS`, the combined opt-in UTX
 
 The sanitized BDK scan result now maps into the Skald-owned backend observation/UTXO state boundary documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). That boundary remains common-domain model state only and does not add production Electrum support, UTXO persistence, app UTXO display, signing, broadcasting, public endpoints, or mainnet.
 
+The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It is the disabled production-facing interface future runtime sync work must target; this local harness remains desktop-test-only.
+
 ## Next Step
 
 Recommended next branch:
 
 ```text
-phase2-prep-production-backend-adapter-boundary
+phase2-prep-backend-settings-unified-address-ui
 ```
 
-That branch should design the production backend adapter interface and endpoint normalization boundary before any production sync work. It must not add production Electrum defaults, production sync, signing, broadcasting, secure storage, public endpoint defaults, or mainnet.
+That branch should migrate the backend settings UI toward the unified address field if needed, using the existing endpoint parser. It must not add production Electrum defaults, production sync, signing, broadcasting, secure storage, public endpoint defaults, or mainnet.

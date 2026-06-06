@@ -61,6 +61,8 @@ With local `electrs` configured, the combined opt-in command completed the full 
 
 The Skald-owned backend observation state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). The desktop-test-only scan result now carries a `BackendObservationSummary` so future production adapter design can target Skald-owned state instead of BDK types.
 
+The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It defines the disabled production-facing interface that future runtime backend implementations must target. It does not turn this desktop-test BDK scan adapter into production sync.
+
 ## Receive-Address Policy Link
 
 The tests also exercise the Skald-owned receive-address policy with sanitized fake scan observations:
@@ -188,4 +190,4 @@ It remains production-safe model state only. It does not add production UTXO per
 
 ## Next Step
 
-The next focused branch should define the production backend adapter interface and endpoint normalization boundary. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
+The next focused branch should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.

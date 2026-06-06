@@ -108,6 +108,8 @@ The local harness remains useful as the base regtest node for the local Electrum
 
 The sanitized local observation maps into the Skald-owned backend observation state boundary documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). That model remains production-safe common-domain state only and does not enable app sync or UTXO persistence.
 
+The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It is the disabled production-facing boundary that future sync work must target; this regtest harness remains desktop-test-only.
+
 ## Next Step
 
-The next focused pass should design the production backend adapter interface and endpoint normalization boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.

@@ -46,4 +46,8 @@ enum class BackendProfileValidationError(val message: String) {
     InvalidPort("Port must be a number from 1 to 65535."),
     CredentialMaterialRejected("Endpoint must not include userinfo, passwords, tokens, cookies, or credential-like material."),
     UnsupportedScheme("Endpoint scheme is not supported for this backend type."),
+    UnsupportedPath("Endpoint path is not supported for this backend type."),
+    MalformedEndpoint("Endpoint host/address is malformed."),
+    AmbiguousEndpointPort("Endpoint address and port fields are ambiguous."),
+    MainnetDefaultEndpointRejected("Mainnet-default endpoint metadata is rejected during development."),
 }

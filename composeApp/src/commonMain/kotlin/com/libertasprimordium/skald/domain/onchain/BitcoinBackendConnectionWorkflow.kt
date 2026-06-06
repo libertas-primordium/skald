@@ -282,11 +282,15 @@ object BitcoinBackendConnectionWorkflow {
                 BackendProfileValidationError.MissingHost -> BitcoinBackendConnectionTestBlockingIssue.EndpointMissing
                 BackendProfileValidationError.MissingPort,
                 BackendProfileValidationError.InvalidPort,
+                BackendProfileValidationError.AmbiguousEndpointPort,
                 -> BitcoinBackendConnectionTestBlockingIssue.InvalidPort
                 BackendProfileValidationError.CredentialMaterialRejected ->
                     BitcoinBackendConnectionTestBlockingIssue.CredentialMaterialRejected
                 BackendProfileValidationError.BlankLabel,
                 BackendProfileValidationError.UnsupportedScheme,
+                BackendProfileValidationError.UnsupportedPath,
+                BackendProfileValidationError.MalformedEndpoint,
+                BackendProfileValidationError.MainnetDefaultEndpointRejected,
                 -> BitcoinBackendConnectionTestBlockingIssue.InvalidProfile
             }
         }.toSet()
@@ -464,10 +468,15 @@ object BitcoinBackendConnectionWorkflow {
             BackendProfileValidationError.MissingHost -> BitcoinBackendConnectionTestStep.EndpointConfigured
             BackendProfileValidationError.MissingPort,
             BackendProfileValidationError.InvalidPort,
+            BackendProfileValidationError.AmbiguousEndpointPort,
             -> BitcoinBackendConnectionTestStep.PortValid
             BackendProfileValidationError.CredentialMaterialRejected ->
                 BitcoinBackendConnectionTestStep.EndpointHasNoCredentialMaterial
-            BackendProfileValidationError.UnsupportedScheme -> BitcoinBackendConnectionTestStep.EndpointConfigured
+            BackendProfileValidationError.UnsupportedScheme,
+            BackendProfileValidationError.UnsupportedPath,
+            BackendProfileValidationError.MalformedEndpoint,
+            BackendProfileValidationError.MainnetDefaultEndpointRejected,
+            -> BitcoinBackendConnectionTestStep.EndpointConfigured
         }
 
     private fun testIdFor(profile: BitcoinBackendProfile): BitcoinBackendConnectionTestId =

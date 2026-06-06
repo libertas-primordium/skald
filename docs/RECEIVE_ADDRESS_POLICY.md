@@ -101,6 +101,8 @@ Until backend observation is implemented:
 
 The current backend observation state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). It can model a backend-observed receive event and map that event into this receive-address policy, but it does not add production sync, persistence, or app receive UI.
 
+The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It targets backend observation summaries while remaining disabled/fail-closed.
+
 ## Reuse Prevention
 
 Normal receive flows must avoid address reuse.
@@ -198,7 +200,7 @@ That boundary uses this receive-address policy and the backend observation model
 Recommended next pass:
 
 ```text
-production backend adapter interface and endpoint normalization design
+backend settings unified address UI or disabled production sync facade
 ```
 
 That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, public endpoint defaults, and mainnet.

@@ -113,4 +113,6 @@ That boundary now includes a desktop-test-only BDK Electrum scan adapter because
 
 The backend observation state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md).
 
-The next pass should design the production backend adapter interface and endpoint normalization boundary before operational wallet sync. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.
+The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md).
+
+The next pass should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.

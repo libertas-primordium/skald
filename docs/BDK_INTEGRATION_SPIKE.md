@@ -141,6 +141,12 @@ The production-safe backend observation and UTXO state boundary is documented in
 
 That boundary defines Skald-owned models for backend observation source, trust, status, warnings, observed UTXO lifecycle, confirmation state, wallet scope, risk flags, and receive-address usage transitions. The desktop-test-only BDK Electrum scan result maps into this boundary through sanitized common-domain state. BDK scan APIs remain confined to desktop test validation code; the common observation model does not import BDK and does not enable production sync, persistence, app UTXO display, signing, broadcasting, public endpoints, or mainnet.
 
+## Production Backend Adapter Boundary
+
+The disabled production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md).
+
+That boundary defines Skald-owned adapter request/result/error types and a shared endpoint parser for IPv4, IPv6 including bracketed host/port forms, DNS hostnames, and `.onion` metadata. It rejects credentials/userinfo in address fields and keeps scheme, TLS, port, path, and transport/proxy labeling explicit. The only production adapter is disabled/fail-closed; it does not create BDK sync, backend clients, sockets, HTTP/RPC/Electrum/Esplora calls, persistence, signing, broadcasting, public defaults, or mainnet.
+
 ## Local Electrum Regtest Harness Boundary
 
 The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).
@@ -151,4 +157,4 @@ The current local environment validates with local `electrs` `v0.11.1` supplied 
 
 ## Next Step
 
-The next implementation pass should design the production backend adapter interface and endpoint normalization boundary before any production sync work. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should either migrate the backend settings UI toward the unified address field or add a disabled production sync service facade over the adapter boundary. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.

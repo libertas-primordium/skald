@@ -68,6 +68,52 @@ class BackendSettingsTest {
     }
 
     @Test
+    fun savesBracketedIpv6ElectrumProfileAndPreservesNormalizedDisplay() {
+        val storage = InMemorySettingsStorage()
+        val profile = validatedProfile(
+            validInput(
+                label = "IPv6 regtest Electrum profile",
+                type = BitcoinBackendType.Electrum,
+                network = NetworkEnvironment.Regtest,
+                host = "[::1]:50001",
+                portText = "",
+                useTls = false,
+                trustModel = BitcoinBackendTrustModel.UserOwnedNode,
+            ),
+        )
+
+        assertIs<SettingsWriteResult.Saved>(PersistentSettingsRepository(storage).saveBitcoinBackendProfile(profile))
+        val reloaded = PersistentSettingsRepository(storage).loadBitcoinBackendSettings()
+
+        assertEquals(BitcoinBackendType.Electrum, reloaded.profiles.single().type)
+        assertEquals("tcp://[::1]:50001", reloaded.profiles.single().endpointDisplay)
+        assertNull(reloaded.profiles.single().credentialReference)
+    }
+
+    @Test
+    fun savesOnionElectrumProfileWithoutCredentialMaterial() {
+        val storage = InMemorySettingsStorage()
+        val profile = validatedProfile(
+            validInput(
+                label = "Onion Electrum profile",
+                type = BitcoinBackendType.Electrum,
+                network = NetworkEnvironment.Signet,
+                host = "exampleexampleexample.onion",
+                portText = "50001",
+                useTls = false,
+                trustModel = BitcoinBackendTrustModel.UserOwnedNode,
+            ),
+        )
+
+        assertIs<SettingsWriteResult.Saved>(PersistentSettingsRepository(storage).saveBitcoinBackendProfile(profile))
+        val reloaded = PersistentSettingsRepository(storage).loadBitcoinBackendSettings()
+
+        assertEquals("tcp://exampleexampleexample.onion:50001", reloaded.profiles.single().endpointDisplay)
+        assertTrue(reloaded.profiles.single().warnings.any { it.contains("Onion", ignoreCase = true) })
+        assertNull(reloaded.profiles.single().credentialReference)
+    }
+
+    @Test
     fun savesEsploraBackendProfileAndReadsItBackThroughRepository() {
         val storage = InMemorySettingsStorage()
         val profile = validatedProfile(
@@ -165,6 +211,21 @@ class BackendSettingsTest {
         )
 
         assertContains(result.errors, BackendProfileValidationError.CredentialMaterialRejected)
+        assertNull(result.normalizedProfile)
+    }
+
+    @Test
+    fun mainnetDefaultCoreRpcPortIsRejectedEvenOnDevelopmentNetwork() {
+        val result = BitcoinBackendValidator.validate(
+            validInput(
+                type = BitcoinBackendType.BitcoinCoreRpc,
+                network = NetworkEnvironment.Regtest,
+                host = "127.0.0.1",
+                portText = "8332",
+            ),
+        )
+
+        assertContains(result.errors, BackendProfileValidationError.MainnetDefaultEndpointRejected)
         assertNull(result.normalizedProfile)
     }
 
