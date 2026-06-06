@@ -9,7 +9,8 @@ Current status:
 - Production receive address generation is not implemented.
 - BDK-derived addresses are not wired into app runtime UI or repositories.
 - No production address index state is persisted.
-- No backend observation, chain scan, UTXO scan, fee estimation, transaction construction, signing, or broadcasting is enabled.
+- No production backend observation, chain scan, UTXO scan, fee estimation, transaction construction, signing, or broadcasting is enabled.
+- A Skald-owned backend observation/UTXO state boundary now exists for future sync adapters, but it is policy/model state only.
 - Mainnet remains disabled.
 - Secure storage remains disabled/fail-closed.
 
@@ -97,6 +98,8 @@ Until backend observation is implemented:
 - no UTXO scan exists,
 - no address-monitoring backend is connected,
 - receive-address state remains a policy foundation only.
+
+The current backend observation state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). It can model a backend-observed receive event and map that event into this receive-address policy, but it does not add production sync, persistence, or app receive UI.
 
 ## Reuse Prevention
 
@@ -186,16 +189,16 @@ Current tests cover:
 
 ## Next Step
 
-The follow-up regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
+The backend observation and UTXO state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md).
 
-That boundary uses this receive-address policy as the state foundation for backend-observed address usage, but it currently reports a safe local-indexer blocker because BDK `2.3.0` does not expose a direct Bitcoin Core RPC scan client in the resolved JVM artifact.
+The desktop-test-only regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
 
-The local Electrum-compatible regtest indexer harness boundary is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md). It remains desktop-test-only and does not yet complete BDK UTXO observation.
+That boundary uses this receive-address policy and the backend observation model as the state foundation for backend-observed address usage. With local `electrs` configured through `SKALD_ELECTRS`, the combined opt-in desktop test observes a funded runtime regtest UTXO through BDK and maps the observation into the Skald-owned model.
 
 Recommended next pass:
 
 ```text
-BDK Electrum scan adapter spike using the local regtest indexer harness
+production backend adapter interface and endpoint normalization design
 ```
 
-That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, and mainnet.
+That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, public endpoint defaults, and mainnet.

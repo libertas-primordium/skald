@@ -124,12 +124,14 @@ This harness does not by itself enable production BDK UTXO observation. It creat
 
 With local `electrs` configured through `SKALD_ELECTRS`, the combined opt-in UTXO scan command observes a funded runtime regtest UTXO through BDK and applies Skald's receive-address used-state policy. If `electrs` is absent, the command still reports unavailable instead of using public infrastructure.
 
+The sanitized BDK scan result now maps into the Skald-owned backend observation/UTXO state boundary documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). That boundary remains common-domain model state only and does not add production Electrum support, UTXO persistence, app UTXO display, signing, broadcasting, public endpoints, or mainnet.
+
 ## Next Step
 
 Recommended next branch:
 
 ```text
-phase2-prep-backend-observation-state-boundary
+phase2-prep-production-backend-adapter-boundary
 ```
 
-That branch should design the production-safe backend observation state boundary before any production sync work. It must not add production Electrum defaults, production sync, signing, broadcasting, secure storage, or mainnet.
+That branch should design the production backend adapter interface and endpoint normalization boundary before any production sync work. It must not add production Electrum defaults, production sync, signing, broadcasting, secure storage, public endpoint defaults, or mainnet.

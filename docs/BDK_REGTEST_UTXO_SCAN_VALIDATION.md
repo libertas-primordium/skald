@@ -54,9 +54,12 @@ When both `SKALD_RUN_BDK_REGTEST_UTXO_SCAN=1` and `SKALD_RUN_LOCAL_ELECTRUM_REGT
 5. Builds a BDK full-scan request and calls BDK's Electrum full-scan API against the localhost harness endpoint.
 6. Applies the BDK wallet update in memory.
 7. Converts observed unspent outputs into Skald-owned sanitized scan results.
-8. Applies the receive-address policy transition from displayed/reserved to backend-observed/used.
+8. Maps the sanitized observation into the Skald-owned backend observation/UTXO state boundary.
+9. Applies the receive-address policy transition from displayed/reserved to backend-observed/used.
 
 With local `electrs` configured, the combined opt-in command completed the full observation path: local bitcoind started, local electrs started, BDK Electrum scan was attempted, the funded runtime regtest UTXO was observed, and receive-address policy marked the displayed address as backend-observed/used only after observation. If `electrs` is absent, the same path still reports a Skald-owned unavailable state rather than using public infrastructure. It does not use public Electrum, public Esplora, testnet, mainnet, DNS fallback, HTTP fallback, or Skald-operated infrastructure.
+
+The Skald-owned backend observation state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). The desktop-test-only scan result now carries a `BackendObservationSummary` so future production adapter design can target Skald-owned state instead of BDK types.
 
 ## Receive-Address Policy Link
 
@@ -151,6 +154,8 @@ The boundary must remain:
 
 Runtime-generated regtest addresses or transaction identifiers may be used only in future opt-in test execution. They must not be committed as fixtures, written to docs, written to build history, or exposed through result `toString()` output.
 
+Observed runtime UTXOs are represented as sanitized Skald-owned state. Observation does not authorize spending, does not make a UTXO spendable without coin-control review, and does not enable production sync.
+
 ## Local Indexer Decision
 
 The existing local harness uses `bitcoind` and `bitcoin-cli` to start a temporary regtest node and mine blocks. BDK `2.3.0` does not expose a direct local Bitcoin Core RPC scanner in the resolved JVM artifact, so BDK cannot observe wallet UTXOs from that harness alone.
@@ -166,6 +171,21 @@ With `SKALD_ELECTRS` pointing at local electrs `v0.11.1`, the combined opt-in UT
 
 None of those options should be added implicitly. They require a focused pass because they introduce real local backend behavior and new failure modes.
 
+## Backend Observation Boundary
+
+The follow-up backend observation state boundary has been added in common Kotlin. It models:
+
+- backend observation source and trust class,
+- observed UTXO lifecycle,
+- confirmation state,
+- address-used transitions,
+- stale/conflict warnings,
+- public-backend privacy warnings,
+- identity-linked and imported-key risk flags,
+- coin-control-required spend readiness.
+
+It remains production-safe model state only. It does not add production UTXO persistence, app UTXO display, signing, broadcasting, public endpoints, or mainnet.
+
 ## Next Step
 
-The next focused branch should define the production-safe backend observation state boundary and decide how a future production backend adapter will represent observed UTXOs without leaking BDK types or enabling hidden sync. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until that boundary is explicitly designed.
+The next focused branch should define the production backend adapter interface and endpoint normalization boundary. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
