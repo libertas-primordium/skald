@@ -2,10 +2,13 @@
 agp = "8.9.1"
 androidx-activity-compose = "1.9.1"
 compose = "1.8.2"
+bdk = "2.3.1"
 kotlin = "2.1.21"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+bdk-android = { module = "org.bitcoindevkit:bdk-android", version.ref = "bdk" }
+bdk-jvm = { module = "org.bitcoindevkit:bdk-jvm", version.ref = "bdk" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
 [plugins]
