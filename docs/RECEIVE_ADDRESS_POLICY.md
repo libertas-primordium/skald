@@ -105,6 +105,8 @@ The production backend adapter and endpoint normalization boundary is documented
 
 The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It requires receive-address policy state during preflight and now surfaces the disabled result in Nodes as a read-only status card, but it still does not derive production addresses, sync wallets, persist observations, or expose a receive UI.
 
+Recovery Center and the Privacy Analyzer now surface receive-address and observation blockers as documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). Those surfaces explain that displayed/reserved addresses are not used until backend observation, observed address reuse requires warning, and address index/observation persistence is deferred until encrypted vault storage.
+
 ## Reuse Prevention
 
 Normal receive flows must avoid address reuse.
@@ -150,6 +152,8 @@ Mainnet remains unavailable and rejected by policy. No silent network fallback i
 ## Persistence Policy
 
 No receive-address metadata repository was added in this pass.
+
+No production address index state or backend-observed used-address state is persisted by the current app. Address index state is sensitive metadata and is explicitly deferred until encrypted vault or equivalent approved secure metadata storage exists.
 
 Future persistence must be reviewed before storing any address index state. At minimum it must:
 
@@ -202,7 +206,7 @@ That boundary uses this receive-address policy and the backend observation model
 Recommended next pass:
 
 ```text
-recovery/privacy integration planning or production observation persistence boundary
+encrypted production observation persistence boundary or future regtest/signet wallet activation planning
 ```
 
 That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, public endpoint defaults, and mainnet.

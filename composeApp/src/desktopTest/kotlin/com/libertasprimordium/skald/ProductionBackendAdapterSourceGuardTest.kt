@@ -110,6 +110,38 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(offenders.isEmpty(), "Disabled sync status UI must remain BDK/client/process free: $offenders")
     }
 
+    @Test
+    fun recoveryPrivacyStatusFilesDoNotImportBdkOrClientApis() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/recovery/RecoverySyncStatusModels.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/privacy/PrivacySyncStatusModels.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/RecoveryScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/OverviewScreen.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bCbfClient\b"""),
+            Regex("""\bstartFullScan\b"""),
+            Regex("""\bstartSyncWithRevealedSpks\b"""),
+            Regex("""\bapplyUpdate\b"""),
+            Regex("""\blistUnspent\b"""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(offenders.isEmpty(), "Recovery/Privacy sync status files must remain BDK/client/process/persistence free: $offenders")
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),

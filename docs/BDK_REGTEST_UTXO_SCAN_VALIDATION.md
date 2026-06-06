@@ -65,6 +65,8 @@ The production backend adapter and endpoint normalization boundary is documented
 
 The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes the adapter boundary and observation model into fail-closed production preflight state, and Nodes now displays that disabled status as read-only UI. This BDK scan adapter remains desktop-test-only.
 
+Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). Those surfaces explicitly state that this desktop-test validation does not create recoverable production wallet state and that production observation/UTXO persistence is deferred until encrypted vault storage or an equivalent approved encrypted metadata boundary exists.
+
 ## Receive-Address Policy Link
 
 The tests also exercise the Skald-owned receive-address policy with sanitized fake scan observations:
@@ -160,6 +162,8 @@ Runtime-generated regtest addresses or transaction identifiers may be used only 
 
 Observed runtime UTXOs are represented as sanitized Skald-owned state. Observation does not authorize spending, does not make a UTXO spendable without coin-control review, and does not enable production sync.
 
+Observed runtime UTXOs from this validation are not persisted into production app storage and are not Recovery Center state.
+
 ## Local Indexer Decision
 
 The existing local harness uses `bitcoind` and `bitcoin-cli` to start a temporary regtest node and mine blocks. BDK `2.3.0` does not expose a direct local Bitcoin Core RPC scanner in the resolved JVM artifact, so BDK cannot observe wallet UTXOs from that harness alone.
@@ -192,4 +196,4 @@ It remains production-safe model state only. It does not add production UTXO per
 
 ## Next Step
 
-The next focused branch should integrate the disabled sync boundary into recovery/privacy planning or design production observation persistence. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
+The next focused branch should design encrypted production observation persistence or prepare future regtest/signet wallet activation behind the existing boundaries. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
