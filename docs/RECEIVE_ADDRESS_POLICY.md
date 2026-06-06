@@ -186,10 +186,14 @@ Current tests cover:
 
 ## Next Step
 
+The follow-up regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
+
+That boundary uses this receive-address policy as the state foundation for backend-observed address usage, but it currently reports a safe local-indexer blocker because BDK `2.3.0` does not expose a direct Bitcoin Core RPC scan client in the resolved JVM artifact.
+
 Recommended next pass:
 
 ```text
-regtest UTXO scan validation behind Skald-owned test-only adapter APIs
+local indexed regtest backend harness decision
 ```
 
-That next pass should still avoid production wallet activation and should use the receive-address policy as the state foundation for backend-observed address usage.
+That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, and mainnet.

@@ -103,6 +103,12 @@ The validation must remain:
 - free of backend networking,
 - free of production app address derivation, signing, and broadcasting.
 
+## UTXO Scan Follow-Up
+
+The later regtest UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md).
+
+That boundary currently reports a safe blocked state because BDK `2.3.0` does not expose a direct Bitcoin Core RPC scan client in the resolved JVM artifact. Full UTXO observation needs a local indexed backend harness or revised adapter strategy.
+
 ## Next Step
 
-The next pass can introduce address reuse prevention/receive-address state modeling or regtest UTXO scan validation. That pass must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.
+The next pass should decide the local indexed regtest backend strategy. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.

@@ -76,6 +76,8 @@ This validation remains:
 
 The follow-up opt-in desktop validation also derives deterministic runtime-generated receive addresses on regtest and signet through the Skald-owned test boundary documented in [`BDK_REGTEST_ADDRESS_DERIVATION.md`](BDK_REGTEST_ADDRESS_DERIVATION.md). That added evidence still does not enable production app receive addresses, address index persistence, backend sync, signing, broadcasting, or mainnet.
 
+The later UTXO scan validation boundary is documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md). It confirms that the accepted JVM artifact exposes BDK scan request types plus Electrum, Esplora, and compact-filter clients, but no direct Bitcoin Core RPC scan client under the inspected class names. That boundary therefore reports a safe local-indexer blocker and does not enable production wallet sync.
+
 ## Additional Harness Fix
 
 During validation, the test-only recovery harness was corrected to copy both runtime entropy buffers before passing either one into BDK. The previous harness wiped the original entropy before the recovery copy was made, which caused a false identity mismatch after the native-binding issue was resolved.
@@ -113,4 +115,4 @@ This decision does not enable:
 
 ## Next Step
 
-The next BDK rollout layer can proceed to address reuse prevention/receive-address state modeling or a regtest UTXO scan validation path. It must remain non-production unless explicitly approved, keep BDK types out of common UI/settings/persisted models, avoid production storage, avoid backend networking unless explicitly scoped as a local test harness, and keep mainnet disabled.
+The next BDK rollout layer should decide the local indexed regtest backend strategy before attempting full UTXO observation again. It must remain non-production unless explicitly approved, keep BDK types out of common UI/settings/persisted models, avoid production storage, avoid public backend defaults, and keep mainnet disabled.
