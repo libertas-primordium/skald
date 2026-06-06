@@ -147,6 +147,12 @@ The disabled production backend adapter and endpoint normalization boundary is d
 
 That boundary defines Skald-owned adapter request/result/error types and a shared endpoint parser for IPv4, IPv6 including bracketed host/port forms, DNS hostnames, and `.onion` metadata. It rejects credentials/userinfo in address fields and keeps scheme, TLS, port, path, and transport/proxy labeling explicit. The only production adapter is disabled/fail-closed; it does not create BDK sync, backend clients, sockets, HTTP/RPC/Electrum/Esplora calls, persistence, signing, broadcasting, public defaults, or mainnet.
 
+## Production Sync Service Facade
+
+The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
+
+That facade composes endpoint policy, backend profile metadata, the disabled production backend adapter, receive-address policy, secure-storage capability, and `BackendObservationSummary` into a Skald-owned preflight/result boundary. It remains fail-closed and does not create production wallet sync, backend clients, BDK scan calls, observation persistence, app receive UI, signing, broadcasting, public defaults, or mainnet.
+
 ## Local Electrum Regtest Harness Boundary
 
 The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).
@@ -157,4 +163,4 @@ The current local environment validates with local `electrs` `v0.11.1` supplied 
 
 ## Next Step
 
-The next implementation pass should add a disabled production sync service facade over the adapter boundary. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should decide how to surface disabled sync preflight state or prepare recovery/privacy integration without enabling production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material.
