@@ -2,7 +2,7 @@
 
 Skald Vault is a sovereign multi-rail Bitcoin wallet application for advanced users who keep their own keys, choose their own infrastructure, and need explicit custody, privacy, fee, and recovery boundaries.
 
-Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, and a fail-closed secure-storage abstraction started. This repository does not yet implement real wallet functionality. Do not use it with real funds.
+Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold with Phase 1 descriptor-native on-chain domain modeling, non-secret Bitcoin backend profile settings, simulated backend configuration validation, non-secret descriptor wallet profile metadata, non-operational coin-control/PSBT draft planning, a fail-closed secure-storage abstraction, and a pinned BDK adapter packaging spike. This repository does not yet implement real wallet functionality. Do not use it with real funds.
 
 ## Targets
 
@@ -42,7 +42,8 @@ gradle wrapper --gradle-version 8.11.1
 - Development networks are regtest, signet, testnet, and testnet4.
 - A seed phrase alone cannot restore every rail; Recovery Center modeling is first-class even in the scaffold.
 - Descriptor wallet profiles are non-secret metadata only. The app can save planned profile records, but it does not store descriptor text, xpubs, xprvs, private keys, seeds, nsecs, PSBTs, transaction data, or wallet funds.
-- Descriptor/key-management implementation is still absent. The future integration design is documented in [`docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md`](docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md); no Bitcoin protocol library has been added.
+- Descriptor/key-management implementation is still absent. The future integration design is documented in [`docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md`](docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md).
+- A BDK dependency/adapter packaging spike exists with pinned `org.bitcoindevkit:bdk-android:2.3.1` and `org.bitcoindevkit:bdk-jvm:2.3.1` platform dependencies behind Skald-owned adapter models. It is documented in [`docs/BDK_INTEGRATION_SPIKE.md`](docs/BDK_INTEGRATION_SPIKE.md). It does not enable wallet creation, key generation, descriptors, address derivation, backend sync, PSBTs, signing, broadcasting, persistence, or mainnet.
 - Coin-control and PSBT draft planning uses demo UTXO placeholders only. No real UTXOs are scanned, no transaction is constructed, no PSBT is created, and signing/broadcasting remain disabled.
 - Backend profiles, UTXO views, coin-control drafts, and PSBT workflows are non-operational placeholder models only.
 - Bitcoin backend profiles are local non-secret configuration state only. The app does not store backend credentials, run real backend connection tests, sync wallets, scan chains, derive addresses, sign, or broadcast.
@@ -72,6 +73,7 @@ The scaffold includes no Skald-operated defaults for:
 - `security` holds the secure-storage service boundary and disabled platform implementations. Android and Linux desktop currently report secure storage as unavailable and do not store seeds, private keys, Nostr nsecs, node credentials, Cashu material, or backup keys.
 - `docs/SECURE_STORAGE_DESIGN.md` defines the future Android/Linux secure-storage design gates. It is a design document only; it does not enable real secret persistence.
 - `docs/DESCRIPTOR_KEY_MANAGEMENT_DESIGN.md` defines the future descriptor parser, wallet, key-management, PSBT, recovery, and protocol-library integration gates. It is a design document only; it does not enable descriptor parsing, key management, address derivation, or wallet operations.
+- `docs/BDK_INTEGRATION_SPIKE.md` records the first BDK packaging spike. BDK is present only as platform dependencies behind a Skald-owned adapter probe; common UI/domain/settings models still do not expose BDK types.
 - `docs/PHASE1_COMPLETION_AUDIT.md` records the Phase 1 hardening/completion audit. It is an audit artifact only; it does not enable wallet functionality.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
 - `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.

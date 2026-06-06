@@ -18,6 +18,7 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftId
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflow
 import com.libertasprimordium.skald.domain.onchain.CoinControlDraftWorkflowReview
+import com.libertasprimordium.skald.domain.onchain.bdk.BdkAdapterProbe
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflow
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletWorkflowReview
@@ -59,6 +60,7 @@ fun SkaldApp(
     val nostrIntents = remember { repository.nostrPaymentIntents() }
     val networks = remember { repository.developmentNetworks() }
     val secureStorageStatus = remember { secureStorage.capability.toUiStatus() }
+    val bdkAdapterProbeResult = remember { BdkAdapterProbe.run() }
     var selectedScreen by remember { mutableStateOf(AppScreen.Overview) }
     var backendSettings by remember { mutableStateOf(settingsRepository.loadBitcoinBackendSettings()) }
     var descriptorWalletSettings by remember { mutableStateOf(settingsRepository.loadDescriptorWalletSettings()) }
@@ -319,6 +321,7 @@ fun SkaldApp(
             AppScreen.Settings -> SettingsScreen(
                 networks = networks,
                 secureStorageStatus = secureStorageStatus,
+                bdkAdapterProbeResult = bdkAdapterProbeResult,
             )
         }
     }
