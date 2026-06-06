@@ -133,7 +133,7 @@ The production backend adapter and endpoint normalization boundary is documented
 Recommended next branch:
 
 ```text
-phase2-prep-backend-settings-unified-address-ui
+phase2-prep-disabled-production-sync-service-facade
 ```
 
-That branch should migrate the backend settings UI toward the unified address field if needed, using the existing endpoint parser. It must not add production Electrum defaults, production sync, signing, broadcasting, secure storage, public endpoint defaults, or mainnet.
+That branch should add a disabled production sync service facade over the Skald-owned adapter boundary without adding production Electrum defaults, production sync, signing, broadcasting, secure storage, public endpoint defaults, or mainnet.

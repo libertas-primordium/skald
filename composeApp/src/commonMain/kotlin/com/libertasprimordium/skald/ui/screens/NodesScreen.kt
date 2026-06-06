@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.libertasprimordium.skald.domain.core.BackendConnectionStatus
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.onchain.BackendEndpoint
 import com.libertasprimordium.skald.domain.onchain.BackendNotConfigured
 import com.libertasprimordium.skald.domain.onchain.BackendProfileValidationResult
 import com.libertasprimordium.skald.domain.onchain.BitcoinBackendConnectionTestFinding
@@ -35,6 +36,7 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinBackendType
 import com.libertasprimordium.skald.domain.onchain.EditableBitcoinBackendProfileInput
 import com.libertasprimordium.skald.domain.onchain.HttpEndpoint
 import com.libertasprimordium.skald.domain.onchain.TcpEndpoint
+import com.libertasprimordium.skald.domain.onchain.toDisplayHost
 import com.libertasprimordium.skald.security.SecureStorageUiStatus
 import com.libertasprimordium.skald.ui.components.BackendSettingsSummary
 import com.libertasprimordium.skald.ui.components.BulletList
@@ -235,20 +237,52 @@ private fun BackendProfileForm(
             onValueChange = { onFormChanged(form.copy(label = it)) },
         )
         SkaldTextField(
-            label = "Address / host",
-            value = form.host,
-            onValueChange = { onFormChanged(form.copy(host = it)) },
+            label = "Backend address",
+            value = form.address,
+            onValueChange = { address ->
+                onFormChanged(
+                    form.copy(
+                        address = address,
+                        portText = if (address.hasEmbeddedPort()) "" else form.portText,
+                    ),
+                )
+            },
         )
-        SkaldTextField(
-            label = if (form.type == BitcoinBackendType.Esplora) "Port (optional)" else "Port (or include in address)",
-            value = form.portText,
-            onValueChange = { onFormChanged(form.copy(portText = it)) },
+        Text(
+            text = "Use one address field for IPv4, DNS, bracketed IPv6 host:port, or .onion metadata. Credentials and userinfo are rejected.",
+            color = SkaldMutedText,
+            lineHeight = 20.sp,
         )
+        if (form.address.hasEmbeddedPort()) {
+            DetailLine("Port", "parsed from address field")
+        } else {
+            SkaldTextField(
+                label = if (form.type == BitcoinBackendType.Esplora) {
+                    "Explicit port (optional)"
+                } else {
+                    "Explicit port"
+                },
+                value = form.portText,
+                onValueChange = { onFormChanged(form.copy(portText = it)) },
+            )
+            Text(
+                text = "Use the explicit port for address-only entries and unbracketed IPv6 literals. Mainnet-default endpoint metadata remains rejected.",
+                color = SkaldMutedText,
+                lineHeight = 20.sp,
+            )
+        }
         if (form.type == BitcoinBackendType.Esplora) {
             SkaldTextField(
                 label = "Path (optional)",
                 value = form.path,
                 onValueChange = { onFormChanged(form.copy(path = it)) },
+            )
+        }
+        if (form.address.contains(".onion", ignoreCase = true)) {
+            Text(
+                text = "Onion metadata keeps Tor labeling for future policy. Tor/proxy transport is not implemented yet.",
+                color = SkaldWarning,
+                lineHeight = 20.sp,
             )
         }
         Row(
@@ -472,7 +506,7 @@ private data class BackendSettingsFormState(
     val label: String,
     val type: BitcoinBackendType,
     val network: NetworkEnvironment,
-    val host: String,
+    val address: String,
     val portText: String,
     val useTls: Boolean,
     val path: String,
@@ -484,7 +518,7 @@ private data class BackendSettingsFormState(
             label = label,
             type = type,
             network = network,
-            host = host,
+            host = address,
             portText = portText,
             useTls = useTls,
             path = path,
@@ -498,7 +532,7 @@ private data class BackendSettingsFormState(
                 label = "",
                 type = BitcoinBackendType.BitcoinCoreRpc,
                 network = NetworkEnvironment.Testnet4,
-                host = "",
+                address = "",
                 portText = "",
                 useTls = false,
                 path = "",
@@ -514,16 +548,8 @@ private fun BitcoinBackendProfile.toFormState(): BackendSettingsFormState {
         label = label,
         type = type,
         network = network,
-        host = when (endpoint) {
-            BackendNotConfigured -> ""
-            is HttpEndpoint -> endpoint.host
-            is TcpEndpoint -> endpoint.host
-        },
-        portText = when (endpoint) {
-            BackendNotConfigured -> ""
-            is HttpEndpoint -> endpoint.port?.toString().orEmpty()
-            is TcpEndpoint -> endpoint.port.toString()
-        },
+        address = endpoint.toUnifiedAddressField(),
+        portText = "",
         useTls = when (endpoint) {
             BackendNotConfigured -> false
             is HttpEndpoint -> endpoint.useTls
@@ -536,4 +562,28 @@ private fun BitcoinBackendProfile.toFormState(): BackendSettingsFormState {
         },
         trustModel = trustModel,
     )
+}
+
+private fun BackendEndpoint.toUnifiedAddressField(): String =
+    when (this) {
+        BackendNotConfigured -> ""
+        is HttpEndpoint -> host.trim().toDisplayHost() + port?.let { ":$it" }.orEmpty()
+        is TcpEndpoint -> "${host.trim().toDisplayHost()}:$port"
+    }
+
+private fun String.hasEmbeddedPort(): Boolean {
+    val input = trim()
+    if (input.isBlank()) return false
+    val authority = input
+        .substringAfter("://", input)
+        .substringBefore("/")
+
+    if (authority.startsWith("[")) {
+        val close = authority.indexOf("]")
+        if (close < 0) return false
+        val rest = authority.substring(close + 1)
+        return rest.startsWith(":") && rest.length > 1
+    }
+
+    return authority.count { it == ':' } == 1 && authority.substringAfter(":").isNotBlank()
 }

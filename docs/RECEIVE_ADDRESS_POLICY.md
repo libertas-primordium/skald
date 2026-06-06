@@ -200,7 +200,7 @@ That boundary uses this receive-address policy and the backend observation model
 Recommended next pass:
 
 ```text
-backend settings unified address UI or disabled production sync facade
+disabled production sync service facade
 ```
 
 That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, public endpoint defaults, and mainnet.

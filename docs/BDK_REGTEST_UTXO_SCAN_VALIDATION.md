@@ -190,4 +190,4 @@ It remains production-safe model state only. It does not add production UTXO per
 
 ## Next Step
 
-The next focused branch should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
+The next focused branch should add a disabled production sync service facade over the adapter boundary. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.

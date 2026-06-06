@@ -127,4 +127,4 @@ The backend observation state boundary is documented in [`BACKEND_OBSERVATION_ST
 
 The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md).
 
-The next focused pass should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. That path must keep production app flows disabled until the secure-storage, recovery, backend-trust, and persistence boundaries are ready.
+The next focused pass should add a disabled production sync service facade over the adapter boundary. That path must keep production app flows disabled until the secure-storage, recovery, backend-trust, and persistence boundaries are ready.

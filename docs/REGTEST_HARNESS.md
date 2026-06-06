@@ -112,4 +112,4 @@ The production backend adapter and endpoint normalization boundary is documented
 
 ## Next Step
 
-The next focused pass should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should add a disabled production sync service facade over the adapter boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.

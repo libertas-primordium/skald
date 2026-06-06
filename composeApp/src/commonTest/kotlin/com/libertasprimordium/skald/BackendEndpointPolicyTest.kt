@@ -53,6 +53,22 @@ class BackendEndpointPolicyTest {
     }
 
     @Test
+    fun parsesDnsHostPortInSingleAddressField() {
+        val result = parse(
+            type = BitcoinBackendType.Electrum,
+            address = "example.invalid:50001",
+            port = "",
+        )
+
+        val endpoint = assertNotNull(result.normalizedEndpoint)
+        assertEquals("example.invalid", endpoint.host)
+        assertEquals(50001, endpoint.port)
+        assertEquals(BitcoinBackendEndpointHostKind.DnsHostname, endpoint.hostKind)
+        assertContains(endpoint.warnings, BitcoinBackendEndpointWarning.PublicEndpointPrivacyLeak)
+        assertEquals("tcp://example.invalid:50001", endpoint.toBackendEndpoint().displayText)
+    }
+
+    @Test
     fun parsesUnbracketedIpv6LiteralWhenPortIsSeparate() {
         val result = parse(
             type = BitcoinBackendType.Electrum,
@@ -135,6 +151,24 @@ class BackendEndpointPolicyTest {
     }
 
     @Test
+    fun parsesEsploraHostPortWithExplicitTlsAndPathControls() {
+        val result = parse(
+            type = BitcoinBackendType.Esplora,
+            address = "example.invalid:8080",
+            port = "",
+            useTls = true,
+            path = "api",
+        )
+
+        val endpoint = assertNotNull(result.normalizedEndpoint)
+        assertEquals("example.invalid", endpoint.host)
+        assertEquals(8080, endpoint.port)
+        assertEquals(BitcoinBackendEndpointScheme.Https, endpoint.scheme)
+        assertEquals("/api", endpoint.path)
+        assertEquals("https://example.invalid:8080/api", endpoint.toBackendEndpoint().displayText)
+    }
+
+    @Test
     fun rejectsUserInfoAndCredentialMaterial() {
         val userInfo = parse(
             type = BitcoinBackendType.Esplora,
@@ -182,6 +216,25 @@ class BackendEndpointPolicyTest {
         assertFalse(coreMissing.isValid)
         assertTrue(esploraOptional.isValid)
         assertEquals(null, assertNotNull(esploraOptional.normalizedEndpoint).port)
+    }
+
+    @Test
+    fun rejectsMalformedBracketedIpv6AndRequiresSeparatePortForUnbracketedIpv6() {
+        val malformedBracket = parse(
+            type = BitcoinBackendType.Electrum,
+            address = "[::1",
+            port = "",
+        )
+        val unbracketedWithoutPort = parse(
+            type = BitcoinBackendType.Electrum,
+            address = "::1",
+            port = "",
+        )
+
+        assertContains(malformedBracket.errors, BitcoinBackendEndpointParseError.MalformedBracketedIpv6)
+        assertContains(unbracketedWithoutPort.errors, BitcoinBackendEndpointParseError.MissingPort)
+        assertFalse(malformedBracket.isValid)
+        assertFalse(unbracketedWithoutPort.isValid)
     }
 
     @Test

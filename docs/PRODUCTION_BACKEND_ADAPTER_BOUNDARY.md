@@ -2,7 +2,7 @@
 
 ## Status
 
-Skald Vault now has Skald-owned production backend adapter interfaces, endpoint normalization models, and disabled/fail-closed adapter results.
+Skald Vault now has Skald-owned production backend adapter interfaces, endpoint normalization models, disabled/fail-closed adapter results, and a Nodes/backend settings form that uses the unified address input boundary.
 
 This is a boundary-only pass. It does not enable production Bitcoin Core RPC, Electrum, Esplora, BDK sync, UTXO scanning, receive UI, address index persistence, UTXO persistence, descriptor persistence, secure storage, transaction construction, PSBT handling, signing, broadcasting, public backend defaults, Skald-operated infrastructure, or mainnet.
 
@@ -68,7 +68,7 @@ It never opens sockets, performs DNS lookups, creates HTTP/RPC/Electrum/Esplora 
 
 ## Endpoint Normalization
 
-`BitcoinBackendEndpointParser` provides a shared parser for the future single address field.
+`BitcoinBackendEndpointParser` provides the shared parser for the Nodes/backend settings address field and for future backend adapter implementations.
 
 Supported address metadata:
 
@@ -91,6 +91,10 @@ Rejected address metadata:
 - Bitcoin Core mainnet-default RPC port metadata during development.
 
 The parser keeps scheme, TLS, port, path, and transport/proxy mode explicit. It does not invent default backend endpoints and does not add Skald-operated infrastructure.
+
+The current Nodes UI uses one primary address field for host metadata. A port embedded in the address field is parsed and normalized; if the address omits a port, the UI keeps the explicit port control visible where backend policy requires or allows it. TLS, path, and future transport/proxy state remain separate controls or labels rather than hidden URL behavior.
+
+Persisted backend settings remain backward-compatible with the existing non-secret normalized host/port/path fields. Loading old separate host/port profiles still works, and saving through the unified UI still serializes normalized non-secret endpoint metadata. Credential values and userinfo are still rejected and are not serialized.
 
 ## Backend Type Policy
 
@@ -172,6 +176,6 @@ This boundary does not enable:
 
 ## Next Step
 
-The next focused pass should migrate the backend settings UI toward the unified address field if needed, then design a disabled production sync service facade that depends on this adapter boundary without implementing network clients.
+The next focused pass should design a disabled production sync service facade that depends on this adapter boundary without implementing network clients.
 
 Do not add production sync, signing, broadcasting, public endpoint defaults, secret persistence, or mainnet until those boundaries are explicitly reviewed.
