@@ -136,6 +136,8 @@ This pass proves only that:
 
 No production adapter currently produces real observations. No production observation repository exists, and observed-address/UTXO persistence is deferred until app-controlled encrypted vault storage exists. The disabled secure metadata repository boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md); it rejects sensitive wallet metadata reads, writes, listing, and deletes until an encrypted implementation is approved.
 
+The encrypted vault architecture that future adapter implementations must depend on is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). Future production adapters must not persist observation history, endpoint privacy metadata, Tor routing metadata, address indexes, UTXO state, labels, or wallet notes outside that approved vault boundary.
+
 ## Mainnet Policy
 
 Mainnet remains disabled. The adapter network policy allows only development networks:
@@ -180,6 +182,6 @@ This boundary does not enable:
 
 The disabled production sync service facade and Nodes preflight/status surface are now documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
 
-The next focused pass should design the encrypted vault format or prepare future regtest/signet wallet activation behind the existing disabled sync, secure metadata, and Recovery/Privacy status boundaries.
+The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices behind the existing disabled sync, secure metadata, and Recovery/Privacy status boundaries.
 
 Do not add production sync, signing, broadcasting, public endpoint defaults, secret persistence, or mainnet until those boundaries are explicitly reviewed.

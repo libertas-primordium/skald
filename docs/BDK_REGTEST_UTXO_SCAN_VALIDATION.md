@@ -65,9 +65,11 @@ The production backend adapter and endpoint normalization boundary is documented
 
 The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes the adapter boundary and observation model into fail-closed production preflight state, and Nodes now displays that disabled status as read-only UI. This BDK scan adapter remains desktop-test-only.
 
-Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). Those surfaces explicitly state that this desktop-test validation does not create recoverable production wallet state and that production observation/UTXO persistence is deferred until encrypted vault storage or an equivalent approved encrypted metadata boundary exists.
+Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). Those surfaces explicitly state that this desktop-test validation does not create recoverable production wallet state and that production observation/UTXO persistence is deferred until app-controlled encrypted local vault storage exists and is approved.
 
 The disabled secure metadata persistence boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). Runtime observations from this desktop-test validation are not written through that repository; the production boundary rejects all sensitive metadata reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
+
+The app-controlled encrypted local vault architecture is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). This desktop-test validation does not implement that vault and does not persist runtime observations, addresses, outpoints, labels, backend metadata, or wallet history.
 
 ## Receive-Address Policy Link
 
@@ -198,4 +200,4 @@ It remains production-safe model state only. It does not add production UTXO per
 
 ## Next Step
 
-The next focused branch should design encrypted production observation persistence or prepare future regtest/signet wallet activation behind the existing boundaries. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
+The next focused branch should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices behind the existing boundaries. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.

@@ -83,7 +83,7 @@ Observed addresses, labels, UTXOs, outpoints, transaction notes, backend metadat
 
 Skald must not persist that metadata in plaintext. Production observation persistence must wait for:
 
-- the app-controlled encrypted local vault described in `SECURE_STORAGE_DESIGN.md`,
+- the app-controlled encrypted local vault described in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md),
 - the disabled secure metadata boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md) to be replaced by an approved encrypted implementation.
 
 Current desktop-test BDK observations remain runtime-only test state. No production observation repository exists. The current `DisabledSecureWalletMetadataRepository` rejects all sensitive metadata reads, writes, listing, and deletes.
@@ -170,4 +170,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should design the encrypted vault format or continue Recovery/Privacy planning for future regtest/signet wallet activation. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
+The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.

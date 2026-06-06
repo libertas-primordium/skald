@@ -153,9 +153,11 @@ Mainnet remains unavailable and rejected by policy. No silent network fallback i
 
 No operational receive-address metadata repository was added in this pass.
 
-No production address index state or backend-observed used-address state is persisted by the current app. Address index state is sensitive metadata and is explicitly deferred until encrypted vault or equivalent approved secure metadata storage exists.
+No production address index state or backend-observed used-address state is persisted by the current app. Address index state is sensitive metadata and is explicitly deferred until app-controlled encrypted local vault storage exists and is approved.
 
 The disabled secure metadata persistence boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). It classifies receive-address lifecycle state, address index state, and observed address usage as sensitive wallet metadata, then rejects all reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
+
+The vault architecture required before address index state can be persisted is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). Address index state, used-address state, labels, wallet notes, backend observation history, and Tor routing metadata remain sensitive metadata and must not be stored in non-secret settings.
 
 Future persistence must be reviewed before storing any address index state. At minimum it must:
 
@@ -208,7 +210,7 @@ That boundary uses this receive-address policy and the backend observation model
 Recommended next pass:
 
 ```text
-encrypted production observation persistence boundary or future regtest/signet wallet activation planning
+encrypted vault readiness/policy models or reviewed crypto/platform wrapping choices
 ```
 
 That next pass should still avoid production wallet activation, production address persistence, production backend sync, signing, broadcasting, public endpoint defaults, and mainnet.

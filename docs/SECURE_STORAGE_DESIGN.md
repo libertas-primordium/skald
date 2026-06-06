@@ -8,6 +8,8 @@ The current codebase has a common `SecureSecretStorage` interface, typed secret 
 
 The current codebase also has a disabled/fail-closed secure wallet metadata persistence boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). That boundary classifies observation history, address index state, labels, backend metadata, UTXO state, wallet notes, transaction notes, recovery metadata, Privacy Analyzer metadata, and identity-linkage metadata as sensitive wallet metadata. It rejects all metadata reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
 
+The detailed app-controlled encrypted local vault architecture and key-lifecycle plan is now documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). That design is the required primary storage model for both secrets and sensitive wallet metadata. OS keyrings are not primary storage; they may later wrap vault keys only after explicit design review.
+
 This document is a design prerequisite before any implementation enables secret storage. It does not enable wallet creation, credential storage, signing, broadcasting, backend networking, Cashu proof persistence, Lightning credential persistence, Nostr key storage, backup encryption, or mainnet behavior.
 
 ## Scope
@@ -63,8 +65,8 @@ This design does not currently enable:
 - Backend credential storage.
 - Backup export.
 - Android Keystore implementation.
-- Linux keyring implementation.
-- Passphrase-encrypted vault implementation.
+- Encrypted local vault implementation.
+- Linux keyring wrapping implementation.
 - Encrypted file storage.
 
 Any future implementation must be explicitly approved as a separate pass and must keep the current disabled behavior until it passes the acceptance criteria in this document.
@@ -193,6 +195,7 @@ Future Android secure storage should use Android Keystore-backed key wrapping or
 
 Design requirements:
 
+- Treat the app-controlled encrypted local vault as primary storage.
 - Prefer hardware-backed keys when available.
 - Use StrongBox where available, but do not make it the only supported path unless the app explicitly declares that requirement.
 - Distinguish user-authenticated keys from app-authenticated keys.
@@ -217,24 +220,25 @@ Android failure handling:
 
 ## Linux desktop design
 
-Future Linux desktop secure storage should prefer the platform keyring when it is available and auditable. Candidate directions include libsecret and KWallet. The dependency choice must be reviewed before implementation.
+Future Linux desktop secure storage should use the app-controlled encrypted local vault as primary storage.
 
-Fallback design may use a passphrase-encrypted local vault, but only after a separate vault-format design and dependency review.
+Linux platform keyrings such as libsecret or KWallet must not be treated as the primary secret or wallet metadata store. Desktop keyrings may remain unlocked after login and can be broadly accessible to same-user processes during an unlocked desktop session. They may later be evaluated only as optional vault-key wrapping helpers after explicit design review.
 
 Design requirements:
 
 - No plaintext secret files.
 - No unencrypted JSON, text, or line-based secret payload files.
+- No plaintext sensitive wallet metadata files.
 - Use strict file permissions such as `0600` for any local encrypted payload file.
 - Create directories with restrictive permissions and account for umask behavior.
-- Store encrypted payloads under a user-local Skald config/data directory, never inside the application package.
+- Store encrypted vault data under a reviewed user-local Skald data directory, never inside the application package.
 - Treat desktop session compromise as a serious limitation: a process running as the same user during unlock may observe UI, clipboard, files, or process memory.
 - Document Wayland and X11 clipboard/screenshot risks.
 - Prefer hardware signers for high-value funds even if local secret storage exists.
 - Support versioned records, migration tests, and corrupted-record handling.
-- Fail closed if the keyring is unavailable, locked, misconfigured, or returns unexpected data.
+- Fail closed if the vault cannot unlock, key wrapping is unavailable, migration fails, or encrypted records cannot be authenticated.
 
-Linux fallback vault requirements, if chosen later:
+Linux encrypted vault requirements:
 
 - Use a reviewed password-based key derivation design.
 - Use authenticated encryption.
@@ -242,6 +246,7 @@ Linux fallback vault requirements, if chosen later:
 - Avoid storing passphrases in process-global state.
 - Support partial-write protection, such as atomic replace after fsync where practical.
 - Require explicit user setup before enabling.
+- Treat libsecret/KWallet wrapping as optional defense-in-depth, not as a substitute for the vault.
 
 ## Metadata versus secret payloads
 
@@ -271,7 +276,7 @@ Metadata must not include:
 - Backup encryption keys.
 - Authentication cookies, tokens, or headers.
 
-Observed addresses, address index state, UTXO sets, outpoints, backend observation metadata, labels, transaction notes, wallet history, privacy-analysis state, recovery metadata, and identity-linkage metadata are sensitive metadata even when they are not secret key material. Production persistence for that data is deferred until the app-controlled encrypted local vault exists. The disabled secure metadata boundary rejects all operations and does not use non-secret settings, OS keyrings, BDK persistence, plaintext files, SharedPreferences, or desktop config files as a metadata store.
+Observed addresses, address index state, UTXO sets, outpoints, backend observation metadata, labels, transaction notes, wallet history, privacy-analysis state, recovery metadata, Tor routing policy, transport failure history, and identity-linkage metadata are sensitive metadata even when they are not secret key material. Production persistence for that data is deferred until the app-controlled encrypted local vault exists. The disabled secure metadata boundary rejects all operations and does not use non-secret settings, OS keyrings, BDK persistence, plaintext files, SharedPreferences, or desktop config files as a metadata store.
 
 Rules:
 
@@ -444,7 +449,7 @@ Required test groups:
 - Common `SecureSecretStorage` interface behavior.
 - Disabled/fail-closed behavior remains available as a policy option.
 - Android instrumentation or host-side tests for platform storage behavior where feasible.
-- Linux desktop keyring or vault tests where feasible.
+- Linux encrypted vault tests and optional key-wrapping tests where feasible.
 - Filesystem permission tests for local encrypted payload storage.
 - Backup exclusion tests.
 - Redaction tests for payload display, `toString()`, errors, and logs.
@@ -476,7 +481,7 @@ Real secret storage may not be enabled until all of these gates are satisfied:
 - No raw secret payload logs.
 - Payload display and error messages are redacted.
 - Android backup exclusion is verified or payload backups are independently encrypted.
-- Linux file permissions and vault/keyring behavior are verified.
+- Linux file permissions, encrypted vault behavior, and optional key-wrapping behavior are verified.
 - Deletion behavior is tested.
 - Migration behavior is tested.
 - Corruption/partial-write behavior is tested.
@@ -492,8 +497,10 @@ Until these gates are met, the disabled/fail-closed implementation remains the o
 
 - Should Android use Android Keystore only, or combine Keystore-wrapped keys with a user passphrase-encrypted layer?
 - Should biometric unlock be optional convenience or required for specific secret classes?
-- Which Linux keyring dependency best fits Skald Vault and freedom-software packaging goals?
-- What is the fallback vault format if no Linux keyring is available?
+- Which crypto dependency should provide KDF and AEAD primitives for the app-controlled encrypted local vault?
+- Should Android and Linux share the same vault container format and record format?
+- Should Linux offer libsecret/KWallet key wrapping at all, given already-unlocked-session risk?
+- How should the app present passphrase-only unlock versus optional platform wrapping?
 - Should Cashu proof material use a different storage/update model from static credentials?
 - How should Lightning channel-state backup interact with secret storage?
 - Should Nostr identity private-key material be storable at all, or only imported ephemerally for sweep/recovery flows?
@@ -504,15 +511,16 @@ Until these gates are met, the disabled/fail-closed implementation remains the o
 
 ## Implementation sequence
 
-1. Finalize and review this design.
-2. Choose Android and Linux dependencies, if any, through an explicit dependency review.
+1. Finalize and review this design plus [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md).
+2. Resolve vault dependency, KDF, AEAD, and platform wrapping choices through explicit review.
 3. Expand common secure-storage interface tests for versioning, redaction, deletion, and failure states.
-4. Implement Android secure storage behind a disabled feature flag.
-5. Implement Linux desktop secure storage behind a disabled feature flag.
+4. Add code-level vault readiness/policy models without storage success paths.
+5. Implement encrypted vault storage behind a disabled feature flag.
 6. Add redaction and no-logging guard tests.
-7. Add Android backup exclusion tests and Linux file-permission tests.
-8. Add migration, corruption, and partial-write tests.
-9. Enable storage only for low-risk credential references if appropriate and explicitly approved.
-10. Later enable seed/imported-key storage only after a separate security review.
+7. Add Android backup exclusion and optional wrapping tests.
+8. Add Linux file-permission and optional key-wrapping tests.
+9. Add migration, corruption, partial-write, lock/session, and timeout tests.
+10. Enable storage only for the smallest explicitly approved persistence class.
+11. Later enable seed/imported-key storage only after a separate security review.
 
 No implementation step should enable wallet creation, signing, broadcasting, backend networking, Cashu proof persistence, Lightning credential use, Nostr identity-key storage, or mainnet by implication.

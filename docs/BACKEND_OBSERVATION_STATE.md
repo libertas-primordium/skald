@@ -160,6 +160,8 @@ Observed addresses, labels, UTXOs, outpoints, transaction notes, backend metadat
 
 The disabled secure metadata repository is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). It rejects all sensitive metadata reads, writes, listing, and deletes; it does not use settings storage, plaintext files, OS keyrings, BDK persistence, or platform config files.
 
+The app-controlled encrypted local vault design required before those repository operations can return success is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). Backend observation history, Tor routing policy, transport failure history, labels, wallet notes, address indexes, and UTXO state are all treated as sensitive metadata in that design.
+
 Recovery Center now shows this as `Secure metadata vault: deferred until encrypted vault`, `Observation and UTXO persistence: deferred until encrypted vault`, `Address index state: deferred until encrypted vault`, and `UTXO state persistence: deferred until encrypted vault`. The Privacy Analyzer now shows `Secure metadata storage unavailable` and `Observation persistence deferred` as policy-only warnings. These are status surfaces only, not storage implementations.
 
 ## BDK Boundary
@@ -202,4 +204,4 @@ The production backend adapter interface and endpoint normalization boundary has
 
 The backend settings UI now uses the unified address field backed by the endpoint parser, and the disabled production sync service facade plus Nodes preflight/status surface has been added in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). Recovery/Privacy status integration is documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). The disabled secure metadata persistence boundary is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md).
 
-The next focused pass should design encrypted production observation persistence or continue Recovery/Privacy planning for future regtest/signet wallet activation. Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, endpoint persistence, and observation persistence boundaries are explicitly reviewed.
+The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices. Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, endpoint persistence, and observation persistence boundaries are explicitly reviewed.
