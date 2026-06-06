@@ -2,7 +2,7 @@
 
 ## Status
 
-Skald Vault now has Skald-owned production backend adapter interfaces, endpoint normalization models, disabled/fail-closed adapter results, and a Nodes/backend settings form that uses the unified address input boundary.
+Skald Vault now has Skald-owned production backend adapter interfaces, endpoint normalization models, disabled/fail-closed adapter results, a Nodes/backend settings form that uses the unified address input boundary, and a disabled production sync service facade that composes these boundaries.
 
 This is a boundary-only pass. It does not enable production Bitcoin Core RPC, Electrum, Esplora, BDK sync, UTXO scanning, receive UI, address index persistence, UTXO persistence, descriptor persistence, secure storage, transaction construction, PSBT handling, signing, broadcasting, public backend defaults, Skald-operated infrastructure, or mainnet.
 
@@ -11,6 +11,8 @@ This is a boundary-only pass. It does not enable production Bitcoin Core RPC, El
 Future production sync code must target Skald-owned state rather than BDK, Electrum, Esplora, Bitcoin Core RPC, HTTP, socket, or platform-specific client types.
 
 The adapter boundary defines how a future backend implementation will accept a user-selected backend profile and eventually return a `BackendObservationSummary`. For now the only production adapter implementation is disabled and returns Skald-owned blocked results.
+
+The production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It currently calls only the disabled adapter boundary and returns fail-closed preflight/result state.
 
 ## Source Location
 
@@ -176,6 +178,8 @@ This boundary does not enable:
 
 ## Next Step
 
-The next focused pass should design a disabled production sync service facade that depends on this adapter boundary without implementing network clients.
+The disabled production sync service facade is now documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
+
+The next focused pass should decide how to surface the disabled sync preflight status in On-chain or Nodes UI without adding a working sync button or backend connection path.
 
 Do not add production sync, signing, broadcasting, public endpoint defaults, secret persistence, or mainnet until those boundaries are explicitly reviewed.

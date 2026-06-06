@@ -10,6 +10,8 @@ The implemented models live in common Kotlin under the on-chain domain package a
 
 The production backend adapter interface and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). That boundary targets this observation model but remains disabled/fail-closed.
 
+The production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes endpoint policy, backend adapter results, secure-storage capability, receive-address policy, and this observation model into a disabled preflight/result boundary. It still does not persist observations or sync wallets.
+
 ## Purpose
 
 The boundary defines how future backend adapters should hand chain observations to Skald without leaking BDK, Electrum, Esplora, Bitcoin Core RPC, process, or platform-specific types into common UI, settings, persisted models, Recovery Center state, coin-control models, or public app services.
@@ -192,4 +194,6 @@ That path remains test-only. It does not create app wallet sync, app receive UI,
 
 The production backend adapter interface and endpoint normalization boundary has been added and documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It defines disabled adapter request/result models and a parser for a single address input that recognizes IPv4, IPv6 including bracketed host/port forms, DNS hostnames, and `.onion` hosts while rejecting credentials and userinfo.
 
-The backend settings UI now uses the unified address field backed by the endpoint parser. The next focused pass should design a disabled production sync service facade over the adapter boundary. Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, endpoint persistence, and observation persistence boundaries are explicitly reviewed.
+The backend settings UI now uses the unified address field backed by the endpoint parser, and the disabled production sync service facade has been added in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md).
+
+The next focused pass should decide how to surface disabled sync preflight state without enabling a working sync button. Do not proceed to production sync or user-visible UTXO balances until secure storage, recovery-state integration, backend trust display, endpoint persistence, and observation persistence boundaries are explicitly reviewed.
