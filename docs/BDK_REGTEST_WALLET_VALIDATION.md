@@ -115,4 +115,4 @@ The backend observation state boundary is documented in [`BACKEND_OBSERVATION_ST
 
 The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md).
 
-The next pass should migrate backend settings UI toward the unified address field if needed or add a disabled production sync service facade over the adapter boundary. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.
+The next pass should add a disabled production sync service facade over the adapter boundary. It must not wire receive addresses into production app UI without explicit approval, enable production BDK persistence, sync wallets in production flows, sign, broadcast, store secrets, or enable mainnet.

@@ -9,6 +9,7 @@ import com.libertasprimordium.skald.domain.onchain.BitcoinBackendValidator
 import com.libertasprimordium.skald.domain.onchain.EditableBitcoinBackendProfileInput
 import com.libertasprimordium.skald.domain.onchain.PlaceholderBitcoinBackendConnectionTester
 import com.libertasprimordium.skald.domain.onchain.WalletOperationResult
+import com.libertasprimordium.skald.settings.BitcoinBackendSettingsCodec
 import com.libertasprimordium.skald.settings.InMemorySettingsStorage
 import com.libertasprimordium.skald.settings.PersistentSettingsRepository
 import com.libertasprimordium.skald.settings.SettingsWriteResult
@@ -65,6 +66,27 @@ class BackendSettingsTest {
         assertEquals(BitcoinBackendType.Electrum, reloaded.profiles.single().type)
         assertEquals("tls://example.invalid:50002", reloaded.profiles.single().endpointDisplay)
         assertEquals(BitcoinBackendTrustModel.TrustedThirdParty, reloaded.profiles.single().trustModel)
+    }
+
+    @Test
+    fun savesElectrumBackendProfileFromUnifiedHostPortAddressField() {
+        val storage = InMemorySettingsStorage()
+        val profile = validatedProfile(
+            validInput(
+                label = "Unified Electrum profile",
+                type = BitcoinBackendType.Electrum,
+                network = NetworkEnvironment.Regtest,
+                host = "127.0.0.1:50001",
+                portText = "",
+            ),
+        )
+
+        assertIs<SettingsWriteResult.Saved>(PersistentSettingsRepository(storage).saveBitcoinBackendProfile(profile))
+        val reloaded = PersistentSettingsRepository(storage).loadBitcoinBackendSettings()
+
+        assertEquals("tcp://127.0.0.1:50001", reloaded.profiles.single().endpointDisplay)
+        assertNull(reloaded.profiles.single().credentialReference)
+        assertFalse(assertNotNull(storage.readText()).contains("127.0.0.1:50001"))
     }
 
     @Test
@@ -134,6 +156,23 @@ class BackendSettingsTest {
         assertEquals(BitcoinBackendType.Esplora, reloaded.profiles.single().type)
         assertEquals("https://example.invalid/api", reloaded.profiles.single().endpointDisplay)
         assertEquals(BitcoinBackendTrustModel.PublicBackend, reloaded.profiles.single().trustModel)
+    }
+
+    @Test
+    fun decodesExistingSeparateHostPortProfileStorageAfterUnifiedAddressUiPass() {
+        val decoded = BitcoinBackendSettingsCodec.decode(
+            """
+            skald.backend-settings.v1
+            selected|-
+            profile|legacy-core|Legacy Core|BitcoinCoreRpc|Regtest|tcp|127.0.0.1|18443|false||UserOwnedNode
+            """.trimIndent(),
+        )
+
+        val profile = decoded.profiles.single()
+        assertEquals("Legacy Core", profile.label)
+        assertEquals(BitcoinBackendType.BitcoinCoreRpc, profile.type)
+        assertEquals("tcp://127.0.0.1:18443", profile.endpointDisplay)
+        assertNull(profile.credentialReference)
     }
 
     @Test
@@ -227,6 +266,29 @@ class BackendSettingsTest {
 
         assertContains(result.errors, BackendProfileValidationError.MainnetDefaultEndpointRejected)
         assertNull(result.normalizedProfile)
+    }
+
+    @Test
+    fun unifiedAddressInputRejectsAmbiguousSeparatePortAndMalformedIpv6() {
+        val ambiguous = BitcoinBackendValidator.validate(
+            validInput(
+                type = BitcoinBackendType.Electrum,
+                host = "127.0.0.1:50001",
+                portText = "50002",
+            ),
+        )
+        val malformedIpv6 = BitcoinBackendValidator.validate(
+            validInput(
+                type = BitcoinBackendType.Electrum,
+                host = "[::1",
+                portText = "",
+            ),
+        )
+
+        assertContains(ambiguous.errors, BackendProfileValidationError.AmbiguousEndpointPort)
+        assertContains(malformedIpv6.errors, BackendProfileValidationError.MalformedEndpoint)
+        assertNull(ambiguous.normalizedProfile)
+        assertNull(malformedIpv6.normalizedProfile)
     }
 
     @Test

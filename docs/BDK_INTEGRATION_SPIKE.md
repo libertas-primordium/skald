@@ -157,4 +157,4 @@ The current local environment validates with local `electrs` `v0.11.1` supplied 
 
 ## Next Step
 
-The next implementation pass should either migrate the backend settings UI toward the unified address field or add a disabled production sync service facade over the adapter boundary. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should add a disabled production sync service facade over the adapter boundary. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
