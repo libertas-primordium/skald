@@ -83,6 +83,33 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(offenders.isEmpty(), "Common production source must not add networking/process APIs: $offenders")
     }
 
+    @Test
+    fun disabledSyncStatusUiFilesDoNotImportBdkOrClientApis() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/NodesScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/components/BitcoinWalletSyncStatusUiModel.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bCbfClient\b"""),
+            Regex("""\bstartFullScan\b"""),
+            Regex("""\bstartSyncWithRevealedSpks\b"""),
+            Regex("""\bapplyUpdate\b"""),
+            Regex("""\blistUnspent\b"""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(offenders.isEmpty(), "Disabled sync status UI must remain BDK/client/process free: $offenders")
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),

@@ -63,7 +63,7 @@ The Skald-owned backend observation state boundary is documented in [`BACKEND_OB
 
 The production backend adapter and endpoint normalization boundary is documented in [`PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md`](PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md). It defines the disabled production-facing interface that future runtime backend implementations must target. It does not turn this desktop-test BDK scan adapter into production sync.
 
-The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes the adapter boundary and observation model into fail-closed production preflight state, while this BDK scan adapter remains desktop-test-only.
+The disabled production sync service facade is documented in [`PRODUCTION_SYNC_SERVICE_BOUNDARY.md`](PRODUCTION_SYNC_SERVICE_BOUNDARY.md). It composes the adapter boundary and observation model into fail-closed production preflight state, and Nodes now displays that disabled status as read-only UI. This BDK scan adapter remains desktop-test-only.
 
 ## Receive-Address Policy Link
 
@@ -192,4 +192,4 @@ It remains production-safe model state only. It does not add production UTXO per
 
 ## Next Step
 
-The next focused branch should decide how to surface disabled sync preflight state or integrate the boundary into recovery/privacy planning. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.
+The next focused branch should integrate the disabled sync boundary into recovery/privacy planning or design production observation persistence. Do not proceed to production wallet sync, production receive UI, PSBT construction, signing, broadcasting, or Nostr payment flows until secure storage, recovery-state integration, backend trust display, and persistence boundaries are explicitly reviewed.

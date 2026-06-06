@@ -4,7 +4,9 @@
 
 Skald Vault now has a Skald-owned production wallet sync service facade over the backend adapter, endpoint policy, receive-address policy, secure-storage capability, and backend observation models.
 
-The facade is disabled and fail-closed. It does not enable production BDK sync, Bitcoin Core RPC, Electrum, Esplora, backend connection testing, UTXO scanning, receive UI, address or UTXO persistence, descriptor persistence, secure storage, transaction construction, PSBT handling, signing, broadcasting, public backend defaults, Skald-operated infrastructure, or mainnet.
+The Nodes screen now includes a minimal read-only production sync preflight/status card backed by this facade. The card shows blockers and warnings for the selected backend profile and descriptor wallet metadata, but it exposes no working sync action and performs no connection test.
+
+The facade and UI surface are disabled and fail-closed. They do not enable production BDK sync, Bitcoin Core RPC, Electrum, Esplora, backend connection testing, UTXO scanning, receive UI, address or UTXO persistence, descriptor persistence, secure storage, transaction construction, PSBT handling, signing, broadcasting, public backend defaults, Skald-operated infrastructure, or mainnet.
 
 ## Source Location
 
@@ -12,12 +14,15 @@ Production-safe common models:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/components/BitcoinWalletSyncStatusUiModel.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/NodesScreen.kt
 ```
 
 Tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncServiceTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncStatusUiModelTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
 
@@ -45,6 +50,42 @@ The request and result types depend only on Skald-owned models:
 - secure-storage capability state.
 
 The facade does not expose BDK, Electrum, Esplora, Bitcoin Core RPC, HTTP, socket, process, wallet database, or platform-native client types.
+
+## Nodes Status Surface
+
+The Nodes screen renders a small `Production sync preflight` status block after the simulated backend validation section.
+
+The surface displays:
+
+- selected backend profile metadata,
+- selected descriptor wallet metadata if present,
+- requested development network,
+- sync blockers,
+- sync warnings,
+- a locked action label explaining that sync is not implemented.
+
+Expected blockers include:
+
+- production sync disabled,
+- backend adapter disabled,
+- no backend configured,
+- invalid endpoint metadata,
+- no operational wallet,
+- secure storage unavailable,
+- credential references unavailable,
+- observation persistence unavailable,
+- mainnet disabled when applicable.
+
+Expected warnings include:
+
+- no network connection attempted,
+- public backend privacy leakage,
+- backend query linkage,
+- onion/Tor labeling preserved,
+- Tor transport not implemented,
+- no Skald-managed infrastructure.
+
+The status surface consumes only Skald-owned result models. It does not call BDK, create backend clients, start processes, open sockets, persist observations, derive addresses, or expose a working sync button.
 
 ## Disabled Implementation
 
@@ -147,9 +188,14 @@ Tests cover:
 - disabled backend adapter blocking sync,
 - observation summary shape without persisted or real observations,
 - disabled networking, sync, persistence, signing, broadcasting, mainnet, and Skald infrastructure flags.
+- sync status presentation labels for blockers and warnings,
+- public backend and onion/Tor warning display,
+- invalid endpoint display without userinfo exposure,
+- no working sync action in the presentation model,
+- UI/status source files remaining BDK/client/process free.
 
-The source guard includes the sync facade file and asserts that production boundary files remain BDK/client/process free.
+The source guard includes the sync facade and status UI files and asserts that production boundary/status files remain BDK/client/process free.
 
 ## Next Step
 
-The next focused pass should decide how future production sync preflight status is surfaced in On-chain or Nodes UI without adding a working sync button. Production backend clients and observation persistence should remain deferred until secure storage, recovery integration, and persistence boundaries are reviewed.
+The next focused pass should integrate disabled sync status with recovery/privacy planning or design production observation persistence. Production backend clients and observation persistence should remain deferred until secure storage, recovery integration, and persistence boundaries are reviewed.
