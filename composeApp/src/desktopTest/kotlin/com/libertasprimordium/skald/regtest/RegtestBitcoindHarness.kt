@@ -142,6 +142,7 @@ data class RegtestBitcoindLaunchConfig(
     val datadir: File,
     val rpcPort: Int,
     val p2pPort: Int,
+    val p2pListen: Boolean = false,
 )
 
 data class RegtestHarnessCommand(
@@ -163,14 +164,24 @@ object RegtestBitcoindCommands {
     fun bitcoind(
         paths: RegtestBinaryPaths,
         config: RegtestBitcoindLaunchConfig,
-    ): RegtestHarnessCommand =
-        RegtestHarnessCommand(
+    ): RegtestHarnessCommand {
+        val p2pFlags = if (config.p2pListen) {
+            listOf(
+                "-listen=1",
+                "-bind=127.0.0.1",
+            )
+        } else {
+            listOf("-listen=0")
+        }
+
+        return RegtestHarnessCommand(
             executable = paths.bitcoind.absolutePath,
             arguments = listOf(
                 "-regtest",
                 "-datadir=${config.datadir.absolutePath}",
                 "-server=1",
-                "-listen=0",
+            ) + p2pFlags + listOf(
+                "-discover=0",
                 "-dnsseed=0",
                 "-fixedseeds=0",
                 "-rpcbind=127.0.0.1",
@@ -180,6 +191,7 @@ object RegtestBitcoindCommands {
                 "-fallbackfee=0.0001",
             ),
         )
+    }
 
     fun bitcoinCli(
         paths: RegtestBinaryPaths,

@@ -40,6 +40,8 @@ enum class RegtestElectrumIndexerCheck(val label: String) {
     ElectrumIndexerReady("local Electrum indexer ready"),
     MiningWalletCreated("temporary bitcoind mining wallet created"),
     BlockGenerated("regtest block generated while indexer was running"),
+    FundingTransactionSent("regtest funding transaction sent by harness wallet"),
+    FundingConfirmationMined("regtest funding confirmation mined"),
     CleanShutdown("clean shutdown"),
     TemporaryDatadirsCleaned("temporary datadirs cleaned"),
 }
@@ -151,6 +153,22 @@ data class RegtestElectrumIndexerLaunchConfig(
     val electrumPort: Int,
 )
 
+data class RegtestElectrumIndexerEndpoint(
+    val host: String,
+    val port: Int,
+) {
+    val bdkServerUrl: String
+        get() = "tcp://$host:$port"
+
+    val bdkServerUrlCandidates: List<String>
+        get() = listOf(
+            "tcp://$host:$port",
+            "$host:$port",
+        )
+
+    override fun toString(): String = "LOCAL_REGTEST_ELECTRUM_ENDPOINT_REDACTED"
+}
+
 object RegtestElectrumIndexerCommands {
     fun electrs(
         paths: RegtestElectrumIndexerBinaryPaths,
@@ -162,6 +180,7 @@ object RegtestElectrumIndexerCommands {
                 "--network=regtest",
                 "--daemon-dir=${config.bitcoind.datadir.absolutePath}",
                 "--daemon-rpc-addr=127.0.0.1:${config.bitcoind.rpcPort}",
+                "--daemon-p2p-addr=127.0.0.1:${config.bitcoind.p2pPort}",
                 "--db-dir=${config.indexerDatadir.absolutePath}",
                 "--electrum-rpc-addr=127.0.0.1:${config.electrumPort}",
             ),
@@ -174,6 +193,30 @@ class RegtestElectrumIndexerHarness(
     private val commandRunner: RegtestCommandRunner = RegtestCommandRunner(),
 ) {
     fun runSmoke(): RegtestElectrumIndexerResult {
+        var blockGenerated = false
+        return runWithReadyIndexer { session, checks ->
+            blockGenerated = session.generateOneBlock(checks)
+            blockGenerated
+        }.let { result ->
+            if (blockGenerated) {
+                result
+            } else if (result.state == RegtestElectrumIndexerState.Completed) {
+                result.copy(
+                    state = RegtestElectrumIndexerState.Failed,
+                    error = error(
+                        code = "LOCAL_ELECTRUM_REGTEST_BLOCK_GENERATION_FAILED",
+                        safeDetail = "Regtest block generation failed while the local Electrum indexer was running.",
+                    ),
+                )
+            } else {
+                result
+            }
+        }
+    }
+
+    fun runWithReadyIndexer(
+        action: (RegtestElectrumIndexerSession, MutableList<RegtestElectrumIndexerCheck>) -> Boolean,
+    ): RegtestElectrumIndexerResult {
         val bitcoindDatadir = Files.createTempDirectory("skald-regtest-bitcoind-electrum-").toFile()
         val indexerDatadir = Files.createTempDirectory("skald-regtest-electrum-indexer-").toFile()
         val config = RegtestElectrumIndexerLaunchConfig(
@@ -181,6 +224,7 @@ class RegtestElectrumIndexerHarness(
                 datadir = bitcoindDatadir,
                 rpcPort = availableLocalPort(),
                 p2pPort = availableLocalPort(),
+                p2pListen = true,
             ),
             indexerDatadir = indexerDatadir,
             electrumPort = availableLocalPort(),
@@ -214,13 +258,18 @@ class RegtestElectrumIndexerHarness(
                     )
                 } else {
                     checks += RegtestElectrumIndexerCheck.ElectrumIndexerReady
-                    if (generateOneBlock(config.bitcoind, checks)) {
-                        checks += RegtestElectrumIndexerCheck.BlockGenerated
+                    val session = RegtestElectrumIndexerSession(
+                        endpoint = RegtestElectrumIndexerEndpoint("127.0.0.1", config.electrumPort),
+                        bitcoinPaths = bitcoinPaths,
+                        config = config.bitcoind,
+                        commandRunner = commandRunner,
+                    )
+                    if (action(session, checks)) {
                         state = RegtestElectrumIndexerState.Completed
                     } else {
                         error = error(
-                            code = "LOCAL_ELECTRUM_REGTEST_BLOCK_GENERATION_FAILED",
-                            safeDetail = "Regtest block generation failed while the local Electrum indexer was running.",
+                            code = "LOCAL_ELECTRUM_REGTEST_ACTION_FAILED",
+                            safeDetail = "Local Electrum regtest harness action failed after the indexer became ready.",
                         )
                     }
                 }
@@ -280,28 +329,6 @@ class RegtestElectrumIndexerHarness(
                 socket.connect(InetSocketAddress("127.0.0.1", port), 500)
             }
         }.isSuccess
-
-    private fun generateOneBlock(
-        config: RegtestBitcoindLaunchConfig,
-        checks: MutableList<RegtestElectrumIndexerCheck>,
-    ): Boolean {
-        val walletName = "skald_regtest_electrum_mining"
-        val walletCreated = runCli(config, listOf("createwallet", walletName))
-        if (!walletCreated.succeeded) return false
-        checks += RegtestElectrumIndexerCheck.MiningWalletCreated
-
-        val address = runCli(
-            config = config,
-            commandArguments = listOf("-rpcwallet=$walletName", "getnewaddress", "skald-regtest-electrum-mining", "bech32"),
-        ).stdout.trim()
-        if (address.isBlank()) return false
-
-        return runCli(
-            config = config,
-            commandArguments = listOf("-rpcwallet=$walletName", "generatetoaddress", "1", address),
-            timeoutOverrideMillis = 10_000L,
-        ).succeeded
-    }
 
     private fun stopIndexer(process: Process?): Boolean {
         if (process == null) return false
@@ -374,6 +401,90 @@ class RegtestElectrumIndexerHarness(
             RegtestElectrumIndexerCapability.NoProductionBackend,
             RegtestElectrumIndexerCapability.NoSkaldWalletStorage,
         )
+}
+
+class RegtestElectrumIndexerSession internal constructor(
+    val endpoint: RegtestElectrumIndexerEndpoint,
+    private val bitcoinPaths: RegtestBinaryPaths,
+    private val config: RegtestBitcoindLaunchConfig,
+    private val commandRunner: RegtestCommandRunner,
+) {
+    private var miningWalletCreated = false
+    private var matureCoinsPrepared = false
+
+    fun generateOneBlock(
+        checks: MutableList<RegtestElectrumIndexerCheck>,
+    ): Boolean {
+        if (!ensureMiningWallet(checks)) return false
+        return mineBlocks(1, checks, RegtestElectrumIndexerCheck.BlockGenerated)
+    }
+
+    fun fundAddress(
+        address: String,
+        amountBtc: String,
+        checks: MutableList<RegtestElectrumIndexerCheck>,
+    ): Boolean {
+        if (address.isBlank()) return false
+        if (!ensureMatureCoins(checks)) return false
+        val sent = runCli(
+            commandArguments = listOf("-rpcwallet=$MiningWalletName", "sendtoaddress", address, amountBtc),
+            timeoutOverrideMillis = 10_000L,
+        )
+        if (!sent.succeeded) return false
+        checks += RegtestElectrumIndexerCheck.FundingTransactionSent
+        return mineBlocks(1, checks, RegtestElectrumIndexerCheck.FundingConfirmationMined)
+    }
+
+    private fun ensureMatureCoins(checks: MutableList<RegtestElectrumIndexerCheck>): Boolean {
+        if (matureCoinsPrepared) return true
+        if (!ensureMiningWallet(checks)) return false
+        if (!mineBlocks(101, checks, null)) return false
+        matureCoinsPrepared = true
+        return true
+    }
+
+    private fun ensureMiningWallet(checks: MutableList<RegtestElectrumIndexerCheck>): Boolean {
+        if (miningWalletCreated) return true
+        val walletCreated = runCli(listOf("createwallet", MiningWalletName))
+        if (!walletCreated.succeeded) return false
+        checks += RegtestElectrumIndexerCheck.MiningWalletCreated
+        miningWalletCreated = true
+        return true
+    }
+
+    private fun mineBlocks(
+        count: Int,
+        checks: MutableList<RegtestElectrumIndexerCheck>,
+        completionCheck: RegtestElectrumIndexerCheck?,
+    ): Boolean {
+        val address = runCli(
+            commandArguments = listOf("-rpcwallet=$MiningWalletName", "getnewaddress", "skald-regtest-electrum-mining", "bech32"),
+        ).stdout.trim()
+        if (address.isBlank()) return false
+
+        val mined = runCli(
+            commandArguments = listOf("-rpcwallet=$MiningWalletName", "generatetoaddress", count.toString(), address),
+            timeoutOverrideMillis = 30_000L,
+        ).succeeded
+        if (mined && completionCheck != null) {
+            checks += completionCheck
+        }
+        return mined
+    }
+
+    private fun runCli(
+        commandArguments: List<String>,
+        timeoutOverrideMillis: Long = 5_000L,
+    ): RegtestProcessResult =
+        commandRunner.run(
+            command = RegtestBitcoindCommands.bitcoinCli(bitcoinPaths, config, commandArguments),
+            redactions = listOf(config.datadir.absolutePath),
+            timeoutOverrideMillis = timeoutOverrideMillis,
+        )
+
+    private companion object {
+        const val MiningWalletName = "skald_regtest_electrum_mining"
+    }
 }
 
 object RegtestElectrumIndexerSmoke {

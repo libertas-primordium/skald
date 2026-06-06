@@ -102,10 +102,10 @@ The BDK regtest/signet address derivation validation does not require this harne
 
 ## Relationship To UTXO Scan Validation
 
-The BDK regtest UTXO scan validation boundary currently reports a blocked result. BDK `2.3.0` exposes wallet scan requests and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from this local `bitcoind` harness alone.
+The BDK regtest UTXO scan validation boundary reports a local-indexer-required result unless the local Electrum adapter is explicitly requested. BDK `2.3.0` exposes wallet scan requests and indexed backend clients, but the resolved JVM artifact does not expose a direct Bitcoin Core RPC scan client that can observe UTXOs from this local `bitcoind` harness alone.
 
-The local harness remains useful as the base regtest node for the local Electrum-compatible indexer harness documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md), or for a future Esplora, compact-filter, or revised chain-source harness. It does not by itself make BDK wallet UTXO observation available.
+The local harness remains useful as the base regtest node for the local Electrum-compatible indexer harness documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md), and for the BDK Electrum scan adapter documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md). The combined opt-in path with local `electrs` now observes a funded runtime regtest UTXO through BDK, but this harness alone does not make production BDK wallet UTXO observation available.
 
 ## Next Step
 
-The next focused pass should install or point to a local Electrum-compatible indexer binary and wire BDK's Electrum scan API through a desktop-test-only adapter before attempting full BDK UTXO observation again. That pass must remain regtest-only, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should design the production-safe backend observation state boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
