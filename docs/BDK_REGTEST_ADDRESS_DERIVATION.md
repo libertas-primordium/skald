@@ -123,6 +123,6 @@ That boundary now includes a desktop-test-only BDK Electrum scan adapter. BDK `2
 
 ## Next Step
 
-The next focused pass should design the production-safe backend observation state boundary before operational wallet sync.
+The backend observation state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md).
 
-That path must keep production app flows disabled until the secure-storage, recovery, and backend-trust boundaries are ready.
+The next focused pass should design the production backend adapter interface and endpoint normalization boundary before operational wallet sync. That path must keep production app flows disabled until the secure-storage, recovery, backend-trust, and persistence boundaries are ready.

@@ -1,7 +1,10 @@
 package com.libertasprimordium.skald.bdk
 
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.onchain.BackendObservationStatus
+import com.libertasprimordium.skald.domain.onchain.BackendObservationWarning
 import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
+import com.libertasprimordium.skald.domain.onchain.ObservedUtxoSpendReadiness
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressDerivationIndex
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressLifecycleState
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressPolicyBlockingIssue
@@ -121,6 +124,18 @@ class BdkRegtestUtxoScanValidationTest {
             val summary = requireNotNull(result.scanSummary)
             assertTrue(summary.addressMarkedUsed)
             assertEquals(ReceiveAddressPolicyDecisionState.WarningRequired, summary.reuseDecision.state)
+            assertEquals(BackendObservationStatus.Completed, summary.backendObservationSummary.status)
+            assertEquals(1, summary.backendObservationSummary.observedUtxoCount)
+            assertTrue(summary.backendObservationSummary.totalAmount.value > 0)
+            assertFalse(summary.backendObservationSummary.anySpendableWithoutCoinControl)
+            assertContains(
+                summary.backendObservationSummary.warnings,
+                BackendObservationWarning.ObservationDoesNotAuthorizeSpending,
+            )
+            assertContains(
+                summary.backendObservationSummary.warnings,
+                BackendObservationWarning.CoinControlRequiredBeforeSpend,
+            )
             assertNull(result.error)
             assertRedacted(result.toString())
             return
@@ -245,6 +260,20 @@ class BdkRegtestUtxoScanValidationTest {
         assertContains(summary.reuseDecision.warnings, ReceiveAddressPolicyWarning.AddressReuseRequiresExplicitConfirmation)
         assertContains(summary.reuseDecision.warnings, ReceiveAddressPolicyWarning.ObservedAddressReuseIsUnsafe)
         assertContains(summary.reuseDecision.blockingIssues, ReceiveAddressPolicyBlockingIssue.AddressAlreadyUsed)
+        assertEquals(BackendObservationStatus.Completed, summary.backendObservationSummary.status)
+        assertEquals(1, summary.backendObservationSummary.observedUtxoCount)
+        assertEquals(25_000, summary.backendObservationSummary.totalAmount.value)
+        assertFalse(summary.backendObservationSummary.productionSyncEnabled)
+        assertFalse(summary.backendObservationSummary.signingOrBroadcastEnabled)
+        assertFalse(summary.backendObservationSummary.anySpendableWithoutCoinControl)
+        assertEquals(
+            ObservedUtxoSpendReadiness.CoinControlRequired,
+            summary.backendObservationSummary.observedUtxos.single().spendReadiness,
+        )
+        assertContains(
+            summary.backendObservationSummary.warnings,
+            BackendObservationWarning.ObservationDoesNotAuthorizeSpending,
+        )
         assertRedacted(summary.toString())
     }
 
@@ -265,6 +294,8 @@ class BdkRegtestUtxoScanValidationTest {
         assertEquals(ReceiveAddressLifecycleState.ObservedUnconfirmed, summary.addressLifecycleAfter)
         assertTrue(summary.addressMarkedUsed)
         assertEquals(ReceiveAddressPolicyDecisionState.WarningRequired, summary.reuseDecision.state)
+        assertEquals(BackendObservationStatus.Completed, summary.backendObservationSummary.status)
+        assertEquals(0, summary.backendObservationSummary.observedUtxos.single().confirmationState.depth)
         assertRedacted(summary.toString())
     }
 

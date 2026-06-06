@@ -135,6 +135,12 @@ The test-only regtest UTXO scan validation boundary is documented in [`BDK_REGTE
 
 That boundary now includes a desktop-test-only BDK Electrum scan adapter. Without the local Electrum opt-in it reports a safe local-indexer-required state. With both opt-ins and a local `electrs` binary, it uses only a localhost regtest Electrum endpoint from the test harness. The combined path now observes a funded runtime regtest UTXO through BDK and applies Skald-owned receive-address used-state policy. No production wallet sync, backend client, UTXO scan, signing, broadcasting, or mainnet behavior is enabled.
 
+## Backend Observation State Boundary
+
+The production-safe backend observation and UTXO state boundary is documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md).
+
+That boundary defines Skald-owned models for backend observation source, trust, status, warnings, observed UTXO lifecycle, confirmation state, wallet scope, risk flags, and receive-address usage transitions. The desktop-test-only BDK Electrum scan result maps into this boundary through sanitized common-domain state. BDK scan APIs remain confined to desktop test validation code; the common observation model does not import BDK and does not enable production sync, persistence, app UTXO display, signing, broadcasting, public endpoints, or mainnet.
+
 ## Local Electrum Regtest Harness Boundary
 
 The desktop-test-only local Electrum-compatible regtest indexer harness is documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md).
@@ -145,4 +151,4 @@ The current local environment validates with local `electrs` `v0.11.1` supplied 
 
 ## Next Step
 
-The next implementation pass should design the production-safe backend observation state boundary before any production sync work. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.
+The next implementation pass should design the production backend adapter interface and endpoint normalization boundary before any production sync work. Do not enable production storage, mainnet, hidden backend defaults, production wallet sync, signing, broadcasting, or persisted production key material as part of that work.

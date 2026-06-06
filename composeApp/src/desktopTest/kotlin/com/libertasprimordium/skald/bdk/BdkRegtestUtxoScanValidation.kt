@@ -1,12 +1,14 @@
 package com.libertasprimordium.skald.bdk
 
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.onchain.BackendObservationPolicy
+import com.libertasprimordium.skald.domain.onchain.BackendObservationPolicyRequest
+import com.libertasprimordium.skald.domain.onchain.BackendObservationSession
+import com.libertasprimordium.skald.domain.onchain.BackendObservationSessionId
+import com.libertasprimordium.skald.domain.onchain.BackendObservationSummary
+import com.libertasprimordium.skald.domain.onchain.ObservedUtxo
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressLifecycleState
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressObservation
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressPolicy
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressPolicyAction
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressPolicyDecision
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressPolicyRequest
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressState
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletContext
 import com.libertasprimordium.skald.domain.onchain.bdk.BdkAdapterVersion
@@ -94,6 +96,7 @@ data class SanitizedRegtestScanSummary(
     val addressMarkedUsed: Boolean,
     val reuseDecision: ReceiveAddressPolicyDecision,
     val observations: List<SanitizedRegtestUtxoObservation>,
+    val backendObservationSummary: BackendObservationSummary,
 )
 
 data class BdkRegtestUtxoScanValidationError(
@@ -276,31 +279,36 @@ object BdkRegtestUtxoScanValidation {
             "UTXO scan policy validation accepts only regtest receive-address state."
         }
 
-        val before = candidate.lifecycleState
-        val observed = candidate.markObserved(
-            if (observation.confirmed) {
-                ReceiveAddressObservation.ConfirmedReceive
-            } else {
-                ReceiveAddressObservation.UnconfirmedReceive
-            },
+        val observedUtxo = ObservedUtxo.runtimeRegtestReceive(
+            wallet = wallet,
+            address = candidate,
+            amountSats = observation.amountSats,
+            confirmations = observation.confirmations,
         )
-        val reuseDecision = ReceiveAddressPolicy.evaluate(
-            ReceiveAddressPolicyRequest(
-                action = ReceiveAddressPolicyAction.AttemptAddressReuse,
+        val backendObservationSummary = BackendObservationPolicy.evaluate(
+            BackendObservationPolicyRequest(
+                session = BackendObservationSession.localRegtestElectrumHarness(
+                    id = BackendObservationSessionId("bdk-regtest-electrum-scan-observation"),
+                ),
                 wallet = wallet,
-                candidate = observed,
+                candidate = candidate,
+                observedUtxos = listOf(observedUtxo),
             ),
         )
+        val addressUsage = requireNotNull(backendObservationSummary.addressUsage) {
+            "Expected sanitized regtest UTXO observation to update receive-address used state."
+        }
 
         return SanitizedRegtestScanSummary(
             network = BdkRegtestUtxoScanValidationNetwork.Regtest,
-            observedUtxoCount = 1,
-            totalAmountSats = observation.amountSats,
-            addressLifecycleBefore = before,
-            addressLifecycleAfter = observed.lifecycleState,
-            addressMarkedUsed = observed.isUsed,
-            reuseDecision = reuseDecision,
+            observedUtxoCount = backendObservationSummary.observedUtxoCount,
+            totalAmountSats = backendObservationSummary.totalAmount.value,
+            addressLifecycleBefore = addressUsage.lifecycleBefore,
+            addressLifecycleAfter = addressUsage.lifecycleAfter,
+            addressMarkedUsed = addressUsage.addressMarkedUsed,
+            reuseDecision = addressUsage.reuseDecision,
             observations = listOf(observation),
+            backendObservationSummary = backendObservationSummary,
         )
     }
 

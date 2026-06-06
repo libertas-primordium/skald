@@ -106,6 +106,8 @@ The BDK regtest UTXO scan validation boundary reports a local-indexer-required r
 
 The local harness remains useful as the base regtest node for the local Electrum-compatible indexer harness documented in [`LOCAL_ELECTRUM_REGTEST_HARNESS.md`](LOCAL_ELECTRUM_REGTEST_HARNESS.md), and for the BDK Electrum scan adapter documented in [`BDK_REGTEST_UTXO_SCAN_VALIDATION.md`](BDK_REGTEST_UTXO_SCAN_VALIDATION.md). The combined opt-in path with local `electrs` now observes a funded runtime regtest UTXO through BDK, but this harness alone does not make production BDK wallet UTXO observation available.
 
+The sanitized local observation maps into the Skald-owned backend observation state boundary documented in [`BACKEND_OBSERVATION_STATE.md`](BACKEND_OBSERVATION_STATE.md). That model remains production-safe common-domain state only and does not enable app sync or UTXO persistence.
+
 ## Next Step
 
-The next focused pass should design the production-safe backend observation state boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
+The next focused pass should design the production backend adapter interface and endpoint normalization boundary. That pass must remain regtest-first, avoid production persistence until explicitly designed, and keep BDK types out of common UI/settings models.
