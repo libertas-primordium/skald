@@ -27,7 +27,7 @@ Can a pinned dependency candidate expose Argon2id and XChaCha20-Poly1305 APIs on
 It does not answer all implementation questions that remain for a real vault:
 
 - KDF parameter calibration.
-- Android runtime known-answer-vector validation.
+- Future provider-boundary known-answer-vector validation.
 - Vault envelope implementation.
 - Key hierarchy implementation.
 - Secure memory/session lifecycle behavior.
@@ -38,7 +38,7 @@ It does not answer all implementation questions that remain for a real vault:
 
 | Candidate | Spike result | Reason |
 | --- | --- | --- |
-| Tink AEAD plus Bouncy Castle Argon2id | Selected for dependency probe only | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts, no native library entries observed in resolved JARs, and desktop JVM public KAT validation. |
+| Tink AEAD plus Bouncy Castle Argon2id | Selected for dependency probe only | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts, no native library entries observed in resolved JARs, desktop JVM public KAT validation, and Android instrumented runtime KAT validation on Pixel 10 Pro XL / Android 16. Earlier connected-device failures were install/device-targeting environment blockers, not KAT failures. |
 | Lazysodium Java/Android | Rejected for current vault branch | One primitive family covers Argon2id and XChaCha20-Poly1305 APIs, but Android packaging failed with duplicate JNA classes when `lazysodium-android:5.2.0` was added. |
 | IonSpin KMP libsodium binding | Deferred after comparison | Exact artifacts exist, but Kotlin metadata compatibility, JNA/native-loader behavior, Android ABI packaging, Linux `.deb` behavior, and KAT mapping remain unverified. |
 | Bouncy Castle only | Insufficient as primary stack | Provides Argon2id and ChaCha20-Poly1305-family APIs, but did not satisfy the preferred XChaCha20-Poly1305 record-AEAD target in this pass. |
@@ -83,7 +83,7 @@ org.bouncycastle.crypto.modes.ChaCha20Poly1305
 
 The desktop artifact probe also loads those class names with `Class.forName()` as a runtime classpath check.
 
-The desktop KAT validation documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md) adds cryptographic correctness evidence for public vectors on desktop JVM. Android runtime KAT validation remains outstanding.
+The KAT validation documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md) adds cryptographic correctness evidence for public vectors on desktop JVM and Android runtime. The Android runtime run executed two instrumented tests on Pixel 10 Pro XL / Android 16 after targeting the raw ADB IP:port serial `192.168.1.155:44127`; the earlier install-signature conflict and stale wireless-debugging mDNS target were environment blockers that occurred before the successful run.
 
 ## Artifact And Packaging Observations
 
@@ -105,7 +105,6 @@ Packaging checks completed in this pass:
 
 Remaining package/runtime checks before this spike can become a dependency decision for implementation:
 
-- Android runtime/instrumentation probe if the vault implementation later uses these APIs on device.
 - Release-build dependency/license review.
 - Review whether the Android resource exclude remains acceptable for release packaging.
 
@@ -120,14 +119,13 @@ This is a preliminary packaging-spike note only. A final implementation branch s
 
 ## Known-Answer Vectors
 
-Known-answer-vector coverage now exists for desktop JVM only:
+Known-answer-vector coverage now exists for desktop JVM and Android runtime:
 
 - Bouncy Castle `Argon2BytesGenerator` matches the RFC 9106 Argon2id public test vector.
 - Tink `InsecureNonceXChaCha20Poly1305` matches the XChaCha draft AEAD_XCHACHA20_POLY1305 public test vector.
 
 Required future KAT work:
 
-- Android runtime KAT validation for the selected API usage.
 - Skald-owned envelope vectors using obvious non-wallet sentinel values after a disabled provider/container boundary exists.
 - Cross-platform validation through the future provider boundary.
 
@@ -135,21 +133,22 @@ No wallet data, mnemonic material, private descriptors, real addresses, real txi
 
 ## Current Recommendation
 
-Use the Tink plus Bouncy Castle split stack as a desktop KAT-validated implementation candidate, not as an approved production vault implementation.
+Use the Tink plus Bouncy Castle split stack as a desktop and Android runtime KAT-validated implementation candidate, not as an approved production vault implementation.
 
 Rationale:
 
 - It keeps common policy/source models independent of crypto providers.
 - It avoids native-library packaging risk for the first JVM/Android build probe.
 - It exposes the target AEAD API from Tink and the target KDF API from Bouncy Castle.
-- It now has desktop JVM public KAT evidence for both selected primitives.
+- It now has desktop JVM and Android runtime public KAT evidence for both selected primitives.
 - The Lazysodium Java/Android path hit a concrete Android packaging blocker; IonSpin KMP remains a separate deferred comparison target rather than an accepted replacement.
 
 Blockers before implementation:
 
 - Final dependency and license review.
-- Android runtime/API/KAT verification.
 - KDF parameter calibration.
+- Tink keyset/storage handling review.
+- Split-provider boundary review.
 - Envelope/key-hierarchy implementation review.
 - Lock/session lifecycle implementation and tests.
 - Redaction/migration/corruption tests.
@@ -184,7 +183,7 @@ This dependency spike does not enable:
 
 Decide whether the next focused branch should:
 
-- add Android runtime KAT validation for the current split stack,
+- complete Tink/Bouncy dependency/license review, KDF calibration planning, Tink keyset/storage handling review, and split-provider boundary review,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - investigate a specific Lazysodium/JNA variant-resolution strategy,
 - or design a narrow disabled crypto-provider boundary before vault container work.

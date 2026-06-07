@@ -180,4 +180,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should add Android runtime KAT validation for the Tink/Bouncy Castle probe, compare a libsodium/KMP native-packaging option, or design a narrow disabled crypto-provider boundary. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
+The next focused pass should complete Tink/Bouncy dependency/license review, KDF calibration planning, Tink keyset/storage handling review, split-provider boundary review, or design a narrow disabled crypto-provider boundary. Isolated libsodium/KMP native-packaging comparison remains a separate replacement-stack option if needed. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
