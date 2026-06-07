@@ -8,7 +8,7 @@ This is evidence modeling and manual capture guidance only. It does not implemen
 
 The current Pixel 10 Pro XL / Android 16 calibration evidence remains high-end Android debug/instrumented evidence only. It does not prove performance across all supported Android devices, release-like runtime behavior, thermal/load repeatability, final parameter approval, provider selection, storage readiness, or production KDF approval.
 
-Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). That policy records the user decision to forego low-end Android model testing as a hard compatibility blocker. Low-end and mid-range calibration evidence remains useful optional parameter/UX evidence; supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault creation gates now define compatibility planning.
+Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). Those policies record the user decision to forego low-end Android model testing as a hard compatibility blocker. Low-end and mid-range calibration evidence remains useful optional parameter/UX evidence; supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault creation gates now define compatibility planning.
 
 ## Source Location
 
@@ -196,7 +196,7 @@ Generic manufacturer, model, Android version, and API level are enough for manua
 
 ## How Evidence Feeds Policy
 
-Manual Android evidence feeds the future Argon2id parameter policy as device-class and runtime-environment context. It may help decide whether the high-end Android candidate, mobile fallback/probe floor, or a future supported-Android candidate is usable. It is not a substitute for the compatibility/entropy gates in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md).
+Manual Android evidence feeds the future Argon2id parameter policy as device-class and runtime-environment context. It may help decide whether the high-end Android candidate, mobile fallback/probe floor, or a future supported-Android candidate is usable. It is not a substitute for the compatibility/entropy gates in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md), nor for the runtime randomness/provider checks in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md).
 
 It does not approve:
 
@@ -212,5 +212,4 @@ It does not approve:
 
 ## Next Step
 
-The next focused pass should remain design/probe-only: capture additional Android calibration evidence on at least one mid-range and one low-end supported device, preferably with release-like and thermal/load repeatability notes. Executable production provider work, vault containers, and persistence must remain separate branches with explicit approval.
-The next focused pass should remain design/probe-only unless explicitly narrowed by the user: define runtime provider/randomness compatibility checks for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Executable production provider work, vault containers, entropy collection, key generation, and persistence must remain separate branches with explicit approval.
+The next focused pass should remain design/probe-only unless explicitly narrowed by the user: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Executable production provider work, vault containers, entropy collection, key generation, and persistence must remain separate branches with explicit approval.

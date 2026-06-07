@@ -68,6 +68,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateParameterPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidCompatibilityEntropyPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.RuntimeRandomnessProviderCheckModel)
         assertEquals(
             Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
             readiness.argon2idCalibrationPolicy.status,
@@ -109,6 +110,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
             EncryptedVaultRequirement.AndroidCompatibilityEntropyPolicyModeled,
             EncryptedVaultRequirement.RuntimeCryptoProviderChecksModeled,
+            EncryptedVaultRequirement.RuntimeRandomnessProviderChecksModeled,
             EncryptedVaultRequirement.RuntimeEntropyChecksModeled,
             EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
@@ -162,6 +164,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.RuntimeCryptoProviderChecksModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.RuntimeRandomnessProviderChecksModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

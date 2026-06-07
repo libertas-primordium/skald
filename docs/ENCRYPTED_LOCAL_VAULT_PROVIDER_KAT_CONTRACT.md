@@ -6,7 +6,7 @@ Skald Vault now has a Skald-owned provider-level known-answer-test contract for 
 
 A test-only provider KAT harness now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). That harness proves the Skald-owned request/result path can carry the public KDF/AEAD vectors and required negative cases through a test-scope implementation on desktop and Android runtime. It is not a production provider implementation.
 
-Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). The selection registry treats dependency-level KATs and test-only provider KATs as insufficient for production selection and returns only the disabled provider.
+Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The selection registry treats dependency-level KATs, test-only provider KATs, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
 
 This is contract and policy scaffolding only. It does not implement executable provider crypto, production KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
@@ -65,7 +65,7 @@ Because no executable production provider exists, production provider-level KATs
 
 The test-only harness is separate evidence: it runs through `VaultCryptoProvider.validateKat(...)` and returns redacted `VaultCryptoProviderKatEvidence` with `TestHarnessOnly` scope. That proves interface expressiveness and failure-mode coverage, not production provider approval.
 
-Manual Android Argon2id calibration capture is also separate evidence. It is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md) and records timing context for future parameter policy only; it does not satisfy dependency-level KATs, test-provider KATs, production provider KATs, or provider selection. Android compatibility and entropy gates are modeled separately in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md): low-end and mid-range model testing are not hard compatibility blockers, but supported OS baseline checks, runtime provider/primitive checks, approved cryptographic randomness, and fail-closed vault creation are required.
+Manual Android Argon2id calibration capture is also separate evidence. It is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md) and records timing context for future parameter policy only; it does not satisfy dependency-level KATs, test-provider KATs, production provider KATs, or provider selection. Android compatibility and entropy gates are modeled separately in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md): low-end and mid-range model testing are not hard compatibility blockers, but supported OS baseline checks, runtime provider/primitive checks, approved cryptographic randomness, and fail-closed vault creation are required. Runtime randomness/provider probes are availability checks only; small non-secret samples are not entropy-quality proof and do not approve production randomness.
 
 ## Contract Registry
 
@@ -158,6 +158,8 @@ Before a future executable provider can be approved for vault implementation:
 9. Lock/session lifecycle behavior must be tested.
 10. Vault container and storage approval must remain separate.
 
+Runtime randomness availability must be reviewed as a provider-selection and vault-creation gate, but it is not itself a provider KAT and must not be used to bypass provider KAT requirements.
+
 ## Explicit Non-Capabilities
 
 This contract does not enable:
@@ -225,4 +227,4 @@ The Android connected run executed the expanded instrumented suite on Pixel 10 P
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: define runtime provider/primitive/randomness checks for the supported Android baseline, or decide whether to design a disabled executable production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from the test harness.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: review runtime provider/primitive/randomness checks for supported Android and Linux paths, or decide whether to design a disabled executable production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from the test harness.

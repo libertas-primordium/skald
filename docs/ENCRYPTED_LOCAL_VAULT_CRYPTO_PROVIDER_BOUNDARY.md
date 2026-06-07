@@ -6,7 +6,7 @@ Skald Vault now has a narrow Skald-owned disabled `VaultCryptoProvider` boundary
 
 This is a provider-boundary and policy-model pass only. It does not implement encryption, KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material storage, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
+Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
 
 Runtime behavior remains fail-closed:
 
@@ -28,6 +28,7 @@ Production-safe common boundary:
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt
 ```
 
 Tests and source guards:
@@ -134,6 +135,8 @@ The test-only provider harness runs the public positive vectors and required neg
 
 Manual Android Argon2id calibration capture is documented separately in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It informs future parameter policy review only; it does not add provider crypto, run provider-level KATs, or make any provider selectable.
 
+Runtime randomness/provider checks are documented separately in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). They prove only test-scope availability of approved randomness paths with small non-secret samples; they do not prove entropy quality, generate production vault material, run provider-level KATs, or make any provider selectable.
+
 ## Provider Type Confinement
 
 The provider boundary exposes no:
@@ -170,7 +173,7 @@ The readiness model still blocks on:
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary, provider-level KAT contract, and test-only provider KAT harness modeled. It remains candidate-only and not production-approved because production provider-level KAT execution is still missing.
 
-`VaultCryptoProviderSelectionRegistry` records the same evidence but treats dependency-level KATs and test-only provider KATs as insufficient for production selection. It blocks Tink plus Bouncy Castle on missing production provider implementation, missing production provider-level KATs, non-final Argon2id parameters, missing Android runtime compatibility/randomness checks when Android evidence is unknown, unapproved Tink keyset/raw-key handling, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, missing redaction/failure-mode tests, missing migration/corruption tests, and mainnet disablement.
+`VaultCryptoProviderSelectionRegistry` records the same evidence but treats dependency-level KATs, test-only provider KATs, and test-only runtime randomness probes as insufficient for production selection. It blocks Tink plus Bouncy Castle on missing production provider implementation, missing production provider-level KATs, non-final Argon2id parameters, missing runtime compatibility/randomness checks when evidence is unknown, unapproved Tink keyset/raw-key handling, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, missing redaction/failure-mode tests, missing migration/corruption tests, and mainnet disablement.
 
 ## Explicit Non-Capabilities
 
@@ -203,7 +206,7 @@ This boundary does not enable:
 
 Before any future branch implements provider crypto:
 
-1. Argon2id calibration policy/probe evidence and candidate parameter tiers must be reviewed, and final KDF parameter policy must be approved for Android and Linux desktop. Android compatibility planning must use the supported OS baseline, runtime provider/primitive checks, approved cryptographic randomness checks, and fail-closed vault creation behavior documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md); low-end and mid-range model testing are no longer hard blockers.
+1. Argon2id calibration policy/probe evidence and candidate parameter tiers must be reviewed, and final KDF parameter policy must be approved for Android and Linux desktop. Android compatibility planning must use the supported OS baseline, runtime provider/primitive checks, approved cryptographic randomness checks, and fail-closed vault creation behavior documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md) and [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md); low-end and mid-range model testing are no longer hard blockers.
 2. Provider-level public KATs must be defined through the Skald-owned interface.
 3. Tink keyset versus raw AEAD key material handling must be finalized.
 4. Split-provider invariants must be reviewed again at implementation level.
@@ -213,4 +216,4 @@ Before any future branch implements provider crypto:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: define runtime provider/primitive/randomness checks for the supported Android baseline or design a disabled production-provider skeleton with no storage, without vault container read/write or persistence.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a disabled production-provider skeleton with no storage, without vault container read/write or persistence.

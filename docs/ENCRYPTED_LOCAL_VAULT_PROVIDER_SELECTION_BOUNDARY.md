@@ -6,7 +6,7 @@ Skald Vault now has a disabled provider-selection and registry boundary for the 
 
 This is selection policy only. It does not implement executable provider crypto, production KDF execution, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
+Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
 
 The only runtime provider selected by this branch is:
 
@@ -23,6 +23,7 @@ Production-safe provider-selection models and registry:
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt
 ```
 
 Disabled provider boundary:
@@ -35,6 +36,7 @@ Selection tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderSelectionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 ```
 
 Source guards:
@@ -66,6 +68,7 @@ The registry separates evidence into typed Skald-owned categories:
 - provider KAT evidence,
 - platform runtime coverage evidence,
 - Android compatibility and entropy policy evidence,
+- runtime randomness/provider check evidence,
 - Argon2id parameter policy evidence,
 - secure storage and secure metadata readiness evidence,
 - production approval gates,
@@ -112,6 +115,7 @@ A future executable provider cannot become selectable until every required gate 
 | Production provider implementation exists | Blocked. |
 | Production provider-level KATs passed | Blocked. |
 | Android and desktop runtime coverage exists | Candidate evidence exists for dependency/test-provider paths, but not a production provider. |
+| Runtime randomness/provider checks pass | Test-only Android/Linux availability probes are modeled; they do not prove entropy quality or approve production randomness. |
 | Argon2id parameters final for the platform | Blocked. Candidate tiers are non-final. |
 | Dependency and license review complete | Candidate-level review complete for Tink plus Bouncy Castle only. |
 | Keyset or raw-key handling approved | Blocked. |
@@ -134,7 +138,7 @@ The Argon2id candidate policy is explicitly non-final:
 - Android supported-compatibility planning is modeled separately from final KDF parameter approval.
 - Manual Android capture protocol exists for optional device-class and runtime-environment evidence; low-end and mid-range model evidence is no longer a compatibility hard blocker.
 
-The provider-selection boundary treats non-final KDF parameters, missing production provider implementation, missing production provider-level KATs, disabled storage, and Android runtime provider/randomness checks as production gates. Unknown Android provider or randomness state blocks Android provider planning. Satisfied compatibility planning still does not make a provider selectable.
+The provider-selection boundary treats non-final KDF parameters, missing production provider implementation, missing production provider-level KATs, disabled storage, and runtime provider/primitive/randomness checks as production gates. Unknown runtime provider or randomness state blocks provider planning. Satisfied compatibility planning still does not make a provider selectable. Test-only randomness probes generate only non-secret samples and are not entropy-quality proof.
 
 ## Storage And Mainnet Gates
 
@@ -190,16 +194,17 @@ The next provider-selection change may only consider a non-disabled provider aft
 2. provider-level KAT execution through that production provider,
 3. Android and desktop runtime validation for the production provider,
 4. supported Android compatibility/runtime provider/randomness checks where Android is in scope,
-5. final Argon2id parameter approval for the target platform,
-6. keyset/raw-key handling approval,
-7. secure storage and secure metadata approval,
-8. vault container/storage review,
-9. redaction and failure-mode tests,
-10. migration/corruption tests,
-11. explicit mainnet release-hardening if mainnet is requested.
+5. Linux runtime provider/randomness checks where Linux desktop is in scope,
+6. final Argon2id parameter approval for the target platform,
+7. keyset/raw-key handling approval,
+8. secure storage and secure metadata approval,
+9. vault container/storage review,
+10. redaction and failure-mode tests,
+11. migration/corruption tests,
+12. explicit mainnet release-hardening if mainnet is requested.
 
 Until then, the provider-selection registry must keep selecting the disabled provider only.
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: define runtime provider/randomness compatibility checks for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: review runtime provider/primitive/randomness check evidence for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.

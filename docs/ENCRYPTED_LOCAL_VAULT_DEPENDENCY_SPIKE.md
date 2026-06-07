@@ -187,7 +187,7 @@ The disabled `VaultCryptoProvider` boundary now exists as Skald-owned common pol
 
 Decide whether the next focused branch should:
 
-- define runtime provider/primitive/randomness checks for the supported Android baseline,
+- review runtime provider/primitive/randomness checks for supported Android and Linux paths,
 - design a disabled production-provider skeleton with no storage,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - investigate a specific Lazysodium/JNA variant-resolution strategy,

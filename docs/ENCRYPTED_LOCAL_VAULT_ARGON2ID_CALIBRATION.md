@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, a manual Android calibration evidence-capture model, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
 
-This is calibration planning, manual evidence capture, and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
+This is calibration planning, manual evidence capture, and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Runtime randomness/provider availability checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
 
 Runtime behavior remains fail-closed:
 
@@ -12,7 +12,7 @@ Runtime behavior remains fail-closed:
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
-- `VaultCryptoProviderSelectionRegistry` blocks production selection on non-final parameters, missing production-provider evidence, disabled storage, and Android compatibility runtime-check gates when they are unknown.
+- `VaultCryptoProviderSelectionRegistry` blocks production selection on non-final parameters, missing production-provider evidence, disabled storage, and runtime provider/primitive/randomness gates when they are unknown.
 - The candidate parameter policy is present but not final.
 - Production persistence remains disabled.
 - Production sync remains disabled.
@@ -152,7 +152,7 @@ Before Argon2id can be used for production vault unlock:
 2. A Skald-owned executable provider boundary must exist behind disabled gates.
 3. The provider-selection gates in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) must be satisfied before any non-disabled provider can be selected.
 4. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
-5. Parameter calibration must respect the supported Android baseline, runtime provider/primitive/randomness checks, Linux desktop behavior, and fail-closed vault creation policy documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Low-end and mid-range Android evidence remains optional parameter/UX evidence, not a compatibility hard blocker.
+5. Parameter calibration must respect the supported Android baseline, runtime provider/primitive/randomness checks, Linux desktop behavior, and fail-closed vault creation policy documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md) and [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). Low-end and mid-range Android evidence remains optional parameter/UX evidence, not a compatibility hard blocker.
 6. Memory cost must be treated as a security requirement, not only a UX knob.
 7. Unlock latency targets must be reviewed with user-visible tradeoffs.
 8. Low-memory fallback behavior must fail closed or carry explicit degraded-strength labeling.
@@ -167,7 +167,7 @@ Before Argon2id can be used for production vault unlock:
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy and candidate parameter policy modeled. That does not approve production use. The stack remains candidate-only.
 
-`VaultCryptoProviderSelectionRegistry` treats the non-final parameter policy, missing production-provider evidence, disabled storage, and unknown Android compatibility runtime checks as blockers. It selects only the disabled provider.
+`VaultCryptoProviderSelectionRegistry` treats the non-final parameter policy, missing production-provider evidence, disabled storage, and unknown runtime provider/primitive/randomness checks as blockers. It selects only the disabled provider.
 
 ## Explicit Non-Capabilities
 
@@ -198,4 +198,4 @@ This calibration branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: define runtime provider/randomness compatibility checks for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review before any vault container or persistence implementation.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths or capture optional additional Android calibration evidence for parameter/UX review before any vault container or persistence implementation.

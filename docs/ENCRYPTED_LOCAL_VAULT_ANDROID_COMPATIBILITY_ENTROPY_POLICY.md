@@ -22,14 +22,18 @@ Production-safe common policy models:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt
 ```
 
 Tests and source guards:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/AndroidVaultCompatibilityEntropyPolicyTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/AndroidArgon2idCalibrationEvidenceTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderSelectionTest.kt
+composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultRuntimeRandomnessProviderProbeTest.kt
+composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidRuntimeRandomnessProviderProbeTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
 
@@ -81,6 +85,8 @@ Forbidden sources for vault material include:
 - any other language/general-purpose random API or unreviewed pseudo-random source.
 
 If cryptographic randomness cannot be obtained or verified through an approved platform/provider path, vault creation must fail closed with a user-facing warning. Skald must not silently fall back to language PRNGs.
+
+Runtime randomness/provider check modeling and test-only Android/Linux availability probes are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). Those probes generate only small non-secret samples to prove API availability and non-failing behavior. They do not prove entropy quality, do not log or persist samples, do not generate production vault material, and do not enable vault creation.
 
 ## Hardware-Backed Key Protection
 
@@ -176,4 +182,4 @@ This policy does not enable:
 
 ## Next Step
 
-The next focused pass should remain design/probe-only unless explicitly narrowed by the user. Recommended next decision point: define the runtime provider/randomness check harness for supported Android and Linux paths without implementing vault creation, production KDF execution, key generation, or storage.
+The next focused pass should remain design/probe-only unless explicitly narrowed by the user. Recommended next decision point: review runtime provider/primitive/randomness check evidence together and decide whether a still-disabled production-provider skeleton is warranted. Do not implement vault creation, production KDF execution, key generation, or storage in that branch.
