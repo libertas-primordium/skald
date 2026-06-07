@@ -14,7 +14,7 @@ Runtime behavior remains fail-closed:
 - Production sync remains disabled.
 - Production secret and sensitive metadata persistence remain disabled.
 
-The follow-up libsodium comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). That comparison rejects Lazysodium Java/Android for the current vault branch because Android APK packaging failed at `checkDebugDuplicateClasses` with duplicate JNA classes, and it defers IonSpin KMP libsodium pending an isolated packaging/KAT spike. The follow-up Tink/Bouncy dependency, license, keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). The disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md). Argon2id calibration policy/probe planning is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate Argon2id parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md).
+The follow-up libsodium comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). That comparison rejects Lazysodium Java/Android for the current vault branch because Android APK packaging failed at `checkDebugDuplicateClasses` with duplicate JNA classes, and it defers IonSpin KMP libsodium pending an isolated packaging/KAT spike. The follow-up Tink/Bouncy dependency, license, keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). The disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), and the provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). Argon2id calibration policy/probe planning is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate Argon2id parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md).
 
 ## Probe Scope
 
@@ -27,7 +27,7 @@ Can a pinned dependency candidate expose Argon2id and XChaCha20-Poly1305 APIs on
 It does not answer all implementation questions that remain for a real vault:
 
 - Final KDF parameter approval.
-- Future executable-provider-boundary known-answer-vector validation.
+- Future executable-provider-boundary known-answer-vector validation through the provider-level KAT contract.
 - Vault envelope implementation.
 - Key hierarchy implementation.
 - Secure memory/session lifecycle behavior.
@@ -126,8 +126,8 @@ Known-answer-vector coverage now exists for desktop JVM and Android runtime:
 
 Required future KAT work:
 
-- Skald-owned envelope vectors using obvious non-wallet sentinel values after a disabled provider/container boundary exists.
-- Cross-platform validation through the future provider boundary.
+- Provider-level positive KDF/AEAD KAT execution through the future Skald-owned provider boundary.
+- Provider-level negative misuse, nonce-policy, algorithm-policy, redaction, platform-coverage, and storage-separation checks from [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
 
 No wallet data, mnemonic material, private descriptors, real addresses, real txids, credentials, labels, notes, or production metadata may be used as test vectors.
 
@@ -146,7 +146,7 @@ Rationale:
 Blockers before implementation:
 
 - Final KDF parameter approval.
-- Skald-owned executable provider implementation and provider-level KATs.
+- Skald-owned executable provider implementation and provider-level KAT contract execution.
 - Envelope/key-hierarchy implementation review.
 - Vault container and storage review.
 - Lock/session lifecycle implementation and tests.
@@ -180,14 +180,14 @@ This dependency spike does not enable:
 
 ## Current Boundary Status
 
-The disabled `VaultCryptoProvider` boundary now exists as Skald-owned common policy code. It models provider-level requests, blockers, redacted diagnostics, record purposes, associated-data context, and KAT requirements. It does not call Tink or Bouncy Castle, does not run KDF/AEAD operations, does not generate keys, does not store keysets, and does not write vault containers or persistence.
+The disabled `VaultCryptoProvider` boundary now exists as Skald-owned common policy code. It models provider-level requests, blockers, redacted diagnostics, record purposes, associated-data context, and KAT requirements. The provider-level KAT contract is modeled separately from dependency-level KAT evidence and remains unsatisfied until a future executable provider runs it. The disabled boundary does not call Tink or Bouncy Castle, does not run KDF/AEAD operations, does not generate keys, does not store keysets, and does not write vault containers or persistence.
 
 ## Next Step
 
 Decide whether the next focused branch should:
 
 - collect additional Android baseline Argon2id calibration evidence,
-- design a still-disabled executable-provider/KAT scaffold,
+- design a still-disabled executable provider test harness for the provider-level KAT contract,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - investigate a specific Lazysodium/JNA variant-resolution strategy,
 - or review the vault container format before any persistence work.

@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
 
-This is calibration planning and dependency probing only. It does not implement a production KDF, executable `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is calibration planning and dependency probing only. It does not implement a production KDF, executable `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The future provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md) and remains unexecuted.
 
 Runtime behavior remains fail-closed:
 
@@ -145,7 +145,7 @@ Before Argon2id can be used for production vault unlock:
 
 1. Final dependency/provider choice must be explicitly approved.
 2. A Skald-owned executable provider boundary must exist behind disabled gates.
-3. Provider-level Argon2id KATs must pass on Android and Linux desktop.
+3. Provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
 4. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage.
 5. Memory cost must be treated as a security requirement, not only a UX knob.
 6. Unlock latency targets must be reviewed with user-visible tradeoffs.
@@ -190,4 +190,4 @@ This calibration branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence or design a still-disabled executable provider/KAT scaffold before any vault container or persistence implementation.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence or design a still-disabled executable provider test harness for the provider-level KAT contract before any vault container or persistence implementation.

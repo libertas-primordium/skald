@@ -28,6 +28,7 @@ Tests and source guards:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderBoundaryTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderKatContractTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/EncryptedVaultReadinessPolicyTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoDependencyProbeTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
@@ -50,7 +51,7 @@ The boundary models:
 - key roles,
 - associated-data context,
 - nonce mode policy,
-- provider-level KAT requirements,
+- provider-level KAT requirements and contract registry,
 - redacted diagnostics.
 
 All operations return Skald-owned blocked results in this branch.
@@ -103,17 +104,21 @@ Dependency-level KATs already passed for the current candidate stack:
 - Bouncy Castle Argon2id against RFC 9106 section 5.3 on desktop JVM and Android runtime.
 - Tink XChaCha20-Poly1305 against the XChaCha draft appendix A.1 on desktop JVM and Android runtime.
 
-Those are dependency/probe KATs, not provider-boundary KATs.
+Those are dependency/probe KATs, not provider-boundary KATs. The provider-level KAT contract is now documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
 
-The new boundary records provider-level KAT requirements for:
+The boundary records provider-level KAT requirements for:
 
 - Argon2id KDF through the future Skald-owned provider interface,
 - XChaCha20-Poly1305 record AEAD through the future Skald-owned provider interface,
+- negative misuse cases such as wrong associated data, tampered ciphertext/tag, and wrong key,
+- unsupported algorithm and production nonce-policy bypass rejection,
+- redacted provider diagnostics,
 - desktop runtime execution,
 - Android runtime execution,
+- release-like runtime coverage as a future gate,
 - public non-wallet vectors only.
 
-The disabled provider marks those requirements as `DependencyLevelPassedProviderLevelMissing`. No provider-level KAT path exists yet because no provider implementation exists.
+The disabled provider marks positive public-vector requirements as `DependencyLevelPassedProviderLevelMissing` and marks negative/redaction/platform/storage requirements as required but unsatisfied. No provider-level KAT path exists yet because no executable provider implementation exists. Passing dependency-level KATs remains necessary evidence, but it does not satisfy provider approval.
 
 ## Provider Type Confinement
 
@@ -131,7 +136,7 @@ Tink and Bouncy Castle imports remain confined to platform compile probes and KA
 
 ## Readiness Alignment
 
-`EncryptedVaultReadinessPolicy` now records that a disabled provider boundary is modeled. This does not satisfy production persistence.
+`EncryptedVaultReadinessPolicy` now records that a disabled provider boundary and provider-level KAT contract are modeled. This does not satisfy production persistence.
 
 The readiness model still blocks on:
 
@@ -149,7 +154,7 @@ The readiness model still blocks on:
 - production persistence disabled,
 - mainnet disabled.
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary modeled. It remains candidate-only and not production-approved.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary and provider-level KAT contract modeled. It remains candidate-only and not production-approved because provider-level KAT execution is still missing.
 
 ## Explicit Non-Capabilities
 
@@ -192,4 +197,4 @@ Before any future branch implements provider crypto:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: collect additional Android baseline Argon2id evidence or add provider-level KAT scaffolding only after a still-disabled provider implementation shape is explicitly approved. Do not proceed to vault container read/write or persistence from this boundary pass.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: design a still-disabled executable provider test harness that runs provider-level KATs through the Skald-owned interface, without vault container read/write or persistence.

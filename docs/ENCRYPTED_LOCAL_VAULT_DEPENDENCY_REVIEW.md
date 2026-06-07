@@ -19,7 +19,7 @@ Runtime behavior remains fail-closed:
 
 The pinned Tink plus Bouncy Castle split stack remains the only current candidate with Android and Linux compile/package evidence, desktop JVM public-vector KAT evidence, and Android runtime public-vector KAT evidence.
 
-The review does not approve production vault implementation. It changes the candidate status only from "Android runtime KAT-validated candidate" to "dependency, license, and keyset review complete candidate." Later passes added a disabled Skald-owned provider boundary documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), Argon2id calibration policy/probes documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but production implementation remains blocked by final KDF parameter approval, an executable provider implementation, provider-level vectors, Tink keyset/key-material handling decisions, split-provider invariants, lock/session lifecycle tests, migration/corruption tests, redaction tests, vault container review, production storage review, and mainnet release-hardening review.
+The review does not approve production vault implementation. It changes the candidate status only from "Android runtime KAT-validated candidate" to "dependency, license, and keyset review complete candidate." Later passes added a disabled Skald-owned provider boundary documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), a provider-level KAT contract documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), Argon2id calibration policy/probes documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but production implementation remains blocked by final KDF parameter approval, an executable provider implementation, provider-level KAT execution through the Skald-owned boundary, Tink keyset/key-material handling decisions, split-provider invariants, lock/session lifecycle tests, migration/corruption tests, redaction tests, vault container review, production storage review, and mainnet release-hardening review.
 
 ## Exact Dependency Inventory
 
@@ -194,6 +194,7 @@ Required checklist for that branch:
 - expose only disabled/fail-closed provider readiness by default,
 - keep production storage and key generation disabled,
 - require candidate public KAT vectors at the provider boundary,
+- require the provider-level positive, negative, platform, nonce-policy, redaction, and storage-separation contract documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md),
 - require Android runtime and desktop runtime vector execution,
 - encode redacted Skald-owned error types,
 - encode no-storage and no-keyset-persistence restrictions,
@@ -216,7 +217,7 @@ Provider-boundary non-goals:
 
 ## Current Model Status
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled` and `ProviderKatContractModeled`.
 
 That status means:
 
@@ -226,7 +227,8 @@ That status means:
 - Tink keyset/storage risks were documented,
 - Bouncy Castle Argon2id API risks were documented,
 - split-provider boundary requirements were documented,
-- a disabled Skald-owned provider boundary now exists and rejects every operation.
+- a disabled Skald-owned provider boundary now exists and rejects every operation,
+- a provider-level KAT contract now exists but cannot execute without a future provider.
 
 That status does not mean:
 
@@ -245,7 +247,7 @@ That status does not mean:
 ## What Remains Unproven
 
 - Final KDF parameter approval for Android and Linux desktop. Probe-only policy/harnesses and candidate tiers exist, but they are not production settings.
-- Provider-boundary KAT behavior through an executable Skald-owned interface.
+- Provider-boundary KAT behavior through an executable Skald-owned interface. Current dependency-level KATs do not satisfy the provider-level contract.
 - Whether Tink keysets or raw AEAD key material will be used inside the vault.
 - Whether Tink's production APIs can satisfy Skald's random-nonce record envelope without relying on internal explicit-nonce APIs.
 - Vault container parser/writer design.
@@ -257,4 +259,4 @@ That status does not mean:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: collect additional Android baseline Argon2id calibration evidence or design a still-disabled executable-provider/KAT scaffold. Neither step should implement a vault container or enable persistence.
+The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: collect additional Android baseline Argon2id calibration evidence or design a still-disabled executable provider test harness that runs the provider-level KAT contract. Neither step should implement a vault container or enable persistence.

@@ -61,6 +61,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.warnings, EncryptedVaultWarning.KdfCalibrationProbeOnly)
         assertContains(decision.warnings, EncryptedVaultWarning.KdfCandidateParameterPolicyNotFinal)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DisabledCryptoProviderBoundary)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderKatContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateParameterPolicyModel)
         assertEquals(
@@ -96,6 +97,7 @@ class EncryptedVaultReadinessPolicyTest {
         val requiredGates = setOf(
             EncryptedVaultRequirement.DependencySelectionReviewed,
             EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
+            EncryptedVaultRequirement.ProviderKatContractModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
@@ -125,6 +127,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.DisabledProviderBoundaryModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ProviderKatContractModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

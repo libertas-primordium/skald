@@ -17,6 +17,9 @@ import com.libertasprimordium.skald.security.VaultCryptoNonceMode
 import com.libertasprimordium.skald.security.VaultCryptoOperation
 import com.libertasprimordium.skald.security.VaultCryptoProviderBlocker
 import com.libertasprimordium.skald.security.VaultCryptoProviderCapability
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatBlocker
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatContractStatus
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatVectorId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationStatus
 import com.libertasprimordium.skald.security.VaultCryptoProviderResult
 import com.libertasprimordium.skald.security.VaultCryptoRecordPurpose
@@ -44,6 +47,7 @@ class VaultCryptoProviderBoundaryTest {
         assertContains(status.capabilities, VaultCryptoProviderCapability.SkaldOwnedBoundary)
         assertContains(status.capabilities, VaultCryptoProviderCapability.TypedAlgorithmPolicy)
         assertContains(status.capabilities, VaultCryptoProviderCapability.ProviderLevelKatRequirements)
+        assertContains(status.capabilities, VaultCryptoProviderCapability.ProviderLevelKatContract)
         assertContains(status.capabilities, VaultCryptoProviderCapability.RedactedDiagnostics)
         assertFalse(status.canDeriveKeys)
         assertFalse(status.canEncryptRecords)
@@ -54,6 +58,7 @@ class VaultCryptoProviderBoundaryTest {
         assertFalse(status.mainnetEnabled)
         assertContains(status.blockers, VaultCryptoProviderBlocker.ProviderImplementationMissing)
         assertContains(status.blockers, VaultCryptoProviderBlocker.ProviderLevelKnownAnswerVectorsMissing)
+        assertContains(status.blockers, VaultCryptoProviderBlocker.ProviderLevelKatContractUnsatisfied)
         assertContains(status.blockers, VaultCryptoProviderBlocker.ProductionPersistenceDisabled)
         assertContains(status.blockers, VaultCryptoProviderBlocker.MainnetDisabled)
     }
@@ -94,14 +99,32 @@ class VaultCryptoProviderBoundaryTest {
     @Test
     fun providerLevelKatRequirementsAreModeledButUnsatisfied() {
         val status = commonDisabledVaultCryptoProviderStatus()
+        val positiveRequirements = status.katRequirements.filter { it.positiveTest }
 
-        assertEquals(2, status.katRequirements.size)
-        assertTrue(status.katRequirements.any { it.operation == VaultCryptoOperation.DeriveKey })
-        assertTrue(status.katRequirements.any { it.operation == VaultCryptoOperation.EncryptRecord })
-        assertTrue(status.katRequirements.all { it.requiresAndroidRuntime })
-        assertTrue(status.katRequirements.all { it.requiresDesktopRuntime })
+        assertEquals(VaultCryptoProviderKatContractStatus.ContractModeledProviderMissing, status.katContract.status)
+        assertFalse(status.katContract.dependencyLevelKatsSatisfyProviderContract)
+        assertFalse(status.katContract.providerLevelKatsPassed)
+        assertFalse(status.katContract.validationResult.canApproveProductionProvider)
+        assertContains(status.katContract.blockers, VaultCryptoProviderKatBlocker.ExecutableProviderMissing)
+        assertContains(
+            status.katContract.blockers,
+            VaultCryptoProviderKatBlocker.DependencyLevelKatsDoNotSatisfyProviderContract,
+        )
+        assertTrue(status.katRequirements.size > 2)
+        assertContains(
+            status.katRequirements.map { it.vectorId },
+            VaultCryptoProviderKatVectorId.Argon2idRfc9106Section53,
+        )
+        assertContains(
+            status.katRequirements.map { it.vectorId },
+            VaultCryptoProviderKatVectorId.XChaCha20Poly1305DraftAppendixA1,
+        )
+        assertTrue(positiveRequirements.any { it.operation == VaultCryptoOperation.DeriveKey })
+        assertTrue(positiveRequirements.any { it.operation == VaultCryptoOperation.EncryptRecord })
+        assertTrue(positiveRequirements.all { it.requiresAndroidRuntime })
+        assertTrue(positiveRequirements.all { it.requiresDesktopRuntime })
         assertTrue(
-            status.katRequirements.all {
+            positiveRequirements.all {
                 it.status == VaultCryptoKatRequirementStatus.DependencyLevelPassedProviderLevelMissing
             },
         )
