@@ -19,6 +19,7 @@ import com.libertasprimordium.skald.security.VaultCryptoProviderBlocker
 import com.libertasprimordium.skald.security.VaultCryptoProviderCapability
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatBlocker
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatContractStatus
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatRequest
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatVectorId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationStatus
 import com.libertasprimordium.skald.security.VaultCryptoProviderResult
@@ -72,6 +73,7 @@ class VaultCryptoProviderBoundaryTest {
         provider.decryptRecord(decryptRequest()).assertBlocked(VaultCryptoProviderBlocker.AeadDecryptionDisabled)
         provider.generateKey(keyGenerationRequest()).assertBlocked(VaultCryptoProviderBlocker.KeyGenerationDisabled)
         provider.storeKeyset(keysetStorageRequest()).assertBlocked(VaultCryptoProviderBlocker.KeysetStorageDisabled)
+        provider.validateKat(katRequest()).assertBlocked(VaultCryptoProviderBlocker.ProviderLevelKnownAnswerVectorsMissing)
     }
 
     @Test
@@ -188,6 +190,12 @@ class VaultCryptoProviderBoundaryTest {
         VaultCryptoKeysetStorageRequest(
             keyRole = VaultCryptoKeyRole.SecretPayloadEncryptionKey,
             keyMaterialRef = VaultCryptoMaterialRef.futureKeyMaterial(),
+            context = context,
+        )
+
+    private fun katRequest(): VaultCryptoProviderKatRequest =
+        VaultCryptoProviderKatRequest(
+            requirement = commonDisabledVaultCryptoProviderStatus().katRequirements.first(),
             context = context,
         )
 

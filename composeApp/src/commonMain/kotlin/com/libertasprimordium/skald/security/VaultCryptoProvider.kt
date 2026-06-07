@@ -22,6 +22,7 @@ enum class VaultCryptoProviderCapability(
     TypedRecordPurposes("typed record purposes", enabled = true),
     ProviderLevelKatRequirements("provider-level KAT requirements", enabled = true),
     ProviderLevelKatContract("provider-level KAT contract", enabled = true),
+    TestOnlyProviderKatHarness("test-only provider KAT harness", enabled = false),
     RedactedDiagnostics("redacted diagnostics", enabled = true),
     KdfExecution("KDF execution", enabled = false),
     AeadEncryption("AEAD encryption", enabled = false),
@@ -427,6 +428,46 @@ data class VaultCryptoProviderKatRequirement(
     val status: VaultCryptoKatRequirementStatus,
 )
 
+enum class VaultCryptoProviderKatExecutionScope(
+    val label: String,
+    val productionProvider: Boolean,
+) {
+    TestHarnessOnly("test harness only", productionProvider = false),
+    FutureProductionProvider("future production provider", productionProvider = true),
+}
+
+data class VaultCryptoProviderKatRequest(
+    val requirement: VaultCryptoProviderKatRequirement,
+    val context: VaultCryptoAssociatedDataContext,
+) {
+    val vectorId: VaultCryptoProviderKatVectorId
+        get() = requirement.vectorId
+
+    val category: VaultCryptoProviderKatCategory
+        get() = requirement.category
+}
+
+class VaultCryptoProviderKatEvidence private constructor(
+    val vectorId: VaultCryptoProviderKatVectorId,
+    val category: VaultCryptoProviderKatCategory,
+    val executionScope: VaultCryptoProviderKatExecutionScope,
+) {
+    override fun toString(): String = "VaultCryptoProviderKatEvidence(REDACTED)"
+
+    companion object {
+        fun redacted(
+            vectorId: VaultCryptoProviderKatVectorId,
+            category: VaultCryptoProviderKatCategory,
+            executionScope: VaultCryptoProviderKatExecutionScope,
+        ): VaultCryptoProviderKatEvidence =
+            VaultCryptoProviderKatEvidence(
+                vectorId = vectorId,
+                category = category,
+                executionScope = executionScope,
+            )
+    }
+}
+
 data class VaultCryptoProviderKatValidationResult(
     val status: VaultCryptoProviderKatContractStatus,
     val providerLevelKatsPassed: Boolean,
@@ -508,6 +549,10 @@ interface VaultCryptoProvider {
     fun generateKey(request: VaultCryptoKeyGenerationRequest): VaultCryptoProviderResult<VaultCryptoGeneratedKeyHandle>
 
     fun storeKeyset(request: VaultCryptoKeysetStorageRequest): VaultCryptoProviderResult<VaultCryptoKeysetHandle>
+
+    fun validateKat(
+        request: VaultCryptoProviderKatRequest,
+    ): VaultCryptoProviderResult<VaultCryptoProviderKatEvidence>
 }
 
 class DisabledVaultCryptoProvider(
@@ -535,6 +580,11 @@ class DisabledVaultCryptoProvider(
         request: VaultCryptoKeysetStorageRequest,
     ): VaultCryptoProviderResult<VaultCryptoKeysetHandle> =
         blocked(VaultCryptoOperation.StoreKeyset, VaultCryptoProviderBlocker.KeysetStorageDisabled)
+
+    override fun validateKat(
+        request: VaultCryptoProviderKatRequest,
+    ): VaultCryptoProviderResult<VaultCryptoProviderKatEvidence> =
+        blocked(VaultCryptoOperation.ProviderKat, VaultCryptoProviderBlocker.ProviderLevelKnownAnswerVectorsMissing)
 
     private fun blocked(
         operation: VaultCryptoOperation,
@@ -590,10 +640,10 @@ fun commonDisabledVaultCryptoProviderStatus(): VaultCryptoProviderStatusReport =
                 VaultCryptoProviderDiagnostic(
                     operation = VaultCryptoOperation.ProviderKat,
                     safeCode = "PROVIDER_LEVEL_KAT_NOT_IMPLEMENTED",
-                    safeDetail = "Dependency-level KATs passed, but no provider-level KAT path exists.",
+                    safeDetail = "Dependency-level KATs passed, but no production provider-level KAT path exists.",
                 ),
             ),
-            implementationNote = "Disabled provider boundary only. It models reviewed algorithms, typed record purposes, provider-level KAT contract requirements, and redacted errors, but it does not derive keys, encrypt, decrypt, generate keys, store keysets, write containers, persist data, or enable mainnet.",
+            implementationNote = "Disabled provider boundary only. It models reviewed algorithms, typed record purposes, provider-level KAT contract requirements, and redacted errors, but it does not derive keys, encrypt, decrypt, generate keys, store keysets, run production provider KATs, write containers, persist data, or enable mainnet.",
         )
     }
 

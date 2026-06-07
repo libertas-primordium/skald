@@ -9,6 +9,7 @@ This is a provider-boundary and policy-model pass only. It does not implement en
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every modeled provider operation.
+- `DisabledVaultCryptoProvider` rejects `validateKat`; provider-level KAT success is available only through test-only harnesses documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md).
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
 - `EncryptedVaultReadinessPolicy` remains not implemented/not ready.
@@ -29,6 +30,8 @@ Tests and source guards:
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderKatContractTest.kt
+composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTestProviderKatHarnessTest.kt
+composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/EncryptedVaultReadinessPolicyTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoDependencyProbeTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
@@ -47,6 +50,7 @@ The boundary models:
 - typed AEAD encrypt/decrypt request/result/error models,
 - key generation request/result models,
 - keyset storage request/result models,
+- provider-level KAT request/result/evidence models,
 - record purposes,
 - key roles,
 - associated-data context,
@@ -93,7 +97,8 @@ Associated data must not contain mnemonic material, seed bytes, private descript
 - AEAD record encryption,
 - AEAD record decryption,
 - key generation,
-- keyset storage.
+- keyset storage,
+- provider-level KAT validation.
 
 It returns redacted `VaultCryptoProviderResult.Blocked` values. Diagnostics contain only typed operation names and safe status codes. The boundary does not serialize payloads, keys, nonces, ciphertexts, plaintexts, keysets, vault containers, or wallet metadata.
 
@@ -118,7 +123,9 @@ The boundary records provider-level KAT requirements for:
 - release-like runtime coverage as a future gate,
 - public non-wallet vectors only.
 
-The disabled provider marks positive public-vector requirements as `DependencyLevelPassedProviderLevelMissing` and marks negative/redaction/platform/storage requirements as required but unsatisfied. No provider-level KAT path exists yet because no executable provider implementation exists. Passing dependency-level KATs remains necessary evidence, but it does not satisfy provider approval.
+The disabled provider marks positive public-vector requirements as `DependencyLevelPassedProviderLevelMissing` and marks negative/redaction/platform/storage requirements as required but unsatisfied. No production provider-level KAT path exists yet because no production executable provider implementation exists. Passing dependency-level KATs remains necessary evidence, but it does not satisfy provider approval.
+
+The test-only provider harness runs the public positive vectors and required negative cases through `VaultCryptoProvider.validateKat(...)` in desktop and Android test source sets. Returned evidence is redacted and scoped as `TestHarnessOnly`. This proves the interface can carry the required checks; it does not approve production provider implementation or storage.
 
 ## Provider Type Confinement
 
@@ -154,7 +161,7 @@ The readiness model still blocks on:
 - production persistence disabled,
 - mainnet disabled.
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary and provider-level KAT contract modeled. It remains candidate-only and not production-approved because provider-level KAT execution is still missing.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary, provider-level KAT contract, and test-only provider KAT harness modeled. It remains candidate-only and not production-approved because production provider-level KAT execution is still missing.
 
 ## Explicit Non-Capabilities
 
@@ -197,4 +204,4 @@ Before any future branch implements provider crypto:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: design a still-disabled executable provider test harness that runs provider-level KATs through the Skald-owned interface, without vault container read/write or persistence.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: either collect additional Android baseline Argon2id calibration evidence or design a disabled production-provider skeleton with no storage, without vault container read/write or persistence.

@@ -4,11 +4,11 @@
 
 Skald Vault now has a candidate Argon2id parameter policy for the future app-controlled encrypted local vault unlock KDF.
 
-This is design and policy only. It does not implement production KDF execution, executable `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is design and policy only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
-- `DisabledVaultCryptoProvider` rejects every KDF, AEAD, key generation, keyset storage, and persistence operation.
+- `DisabledVaultCryptoProvider` rejects every KDF, AEAD, key generation, keyset storage, KAT validation, and persistence operation.
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
@@ -70,7 +70,7 @@ Before any Argon2id parameter can become a production vault unlock policy, Skald
 5. Background/foreground behavior checks.
 6. Accessibility and timeout policy review.
 7. Memory-pressure failure behavior review.
-8. Provider-boundary known-answer vectors.
+8. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
 9. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
 10. Secure storage and secure metadata storage review.
 11. Mainnet release-hardening review before any mainnet relevance.
@@ -133,4 +133,4 @@ This parameter-policy branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: either collect additional Android baseline calibration evidence, or design a still-disabled executable provider test harness for the provider-level KAT contract that keeps production KDF execution and storage disabled. Do not proceed to vault container read/write or persistence from this policy pass.
+The next focused branch should remain design/probe-only: either collect additional Android baseline calibration evidence, or design a disabled production-provider skeleton that keeps production KDF execution and storage disabled unless explicitly approved. Do not proceed to vault container read/write or persistence from this policy pass.
