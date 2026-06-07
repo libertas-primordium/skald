@@ -158,7 +158,7 @@ enum class EncryptedVaultRequirementStatus(
 
 enum class EncryptedVaultBlockingIssue(val label: String) {
     VaultImplementationUnavailable("vault implementation unavailable"),
-    CryptoDependenciesNotSelected("crypto dependencies not selected"),
+    CryptoDependenciesNotSelected("crypto dependencies not selected for implementation"),
     KdfParametersUncalibrated("KDF parameters uncalibrated"),
     AeadDependencyUnverified("AEAD dependency unverified"),
     KnownAnswerVectorsMissing("known-answer vectors missing"),

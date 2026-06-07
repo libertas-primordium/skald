@@ -8,7 +8,9 @@ Skald Vault now has small code-level readiness and policy models for the future 
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt
 ```
 
-These models are disabled and fail-closed. They encode the vault design and crypto decision record as typed policy state only. They do not implement encryption, add crypto dependencies, generate keys, derive keys, encrypt data, decrypt data, write files, use platform key stores, use OS keyrings, persist secrets, persist sensitive metadata, enable production sync, sign, broadcast, add Tor transport, or enable mainnet.
+These models are disabled and fail-closed. They encode the vault design and crypto decision record as typed policy state only. They do not implement encryption, generate keys, derive keys, encrypt data, decrypt data, write files, use platform key stores, use OS keyrings, persist secrets, persist sensitive metadata, enable production sync, sign, broadcast, add Tor transport, or enable mainnet.
+
+The dependency spike documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) adds pinned platform-scoped Tink and Bouncy Castle compile probes. Those probes do not change the readiness result: the vault remains not implemented/not ready, secure secret storage remains unavailable, and secure metadata storage remains disabled.
 
 ## What The Models Represent
 
@@ -25,9 +27,9 @@ The readiness models capture:
 - key hierarchy requirements: separate metadata, secret payload, and backup/export keys,
 - Android platform policy: app-controlled vault primary, optional Keystore wrapping later,
 - Linux platform policy: app-controlled passphrase-first vault primary, no libsecret/KWallet primary storage,
-- readiness gates: dependency selection, KDF calibration, AEAD verification, known-answer vectors, container format, lock/session tests, redaction tests, migration/corruption tests, secure secret storage, secure metadata storage, production persistence approval, and mainnet release approval.
+- readiness gates: dependency selection beyond the packaging-probe candidate, KDF calibration, AEAD verification, known-answer vectors, container format, lock/session tests, redaction tests, migration/corruption tests, secure secret storage, secure metadata storage, production persistence approval, and mainnet release approval.
 
-All current gates are unresolved, absent, or disabled by policy. The readiness decision returns blockers for vault implementation unavailable, crypto dependencies not selected, KDF parameters uncalibrated, AEAD dependency unverified, known-answer vectors missing, vault container format absent, lock/session lifecycle untested, redaction tests missing, migration/corruption tests missing, secure secret storage disabled, secure metadata storage disabled, production persistence disabled, and mainnet disabled.
+All current gates are unresolved, absent, or disabled by policy. The readiness decision returns blockers for vault implementation unavailable, crypto dependencies not selected for implementation beyond the packaging probe, KDF parameters uncalibrated, AEAD dependency unverified, known-answer vectors missing, vault container format absent, lock/session lifecycle untested, redaction tests missing, migration/corruption tests missing, secure secret storage disabled, secure metadata storage disabled, production persistence disabled, and mainnet disabled.
 
 ## Sync Boundary Integration
 
@@ -62,7 +64,7 @@ Tests cover:
 - Android wrapping optional and not primary storage,
 - Tor routing metadata classified as sensitive metadata,
 - sync preflight includes the encrypted-vault-unavailable blocker,
-- no crypto dependencies added,
+- crypto dependencies pinned and confined to platform dependency probes,
 - no crypto/storage/client/process APIs imported by vault readiness source.
 
 ## Explicit Non-Capabilities
@@ -91,4 +93,4 @@ This readiness policy does not enable:
 
 ## Next Step
 
-The next focused pass should run a dependency spike for Argon2id and XChaCha20-Poly1305 support on Android and Linux desktop, or refine the readiness model after user review. Do not add production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that spike.
+The next focused pass should complete package verification and dependency review for the pinned Tink/Bouncy Castle probe, add official non-secret known-answer-vector tests if approved, or compare a libsodium/KMP native-packaging option. Do not add production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.

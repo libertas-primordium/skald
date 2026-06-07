@@ -35,6 +35,8 @@ kotlin {
             dependencies {
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.bdk.android)
+                implementation(libs.bouncycastle.provider)
+                implementation(libs.tink.android)
             }
         }
 
@@ -42,6 +44,8 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.bdk.jvm)
+                implementation(libs.bouncycastle.provider)
+                implementation(libs.tink.jvm)
             }
         }
 
@@ -71,6 +75,12 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
     }
 }
 

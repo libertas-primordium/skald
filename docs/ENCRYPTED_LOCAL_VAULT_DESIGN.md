@@ -4,7 +4,9 @@
 
 This document defines the app-controlled encrypted local vault design that Skald Vault must implement before any production secret persistence, sensitive metadata persistence, production wallet sync, production address index persistence, production UTXO persistence, or Nostr secret-bearing wallet flow can be enabled.
 
-This is a design document only. It does not implement encryption, add crypto dependencies, persist secrets, persist sensitive metadata, create wallets, activate production sync, construct transactions, sign, broadcast, parse Nostr keys, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
+This is a design document only. It does not implement encryption, persist secrets, persist sensitive metadata, create wallets, activate production sync, construct transactions, sign, broadcast, parse Nostr keys, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
+
+The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). That spike adds platform-scoped compile/package probe dependencies only; it does not add vault storage or make secure storage available.
 
 Current runtime behavior remains fail-closed:
 
@@ -12,9 +14,9 @@ Current runtime behavior remains fail-closed:
 - `SecureWalletMetadataRepository` is disabled.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
-- `EncryptedVaultReadinessPolicy` reports the vault implementation unavailable, crypto dependencies unresolved, KDF/AEAD verification incomplete, secure storage disabled, secure metadata disabled, production persistence disabled, and mainnet disabled.
+- `EncryptedVaultReadinessPolicy` reports the vault implementation unavailable, dependency selection unresolved beyond the packaging probe, KDF/AEAD verification incomplete, secure storage disabled, secure metadata disabled, production persistence disabled, and mainnet disabled.
 
-The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping dependency selection and implementation disabled.
+The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping implementation disabled.
 
 The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). They encode this design as typed disabled/fail-closed status only; they do not implement encryption, storage, unlock UI, or persistence.
 
@@ -61,7 +63,7 @@ Skald must present those limitations honestly. The vault protects data at rest a
 This design does not enable:
 
 - encrypted vault implementation,
-- crypto dependency addition,
+- crypto dependency use beyond explicit disabled probe scope,
 - production secret persistence,
 - production sensitive metadata persistence,
 - production BDK persistence,
@@ -539,7 +541,7 @@ Production secret or sensitive metadata persistence may not be enabled until:
 
 ## Open Questions
 
-- Which exact dependency stack should provide Argon2id and XChaCha20-Poly1305 for Android and Linux desktop?
+- Whether the Tink plus Bouncy Castle split stack from [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) should become the implementation candidate after package verification, license review, Android runtime verification, KDF calibration, and known-answer-vector tests.
 - What exact Argon2id starting parameters and calibration policy should ship after platform measurement?
 - Should Android require hardware-backed wrapping for specific secret classes or make it an optional risk label?
 - How should Linux vault files be located, permissioned, backed up, and migrated?
@@ -559,8 +561,8 @@ Recommended next implementation sequence:
 1. Review this design plus [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
 2. Review the code-level vault policy/readiness models in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md).
 3. Keep tests proving secure storage, secure metadata, and vault readiness remain disabled.
-4. Run a dependency spike for the selected KDF/AEAD target without enabling persistence.
-5. Select crypto dependencies through explicit review.
+4. Complete package verification and dependency review for the Tink/Bouncy Castle probe, or choose a replacement stack through explicit review.
+5. Add official non-secret known-answer-vector tests for the selected KDF/AEAD APIs.
 6. Implement a disabled vault container parser/validator without storing real secrets.
 7. Implement encrypted vault storage behind a disabled feature gate.
 8. Add lock/session lifecycle tests.

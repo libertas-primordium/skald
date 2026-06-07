@@ -208,26 +208,50 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
-    fun buildFilesDoNotAddVaultCryptoDependencies() {
+    fun vaultCryptoDependenciesArePinnedAndScopedToPlatformProbes() {
         val root = repositoryRoot()
-        val files = listOf(
-            File(root, "gradle/libs.versions.toml"),
-            File(root, "composeApp/build.gradle.kts"),
-        )
-        val forbiddenDependencyPatterns = listOf(
-            Regex("""(?i)libsodium"""),
-            Regex("""(?i)\btink\b"""),
-            Regex("""(?i)bouncycastle"""),
-            Regex("""(?i)argon2"""),
-            Regex("""(?i)\bscrypt\b"""),
-            Regex("""(?i)xchacha"""),
-            Regex("""(?i)javax\.crypto"""),
-        )
-        val offenders = files
-            .filter { file -> forbiddenDependencyPatterns.any { it.containsMatchIn(file.readText()) } }
-            .map { it.relativeTo(root).invariantSeparatorsPath }
+        val catalog = File(root, "gradle/libs.versions.toml").readText()
+        val build = File(root, "composeApp/build.gradle.kts").readText()
+        val commonMainBlock = build.substringAfter("val commonMain by getting")
+            .substringBefore("val androidMain by getting")
 
-        assertTrue(offenders.isEmpty(), "Vault crypto dependencies must not be added in this pass: $offenders")
+        assertTrue(catalog.contains("""tink = "1.21.0""""))
+        assertTrue(catalog.contains("""bouncycastle = "1.84""""))
+        assertTrue(catalog.contains("""tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tink" }"""))
+        assertTrue(catalog.contains("""tink-jvm = { module = "com.google.crypto.tink:tink", version.ref = "tink" }"""))
+        assertTrue(catalog.contains("""bouncycastle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }"""))
+        assertTrue(build.contains("implementation(libs.tink.android)"))
+        assertTrue(build.contains("implementation(libs.tink.jvm)"))
+        assertTrue(build.contains("implementation(libs.bouncycastle.provider)"))
+        assertTrue(build.contains("""excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF""""))
+        assertFalse(commonMainBlock.contains("libs.tink"))
+        assertFalse(commonMainBlock.contains("libs.bouncycastle"))
+        assertFalse(build.contains("libsodium"))
+        assertFalse(build.contains("com.ionspin"))
+    }
+
+    @Test
+    fun cryptoApiImportsStayConfinedToDependencyCompileProbes() {
+        val root = repositoryRoot()
+        val sourceRoot = File(root, "composeApp/src")
+        val allowedFiles = setOf(
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
+        )
+        val cryptoImportPattern = Regex(
+            """import\s+(com\.google\.crypto\.tink|org\.bouncycastle|javax\.crypto|java\.security\.KeyStore)""",
+        )
+        val offenders = sourceRoot
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .filter { file ->
+                val relative = file.relativeTo(root).invariantSeparatorsPath
+                relative !in allowedFiles && cryptoImportPattern.containsMatchIn(file.readText())
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .toList()
+
+        assertTrue(offenders.isEmpty(), "Crypto imports must stay confined to dependency compile probes: $offenders")
     }
 
     private fun boundaryFiles(root: File): List<File> =
@@ -238,6 +262,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt"),
         )
 
     private fun repositoryRoot(): File =

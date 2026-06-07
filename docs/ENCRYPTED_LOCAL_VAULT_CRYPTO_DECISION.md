@@ -4,7 +4,9 @@
 
 This document records the design decisions for Skald Vault's future app-controlled encrypted local vault cryptography and key lifecycle.
 
-This is a decision record only. It does not implement encryption, add crypto dependencies, persist secrets, persist sensitive metadata, enable production sync, create wallets, derive production addresses, sign, broadcast, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
+This is a decision record only. It does not implement encryption, persist secrets, persist sensitive metadata, enable production sync, create wallets, derive production addresses, sign, broadcast, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
+
+The dependency spike now pins platform-scoped Tink and Bouncy Castle artifacts for compile/package evaluation only. Those dependencies are not wired into secure storage, secure metadata persistence, production sync, wallet operations, or any vault implementation.
 
 Runtime behavior remains fail-closed:
 
@@ -14,7 +16,7 @@ Runtime behavior remains fail-closed:
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
-The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
+The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
 
 ## Decision Summary
 
@@ -184,7 +186,7 @@ Decision gate:
 
 #### Google Tink
 
-Decision: strong AEAD/keyset candidate, but not a complete KDF solution by itself.
+Decision: selected with Bouncy Castle for a packaging probe only; strong AEAD/keyset candidate, but not a complete KDF solution by itself.
 
 Rationale:
 
@@ -203,9 +205,16 @@ Decision gate:
 
 - Tink is acceptable for AEAD only if the implementation keeps Skald's vault format and secure metadata boundary authoritative, and if a separate Argon2id dependency is selected.
 
+Dependency-spike result:
+
+- Pinned `com.google.crypto.tink:tink-android:1.21.0` for Android.
+- Pinned `com.google.crypto.tink:tink:1.21.0` for Linux desktop/JVM.
+- Platform compile probes confirm the `XChaCha20Poly1305Key` API is present.
+- No vault encryption, Tink keyset storage, or production persistence is enabled.
+
 #### Bouncy Castle
 
-Decision: candidate JVM crypto provider, not preferred as the sole vault dependency without further proof.
+Decision: selected with Tink for a packaging probe only; candidate JVM crypto provider, not preferred as the sole vault dependency without further proof.
 
 Rationale:
 
@@ -221,6 +230,13 @@ Risks to resolve:
 Decision gate:
 
 - Do not choose Bouncy Castle-only for v1 unless tests prove the selected KDF, AEAD, nonce strategy, and Android/Linux packaging path.
+
+Dependency-spike result:
+
+- Pinned `org.bouncycastle:bcprov-jdk18on:1.84` for Android and Linux desktop/JVM.
+- Platform compile probes confirm the `Argon2BytesGenerator` and `ChaCha20Poly1305` APIs are present.
+- Bouncy Castle-only remains insufficient for the preferred XChaCha20-Poly1305 record envelope in this decision record.
+- No KDF implementation, vault container, or production persistence is enabled.
 
 #### Platform Crypto Only
 
@@ -240,16 +256,13 @@ Allowed role:
 
 ## Recommended Implementation Path
 
-Recommended path for the next implementation spike:
+Recommended path after the dependency spike:
 
 1. Keep the runtime fail-closed.
 2. Review the code-level vault readiness/policy models with no storage success paths.
-3. Run a dependency spike comparing:
-   - libsodium binding for Argon2id and XChaCha20-Poly1305,
-   - Tink for XChaCha20-Poly1305 AEAD plus a separate Argon2id provider,
-   - Bouncy Castle fallback for Argon2id and ChaCha20-Poly1305 family support.
-4. Select the smallest dependency set that passes Android APK and Linux `.deb` packaging, version pinning, known-answer vectors, license review, and source-guard tests.
-5. Only after that, implement a disabled vault container parser/validator.
+3. Treat the Tink plus Bouncy Castle split stack as the current packaging-probe candidate, not as an implementation-ready vault stack.
+4. Complete Android APK and Linux `.deb` packaging checks, dependency/license review, Android runtime verification, KDF calibration, known-answer-vector tests, and source-guard tests.
+5. Only after those gates pass, implement a disabled vault container parser/validator.
 
 Algorithm recommendation:
 
@@ -264,8 +277,9 @@ Platform wrapping: optional; never primary storage
 Dependency recommendation:
 
 ```text
-Preferred dependency outcome: one reviewed dependency stack that provides Argon2id and XChaCha20-Poly1305 on Android and Linux desktop.
-Fallback dependency outcome: Tink for AEAD plus a reviewed Argon2id provider.
+Current packaging-probe outcome: Tink for XChaCha20-Poly1305 API plus Bouncy Castle for Argon2id API.
+Preferred long-term dependency outcome: one reviewed dependency stack that provides Argon2id and XChaCha20-Poly1305 on Android and Linux desktop.
+Fallback implementation outcome: Tink for AEAD plus a reviewed Argon2id provider.
 Rejected default outcome: platform-only PBKDF2 plus AES-GCM for the wallet vault.
 ```
 
@@ -519,12 +533,13 @@ Test fixtures must not include mnemonic words, seed bytes, private descriptors, 
 
 ## Acceptance Criteria Before Implementation
 
-Before adding crypto dependencies or vault code:
+Before using the pinned probe dependencies for vault code:
 
 - dependency decision reviewed,
 - algorithm choices reviewed,
 - license/package review completed,
 - Android APK and Linux `.deb` packaging implications understood,
+- Android runtime verification completed where required,
 - known-answer test vectors identified,
 - source-guard tests planned,
 - secure metadata and secure secret storage remain fail-closed by default,
@@ -546,9 +561,9 @@ Before enabling any real persistence:
 
 ## Unresolved Decisions
 
-These remain unresolved and require a focused dependency/implementation spike:
+These remain unresolved and require focused dependency review or implementation spikes:
 
-- Which exact dependency stack will provide Argon2id and XChaCha20-Poly1305.
+- Whether the Tink plus Bouncy Castle split stack should become the implementation candidate or be replaced by a single reviewed stack such as libsodium/KMP.
 - Exact Argon2id starting parameters and calibration policy.
 - Exact key-expansion primitive for record-class keys.
 - Whether backup/export uses dependency streaming AEAD or a Skald chunked envelope.
