@@ -14,7 +14,7 @@ Runtime behavior remains fail-closed:
 - Production sync remains disabled.
 - Production secret and sensitive metadata persistence remain disabled.
 
-The follow-up libsodium comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). That comparison rejects Lazysodium Java/Android for the current vault branch because Android APK packaging failed at `checkDebugDuplicateClasses` with duplicate JNA classes, and it defers IonSpin KMP libsodium pending an isolated packaging/KAT spike.
+The follow-up libsodium comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). That comparison rejects Lazysodium Java/Android for the current vault branch because Android APK packaging failed at `checkDebugDuplicateClasses` with duplicate JNA classes, and it defers IonSpin KMP libsodium pending an isolated packaging/KAT spike. The follow-up Tink/Bouncy dependency, license, keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md).
 
 ## Probe Scope
 
@@ -38,7 +38,7 @@ It does not answer all implementation questions that remain for a real vault:
 
 | Candidate | Spike result | Reason |
 | --- | --- | --- |
-| Tink AEAD plus Bouncy Castle Argon2id | Selected for dependency probe only | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts, no native library entries observed in resolved JARs, desktop JVM public KAT validation, and Android instrumented runtime KAT validation on Pixel 10 Pro XL / Android 16. Earlier connected-device failures were install/device-targeting environment blockers, not KAT failures. |
+| Tink AEAD plus Bouncy Castle Argon2id | Candidate reviewed; not production-approved | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts, no native library entries observed in resolved JARs, desktop JVM public KAT validation, Android instrumented runtime KAT validation on Pixel 10 Pro XL / Android 16, and candidate-level dependency/license/keyset/split-provider review. Earlier connected-device failures were install/device-targeting environment blockers, not KAT failures. |
 | Lazysodium Java/Android | Rejected for current vault branch | One primitive family covers Argon2id and XChaCha20-Poly1305 APIs, but Android packaging failed with duplicate JNA classes when `lazysodium-android:5.2.0` was added. |
 | IonSpin KMP libsodium binding | Deferred after comparison | Exact artifacts exist, but Kotlin metadata compatibility, JNA/native-loader behavior, Android ABI packaging, Linux `.deb` behavior, and KAT mapping remain unverified. |
 | Bouncy Castle only | Insufficient as primary stack | Provides Argon2id and ChaCha20-Poly1305-family APIs, but did not satisfy the preferred XChaCha20-Poly1305 record-AEAD target in this pass. |
@@ -103,9 +103,9 @@ Packaging checks completed in this pass:
 - Android `assembleDebug` passes when `ANDROID_USER_HOME` is pointed at temporary writable state in this sandbox. Without that override, this environment cannot create the debug keystore under `/home/spencer/.android`.
 - Linux `packageDeb` passes with JDK 21 and the pinned probe dependencies.
 
-Remaining package/runtime checks before this spike can become a dependency decision for implementation:
+Remaining package/runtime checks before this spike can become a production implementation decision:
 
-- Release-build dependency/license review.
+- Release-build dependency/license review against final release artifacts and notices.
 - Review whether the Android resource exclude remains acceptable for release packaging.
 
 ## License Notes
@@ -115,7 +115,7 @@ Local Maven POM inspection found:
 - Tink 1.21.0 declares Apache License, Version 2.0.
 - Bouncy Castle 1.84 declares the Bouncy Castle Licence.
 
-This is a preliminary packaging-spike note only. A final implementation branch should still perform dependency/license review, transitive dependency review, and release packaging review before enabling storage.
+The detailed candidate-level dependency/license review is in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). A final implementation branch must still keep that review current against the release artifacts before enabling storage.
 
 ## Known-Answer Vectors
 
@@ -133,7 +133,7 @@ No wallet data, mnemonic material, private descriptors, real addresses, real txi
 
 ## Current Recommendation
 
-Use the Tink plus Bouncy Castle split stack as a desktop and Android runtime KAT-validated implementation candidate, not as an approved production vault implementation.
+Use the Tink plus Bouncy Castle split stack as a dependency-reviewed, desktop and Android runtime KAT-validated candidate, not as an approved production vault implementation.
 
 Rationale:
 
@@ -145,11 +145,10 @@ Rationale:
 
 Blockers before implementation:
 
-- Final dependency and license review.
 - KDF parameter calibration.
-- Tink keyset/storage handling review.
-- Split-provider boundary review.
+- Skald-owned provider-boundary design and provider-level KATs.
 - Envelope/key-hierarchy implementation review.
+- Vault container and storage review.
 - Lock/session lifecycle implementation and tests.
 - Redaction/migration/corruption tests.
 - Explicit approval to implement the encrypted vault behind disabled gates.
@@ -183,7 +182,8 @@ This dependency spike does not enable:
 
 Decide whether the next focused branch should:
 
-- complete Tink/Bouncy dependency/license review, KDF calibration planning, Tink keyset/storage handling review, and split-provider boundary review,
+- design a narrow disabled crypto-provider boundary with provider-level KAT requirements,
+- complete KDF calibration planning,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - investigate a specific Lazysodium/JNA variant-resolution strategy,
-- or design a narrow disabled crypto-provider boundary before vault container work.
+- or review the vault container format before any persistence work.

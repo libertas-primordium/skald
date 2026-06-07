@@ -152,6 +152,7 @@ enum class EncryptedVaultRequirementStatus(
     val satisfiedForProductionPersistence: Boolean,
 ) {
     Unresolved("unresolved", satisfiedForProductionPersistence = false),
+    CandidateReviewedOnly("candidate reviewed only", satisfiedForProductionPersistence = false),
     Absent("absent", satisfiedForProductionPersistence = false),
     DisabledByPolicy("disabled by policy", satisfiedForProductionPersistence = false),
 }
@@ -313,7 +314,10 @@ object EncryptedVaultReadinessPolicy {
 
 fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
     val requirementStatuses = buildMap {
-        put(EncryptedVaultRequirement.DependencySelectionReviewed, EncryptedVaultRequirementStatus.Unresolved)
+        put(
+            EncryptedVaultRequirement.DependencySelectionReviewed,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
         put(EncryptedVaultRequirement.KdfParametersCalibrated, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.AeadImplementationVerified, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.KnownAnswerVectorsIdentified, EncryptedVaultRequirementStatus.Unresolved)
@@ -358,7 +362,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
         implementationNote = "Encrypted vault readiness is modeled but the vault is not implemented. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "Resolve dependency selection, provider-boundary KAT validation, KDF calibration, AEAD verification, provider-boundary vectors, container format, lock/session lifecycle, redaction, and migration tests before enabling any persistence.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, but production implementation remains blocked until KDF calibration, provider-boundary design, provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 
