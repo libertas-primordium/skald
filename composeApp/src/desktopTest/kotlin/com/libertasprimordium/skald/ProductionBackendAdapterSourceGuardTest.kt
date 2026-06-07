@@ -208,6 +208,44 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun disabledVaultCryptoProviderBoundaryDoesNotImportProvidersOrStorage() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+com\.ionspin"""),
+            Regex("""import\s+com\.goterl"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bInsecureNonceXChaCha20Poly1305\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\bSecretKeySpec\b"""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bjava\.io\b"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(offenders.isEmpty(), "Disabled vault crypto provider boundary must stay provider/storage free: $offenders")
+    }
+
+    @Test
     fun vaultCryptoDependenciesArePinnedAndScopedToPlatformProbes() {
         val root = repositoryRoot()
         val catalog = File(root, "gradle/libs.versions.toml").readText()
@@ -275,6 +313,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt"),
         )
 
     private fun repositoryRoot(): File =

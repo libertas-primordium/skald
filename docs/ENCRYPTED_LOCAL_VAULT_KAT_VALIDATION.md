@@ -25,7 +25,7 @@ The Android instrumented test `VaultCryptoAndroidKatValidationTest` mirrors thos
 
 Earlier connected-device attempts failed before any KAT assertion ran. The first failure was an APK install-signature conflict on a previously installed `com.libertasprimordium.skald` package. A later attempt was blocked by stale wireless-debugging mDNS target selection. The successful rerun is valid because `adb devices -l` reported the raw serial as `device`, `adb -s 192.168.1.155:44127 shell getprop ro.product.model` reported `Pixel 10 Pro XL`, `pm list packages` showed no installed Skald package before the test, and Gradle reported `Starting 2 tests on Pixel 10 Pro XL - 16` followed by `Finished 2 tests on Pixel 10 Pro XL - 16`.
 
-The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A future production implementation must wrap any primitive use behind a narrow Skald-owned provider boundary before vault storage is considered.
+The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A disabled Skald-owned provider boundary now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but it performs no crypto. A future executable provider implementation must pass provider-level KATs before vault storage is considered.
 
 The libsodium comparison documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md) did not add libsodium KATs. Lazysodium Java/Android was rejected at the Android packaging gate before KAT execution, and IonSpin KMP libsodium remains deferred pending an isolated packaging/KAT mapping spike.
 
@@ -89,7 +89,7 @@ Crypto imports remain confined to:
 - Desktop compile probe: `DesktopVaultCryptoDependencyCompileProbe.kt`.
 - Desktop KAT test: `VaultCryptoKnownAnswerVectorTest.kt`.
 
-Common vault readiness models, secure storage, secure metadata repositories, sync facade, UI, settings codecs, wallet/domain policy, and production repositories remain BDK-free and crypto-implementation-free.
+Common vault readiness models, the disabled provider boundary, secure storage, secure metadata repositories, sync facade, UI, settings codecs, wallet/domain policy, and production repositories remain BDK-free and crypto-implementation-free.
 
 ## Current Decision
 
@@ -106,8 +106,8 @@ Current evidence:
 It is not approved for production vault implementation yet. Remaining blockers:
 
 - KDF calibration on Android and Linux desktop.
-- Narrow Skald-owned `VaultCryptoProvider`-style boundary design.
-- Provider-boundary public KATs on Android and desktop runtime.
+- Executable Skald-owned `VaultCryptoProvider` implementation design; the current boundary is disabled only.
+- Provider-boundary public KATs on Android and desktop runtime through that executable provider.
 - Container/envelope parser and writer design.
 - Lock/session lifecycle tests.
 - Redaction tests.
@@ -143,4 +143,4 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: design a narrow disabled `VaultCryptoProvider` boundary with provider-level KAT requirements, or complete KDF calibration planning before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.
+The next focused branch should remain design/probe-only: complete KDF calibration planning, or add still-disabled executable-provider/KAT scaffolding before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.

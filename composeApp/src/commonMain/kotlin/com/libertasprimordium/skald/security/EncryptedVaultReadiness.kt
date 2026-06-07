@@ -133,8 +133,10 @@ data class EncryptedVaultPlatformPolicy(
 
 enum class EncryptedVaultRequirement(val label: String) {
     DependencySelectionReviewed("dependency selection reviewed"),
+    DisabledProviderBoundaryModeled("disabled provider boundary modeled"),
     KdfParametersCalibrated("KDF parameters calibrated"),
     AeadImplementationVerified("AEAD implementation verified"),
+    ProviderBoundaryKnownAnswerVectorsPassed("provider-boundary known-answer vectors passed"),
     KnownAnswerVectorsIdentified("known-answer vectors identified"),
     VaultContainerFormatImplemented("vault container format implemented"),
     VaultContainerParserImplemented("vault container parser implemented"),
@@ -160,8 +162,10 @@ enum class EncryptedVaultRequirementStatus(
 enum class EncryptedVaultBlockingIssue(val label: String) {
     VaultImplementationUnavailable("vault implementation unavailable"),
     CryptoDependenciesNotSelected("crypto dependencies not selected for implementation"),
+    ProductionProviderImplementationUnavailable("production provider implementation unavailable"),
     KdfParametersUncalibrated("KDF parameters uncalibrated"),
     AeadDependencyUnverified("AEAD dependency unverified"),
+    ProviderKnownAnswerVectorsMissing("provider known-answer vectors missing"),
     KnownAnswerVectorsMissing("known-answer vectors missing"),
     VaultContainerFormatAbsent("vault container format absent"),
     LockSessionLifecycleUntested("lock/session lifecycle untested"),
@@ -190,6 +194,7 @@ enum class EncryptedVaultCapability(
     ReadinessPolicyModel("readiness policy model", enabledInProduction = true),
     AlgorithmDecisionRecord("algorithm decision record", enabledInProduction = true),
     PlatformPolicyModel("platform policy model", enabledInProduction = true),
+    DisabledCryptoProviderBoundary("disabled crypto provider boundary", enabledInProduction = false),
     FutureEncryptedVaultImplementation("future encrypted vault implementation", enabledInProduction = false),
     FutureProductionSecretPersistence("future production secret persistence", enabledInProduction = false),
     FutureProductionMetadataPersistence("future production metadata persistence", enabledInProduction = false),
@@ -318,8 +323,13 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirement.DependencySelectionReviewed,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
+        put(
+            EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
         put(EncryptedVaultRequirement.KdfParametersCalibrated, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.AeadImplementationVerified, EncryptedVaultRequirementStatus.Unresolved)
+        put(EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed, EncryptedVaultRequirementStatus.Absent)
         put(EncryptedVaultRequirement.KnownAnswerVectorsIdentified, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.VaultContainerFormatImplemented, EncryptedVaultRequirementStatus.Absent)
         put(EncryptedVaultRequirement.VaultContainerParserImplemented, EncryptedVaultRequirementStatus.Absent)
@@ -339,8 +349,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         blockers = setOf(
             EncryptedVaultBlockingIssue.VaultImplementationUnavailable,
             EncryptedVaultBlockingIssue.CryptoDependenciesNotSelected,
+            EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable,
             EncryptedVaultBlockingIssue.KdfParametersUncalibrated,
             EncryptedVaultBlockingIssue.AeadDependencyUnverified,
+            EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing,
             EncryptedVaultBlockingIssue.KnownAnswerVectorsMissing,
             EncryptedVaultBlockingIssue.VaultContainerFormatAbsent,
             EncryptedVaultBlockingIssue.LockSessionLifecycleUntested,
@@ -361,8 +373,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness is modeled but the vault is not implemented. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, but production implementation remains blocked until KDF calibration, provider-boundary design, provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness and a disabled provider boundary are modeled, but the vault is not implemented. No keys are generated, no crypto is performed, and no data is persisted.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, and a disabled Skald-owned provider boundary now exists. Production implementation remains blocked until KDF calibration, production provider implementation, provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 
