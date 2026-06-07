@@ -16,7 +16,7 @@ Runtime behavior remains fail-closed:
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
-The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
+The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
 
 ## Decision Summary
 
@@ -35,7 +35,7 @@ The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENC
 | Container format | Versioned vault container with plaintext unlock header and encrypted catalog/records. |
 | Backup/export | Separate encrypted export format with separate backup/export keys and explicit user-selected destination. |
 | Migration/corruption | Fail closed, authenticate every encrypted section, preserve old records until migration succeeds, avoid automatic destructive repair. |
-| Implementation readiness | Not ready. Dependency selection, calibration tests, known-answer vectors, package review, and lock/session tests are required before implementation. |
+| Implementation readiness | Not ready. Desktop public KATs now pass, but Android runtime KATs, dependency review, calibration tests, package review, provider-boundary design, and lock/session tests are required before implementation. |
 
 ## Candidate Evaluation
 
@@ -210,6 +210,7 @@ Dependency-spike result:
 - Pinned `com.google.crypto.tink:tink-android:1.21.0` for Android.
 - Pinned `com.google.crypto.tink:tink:1.21.0` for Linux desktop/JVM.
 - Platform compile probes confirm the `XChaCha20Poly1305Key` API is present.
+- Desktop KAT validation confirms Tink `1.21.0` can match the public XChaCha draft AEAD vector when using its explicit-nonce internal probe API.
 - No vault encryption, Tink keyset storage, or production persistence is enabled.
 
 #### Bouncy Castle
@@ -235,6 +236,7 @@ Dependency-spike result:
 
 - Pinned `org.bouncycastle:bcprov-jdk18on:1.84` for Android and Linux desktop/JVM.
 - Platform compile probes confirm the `Argon2BytesGenerator` and `ChaCha20Poly1305` APIs are present.
+- Desktop KAT validation confirms Bouncy Castle `1.84` `Argon2BytesGenerator` matches the RFC 9106 Argon2id public vector.
 - Bouncy Castle-only remains insufficient for the preferred XChaCha20-Poly1305 record envelope in this decision record.
 - No KDF implementation, vault container, or production persistence is enabled.
 
@@ -260,8 +262,8 @@ Recommended path after the dependency spike:
 
 1. Keep the runtime fail-closed.
 2. Review the code-level vault readiness/policy models with no storage success paths.
-3. Treat the Tink plus Bouncy Castle split stack as the current packaging-probe candidate, not as an implementation-ready vault stack.
-4. Complete Android APK and Linux `.deb` packaging checks, dependency/license review, Android runtime verification, KDF calibration, known-answer-vector tests, and source-guard tests.
+3. Treat the Tink plus Bouncy Castle split stack as the current desktop KAT-validated candidate, not as an implementation-ready vault stack.
+4. Complete Android APK and Linux `.deb` packaging checks, dependency/license review, Android runtime KAT verification, KDF calibration, provider-boundary design, and source-guard tests.
 5. Only after those gates pass, implement a disabled vault container parser/validator.
 
 Algorithm recommendation:
@@ -277,7 +279,7 @@ Platform wrapping: optional; never primary storage
 Dependency recommendation:
 
 ```text
-Current packaging-probe outcome: Tink for XChaCha20-Poly1305 API plus Bouncy Castle for Argon2id API.
+Current dependency-probe outcome: Tink for XChaCha20-Poly1305 API plus Bouncy Castle for Argon2id API with desktop JVM public KAT validation.
 Preferred long-term dependency outcome: one reviewed dependency stack that provides Argon2id and XChaCha20-Poly1305 on Android and Linux desktop.
 Fallback implementation outcome: Tink for AEAD plus a reviewed Argon2id provider.
 Rejected default outcome: platform-only PBKDF2 plus AES-GCM for the wallet vault.
@@ -516,6 +518,7 @@ Policy:
 Before implementation can be enabled, tests must include:
 
 - official known-answer vectors for selected KDF and AEAD where available,
+- Android runtime execution of those vectors where the production provider will run,
 - Skald-owned non-secret envelope test vectors using obvious sentinel values,
 - cross-platform Android/Linux round-trip tests,
 - wrong-passphrase tests,
@@ -540,7 +543,7 @@ Before using the pinned probe dependencies for vault code:
 - license/package review completed,
 - Android APK and Linux `.deb` packaging implications understood,
 - Android runtime verification completed where required,
-- known-answer test vectors identified,
+- known-answer test vectors identified and passing through the selected provider boundary,
 - source-guard tests planned,
 - secure metadata and secure secret storage remain fail-closed by default,
 - no production persistence success path exists.
@@ -563,7 +566,7 @@ Before enabling any real persistence:
 
 These remain unresolved and require focused dependency review or implementation spikes:
 
-- Whether the Tink plus Bouncy Castle split stack should become the implementation candidate or be replaced by a single reviewed stack such as libsodium/KMP.
+- Whether the Tink plus Bouncy Castle split stack should become the implementation candidate after Android runtime validation, or be replaced by a single reviewed stack such as libsodium/KMP.
 - Exact Argon2id starting parameters and calibration policy.
 - Exact key-expansion primitive for record-class keys.
 - Whether backup/export uses dependency streaming AEAD or a Skald chunked envelope.
@@ -581,3 +584,5 @@ These remain unresolved and require focused dependency review or implementation 
 - Android Keystore documentation: <https://developer.android.com/privacy-and-security/keystore>
 - Android hardware-backed Keystore overview: <https://source.android.com/docs/security/features/keystore>
 - Bouncy Castle Java documentation: <https://www.bouncycastle.org/documentation/documentation-java/>
+- RFC 9106 Argon2id test vectors: <https://www.ietf.org/rfc/rfc9106.html#section-5.3>
+- XChaCha draft AEAD_XCHACHA20_POLY1305 test vector: <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha-02#appendix-A.1>

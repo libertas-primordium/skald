@@ -358,7 +358,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
         implementationNote = "Encrypted vault readiness is modeled but the vault is not implemented. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "Resolve dependency selection, KDF calibration, AEAD verification, known-answer vectors, container format, lock/session lifecycle, redaction, and migration tests before enabling any persistence.",
+        futureImplementationHint = "Resolve dependency selection, Android runtime KAT validation, KDF calibration, AEAD verification, provider-boundary vectors, container format, lock/session lifecycle, redaction, and migration tests before enabling any persistence.",
     )
 }
 

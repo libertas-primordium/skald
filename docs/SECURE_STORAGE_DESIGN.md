@@ -8,9 +8,9 @@ The current codebase has a common `SecureSecretStorage` interface, typed secret 
 
 The current codebase also has a disabled/fail-closed secure wallet metadata persistence boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md). That boundary classifies observation history, address index state, labels, backend metadata, UTXO state, wallet notes, transaction notes, recovery metadata, Privacy Analyzer metadata, and identity-linkage metadata as sensitive wallet metadata. It rejects all metadata reads, writes, listing, and deletes until app-controlled encrypted vault storage exists.
 
-The detailed app-controlled encrypted local vault architecture and key-lifecycle plan is now documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). The code-level readiness models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). These documents and models define the required primary storage model for both secrets and sensitive wallet metadata while keeping runtime storage disabled. OS keyrings are not primary storage; they may later wrap vault keys only after explicit design review.
+The detailed app-controlled encrypted local vault architecture and key-lifecycle plan is now documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). The code-level readiness models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop known-answer-vector validation documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). These documents and models define the required primary storage model for both secrets and sensitive wallet metadata while keeping runtime storage disabled. OS keyrings are not primary storage; they may later wrap vault keys only after explicit design review.
 
-The dependency spike pins Tink and Bouncy Castle artifacts for platform compile/package evaluation only. It does not make `SecureSecretStorage` available and does not add secret persistence.
+The dependency spike pins Tink and Bouncy Castle artifacts for platform compile/package evaluation plus desktop public-vector validation only. It does not make `SecureSecretStorage` available and does not add secret persistence.
 
 This document is a design prerequisite before any implementation enables secret storage. It does not enable wallet creation, credential storage, signing, broadcasting, backend networking, Cashu proof persistence, Lightning credential persistence, Nostr key storage, backup encryption, or mainnet behavior.
 
@@ -499,7 +499,7 @@ Until these gates are met, the disabled/fail-closed implementation remains the o
 
 - Should Android use Android Keystore only, or combine Keystore-wrapped keys with a user passphrase-encrypted layer?
 - Should biometric unlock be optional convenience or required for specific secret classes?
-- Whether the Tink plus Bouncy Castle split stack selected for the current packaging probe should become the implementation candidate after license review, Android runtime verification, KDF calibration, and known-answer-vector tests, as tracked in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md).
+- Whether the Tink plus Bouncy Castle split stack selected for the current packaging probe should become the implementation candidate after license review, Android runtime KAT verification, KDF calibration, and provider-boundary review, as tracked in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) and [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md).
 - Should Android and Linux share the same vault container format and record format?
 - Should Linux offer libsecret/KWallet key wrapping at all, given already-unlocked-session risk?
 - How should the app present passphrase-only unlock versus optional platform wrapping?
@@ -514,7 +514,7 @@ Until these gates are met, the disabled/fail-closed implementation remains the o
 ## Implementation sequence
 
 1. Finalize and review this design plus [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md) and [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
-2. Complete the Tink/Bouncy Castle dependency review or choose a replacement stack, then resolve Argon2id calibration parameters, AEAD test vectors, and platform wrapping choices through explicit review.
+2. Complete the Tink/Bouncy Castle dependency review and Android runtime KAT validation or choose a replacement stack, then resolve Argon2id calibration parameters, provider-boundary design, and platform wrapping choices through explicit review.
 3. Expand common secure-storage interface tests for versioning, redaction, deletion, and failure states.
 4. Keep code-level vault readiness/policy models disabled and without storage success paths.
 5. Implement encrypted vault storage behind a disabled feature flag.

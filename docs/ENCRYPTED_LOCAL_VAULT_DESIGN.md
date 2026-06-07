@@ -6,7 +6,7 @@ This document defines the app-controlled encrypted local vault design that Skald
 
 This is a design document only. It does not implement encryption, persist secrets, persist sensitive metadata, create wallets, activate production sync, construct transactions, sign, broadcast, parse Nostr keys, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
 
-The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). That spike adds platform-scoped compile/package probe dependencies only; it does not add vault storage or make secure storage available.
+The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). Desktop known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). Those probes add platform-scoped compile/package dependencies and desktop public-vector tests only; they do not add vault storage or make secure storage available.
 
 Current runtime behavior remains fail-closed:
 
@@ -523,7 +523,7 @@ Production secret or sensitive metadata persistence may not be enabled until:
 - [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md) is reviewed,
 - crypto dependency choice is reviewed,
 - KDF and AEAD parameters are reviewed,
-- known-answer vectors are identified for the selected KDF and AEAD,
+- known-answer vectors pass through the selected provider boundary on required platforms,
 - vault container format is implemented and tested,
 - Android strategy is tested if Android storage is enabled,
 - Linux strategy is tested if Linux storage is enabled,
@@ -541,7 +541,7 @@ Production secret or sensitive metadata persistence may not be enabled until:
 
 ## Open Questions
 
-- Whether the Tink plus Bouncy Castle split stack from [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) should become the implementation candidate after package verification, license review, Android runtime verification, KDF calibration, and known-answer-vector tests.
+- Whether the Tink plus Bouncy Castle split stack from [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) should become the implementation candidate after package verification, license review, Android runtime KAT verification, KDF calibration, and provider-boundary review.
 - What exact Argon2id starting parameters and calibration policy should ship after platform measurement?
 - Should Android require hardware-backed wrapping for specific secret classes or make it an optional risk label?
 - How should Linux vault files be located, permissioned, backed up, and migrated?
@@ -561,8 +561,8 @@ Recommended next implementation sequence:
 1. Review this design plus [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
 2. Review the code-level vault policy/readiness models in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md).
 3. Keep tests proving secure storage, secure metadata, and vault readiness remain disabled.
-4. Complete package verification and dependency review for the Tink/Bouncy Castle probe, or choose a replacement stack through explicit review.
-5. Add official non-secret known-answer-vector tests for the selected KDF/AEAD APIs.
+4. Complete package verification, dependency review, and Android runtime KAT validation for the Tink/Bouncy Castle probe, or choose a replacement stack through explicit review.
+5. Design a narrow disabled provider boundary for selected KDF/AEAD APIs.
 6. Implement a disabled vault container parser/validator without storing real secrets.
 7. Implement encrypted vault storage behind a disabled feature gate.
 8. Add lock/session lifecycle tests.
