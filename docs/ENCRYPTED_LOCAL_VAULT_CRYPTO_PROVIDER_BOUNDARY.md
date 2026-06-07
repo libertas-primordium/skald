@@ -6,9 +6,12 @@ Skald Vault now has a narrow Skald-owned disabled `VaultCryptoProvider` boundary
 
 This is a provider-boundary and policy-model pass only. It does not implement encryption, KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material storage, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
+Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
+
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every modeled provider operation.
+- `VaultCryptoProviderSelectionRegistry` selects only the disabled provider.
 - `DisabledVaultCryptoProvider` rejects `validateKat`; provider-level KAT success is available only through test-only harnesses documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md).
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
@@ -23,6 +26,7 @@ Production-safe common boundary:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
 ```
 
 Tests and source guards:
@@ -162,6 +166,8 @@ The readiness model still blocks on:
 - mainnet disabled.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary, provider-level KAT contract, and test-only provider KAT harness modeled. It remains candidate-only and not production-approved because production provider-level KAT execution is still missing.
+
+`VaultCryptoProviderSelectionRegistry` records the same evidence but treats dependency-level KATs and test-only provider KATs as insufficient for production selection. It blocks Tink plus Bouncy Castle on missing production provider implementation, missing production provider-level KATs, non-final Argon2id parameters, unresolved Android baseline coverage for universal Android selection, unapproved Tink keyset/raw-key handling, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, missing redaction/failure-mode tests, missing migration/corruption tests, and mainnet disablement.
 
 ## Explicit Non-Capabilities
 

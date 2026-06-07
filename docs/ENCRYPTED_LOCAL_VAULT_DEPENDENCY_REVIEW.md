@@ -188,6 +188,8 @@ The split stack remains acceptable as a candidate after this review because no n
 
 The disabled `VaultCryptoProvider` boundary now exists and remains interface/policy-only. Any future executable-provider branch should remain disabled unless explicitly approved otherwise.
 
+The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It lists Tink plus Bouncy Castle as a blocked future candidate, keeps Lazysodium rejected and IonSpin deferred, and returns only `DisabledVaultCryptoProvider` for runtime selection.
+
 Required checklist for that branch:
 
 - extend the existing disabled Skald-owned provider boundary without provider-specific public types,
@@ -196,6 +198,7 @@ Required checklist for that branch:
 - require candidate public KAT vectors at the provider boundary,
 - require the provider-level positive, negative, platform, nonce-policy, redaction, and storage-separation contract documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md),
 - require Android runtime and desktop runtime vector execution,
+- satisfy provider-selection gates before any non-disabled provider can be selected,
 - encode redacted Skald-owned error types,
 - encode no-storage and no-keyset-persistence restrictions,
 - encode provider version and algorithm policy as read-only status,
@@ -217,7 +220,7 @@ Provider-boundary non-goals:
 
 ## Current Model Status
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled` and `ProviderKatContractModeled`.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, and `ProviderKatContractModeled`.
 
 That status means:
 
@@ -228,6 +231,7 @@ That status means:
 - Bouncy Castle Argon2id API risks were documented,
 - split-provider boundary requirements were documented,
 - a disabled Skald-owned provider boundary now exists and rejects every operation,
+- a provider-selection boundary now exists and selects only the disabled provider,
 - a provider-level KAT contract now exists, and a test-only harness can execute it without production storage or provider approval.
 
 That status does not mean:
@@ -236,6 +240,7 @@ That status does not mean:
 - legal approval,
 - KDF calibration,
 - executable provider-boundary approval,
+- production provider selection,
 - keyset storage approval,
 - encrypted vault implementation,
 - secret or metadata persistence,
@@ -248,6 +253,7 @@ That status does not mean:
 
 - Final KDF parameter approval for Android and Linux desktop. Probe-only policy/harnesses and candidate tiers exist, but they are not production settings.
 - Provider-boundary KAT behavior through an executable production Skald-owned interface. Current dependency-level KATs and test-only provider harness evidence do not satisfy production provider approval.
+- Provider-selection approval. Current dependency-level KATs and test-only provider harness evidence are modeled as evidence only and do not satisfy provider selection.
 - Whether Tink keysets or raw AEAD key material will be used inside the vault.
 - Whether Tink's production APIs can satisfy Skald's random-nonce record envelope without relying on internal explicit-nonce APIs.
 - Vault container parser/writer design.
@@ -259,4 +265,4 @@ That status does not mean:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: collect additional Android baseline Argon2id calibration evidence or design a disabled production-provider skeleton with no storage. Neither step should implement a vault container or enable persistence.
+The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: collect additional Android baseline Argon2id calibration evidence or design a still-disabled production-provider skeleton with no storage. Neither step should select a non-disabled provider, implement a vault container, or enable persistence.

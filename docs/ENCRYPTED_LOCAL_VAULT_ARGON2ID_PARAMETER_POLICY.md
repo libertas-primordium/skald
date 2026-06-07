@@ -6,12 +6,15 @@ Skald Vault now has a candidate Argon2id parameter policy for the future app-con
 
 This is design and policy only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
+The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy and unresolved Android baseline coverage as production-selection blockers.
+
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every KDF, AEAD, key generation, keyset storage, KAT validation, and persistence operation.
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
+- `VaultCryptoProviderSelectionRegistry` selects only the disabled provider.
 - Production persistence remains disabled.
 - Production sync remains disabled.
 - Mainnet remains disabled.
@@ -43,6 +46,8 @@ No tier is production-final.
 
 The policy treats memory hardness as a security requirement. Unlock latency is a usability constraint that can reject unusable settings, but it must not silently downgrade memory cost without explicit degraded-strength review.
 
+The policy is not sufficient for production provider selection because no tier is final and Android baseline coverage is missing.
+
 ## Rejection Rules
 
 The current code-level policy rejects:
@@ -72,8 +77,9 @@ Before any Argon2id parameter can become a production vault unlock policy, Skald
 7. Memory-pressure failure behavior review.
 8. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
 9. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
-10. Secure storage and secure metadata storage review.
-11. Mainnet release-hardening review before any mainnet relevance.
+10. Provider-selection gate review according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md).
+11. Secure storage and secure metadata storage review.
+12. Mainnet release-hardening review before any mainnet relevance.
 
 These blockers are represented in common policy models. They keep `KdfParametersCalibrated` unresolved and keep production KDF execution disabled.
 
@@ -103,6 +109,8 @@ Probe timings do not prove side-channel resistance, memory zeroization, wrong-pa
 `EncryptedVaultReadinessPolicy` records the candidate parameter policy as reviewed-only. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled. That stack remains candidate-only and is not production-approved.
+
+`VaultCryptoProviderSelectionRegistry` records the candidate policy as evidence only. It keeps Tink plus Bouncy Castle blocked because parameters are not final and Android baseline coverage is unresolved.
 
 ## Explicit Non-Capabilities
 
