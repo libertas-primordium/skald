@@ -10,10 +10,11 @@ Runtime behavior remains fail-closed:
 
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
+- `EncryptedVaultReadinessPolicy` reports disabled/not implemented readiness.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
-The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
+The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
 
 ## Decision Summary
 
@@ -242,7 +243,7 @@ Allowed role:
 Recommended path for the next implementation spike:
 
 1. Keep the runtime fail-closed.
-2. Add code-level vault readiness/policy models with no storage success paths.
+2. Review the code-level vault readiness/policy models with no storage success paths.
 3. Run a dependency spike comparing:
    - libsodium binding for Argon2id and XChaCha20-Poly1305,
    - Tink for XChaCha20-Poly1305 AEAD plus a separate Argon2id provider,

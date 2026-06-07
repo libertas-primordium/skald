@@ -12,8 +12,11 @@ Current runtime behavior remains fail-closed:
 - `SecureWalletMetadataRepository` is disabled.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
+- `EncryptedVaultReadinessPolicy` reports the vault implementation unavailable, crypto dependencies unresolved, KDF/AEAD verification incomplete, secure storage disabled, secure metadata disabled, production persistence disabled, and mainnet disabled.
 
 The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping dependency selection and implementation disabled.
+
+The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). They encode this design as typed disabled/fail-closed status only; they do not implement encryption, storage, unlock UI, or persistence.
 
 ## Design Principles
 
@@ -554,8 +557,8 @@ Production secret or sensitive metadata persistence may not be enabled until:
 Recommended next implementation sequence:
 
 1. Review this design plus [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
-2. Add code-level vault policy/readiness models without storage success paths.
-3. Add tests proving secure storage and secure metadata remain disabled.
+2. Review the code-level vault policy/readiness models in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md).
+3. Keep tests proving secure storage, secure metadata, and vault readiness remain disabled.
 4. Run a dependency spike for the selected KDF/AEAD target without enabling persistence.
 5. Select crypto dependencies through explicit review.
 6. Implement a disabled vault container parser/validator without storing real secrets.

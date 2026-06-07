@@ -2,7 +2,7 @@
 
 ## Status
 
-Skald Vault now surfaces disabled production sync, backend observation, receive-address policy, secure-storage, secure metadata, and observation-persistence blockers in Recovery Center and the Privacy Analyzer.
+Skald Vault now surfaces disabled production sync, backend observation, receive-address policy, encrypted-vault readiness, secure-storage, secure metadata, and observation-persistence blockers in Recovery Center and the Privacy Analyzer.
 
 This is a status integration only. It does not enable production wallet sync, production backend clients, production observation persistence, app receive UI, wallet activation, descriptor persistence, address index persistence, UTXO persistence, secure storage, signing, broadcasting, Nostr parsing, Lightning, Cashu, Payjoin, public endpoint defaults, Skald-operated infrastructure, or mainnet.
 
@@ -26,6 +26,7 @@ Shared sync request/status source:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/components/BitcoinWalletSyncStatusUiModel.kt
 ```
 
@@ -43,6 +44,7 @@ Recovery Center includes a read-only `Sync and observation recovery` card.
 It shows:
 
 - production sync disabled,
+- encrypted vault readiness unavailable,
 - secure metadata vault unavailable,
 - observation and UTXO persistence deferred until encrypted vault storage,
 - secure storage unavailable,
@@ -61,6 +63,7 @@ It can show policy findings for:
 
 - production sync disabled,
 - no production backend query attempted,
+- encrypted vault readiness unavailable,
 - secure metadata storage unavailable,
 - observation persistence deferred,
 - public backend wallet-query privacy risk,
@@ -84,6 +87,7 @@ Observed addresses, labels, UTXOs, outpoints, transaction notes, backend metadat
 Skald must not persist that metadata in plaintext. Production observation persistence must wait for:
 
 - the app-controlled encrypted local vault described in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md),
+- the code-level readiness policy documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md) to report implementation gates satisfied,
 - the disabled secure metadata boundary documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md) to be replaced by an approved encrypted implementation.
 
 Current desktop-test BDK observations remain runtime-only test state. No production observation repository exists. The current `DisabledSecureWalletMetadataRepository` rejects all sensitive metadata reads, writes, listing, and deletes.
@@ -93,6 +97,7 @@ Current desktop-test BDK observations remain runtime-only test state. No product
 Recovery/Privacy status consumes Skald-owned models only:
 
 - disabled production sync service result,
+- encrypted vault readiness state,
 - backend observation summary shape,
 - receive-address policy state,
 - secure-storage capability,
@@ -114,6 +119,8 @@ BackendObservationSummary
         ↓
 Receive-address policy
         ↓
+Encrypted vault readiness policy
+        ↓
 Secure metadata persistence boundary
         ↓
 Encrypted observation persistence
@@ -133,6 +140,7 @@ This status integration does not enable:
 - production observation persistence,
 - production UTXO display,
 - secure metadata persistence,
+- encrypted vault implementation,
 - app receive address generation,
 - production receive UI,
 - address index persistence,
@@ -157,11 +165,13 @@ Tests verify that:
 
 - Recovery status reports production sync disabled,
 - Recovery status reports observation persistence deferred until encrypted vault storage,
+- Recovery status reports encrypted vault readiness unavailable,
 - Recovery status reports secure metadata vault and UTXO-state persistence unavailable,
 - Recovery status reports secure storage unavailable,
 - Recovery status does not treat test-only BDK validation as production recovery state,
 - Privacy status reports public backend warnings,
 - Privacy status reports secure metadata storage unavailable,
+- Privacy status reports encrypted vault readiness unavailable,
 - Privacy status reports onion/Tor labeling without claiming Tor transport is implemented,
 - Privacy status distinguishes displayed addresses from backend-observed used addresses,
 - Privacy status reports address reuse warnings after observed use,
@@ -170,4 +180,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should turn the encrypted vault design into code-level readiness/policy models or resolve the reviewed crypto/platform wrapping choices. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
+The next focused pass should run the Argon2id/XChaCha20-Poly1305 dependency spike or refine vault readiness after review. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.

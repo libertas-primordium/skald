@@ -14,6 +14,7 @@ enum class PrivacySyncFindingCategory(val label: String) {
     ProductionSync("production sync"),
     BackendTrust("backend trust"),
     TorLabeling("Tor/onion labeling"),
+    VaultReadiness("encrypted vault readiness"),
     ObservationPersistence("observation persistence"),
     SecureMetadata("secure metadata"),
     AddressUsage("address usage"),
@@ -89,6 +90,19 @@ object PrivacySyncStatusAnalyzer {
                         level = PrivacyRiskLevel.Warning,
                         title = "Observation persistence deferred",
                         detail = "Observed addresses, UTXOs, backend metadata, labels, and wallet history are sensitive metadata and are not persisted before encrypted vault storage exists.",
+                    ),
+                )
+            }
+            if (
+                BitcoinWalletSyncBlocker.EncryptedVaultUnavailable in syncResult.blockers ||
+                BitcoinWalletSyncWarning.EncryptedVaultReadinessOnly in syncResult.warnings
+            ) {
+                add(
+                    PrivacySyncFinding(
+                        category = PrivacySyncFindingCategory.VaultReadiness,
+                        level = PrivacyRiskLevel.Danger,
+                        title = "Encrypted vault readiness unavailable",
+                        detail = "Vault readiness is policy-only. No crypto dependency, KDF calibration, AEAD verification, container format, lock/session testing, or production persistence exists.",
                     ),
                 )
             }

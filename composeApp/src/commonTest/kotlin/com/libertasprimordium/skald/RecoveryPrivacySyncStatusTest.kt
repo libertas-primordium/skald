@@ -74,6 +74,7 @@ class RecoveryPrivacySyncStatusTest {
 
         assertFalse(recovery.productionObservationPersistenceEnabled)
         assertContains(recovery.items.map { it.label }, "Observation and UTXO persistence")
+        assertContains(recovery.items.map { it.label }, "Encrypted vault readiness")
         assertContains(recovery.items.map { it.label }, "Secure metadata vault")
         assertContains(recovery.items.map { it.label }, "UTXO state persistence")
         assertContains(recovery.items.map { it.label }, "Secure storage")
@@ -82,6 +83,10 @@ class RecoveryPrivacySyncStatusTest {
             recovery.items.single { it.label == "Observation and UTXO persistence" }.state,
         )
         assertEquals(RecoverySyncItemState.Unavailable, recovery.items.single { it.label == "Secure storage" }.state)
+        assertEquals(
+            RecoverySyncItemState.DeferredUntilEncryptedVault,
+            recovery.items.single { it.label == "Encrypted vault readiness" }.state,
+        )
         assertEquals(
             RecoverySyncItemState.DeferredUntilEncryptedVault,
             recovery.items.single { it.label == "Secure metadata vault" }.state,
@@ -128,6 +133,7 @@ class RecoveryPrivacySyncStatusTest {
         )
 
         assertContains(status.findings.map { it.title }, "Public backend privacy risk")
+        assertContains(status.findings.map { it.title }, "Encrypted vault readiness unavailable")
         assertContains(status.findings.map { it.title }, "Secure metadata storage unavailable")
         assertTrue(status.findings.single { it.title == "Public backend privacy risk" }.level == PrivacyRiskLevel.Danger)
         assertFalse(status.canRunAnalysis)

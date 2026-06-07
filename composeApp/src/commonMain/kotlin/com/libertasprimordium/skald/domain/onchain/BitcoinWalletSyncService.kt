@@ -1,9 +1,12 @@
 package com.libertasprimordium.skald.domain.onchain
 
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.security.EncryptedVaultReadiness
+import com.libertasprimordium.skald.security.EncryptedVaultReadinessPolicy
 import com.libertasprimordium.skald.security.SecureMetadataPersistenceCapability
 import com.libertasprimordium.skald.security.SecureMetadataPersistencePolicy
 import com.libertasprimordium.skald.security.SecureStorageCapability
+import com.libertasprimordium.skald.security.commonDisabledEncryptedVaultReadiness
 import com.libertasprimordium.skald.security.commonDisabledSecureMetadataCapability
 
 @JvmInline
@@ -29,6 +32,7 @@ enum class BitcoinWalletSyncCapability(val label: String, val enabledInProductio
     BackendObservationSummaryTarget("backend observation summary target", enabledInProduction = true),
     ReceiveAddressPolicyBoundary("receive-address policy boundary", enabledInProduction = true),
     CredentialReferenceMetadataOnly("credential reference metadata only", enabledInProduction = true),
+    EncryptedVaultReadinessBoundary("encrypted vault readiness boundary", enabledInProduction = true),
     SecureMetadataPersistenceBoundary("secure metadata persistence boundary", enabledInProduction = true),
     FutureProductionSync("future production sync", enabledInProduction = false),
     FutureObservationPersistence("future observation persistence", enabledInProduction = false),
@@ -48,6 +52,7 @@ enum class BitcoinWalletSyncBlocker(val label: String) {
     NoOperationalWallet("no operational wallet"),
     WalletContextMissing("wallet context missing"),
     AddressCandidateMissing("receive-address candidate missing"),
+    EncryptedVaultUnavailable("encrypted vault unavailable"),
     SecureStorageUnavailable("secure storage unavailable"),
     ProductionBackendDisabled("production backend disabled"),
     CredentialsUnavailable("credentials unavailable"),
@@ -69,6 +74,8 @@ enum class BitcoinWalletSyncWarning(val label: String) {
     TorTransportNotImplemented("Tor transport not implemented"),
     UserOwnedNodePreferred("user-owned node preferred"),
     CredentialsRequireSecureStorage("credentials require secure storage"),
+    EncryptedVaultUnavailable("encrypted vault unavailable"),
+    EncryptedVaultReadinessOnly("encrypted vault readiness is policy-only"),
     MetadataRequiresEncryptedVault("metadata requires encrypted vault"),
     ReceiveAddressPolicyRequired("receive-address policy required"),
     CoinControlRequiredBeforeSpend("coin control required before spending"),
@@ -119,6 +126,7 @@ data class BitcoinWalletSyncRequest(
     val wallet: ReceiveAddressWalletContext?,
     val candidate: ReceiveAddressState? = null,
     val secureStorageCapability: SecureStorageCapability,
+    val encryptedVaultReadiness: EncryptedVaultReadiness = commonDisabledEncryptedVaultReadiness(),
     val secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
     val observationPersistenceAvailable: Boolean = false,
     val networkPolicy: BitcoinBackendNetworkPolicy = BitcoinBackendNetworkPolicy.DevelopmentOnly,
@@ -196,6 +204,7 @@ object BitcoinWalletSyncRequestFactory {
                 ).markDisplayed()
             },
             secureStorageCapability = secureStorageCapability,
+            encryptedVaultReadiness = commonDisabledEncryptedVaultReadiness(),
             secureMetadataCapability = secureMetadataCapability,
         )
     }
@@ -260,6 +269,17 @@ object BitcoinWalletSyncPolicy {
         if (!request.observationPersistenceAvailable) {
             blockers += BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable
             blockers += BitcoinWalletSyncBlocker.AddressIndexPersistenceUnavailable
+        }
+        val vaultDecision = EncryptedVaultReadinessPolicy.evaluate(
+            readiness = request.encryptedVaultReadiness,
+            secureStorageCapability = request.secureStorageCapability,
+            secureMetadataCapability = request.secureMetadataCapability,
+        )
+        if (!vaultDecision.canEnableProductionPersistence) {
+            blockers += BitcoinWalletSyncBlocker.EncryptedVaultUnavailable
+            warnings += BitcoinWalletSyncWarning.EncryptedVaultUnavailable
+            warnings += BitcoinWalletSyncWarning.EncryptedVaultReadinessOnly
+            warnings += BitcoinWalletSyncWarning.MetadataRequiresEncryptedVault
         }
         val metadataDecision = SecureMetadataPersistencePolicy.evaluate(request.secureMetadataCapability)
         if (!metadataDecision.canPersistSensitiveMetadata) {
@@ -398,6 +418,7 @@ object BitcoinWalletSyncPolicy {
             BitcoinWalletSyncCapability.BackendObservationSummaryTarget,
             BitcoinWalletSyncCapability.ReceiveAddressPolicyBoundary,
             BitcoinWalletSyncCapability.CredentialReferenceMetadataOnly,
+            BitcoinWalletSyncCapability.EncryptedVaultReadinessBoundary,
             BitcoinWalletSyncCapability.SecureMetadataPersistenceBoundary,
             BitcoinWalletSyncCapability.FutureProductionSync,
             BitcoinWalletSyncCapability.FutureObservationPersistence,
