@@ -74,8 +74,8 @@ enum class Argon2idParameterTierKind(
         finalProductionApproved = false,
         universalAndroidPolicy = false,
     ),
-    AndroidBaselineUnresolved(
-        label = "Android baseline unresolved tier",
+    AndroidSupportedCompatibilityPlanning(
+        label = "Android supported-compatibility planning tier",
         finalProductionApproved = false,
         universalAndroidPolicy = false,
     ),
@@ -90,7 +90,10 @@ enum class Argon2idDeviceClassEvidenceStatus(
         "Pixel 10 Pro XL / Android 16 high-end runtime probe measured",
         satisfiesAndroidBaselineCoverage = false,
     ),
-    AndroidBaselineCoverageMissing("Android baseline coverage missing", satisfiesAndroidBaselineCoverage = false),
+    AndroidSupportedCompatibilityPolicyModeled(
+        "supported Android compatibility policy modeled",
+        satisfiesAndroidBaselineCoverage = true,
+    ),
     MidRangeAndroidCoverageMissing("mid-range Android coverage missing", satisfiesAndroidBaselineCoverage = false),
     LowEndAndroidCoverageMissing("low-end Android coverage missing", satisfiesAndroidBaselineCoverage = false),
     ThermalLoadRepeatabilityMissing("thermal/load repeatability missing", satisfiesAndroidBaselineCoverage = false),
@@ -100,6 +103,10 @@ enum class Argon2idParameterApprovalBlocker(val label: String) {
     LowEndAndroidProbeMissing("low-end Android probe missing"),
     MidRangeAndroidProbeMissing("mid-range Android probe missing"),
     ThermalLoadRepeatabilityMissing("thermal/load repeatability checks missing"),
+    AndroidSupportedCompatibilityReviewMissing("supported Android compatibility review missing"),
+    RuntimeCryptoProviderCheckMissing("runtime crypto provider check missing"),
+    RuntimeEntropyCheckMissing("runtime cryptographic randomness check missing"),
+    ApprovedRandomnessSourceMissing("approved OS or provider cryptographic randomness source missing"),
     UnlockUxMeasurementMissing("lock-screen/unlock UX measurement missing"),
     BackgroundForegroundBehaviorMissing("background/foreground behavior checks missing"),
     AccessibilityTimeoutReviewMissing("accessibility/timeout policy review missing"),
@@ -112,6 +119,10 @@ enum class Argon2idParameterApprovalBlocker(val label: String) {
 
 enum class Argon2idFutureCalibrationRequirement(val label: String) {
     AndroidManualEvidenceCaptureProtocol("manual Android calibration evidence capture protocol"),
+    AndroidSupportedCompatibilityPolicyReview("supported Android compatibility policy review"),
+    AndroidRuntimeProviderPrimitiveChecks("Android runtime provider and primitive checks"),
+    AndroidRuntimeEntropyPathCheck("Android runtime cryptographic randomness path check"),
+    VaultCreationFailClosedWarningReview("vault-creation fail-closed warning review"),
     LowEndAndroidDeviceProbe("low-end Android device probe"),
     MidRangeAndroidDeviceProbe("mid-range Android device probe"),
     ThermalLoadRepeatabilityChecks("thermal/load repeatability checks"),
@@ -138,8 +149,8 @@ enum class Argon2idCalibrationWarning(val label: String) {
     LowMemoryProbeCandidate("low-memory candidate is probe-only"),
     TooFastSettingWouldBeWeak("too-fast setting would be weak for production"),
     PixelEvidenceHighEndOnly("Pixel evidence covers high-end Android only"),
-    AndroidBaselineCoverageMissing("Android baseline coverage is missing"),
-    ThermalLoadRepeatabilityMissing("thermal/load repeatability checks are missing"),
+    AndroidCompatibilityRuntimeChecksRequired("Android compatibility requires runtime provider and randomness checks"),
+    ThermalLoadRepeatabilityDesirable("thermal/load repeatability checks remain desirable"),
     AndroidDeviceVariance("Android device timing varies by RAM, CPU, thermal state, load, and OEM behavior"),
     TimingIsNotBenchmark("probe timing is not a stable benchmark"),
     MemoryZeroizationUnresolved("JVM/Android zeroization remains best-effort and unresolved"),
@@ -344,10 +355,11 @@ enum class AndroidArgon2idCalibrationEvidenceRejectionReason(val label: String) 
 
 enum class AndroidArgon2idBaselineAcceptanceGate(val label: String) {
     HighEndEvidencePresent("high-end Android evidence present"),
-    MidRangeEvidencePresent("mid-range Android evidence present"),
-    LowEndEvidencePresent("low-end Android evidence present"),
-    ReleaseLikeEvidencePresent("release-like Android evidence present"),
-    ThermalLoadRepeatabilityPresent("thermal/load repeatability evidence present"),
+    MidRangeEvidenceOptional("mid-range Android evidence optional"),
+    LowEndEvidenceOptional("low-end Android evidence optional"),
+    ReleaseLikeEvidenceDesirable("release-like Android evidence desirable"),
+    ThermalLoadRepeatabilityDesirable("thermal/load repeatability evidence desirable"),
+    SupportedAndroidCompatibilityPolicyModeled("supported Android compatibility policy modeled"),
     PublicNonSecretFixturesOnly("public non-secret fixtures only"),
     ManualEvidenceDoesNotApproveProductionKdf("manual evidence does not approve production KDF"),
 }
@@ -724,6 +736,16 @@ data class AndroidArgon2idBaselineAssessment(
     val androidBaselineSatisfied: Boolean
         get() = blockers.isEmpty()
 
+    val compatibilityPlanningSatisfied: Boolean
+        get() = androidBaselineSatisfied
+
+    val exhaustiveDevicePerformanceProven: Boolean
+        get() = highEndEvidencePresent &&
+            midRangeEvidencePresent &&
+            lowEndEvidencePresent &&
+            releaseLikeEvidencePresent &&
+            thermalLoadRepeatabilityPresent
+
     val finalProductionParametersApproved: Boolean = false
 }
 
@@ -788,12 +810,6 @@ object AndroidArgon2idCalibrationEvidencePolicy {
 
         val blockers = buildSet {
             if (!highEndEvidencePresent) add(AndroidArgon2idBaselineBlocker.HighEndEvidenceMissing)
-            if (!midRangeEvidencePresent) add(AndroidArgon2idBaselineBlocker.MidRangeEvidenceMissing)
-            if (!lowEndEvidencePresent) add(AndroidArgon2idBaselineBlocker.LowEndEvidenceMissing)
-            if (!releaseLikeEvidencePresent) add(AndroidArgon2idBaselineBlocker.ReleaseLikeEvidenceMissing)
-            if (!thermalLoadRepeatabilityPresent) {
-                add(AndroidArgon2idBaselineBlocker.ThermalLoadRepeatabilityMissing)
-            }
             if (!publicNonSecretFixtureEvidencePresent) {
                 add(AndroidArgon2idBaselineBlocker.NonSecretFixtureEvidenceMissing)
             }
@@ -810,12 +826,16 @@ object AndroidArgon2idCalibrationEvidencePolicy {
             blockers = blockers,
             gates = listOf(
                 gate(AndroidArgon2idBaselineAcceptanceGate.HighEndEvidencePresent, highEndEvidencePresent),
-                gate(AndroidArgon2idBaselineAcceptanceGate.MidRangeEvidencePresent, midRangeEvidencePresent),
-                gate(AndroidArgon2idBaselineAcceptanceGate.LowEndEvidencePresent, lowEndEvidencePresent),
-                gate(AndroidArgon2idBaselineAcceptanceGate.ReleaseLikeEvidencePresent, releaseLikeEvidencePresent),
+                gate(AndroidArgon2idBaselineAcceptanceGate.MidRangeEvidenceOptional, true),
+                gate(AndroidArgon2idBaselineAcceptanceGate.LowEndEvidenceOptional, true),
+                gate(AndroidArgon2idBaselineAcceptanceGate.ReleaseLikeEvidenceDesirable, true),
                 gate(
-                    AndroidArgon2idBaselineAcceptanceGate.ThermalLoadRepeatabilityPresent,
-                    thermalLoadRepeatabilityPresent,
+                    AndroidArgon2idBaselineAcceptanceGate.ThermalLoadRepeatabilityDesirable,
+                    true,
+                ),
+                gate(
+                    AndroidArgon2idBaselineAcceptanceGate.SupportedAndroidCompatibilityPolicyModeled,
+                    true,
                 ),
                 gate(
                     AndroidArgon2idBaselineAcceptanceGate.PublicNonSecretFixturesOnly,
@@ -910,8 +930,8 @@ data class Argon2idCalibrationPolicy(
         if (Argon2idCalibrationPlatformClass.AndroidRuntime in candidate.platformClasses) {
             add(Argon2idCalibrationWarning.AndroidDeviceVariance)
             add(Argon2idCalibrationWarning.PixelEvidenceHighEndOnly)
-            add(Argon2idCalibrationWarning.AndroidBaselineCoverageMissing)
-            add(Argon2idCalibrationWarning.ThermalLoadRepeatabilityMissing)
+            add(Argon2idCalibrationWarning.AndroidCompatibilityRuntimeChecksRequired)
+            add(Argon2idCalibrationWarning.ThermalLoadRepeatabilityDesirable)
         }
     }
 
@@ -967,8 +987,8 @@ data class Argon2idCalibrationPolicy(
                     Argon2idCalibrationWarning.CandidateParameterPolicyNotFinal,
                     Argon2idCalibrationWarning.AndroidDeviceVariance,
                     Argon2idCalibrationWarning.PixelEvidenceHighEndOnly,
-                    Argon2idCalibrationWarning.AndroidBaselineCoverageMissing,
-                    Argon2idCalibrationWarning.ThermalLoadRepeatabilityMissing,
+                    Argon2idCalibrationWarning.AndroidCompatibilityRuntimeChecksRequired,
+                    Argon2idCalibrationWarning.ThermalLoadRepeatabilityDesirable,
                     Argon2idCalibrationWarning.TimingIsNotBenchmark,
                     Argon2idCalibrationWarning.MemoryZeroizationUnresolved,
                 ),
@@ -1026,27 +1046,50 @@ data class Argon2idCalibrationPolicy(
                         note = "Minimum fallback/probe floor only; not the preferred production default.",
                     ),
                     Argon2idParameterTier(
-                        tier = Argon2idParameterTierKind.AndroidBaselineUnresolved,
+                        tier = Argon2idParameterTierKind.AndroidSupportedCompatibilityPlanning,
                         candidate = null,
                         evidence = setOf(
-                            Argon2idDeviceClassEvidenceStatus.AndroidBaselineCoverageMissing,
-                            Argon2idDeviceClassEvidenceStatus.MidRangeAndroidCoverageMissing,
-                            Argon2idDeviceClassEvidenceStatus.LowEndAndroidCoverageMissing,
-                            Argon2idDeviceClassEvidenceStatus.ThermalLoadRepeatabilityMissing,
+                            Argon2idDeviceClassEvidenceStatus.AndroidSupportedCompatibilityPolicyModeled,
                         ),
-                        note = "Universal Android baseline policy is unresolved until lower-end and mid-range device coverage is measured.",
+                        note = "Android compatibility planning uses the supported OS baseline, runtime crypto/randomness checks, and fail-closed vault creation gates rather than mandatory low-end or mid-range model testing.",
                     ),
                 ),
                 evidence = setOf(
                     Argon2idDeviceClassEvidenceStatus.DesktopJvmProbeMeasured,
                     Argon2idDeviceClassEvidenceStatus.Pixel10ProXlAndroid16ProbeMeasured,
+                    Argon2idDeviceClassEvidenceStatus.AndroidSupportedCompatibilityPolicyModeled,
                 ),
                 minimumProbeFloorCandidateId = "argon2id-probe-16mib-2p-1lane",
                 minimumOutputLength = Argon2idOutputLength.ofBytes(
                     Argon2idOutputLength.MINIMUM_VAULT_KDF_OUTPUT_BYTES,
                 ).acceptedValue(),
-                finalApprovalBlockers = Argon2idParameterApprovalBlocker.entries.toSet(),
-                futureCalibrationRequirements = Argon2idFutureCalibrationRequirement.entries.toSet(),
+                finalApprovalBlockers = setOf(
+                    Argon2idParameterApprovalBlocker.AndroidSupportedCompatibilityReviewMissing,
+                    Argon2idParameterApprovalBlocker.RuntimeCryptoProviderCheckMissing,
+                    Argon2idParameterApprovalBlocker.RuntimeEntropyCheckMissing,
+                    Argon2idParameterApprovalBlocker.ApprovedRandomnessSourceMissing,
+                    Argon2idParameterApprovalBlocker.UnlockUxMeasurementMissing,
+                    Argon2idParameterApprovalBlocker.BackgroundForegroundBehaviorMissing,
+                    Argon2idParameterApprovalBlocker.AccessibilityTimeoutReviewMissing,
+                    Argon2idParameterApprovalBlocker.MemoryPressureFailureBehaviorMissing,
+                    Argon2idParameterApprovalBlocker.ProviderBoundaryKnownAnswerVectorsMissing,
+                    Argon2idParameterApprovalBlocker.ProductionKdfImplementationMissing,
+                    Argon2idParameterApprovalBlocker.SecureStorageStillDisabled,
+                    Argon2idParameterApprovalBlocker.MainnetReleaseHardeningMissing,
+                ),
+                futureCalibrationRequirements = setOf(
+                    Argon2idFutureCalibrationRequirement.AndroidManualEvidenceCaptureProtocol,
+                    Argon2idFutureCalibrationRequirement.AndroidSupportedCompatibilityPolicyReview,
+                    Argon2idFutureCalibrationRequirement.AndroidRuntimeProviderPrimitiveChecks,
+                    Argon2idFutureCalibrationRequirement.AndroidRuntimeEntropyPathCheck,
+                    Argon2idFutureCalibrationRequirement.VaultCreationFailClosedWarningReview,
+                    Argon2idFutureCalibrationRequirement.ThermalLoadRepeatabilityChecks,
+                    Argon2idFutureCalibrationRequirement.LockScreenUnlockUxMeasurement,
+                    Argon2idFutureCalibrationRequirement.BackgroundForegroundBehaviorChecks,
+                    Argon2idFutureCalibrationRequirement.AccessibilityTimeoutPolicyReview,
+                    Argon2idFutureCalibrationRequirement.MemoryPressureFailureBehavior,
+                    Argon2idFutureCalibrationRequirement.PublicNonSecretFixturesOnly,
+                ),
             )
         }
 

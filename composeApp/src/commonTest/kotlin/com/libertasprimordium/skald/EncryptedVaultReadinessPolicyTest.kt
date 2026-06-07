@@ -67,6 +67,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateParameterPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidCompatibilityEntropyPolicyModel)
         assertEquals(
             Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
             readiness.argon2idCalibrationPolicy.status,
@@ -74,7 +75,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertFalse(readiness.argon2idCalibrationPolicy.productionKdfEnabled)
         assertFalse(readiness.argon2idCalibrationPolicy.calibrationComplete)
         assertFalse(readiness.argon2idCalibrationPolicy.candidateParameterPolicy.finalProductionParametersApproved)
-        assertFalse(readiness.argon2idCalibrationPolicy.candidateParameterPolicy.androidBaselineCoverageSatisfied)
+        assertTrue(readiness.argon2idCalibrationPolicy.candidateParameterPolicy.androidBaselineCoverageSatisfied)
+        assertFalse(readiness.androidCompatibilityPolicy.minimumCompatibility.lowEndModelTestingRequired)
+        assertFalse(readiness.androidCompatibilityPolicy.minimumCompatibility.midRangeModelTestingRequired)
     }
 
     @Test
@@ -104,6 +107,10 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.ProviderKatContractModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
+            EncryptedVaultRequirement.AndroidCompatibilityEntropyPolicyModeled,
+            EncryptedVaultRequirement.RuntimeCryptoProviderChecksModeled,
+            EncryptedVaultRequirement.RuntimeEntropyChecksModeled,
+            EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
             EncryptedVaultRequirement.AeadImplementationVerified,
             EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed,
@@ -149,6 +156,22 @@ class EncryptedVaultReadinessPolicyTest {
             readiness.requirementStatuses[EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled],
         )
         assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.AndroidCompatibilityEntropyPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.RuntimeCryptoProviderChecksModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.RuntimeEntropyChecksModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled],
+        )
+        assertEquals(
             EncryptedVaultRequirementStatus.Unresolved,
             readiness.requirementStatuses[EncryptedVaultRequirement.KdfParametersCalibrated],
         )
@@ -179,6 +202,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertTrue(android.hardwareBackedWrappingOptional)
         assertFalse(android.osKeyringPrimaryStorageAllowed)
         assertFalse(android.platformWrappingRole.primaryStorage)
+        assertTrue(readiness.androidCompatibilityPolicy.entropySourcePolicy.osCryptographicRandomnessAllowed)
+        assertTrue(readiness.androidCompatibilityPolicy.entropySourcePolicy.hardwareBackedKeyProtectionPreferred)
+        assertFalse(readiness.androidCompatibilityPolicy.entropySourcePolicy.hardwareBackedKeyProtectionRequired)
 
         assertTrue(linux.appControlledVaultIsPrimary)
         assertTrue(linux.passphraseUnlockRequired)

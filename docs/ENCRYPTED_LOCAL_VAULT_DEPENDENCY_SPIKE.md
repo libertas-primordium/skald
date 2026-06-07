@@ -83,7 +83,7 @@ org.bouncycastle.crypto.modes.ChaCha20Poly1305
 
 The desktop artifact probe also loads those class names with `Class.forName()` as a runtime classpath check.
 
-The KAT validation documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md) adds cryptographic correctness evidence for public vectors on desktop JVM and Android runtime. The Android runtime run executed two instrumented tests on Pixel 10 Pro XL / Android 16 after targeting the raw ADB IP:port serial `192.168.1.155:44127`; the earlier install-signature conflict and stale wireless-debugging mDNS target were environment blockers that occurred before the successful run.
+The KAT validation documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md) adds cryptographic correctness evidence for public vectors on desktop JVM and Android runtime. The Android runtime run executed two instrumented tests on Pixel 10 Pro XL / Android 16 after explicit ADB serial targeting; the earlier install-signature conflict and stale wireless-debugging mDNS target were environment blockers that occurred before the successful run. Durable docs intentionally omit the concrete device serial/IP:port.
 
 ## Artifact And Packaging Observations
 
@@ -181,13 +181,13 @@ This dependency spike does not enable:
 
 ## Current Boundary Status
 
-The disabled `VaultCryptoProvider` boundary now exists as Skald-owned common policy code. It models provider-level requests, blockers, redacted diagnostics, record purposes, associated-data context, and KAT requirements. The provider-level KAT contract is modeled separately from dependency-level KAT evidence. A test-only provider harness now exercises that contract in desktop and Android test source sets, but production provider-level KAT execution remains unsatisfied until a future production provider exists. The disabled provider-selection registry now models candidate evidence and selection blockers, but it selects only `DisabledVaultCryptoProvider`. The Argon2id policy also models manual Android calibration evidence capture for future low-end, mid-range, high-end, release-like, and thermal/load parameter review. The disabled boundary and selection registry do not call Tink or Bouncy Castle, do not run KDF/AEAD operations, do not generate keys, do not store keysets, and do not write vault containers or persistence.
+The disabled `VaultCryptoProvider` boundary now exists as Skald-owned common policy code. It models provider-level requests, blockers, redacted diagnostics, record purposes, associated-data context, and KAT requirements. The provider-level KAT contract is modeled separately from dependency-level KAT evidence. A test-only provider harness now exercises that contract in desktop and Android test source sets, but production provider-level KAT execution remains unsatisfied until a future production provider exists. The disabled provider-selection registry now models candidate evidence and selection blockers, but it selects only `DisabledVaultCryptoProvider`. The Argon2id policy also models manual Android calibration evidence capture for high-end, optional low-end/mid-range, release-like, and thermal/load parameter review. Android compatibility/entropy policy is modeled separately: supported OS baseline plus runtime provider/primitive/randomness checks replace exhaustive low-end/mid-range model testing as the compatibility gate, approved cryptographic randomness is required, and hardware-backed key protection remains optional after review. The disabled boundary and selection registry do not call Tink or Bouncy Castle, do not run KDF/AEAD operations, do not generate keys, do not store keysets, and do not write vault containers or persistence.
 
 ## Next Step
 
 Decide whether the next focused branch should:
 
-- collect additional Android baseline Argon2id calibration evidence,
+- define runtime provider/primitive/randomness checks for the supported Android baseline,
 - design a disabled production-provider skeleton with no storage,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - investigate a specific Lazysodium/JNA variant-resolution strategy,

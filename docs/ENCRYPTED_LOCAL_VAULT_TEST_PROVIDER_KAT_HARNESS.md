@@ -81,7 +81,7 @@ The harness does not prove a production provider is correct, because no producti
 
 The provider-selection boundary treats this harness as interface evidence only. It does not allow Tink plus Bouncy Castle to be selected as a production provider.
 
-Manual Android Argon2id calibration capture is a separate evidence boundary documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records future device-class timing context for parameter review; it is not provider KAT evidence and cannot approve a production provider or production KDF.
+Manual Android Argon2id calibration capture is a separate evidence boundary documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records timing context for parameter review; it is not provider KAT evidence and cannot approve a production provider or production KDF. Android compatibility and entropy policy are documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md): low-end and mid-range model testing are no longer hard selection blockers, but supported OS baseline checks, runtime provider/primitive checks, approved cryptographic randomness, and fail-closed vault creation remain required.
 
 ## Current Runtime Evidence
 
@@ -94,7 +94,7 @@ GRADLE_USER_HOME=/tmp/skald-gradle-home ANDROID_HOME=/home/spencer/Android/Sdk .
 Android instrumented test-provider KAT harness execution passed on Pixel 10 Pro XL / Android 16 through:
 
 ```bash
-GRADLE_USER_HOME=/tmp/skald-gradle-home ANDROID_USER_HOME=/tmp/skald-android-user-home ANDROID_HOME=/home/spencer/Android/Sdk ANDROID_SERIAL=192.168.1.155:44127 ./gradlew --no-daemon -Djava.net.preferIPv4Stack=true -Pkotlin.compiler.execution.strategy=in-process -Pandroid.injected.device.serial=192.168.1.155:44127 :composeApp:connectedDebugAndroidTest
+GRADLE_USER_HOME=/tmp/skald-gradle-home ANDROID_USER_HOME=/tmp/skald-android-user-home ANDROID_HOME=/home/spencer/Android/Sdk ANDROID_SERIAL=<serial-or-ip-port> ./gradlew --no-daemon -Djava.net.preferIPv4Stack=true -Pkotlin.compiler.execution.strategy=in-process -Pandroid.injected.device.serial=<serial-or-ip-port> :composeApp:connectedDebugAndroidTest
 ```
 
 Gradle reported:
@@ -136,8 +136,8 @@ The harness does not persist inputs, outputs, ciphertexts, key material, keysets
 
 `EncryptedVaultReadinessPolicy` records a test-only provider KAT harness model as non-production capability. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
 
-`VaultCryptoProviderSelectionRegistry` records the harness evidence separately from production provider KAT evidence. The registry still selects only the disabled provider and blocks production selection on missing production provider implementation, missing production provider-level KAT execution, non-final Argon2id parameters, unresolved Android baseline coverage, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, and mainnet disablement.
+`VaultCryptoProviderSelectionRegistry` records the harness evidence separately from production provider KAT evidence. The registry still selects only the disabled provider and blocks production selection on missing production provider implementation, missing production provider-level KAT execution, non-final Argon2id parameters, missing Android runtime compatibility/randomness checks when Android evidence is unknown, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, and mainnet disablement.
 
 ## Next Step
 
-The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: collect remaining Android baseline Argon2id calibration evidence with the manual capture protocol or design a still-disabled production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from this harness pass.
+The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: define runtime provider/primitive/randomness checks for the supported Android baseline or design a still-disabled production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from this harness pass.

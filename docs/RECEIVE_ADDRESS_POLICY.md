@@ -178,7 +178,7 @@ The existing BDK address derivation validation remains desktop-test-only, opt-in
 
 Secure storage remains disabled/fail-closed. The receive-address policy does not create or store seed material, mnemonic material, descriptor private keys, imported keys, Nostr secrets, backend credentials, Lightning credentials, Cashu material, or backup keys.
 
-Future production seed generation should evaluate platform entropy quality and prefer hardware-backed/platform CSPRNG support where available. Hardware entropy detection is not implemented in this pass.
+Future production seed generation must use OS cryptographic randomness or reviewed crypto-provider randomness, such as kernel/OS CSPRNG-backed randomness through an approved provider/library path on Linux and Android OS cryptographic randomness on Android. It must not use Kotlin/Java/general-purpose random APIs, timestamps, UUID-derived values, or ad hoc PRNGs. Hardware-backed key protection is a separate optional wrapping decision after review, not the source of vault random bytes.
 
 ## Testing
 

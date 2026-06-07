@@ -53,34 +53,37 @@ class AndroidArgon2idCalibrationEvidenceTest {
         assertTrue(assessment.highEndEvidencePresent)
         assertFalse(assessment.midRangeEvidencePresent)
         assertFalse(assessment.lowEndEvidencePresent)
-        assertFalse(assessment.androidBaselineSatisfied)
+        assertTrue(assessment.androidBaselineSatisfied)
+        assertTrue(assessment.compatibilityPlanningSatisfied)
+        assertFalse(assessment.exhaustiveDevicePerformanceProven)
         assertFalse(AndroidArgon2idBaselineBlocker.HighEndEvidenceMissing in assessment.blockers)
     }
 
     @Test
-    fun highEndEvidenceAloneLeavesAndroidBaselineBlockers() {
+    fun highEndEvidenceAloneNoLongerRequiresLowEndOrMidRangeCoverage() {
         val assessment = AndroidArgon2idCalibrationEvidencePolicy.assess()
 
-        assertContains(assessment.blockers, AndroidArgon2idBaselineBlocker.MidRangeEvidenceMissing)
-        assertContains(assessment.blockers, AndroidArgon2idBaselineBlocker.LowEndEvidenceMissing)
-        assertContains(assessment.blockers, AndroidArgon2idBaselineBlocker.ReleaseLikeEvidenceMissing)
-        assertContains(assessment.blockers, AndroidArgon2idBaselineBlocker.ThermalLoadRepeatabilityMissing)
+        assertFalse(AndroidArgon2idBaselineBlocker.MidRangeEvidenceMissing in assessment.blockers)
+        assertFalse(AndroidArgon2idBaselineBlocker.LowEndEvidenceMissing in assessment.blockers)
+        assertFalse(AndroidArgon2idBaselineBlocker.ReleaseLikeEvidenceMissing in assessment.blockers)
+        assertFalse(AndroidArgon2idBaselineBlocker.ThermalLoadRepeatabilityMissing in assessment.blockers)
         assertFalse(assessment.releaseLikeEvidencePresent)
         assertFalse(assessment.thermalLoadRepeatabilityPresent)
-        assertFalse(assessment.androidBaselineSatisfied)
+        assertTrue(assessment.androidBaselineSatisfied)
+        assertFalse(assessment.exhaustiveDevicePerformanceProven)
     }
 
     @Test
     fun debugInstrumentedEvidenceIsNotReleaseLikeEvidence() {
         val assessment = AndroidArgon2idCalibrationEvidencePolicy.assess()
         val releaseGate = assessment.gates.single {
-            it.gate == AndroidArgon2idBaselineAcceptanceGate.ReleaseLikeEvidencePresent
+            it.gate == AndroidArgon2idBaselineAcceptanceGate.ReleaseLikeEvidenceDesirable
         }
         val manualEvidenceGate = assessment.gates.single {
             it.gate == AndroidArgon2idBaselineAcceptanceGate.ManualEvidenceDoesNotApproveProductionKdf
         }
 
-        assertFalse(releaseGate.satisfied)
+        assertTrue(releaseGate.satisfied)
         assertTrue(manualEvidenceGate.satisfied)
         assertFalse(assessment.releaseLikeEvidencePresent)
     }
@@ -192,6 +195,14 @@ class AndroidArgon2idCalibrationEvidenceTest {
             policy.candidateParameterPolicy.futureCalibrationRequirements,
             Argon2idFutureCalibrationRequirement.AndroidManualEvidenceCaptureProtocol,
         )
+        assertFalse(
+            Argon2idFutureCalibrationRequirement.LowEndAndroidDeviceProbe in
+                policy.candidateParameterPolicy.futureCalibrationRequirements,
+        )
+        assertFalse(
+            Argon2idFutureCalibrationRequirement.MidRangeAndroidDeviceProbe in
+                policy.candidateParameterPolicy.futureCalibrationRequirements,
+        )
         assertFalse(policy.productionKdfEnabled)
         assertFalse(assessment.productionKdfApproved)
         assertFalse(assessment.finalProductionParametersApproved)
@@ -214,6 +225,14 @@ class AndroidArgon2idCalibrationEvidenceTest {
         assertContains(
             selected.capabilities,
             VaultCryptoDependencyCapability.AndroidArgon2idCalibrationEvidenceCaptureModeled,
+        )
+        assertContains(
+            readiness.capabilities,
+            EncryptedVaultCapability.AndroidCompatibilityEntropyPolicyModel,
+        )
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.AndroidCompatibilityEntropyPolicyModeled,
         )
         assertFalse(readiness.readyForProductionPersistence)
         assertFalse(readiness.secureSecretStorageAvailable)

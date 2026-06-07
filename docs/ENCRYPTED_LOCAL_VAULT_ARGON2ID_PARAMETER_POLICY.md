@@ -6,7 +6,7 @@ Skald Vault now has a candidate Argon2id parameter policy and manual Android cal
 
 This is design and policy only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy and unresolved Android baseline coverage as production-selection blockers.
+The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy, unknown runtime provider/randomness checks, disabled storage, and missing production provider approval as production-selection blockers.
 
 Runtime behavior remains fail-closed:
 
@@ -31,7 +31,7 @@ The policy uses the probe evidence documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2I
 | Pixel 10 Pro XL / Android 16 | `argon2id-probe-16mib-2p-1lane` | 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19 | 321 ms | fallback/probe floor only |
 | Pixel 10 Pro XL / Android 16 | `argon2id-probe-32mib-3p-1lane` | 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19 | 707 ms | high-end Android candidate evidence |
 
-The Android result covers a high-end device class only. The evidence-capture model records it as debug/instrumented high-end evidence, not release-like evidence. It must not be treated as evidence for low-end Android, mid-range Android, thermal-throttled devices, memory-pressure behavior, or universal Android defaults.
+The Android result covers a high-end device class only. The evidence-capture model records it as debug/instrumented high-end evidence, not release-like evidence. It must not be treated as all-device performance proof, release-like evidence, thermal-throttled behavior, memory-pressure behavior, or production Android default approval.
 
 ## Candidate Tiers
 
@@ -42,13 +42,13 @@ No tier is production-final.
 | Desktop candidate | 64 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19 | Candidate desktop starting point based on current Linux desktop JVM probe evidence. | Not final; not enabled. |
 | High-end Android candidate | 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19 | Candidate high-end Android starting point based on Pixel 10 Pro XL / Android 16 evidence. | Not universal Android policy; not final; not enabled. |
 | Mobile fallback/probe floor | 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19 | Minimum testing/fallback floor only. It is useful for bounded probes and potential degraded-path analysis. | Not preferred production default; not final; not enabled. |
-| Android baseline unresolved | none | Represents missing low-end and mid-range Android coverage. | No universal Android baseline exists. |
+| Android supported-compatibility planning | none | Represents the supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation policy. | Not a production parameter; no mandatory low-end/mid-range model gate. |
 
 The policy treats memory hardness as a security requirement. Unlock latency is a usability constraint that can reject unusable settings, but it must not silently downgrade memory cost without explicit degraded-strength review.
 
-The policy is not sufficient for production provider selection because no tier is final and Android baseline coverage is missing.
+The policy is not sufficient for production provider selection because no tier is final, production KDF execution is absent, runtime provider/randomness checks are not implemented as vault-creation gates, storage is disabled, and no production provider exists.
 
-The manual evidence model can compare future low-end, mid-range, and high-end Android runs using the same field set. It rejects ambiguous memory units, zero or negative elapsed timings, missing repeated-run summaries, and secret-like or personal-device fields. It cannot mark production KDF execution approved.
+The manual evidence model can compare optional future low-end, mid-range, and high-end Android runs using the same field set. It rejects ambiguous memory units, zero or negative elapsed timings, missing repeated-run summaries, and secret-like or personal-device fields. It cannot mark production KDF execution approved.
 
 ## Rejection Rules
 
@@ -70,18 +70,19 @@ scrypt remains a reviewed compatibility fallback only. It is not selected for th
 
 Before any Argon2id parameter can become a production vault unlock policy, Skald needs:
 
-1. Low-end Android device probe.
-2. Mid-range Android device probe.
-3. Thermal/load repeatability checks.
-4. Lock-screen/unlock UX measurement.
-5. Background/foreground behavior checks.
-6. Accessibility and timeout policy review.
-7. Memory-pressure failure behavior review.
-8. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
-9. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
-10. Provider-selection gate review according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md).
-11. Secure storage and secure metadata storage review.
-12. Mainnet release-hardening review before any mainnet relevance.
+1. Supported Android compatibility review, including minimum supported OS policy.
+2. Runtime crypto-provider and primitive checks on supported Android and Linux paths.
+3. Runtime cryptographic-randomness path checks that accept only OS or reviewed provider randomness.
+4. Vault-creation fail-closed warning review.
+5. Lock-screen/unlock UX measurement.
+6. Background/foreground behavior checks.
+7. Accessibility and timeout policy review.
+8. Memory-pressure failure behavior review.
+9. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
+10. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
+11. Provider-selection gate review according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md).
+12. Secure storage and secure metadata storage review.
+13. Mainnet release-hardening review before any mainnet relevance.
 
 These blockers are represented in common policy models. They keep `KdfParametersCalibrated` unresolved and keep production KDF execution disabled.
 
@@ -91,7 +92,7 @@ Future calibration must:
 
 - use public non-secret fixtures only,
 - avoid real passphrases, seed material, private keys, descriptors, labels, notes, addresses, txids, credentials, or wallet metadata,
-- follow the manual Android capture protocol for device class, Android version/API, generic model/manufacturer, build profile, thermal state, foreground/background state, battery/charging state, memory pressure, run count, and repeated timing summaries,
+- follow the manual Android capture protocol for optional device-class evidence, Android version/API, generic model/manufacturer, build profile, thermal state, foreground/background state, battery/charging state, memory pressure, run count, and repeated timing summaries,
 - measure both Android debug and release-like runtime behavior where feasible,
 - include device-class caps and failure behavior,
 - preserve clear user-visible unlock-time tradeoffs,
@@ -107,13 +108,13 @@ Probe timings do not prove side-channel resistance, memory zeroization, wrong-pa
 - desktop candidate: `argon2id-probe-64mib-3p-1lane`,
 - high-end Android candidate: `argon2id-probe-32mib-3p-1lane`,
 - mobile fallback/probe floor: `argon2id-probe-16mib-2p-1lane`,
-- Android baseline: unresolved.
+- Android supported-compatibility planning: modeled separately from production parameter approval.
 
-`EncryptedVaultReadinessPolicy` records the candidate parameter policy and Android calibration evidence-capture model as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
+`EncryptedVaultReadinessPolicy` records the candidate parameter policy, Android calibration evidence-capture model, and Android compatibility/entropy policy as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled. That stack remains candidate-only and is not production-approved.
 
-`VaultCryptoProviderSelectionRegistry` records the candidate policy as evidence only. It keeps Tink plus Bouncy Castle blocked because parameters are not final and Android baseline coverage is unresolved.
+`VaultCryptoProviderSelectionRegistry` records the candidate policy as evidence only. It keeps Tink plus Bouncy Castle blocked because parameters are not final, runtime compatibility/randomness checks are separate gates, storage is disabled, and no production provider exists.
 
 ## Explicit Non-Capabilities
 
@@ -144,4 +145,4 @@ This parameter-policy branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: collect additional Android baseline calibration evidence using the capture protocol, or design a disabled production-provider skeleton that keeps production KDF execution and storage disabled unless explicitly approved. Do not proceed to vault container read/write or persistence from this policy pass.
+The next focused branch should remain design/probe-only: define runtime provider/randomness compatibility checks for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Do not proceed to vault container read/write or persistence from this policy pass.
