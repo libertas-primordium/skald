@@ -2,7 +2,7 @@
 
 ## Status
 
-Skald Vault now has a Skald-owned Argon2id calibration policy model and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
+Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
 
 This is calibration planning and dependency probing only. It does not implement a production KDF, executable `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
@@ -12,6 +12,7 @@ Runtime behavior remains fail-closed:
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
+- The candidate parameter policy is present but not final.
 - Production persistence remains disabled.
 - Production sync remains disabled.
 - Mainnet remains disabled.
@@ -52,6 +53,10 @@ The calibration policy models:
 - target latency bands,
 - candidate rejection reasons,
 - probe-only warnings,
+- candidate desktop/high-end Android/fallback tiers,
+- unresolved Android baseline coverage,
+- final-approval blockers,
+- future calibration requirements,
 - coarse calibration result summaries,
 - production KDF disabled status.
 
@@ -78,6 +83,19 @@ These candidates are explicitly probe-only and are not production recommendation
 | `argon2id-probe-64mib-3p-1lane` | 64 MiB | 3 | 1 | 32 bytes | Argon2 version 19 | Linux desktop JVM, desktop extended probe |
 
 The Android runtime probe intentionally runs only the 16 MiB and 32 MiB rows. The 64 MiB row is modeled for desktop probing and future explicit Android/device-class review; it is not run by default on Android in this branch to avoid unnecessary memory pressure.
+
+## Candidate Parameter Policy
+
+The current candidate policy is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md).
+
+Summary:
+
+- Desktop candidate: 64 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on current Linux desktop JVM evidence.
+- High-end Android candidate: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on Pixel 10 Pro XL / Android 16 evidence.
+- Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19, for testing/fallback analysis only.
+- Android baseline: unresolved because low-end and mid-range Android coverage is missing.
+
+No row is production-final, universal Android policy, or enabled for production KDF execution.
 
 ## Probe Fixture Policy
 
@@ -128,7 +146,7 @@ Before Argon2id can be used for production vault unlock:
 1. Final dependency/provider choice must be explicitly approved.
 2. A Skald-owned executable provider boundary must exist behind disabled gates.
 3. Provider-level Argon2id KATs must pass on Android and Linux desktop.
-4. Parameter calibration must cover supported Android device classes and Linux desktop.
+4. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage.
 5. Memory cost must be treated as a security requirement, not only a UX knob.
 6. Unlock latency targets must be reviewed with user-visible tradeoffs.
 7. Low-memory fallback behavior must fail closed or carry explicit degraded-strength labeling.
@@ -139,9 +157,9 @@ Before Argon2id can be used for production vault unlock:
 
 ## Readiness Alignment
 
-`EncryptedVaultReadinessPolicy` now records that KDF calibration policy is modeled at candidate level, while `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
+`EncryptedVaultReadinessPolicy` now records that KDF calibration policy and candidate parameter policy are modeled at candidate level, while `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy modeled. That does not approve production use. The stack remains candidate-only.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy and candidate parameter policy modeled. That does not approve production use. The stack remains candidate-only.
 
 ## Explicit Non-Capabilities
 
@@ -172,4 +190,4 @@ This calibration branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: review calibration timing evidence and decide whether to design a still-disabled executable provider/KAT scaffold or compare an alternate Argon2id provider before any vault container or persistence implementation.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence or design a still-disabled executable provider/KAT scaffold before any vault container or persistence implementation.

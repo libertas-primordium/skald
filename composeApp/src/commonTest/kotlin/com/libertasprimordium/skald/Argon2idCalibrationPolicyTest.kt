@@ -5,12 +5,18 @@ import com.libertasprimordium.skald.security.Argon2idCalibrationPlatformClass
 import com.libertasprimordium.skald.security.Argon2idCalibrationPolicyResult
 import com.libertasprimordium.skald.security.Argon2idCalibrationRejectionReason
 import com.libertasprimordium.skald.security.Argon2idCalibrationWarning
+import com.libertasprimordium.skald.security.Argon2idDeviceClassEvidenceStatus
+import com.libertasprimordium.skald.security.Argon2idParameterApprovalBlocker
+import com.libertasprimordium.skald.security.Argon2idParameterPolicyStatus
+import com.libertasprimordium.skald.security.Argon2idParameterTierKind
 import com.libertasprimordium.skald.security.Argon2idMemoryCost
 import com.libertasprimordium.skald.security.Argon2idMemoryUnit
 import com.libertasprimordium.skald.security.Argon2idOutputLength
 import com.libertasprimordium.skald.security.Argon2idVersion
 import com.libertasprimordium.skald.security.EncryptedVaultKdfAlgorithm
+import com.libertasprimordium.skald.security.VaultCryptoProviderBlocker
 import com.libertasprimordium.skald.security.commonArgon2idCalibrationPolicy
+import com.libertasprimordium.skald.security.commonDisabledVaultCryptoProviderStatus
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -29,6 +35,12 @@ class Argon2idCalibrationPolicyTest {
         assertEquals(19, policy.version.numericVersion)
         assertFalse(policy.calibrationComplete)
         assertFalse(policy.productionKdfEnabled)
+        assertEquals(
+            Argon2idParameterPolicyStatus.CandidatePolicyPresentNotFinal,
+            policy.candidateParameterPolicy.status,
+        )
+        assertFalse(policy.candidateParameterPolicy.finalProductionParametersApproved)
+        assertFalse(policy.candidateParameterPolicy.productionKdfEnabled)
         assertFalse(policy.acceptsProductionKdf(EncryptedVaultKdfAlgorithm.Argon2id))
         assertIs<Argon2idCalibrationPolicyResult.Rejected>(
             policy.evaluateAlgorithm(EncryptedVaultKdfAlgorithm.Argon2id),
@@ -100,6 +112,60 @@ class Argon2idCalibrationPolicyTest {
     }
 
     @Test
+    fun candidateParameterTiersAreExplicitAndNeverFinal() {
+        val policy = commonArgon2idCalibrationPolicy().candidateParameterPolicy
+        val desktop = policy.tier(Argon2idParameterTierKind.DesktopCandidate)
+        val highEndAndroid = policy.tier(Argon2idParameterTierKind.HighEndAndroidCandidate)
+        val floor = policy.tier(Argon2idParameterTierKind.MobileFallbackProbeFloor)
+        val androidBaseline = policy.tier(Argon2idParameterTierKind.AndroidBaselineUnresolved)
+
+        assertEquals("argon2id-probe-64mib-3p-1lane", desktop.candidateId)
+        assertEquals("64 MiB", desktop.candidate?.memoryCost?.label)
+        assertEquals(3, desktop.candidate?.passes?.value)
+        assertEquals(1, desktop.candidate?.lanes?.value)
+        assertContains(desktop.evidence, Argon2idDeviceClassEvidenceStatus.DesktopJvmProbeMeasured)
+
+        assertEquals("argon2id-probe-32mib-3p-1lane", highEndAndroid.candidateId)
+        assertEquals("32 MiB", highEndAndroid.candidate?.memoryCost?.label)
+        assertContains(
+            highEndAndroid.evidence,
+            Argon2idDeviceClassEvidenceStatus.Pixel10ProXlAndroid16ProbeMeasured,
+        )
+        assertFalse(highEndAndroid.universalAndroidPolicy)
+
+        assertEquals("argon2id-probe-16mib-2p-1lane", floor.candidateId)
+        assertEquals(policy.minimumProbeFloorCandidateId, floor.candidateId)
+        assertEquals("16 MiB", floor.candidate?.memoryCost?.label)
+        assertFalse(floor.finalProductionApproved)
+
+        assertEquals("unresolved", androidBaseline.candidateId)
+        assertContains(
+            androidBaseline.evidence,
+            Argon2idDeviceClassEvidenceStatus.AndroidBaselineCoverageMissing,
+        )
+        assertContains(
+            androidBaseline.evidence,
+            Argon2idDeviceClassEvidenceStatus.LowEndAndroidCoverageMissing,
+        )
+        assertFalse(policy.androidBaselineCoverageSatisfied)
+        assertTrue(policy.tiers.all { !it.finalProductionApproved })
+    }
+
+    @Test
+    fun finalApprovalBlockersKeepCandidatePolicyNonFinal() {
+        val policy = commonArgon2idCalibrationPolicy().candidateParameterPolicy
+
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.LowEndAndroidProbeMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.MidRangeAndroidProbeMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ThermalLoadRepeatabilityMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.UnlockUxMeasurementMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ProviderBoundaryKnownAnswerVectorsMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ProductionKdfImplementationMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.SecureStorageStillDisabled)
+        assertFalse(policy.finalProductionParametersApproved)
+    }
+
+    @Test
     fun lowMemoryAndAndroidProbeWarningsRemainExplicit() {
         val policy = commonArgon2idCalibrationPolicy()
         val lowMemoryAndroid = policy.candidateParameters.single { it.id == "argon2id-probe-16mib-2p-1lane" }
@@ -107,10 +173,26 @@ class Argon2idCalibrationPolicyTest {
 
         assertContains(lowMemoryAndroid.platformClasses, Argon2idCalibrationPlatformClass.AndroidRuntime)
         assertContains(warnings, Argon2idCalibrationWarning.ProbeOnlyNotProductionSetting)
+        assertContains(warnings, Argon2idCalibrationWarning.CandidateParameterPolicyNotFinal)
         assertContains(warnings, Argon2idCalibrationWarning.LowMemoryProbeCandidate)
         assertContains(warnings, Argon2idCalibrationWarning.TooFastSettingWouldBeWeak)
+        assertContains(warnings, Argon2idCalibrationWarning.PixelEvidenceHighEndOnly)
+        assertContains(warnings, Argon2idCalibrationWarning.AndroidBaselineCoverageMissing)
+        assertContains(warnings, Argon2idCalibrationWarning.ThermalLoadRepeatabilityMissing)
         assertContains(warnings, Argon2idCalibrationWarning.AndroidDeviceVariance)
         assertContains(warnings, Argon2idCalibrationWarning.TimingIsNotBenchmark)
         assertContains(warnings, Argon2idCalibrationWarning.MemoryZeroizationUnresolved)
+    }
+
+    @Test
+    fun disabledProviderStillReportsKdfParametersUncalibrated() {
+        val providerStatus = commonDisabledVaultCryptoProviderStatus()
+
+        assertFalse(providerStatus.implementationStatus.canExecuteCrypto)
+        assertFalse(providerStatus.implementationStatus.productionApproved)
+        assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.KdfParametersUncalibrated)
+        assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.ProviderDisabledByPolicy)
+        assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.ProductionPersistenceDisabled)
+        assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.MainnetDisabled)
     }
 }

@@ -59,14 +59,18 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
         assertContains(decision.warnings, EncryptedVaultWarning.ReadinessOnlyNoEncryption)
         assertContains(decision.warnings, EncryptedVaultWarning.KdfCalibrationProbeOnly)
+        assertContains(decision.warnings, EncryptedVaultWarning.KdfCandidateParameterPolicyNotFinal)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DisabledCryptoProviderBoundary)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateParameterPolicyModel)
         assertEquals(
             Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
             readiness.argon2idCalibrationPolicy.status,
         )
         assertFalse(readiness.argon2idCalibrationPolicy.productionKdfEnabled)
         assertFalse(readiness.argon2idCalibrationPolicy.calibrationComplete)
+        assertFalse(readiness.argon2idCalibrationPolicy.candidateParameterPolicy.finalProductionParametersApproved)
+        assertFalse(readiness.argon2idCalibrationPolicy.candidateParameterPolicy.androidBaselineCoverageSatisfied)
     }
 
     @Test
@@ -93,6 +97,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.DependencySelectionReviewed,
             EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
+            EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
             EncryptedVaultRequirement.AeadImplementationVerified,
             EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed,
@@ -124,6 +129,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.KdfCalibrationPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.Unresolved,

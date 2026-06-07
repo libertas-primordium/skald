@@ -25,7 +25,7 @@ The Android instrumented test `VaultCryptoAndroidKatValidationTest` mirrors thos
 
 Earlier connected-device attempts failed before any KAT assertion ran. The first failure was an APK install-signature conflict on a previously installed `com.libertasprimordium.skald` package. A later attempt was blocked by stale wireless-debugging mDNS target selection. The successful rerun is valid because `adb devices -l` reported the raw serial as `device`, `adb -s 192.168.1.155:44127 shell getprop ro.product.model` reported `Pixel 10 Pro XL`, `pm list packages` showed no installed Skald package before the test, and Gradle reported `Starting 2 tests on Pixel 10 Pro XL - 16` followed by `Finished 2 tests on Pixel 10 Pro XL - 16`.
 
-The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A disabled Skald-owned provider boundary now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but it performs no crypto. Argon2id calibration policy/probes are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), but they do not select final production KDF parameters. A future executable provider implementation must pass provider-level KATs before vault storage is considered.
+The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A disabled Skald-owned provider boundary now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but it performs no crypto. Argon2id calibration policy/probes are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but they do not select final production KDF parameters. A future executable provider implementation must pass provider-level KATs before vault storage is considered.
 
 The libsodium comparison documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md) did not add libsodium KATs. Lazysodium Java/Android was rejected at the Android packaging gate before KAT execution, and IonSpin KMP libsodium remains deferred pending an isolated packaging/KAT mapping spike.
 
@@ -105,7 +105,7 @@ Current evidence:
 
 It is not approved for production vault implementation yet. Remaining blockers:
 
-- Final KDF calibration on Android and Linux desktop; current calibration probes are planning evidence only.
+- Final KDF parameter approval on Android and Linux desktop; current calibration probes and candidate tiers are planning evidence only.
 - Executable Skald-owned `VaultCryptoProvider` implementation design; the current boundary is disabled only.
 - Provider-boundary public KATs on Android and desktop runtime through that executable provider.
 - Container/envelope parser and writer design.
@@ -143,4 +143,4 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: review calibration probe evidence and decide whether to add still-disabled executable-provider/KAT scaffolding before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.
+The next focused branch should remain design/probe-only: collect additional Android baseline calibration evidence or decide whether to add still-disabled executable-provider/KAT scaffolding before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.
