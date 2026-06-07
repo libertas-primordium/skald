@@ -10,6 +10,7 @@ Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every production operation and does not pass provider-level KATs.
 - The provider-selection registry documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) selects only `DisabledVaultCryptoProvider`.
+- Runtime randomness/provider checks documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md) remain separate availability evidence and do not approve this harness or any production provider.
 - The test-provider harness lives only in desktop and Android test source sets.
 - Production source still imports no Tink, Bouncy Castle, JCA/JCE, BDK, file, settings, network, or process APIs from the provider boundary.
 - `SecureSecretStorage` remains disabled.
@@ -81,7 +82,7 @@ The harness does not prove a production provider is correct, because no producti
 
 The provider-selection boundary treats this harness as interface evidence only. It does not allow Tink plus Bouncy Castle to be selected as a production provider.
 
-Manual Android Argon2id calibration capture is a separate evidence boundary documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records timing context for parameter review; it is not provider KAT evidence and cannot approve a production provider or production KDF. Android compatibility and entropy policy are documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md): low-end and mid-range model testing are no longer hard selection blockers, but supported OS baseline checks, runtime provider/primitive checks, approved cryptographic randomness, and fail-closed vault creation remain required.
+Manual Android Argon2id calibration capture is a separate evidence boundary documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records timing context for parameter review; it is not provider KAT evidence and cannot approve a production provider or production KDF. Android compatibility and entropy policy are documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md): low-end and mid-range model testing are no longer hard selection blockers, but supported OS baseline checks, runtime provider/primitive checks, approved cryptographic randomness, and fail-closed vault creation remain required. Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md); they generate only small non-secret availability samples in test scope and are not entropy-quality proof or production provider approval.
 
 ## Current Runtime Evidence
 
@@ -136,8 +137,8 @@ The harness does not persist inputs, outputs, ciphertexts, key material, keysets
 
 `EncryptedVaultReadinessPolicy` records a test-only provider KAT harness model as non-production capability. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
 
-`VaultCryptoProviderSelectionRegistry` records the harness evidence separately from production provider KAT evidence. The registry still selects only the disabled provider and blocks production selection on missing production provider implementation, missing production provider-level KAT execution, non-final Argon2id parameters, missing Android runtime compatibility/randomness checks when Android evidence is unknown, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, and mainnet disablement.
+`VaultCryptoProviderSelectionRegistry` records the harness evidence separately from production provider KAT evidence. The registry still selects only the disabled provider and blocks production selection on missing production provider implementation, missing production provider-level KAT execution, non-final Argon2id parameters, missing runtime compatibility/randomness checks when evidence is unknown, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, and mainnet disablement.
 
 ## Next Step
 
-The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: define runtime provider/primitive/randomness checks for the supported Android baseline or design a still-disabled production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from this harness pass.
+The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from this harness pass.

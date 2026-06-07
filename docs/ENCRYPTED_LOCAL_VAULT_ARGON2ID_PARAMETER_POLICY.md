@@ -6,7 +6,7 @@ Skald Vault now has a candidate Argon2id parameter policy and manual Android cal
 
 This is design and policy only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy, unknown runtime provider/randomness checks, disabled storage, and missing production provider approval as production-selection blockers.
+The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy, unknown runtime provider/randomness checks, disabled storage, and missing production provider approval as production-selection blockers.
 
 Runtime behavior remains fail-closed:
 
@@ -46,7 +46,7 @@ No tier is production-final.
 
 The policy treats memory hardness as a security requirement. Unlock latency is a usability constraint that can reject unusable settings, but it must not silently downgrade memory cost without explicit degraded-strength review.
 
-The policy is not sufficient for production provider selection because no tier is final, production KDF execution is absent, runtime provider/randomness checks are not implemented as vault-creation gates, storage is disabled, and no production provider exists.
+The policy is not sufficient for production provider selection because no tier is final, production KDF execution is absent, runtime provider/randomness checks are availability evidence only until reviewed with a production provider, storage is disabled, and no production provider exists.
 
 The manual evidence model can compare optional future low-end, mid-range, and high-end Android runs using the same field set. It rejects ambiguous memory units, zero or negative elapsed timings, missing repeated-run summaries, and secret-like or personal-device fields. It cannot mark production KDF execution approved.
 
@@ -72,7 +72,7 @@ Before any Argon2id parameter can become a production vault unlock policy, Skald
 
 1. Supported Android compatibility review, including minimum supported OS policy.
 2. Runtime crypto-provider and primitive checks on supported Android and Linux paths.
-3. Runtime cryptographic-randomness path checks that accept only OS or reviewed provider randomness.
+3. Runtime cryptographic-randomness path checks that accept only OS or reviewed provider randomness and do not treat tiny non-secret samples as entropy-quality proof.
 4. Vault-creation fail-closed warning review.
 5. Lock-screen/unlock UX measurement.
 6. Background/foreground behavior checks.
@@ -110,7 +110,7 @@ Probe timings do not prove side-channel resistance, memory zeroization, wrong-pa
 - mobile fallback/probe floor: `argon2id-probe-16mib-2p-1lane`,
 - Android supported-compatibility planning: modeled separately from production parameter approval.
 
-`EncryptedVaultReadinessPolicy` records the candidate parameter policy, Android calibration evidence-capture model, and Android compatibility/entropy policy as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
+`EncryptedVaultReadinessPolicy` records the candidate parameter policy, Android calibration evidence-capture model, Android compatibility/entropy policy, and runtime randomness/provider check model as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled. That stack remains candidate-only and is not production-approved.
 
@@ -145,4 +145,4 @@ This parameter-policy branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: define runtime provider/randomness compatibility checks for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Do not proceed to vault container read/write or persistence from this policy pass.
+The next focused branch should remain design/probe-only: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Do not proceed to vault container read/write or persistence from this policy pass.

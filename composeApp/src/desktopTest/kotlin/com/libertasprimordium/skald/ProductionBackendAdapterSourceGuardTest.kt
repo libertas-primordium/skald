@@ -176,6 +176,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val files = listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -223,6 +224,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -368,6 +370,58 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(offenders.isEmpty(), "Crypto imports must stay confined to dependency compile probes: $offenders")
     }
 
+    @Test
+    fun secureRandomImportsStayConfinedToApprovedRuntimeProbesAndBdkValidation() {
+        val root = repositoryRoot()
+        val sourceRoot = File(root, "composeApp/src")
+        val allowedFiles = setOf(
+            "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidRuntimeRandomnessProviderProbeTest.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultRuntimeRandomnessProviderProbeTest.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/BdkRegtestAddressDerivationValidation.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/BdkRegtestElectrumScanAdapter.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/BdkRegtestSeedWalletValidation.kt",
+        )
+        val importPattern = Regex("""import\s+java\.security\.SecureRandom""")
+        val offenders = sourceRoot
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .filter { file ->
+                val relative = file.relativeTo(root).invariantSeparatorsPath
+                relative !in allowedFiles && importPattern.containsMatchIn(file.readText())
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .toList()
+
+        assertTrue(offenders.isEmpty(), "SecureRandom imports must stay in approved test/probe files: $offenders")
+    }
+
+    @Test
+    fun commonSecurityVaultCodeDoesNotUseForbiddenRandomApis() {
+        val root = repositoryRoot()
+        val securityRoot = File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security")
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+kotlin\.random"""),
+            Regex("""import\s+java\.util\.Random"""),
+            Regex("""import\s+java\.util\.UUID"""),
+            Regex("""import\s+java\.security\.SecureRandom"""),
+            Regex("""\bMath\.random\("""),
+            Regex("""\bUUID\.randomUUID\("""),
+            Regex("""\bSystem\.currentTimeMillis\("""),
+            Regex("""\bSystem\.nanoTime\("""),
+        )
+        val offenders = securityRoot
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .toList()
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Common security/vault code must not use forbidden language-level randomness APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),
@@ -380,6 +434,8 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
         )
 
     private fun repositoryRoot(): File =
