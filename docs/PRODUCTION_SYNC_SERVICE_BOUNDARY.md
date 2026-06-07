@@ -6,7 +6,9 @@ Skald Vault now has a Skald-owned production wallet sync service facade over the
 
 The Nodes screen now includes a minimal read-only production sync preflight/status card backed by this facade. Recovery Center and the Privacy Analyzer also consume the same disabled result through status-only models documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). These surfaces show blockers and warnings for selected backend/profile metadata, secure-storage state, secure metadata persistence, receive-address policy, and observation persistence, but they expose no working sync action and perform no connection test.
 
-The facade and UI surface are disabled and fail-closed. They do not enable production BDK sync, Bitcoin Core RPC, Electrum, Esplora, backend connection testing, UTXO scanning, receive UI, address or UTXO persistence, descriptor persistence, secure storage, transaction construction, PSBT handling, signing, broadcasting, public backend defaults, Skald-operated infrastructure, or mainnet.
+The facade and UI surface are disabled and fail-closed. They do not enable production BDK sync, Bitcoin Core RPC, Electrum, Esplora, backend connection testing, UTXO scanning, receive UI, address or UTXO persistence, descriptor persistence, secure storage, production KDF execution, transaction construction, PSBT handling, signing, broadcasting, public backend defaults, Skald-operated infrastructure, or mainnet.
+
+Manual Android Argon2id calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It does not change sync readiness: Android baseline evidence remains incomplete, secure storage and secure metadata persistence remain disabled, and production sync remains unavailable.
 
 ## Source Location
 
@@ -240,4 +242,4 @@ The source guard includes the sync facade, status UI files, and secure metadata 
 
 ## Next Step
 
-The next focused pass should collect additional Android baseline Argon2id calibration evidence or design a still-disabled production-provider skeleton with no storage. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA conflict strategy work remain separate replacement-stack probes if needed. Production backend clients and observation persistence should remain deferred until encrypted vault readiness, provider-selection gates, secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.
+The next focused pass should collect additional Android baseline Argon2id calibration evidence with the manual capture protocol or design a still-disabled production-provider skeleton with no storage. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA conflict strategy work remain separate replacement-stack probes if needed. Production backend clients and observation persistence should remain deferred until encrypted vault readiness, provider-selection gates, secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.

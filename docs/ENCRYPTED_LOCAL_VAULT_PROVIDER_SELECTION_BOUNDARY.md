@@ -6,6 +6,8 @@ Skald Vault now has a disabled provider-selection and registry boundary for the 
 
 This is selection policy only. It does not implement executable provider crypto, production KDF execution, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
+Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). That capture model gives reviewers a consistent way to record future low-end, mid-range, high-end, release-like, and thermal/load evidence, but it does not change provider selection. Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented evidence only, and Android baseline coverage remains unresolved.
+
 The only runtime provider selected by this branch is:
 
 ```text
@@ -128,6 +130,7 @@ The Argon2id candidate policy is explicitly non-final:
 - High-end Android candidate: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19.
 - Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19.
 - Android baseline coverage remains unresolved.
+- Manual Android capture protocol exists, but low-end, mid-range, release-like, and thermal/load evidence are still missing.
 
 The provider-selection boundary treats unresolved Android baseline coverage and non-final KDF parameters as blockers for production selection.
 
@@ -196,4 +199,4 @@ Until then, the provider-selection registry must keep selecting the disabled pro
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: either collect missing Android baseline Argon2id evidence or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: collect missing Android baseline Argon2id evidence with the manual capture protocol or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.

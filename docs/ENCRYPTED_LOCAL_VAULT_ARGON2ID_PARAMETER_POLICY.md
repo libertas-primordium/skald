@@ -2,11 +2,11 @@
 
 ## Status
 
-Skald Vault now has a candidate Argon2id parameter policy for the future app-controlled encrypted local vault unlock KDF.
+Skald Vault now has a candidate Argon2id parameter policy and manual Android calibration evidence-capture model for the future app-controlled encrypted local vault unlock KDF.
 
 This is design and policy only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy and unresolved Android baseline coverage as production-selection blockers.
+The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy and unresolved Android baseline coverage as production-selection blockers.
 
 Runtime behavior remains fail-closed:
 
@@ -31,7 +31,7 @@ The policy uses the probe evidence documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2I
 | Pixel 10 Pro XL / Android 16 | `argon2id-probe-16mib-2p-1lane` | 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19 | 321 ms | fallback/probe floor only |
 | Pixel 10 Pro XL / Android 16 | `argon2id-probe-32mib-3p-1lane` | 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19 | 707 ms | high-end Android candidate evidence |
 
-The Android result covers a high-end device class only. It must not be treated as evidence for low-end Android, mid-range Android, thermal-throttled devices, memory-pressure behavior, or universal Android defaults.
+The Android result covers a high-end device class only. The evidence-capture model records it as debug/instrumented high-end evidence, not release-like evidence. It must not be treated as evidence for low-end Android, mid-range Android, thermal-throttled devices, memory-pressure behavior, or universal Android defaults.
 
 ## Candidate Tiers
 
@@ -47,6 +47,8 @@ No tier is production-final.
 The policy treats memory hardness as a security requirement. Unlock latency is a usability constraint that can reject unusable settings, but it must not silently downgrade memory cost without explicit degraded-strength review.
 
 The policy is not sufficient for production provider selection because no tier is final and Android baseline coverage is missing.
+
+The manual evidence model can compare future low-end, mid-range, and high-end Android runs using the same field set. It rejects ambiguous memory units, zero or negative elapsed timings, missing repeated-run summaries, and secret-like or personal-device fields. It cannot mark production KDF execution approved.
 
 ## Rejection Rules
 
@@ -89,6 +91,7 @@ Future calibration must:
 
 - use public non-secret fixtures only,
 - avoid real passphrases, seed material, private keys, descriptors, labels, notes, addresses, txids, credentials, or wallet metadata,
+- follow the manual Android capture protocol for device class, Android version/API, generic model/manufacturer, build profile, thermal state, foreground/background state, battery/charging state, memory pressure, run count, and repeated timing summaries,
 - measure both Android debug and release-like runtime behavior where feasible,
 - include device-class caps and failure behavior,
 - preserve clear user-visible unlock-time tradeoffs,
@@ -106,7 +109,7 @@ Probe timings do not prove side-channel resistance, memory zeroization, wrong-pa
 - mobile fallback/probe floor: `argon2id-probe-16mib-2p-1lane`,
 - Android baseline: unresolved.
 
-`EncryptedVaultReadinessPolicy` records the candidate parameter policy as reviewed-only. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
+`EncryptedVaultReadinessPolicy` records the candidate parameter policy and Android calibration evidence-capture model as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled. That stack remains candidate-only and is not production-approved.
 
@@ -141,4 +144,4 @@ This parameter-policy branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: either collect additional Android baseline calibration evidence, or design a disabled production-provider skeleton that keeps production KDF execution and storage disabled unless explicitly approved. Do not proceed to vault container read/write or persistence from this policy pass.
+The next focused branch should remain design/probe-only: collect additional Android baseline calibration evidence using the capture protocol, or design a disabled production-provider skeleton that keeps production KDF execution and storage disabled unless explicitly approved. Do not proceed to vault container read/write or persistence from this policy pass.

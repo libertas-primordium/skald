@@ -65,6 +65,8 @@ Because no executable production provider exists, production provider-level KATs
 
 The test-only harness is separate evidence: it runs through `VaultCryptoProvider.validateKat(...)` and returns redacted `VaultCryptoProviderKatEvidence` with `TestHarnessOnly` scope. That proves interface expressiveness and failure-mode coverage, not production provider approval.
 
+Manual Android Argon2id calibration capture is also separate evidence. It is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md) and records device-class timing context for future parameter policy only; it does not satisfy dependency-level KATs, test-provider KATs, production provider KATs, or provider selection.
+
 ## Contract Registry
 
 The provider contract registry models required categories:
@@ -223,4 +225,4 @@ The Android connected run executed the expanded instrumented suite on Pixel 10 P
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: decide whether to design a disabled executable production-provider skeleton with no storage, or collect remaining Android baseline Argon2id calibration evidence before provider implementation. Do not proceed to vault container read/write or persistence from the test harness.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: collect remaining Android baseline Argon2id calibration evidence with the manual capture protocol before provider implementation, or decide whether to design a disabled executable production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from the test harness.

@@ -90,6 +90,8 @@ The test-only provider harness adds a second validation layer above dependency-l
 
 The connected Android test command executed the expanded suite on Pixel 10 Pro XL / Android 16 and reported `Starting 9 tests` and `Finished 9 tests`.
 
+Manual Android Argon2id calibration capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It is parameter-policy evidence capture only, separate from dependency-level KATs, test-provider KATs, and production provider KAT approval.
+
 ## Source Confinement
 
 Crypto imports remain confined to:

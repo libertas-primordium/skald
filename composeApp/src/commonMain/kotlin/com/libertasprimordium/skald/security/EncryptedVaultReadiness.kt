@@ -203,6 +203,10 @@ enum class EncryptedVaultCapability(
     PlatformPolicyModel("platform policy model", enabledInProduction = true),
     Argon2idCalibrationPolicyModel("Argon2id calibration policy model", enabledInProduction = true),
     Argon2idCandidateParameterPolicyModel("Argon2id candidate parameter policy model", enabledInProduction = true),
+    AndroidArgon2idCalibrationEvidenceCaptureModel(
+        "Android Argon2id calibration evidence capture model",
+        enabledInProduction = true,
+    ),
     ProviderKatContractModel("provider-level KAT contract model", enabledInProduction = true),
     ProviderSelectionBoundaryModel("provider selection boundary model", enabledInProduction = true),
     TestOnlyProviderKatHarnessModel("test-only provider KAT harness model", enabledInProduction = false),
@@ -407,7 +411,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
         implementationNote = "Encrypted vault readiness, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, and a disabled provider-selection boundary. Production implementation remains blocked until final KDF calibration across required platform/device classes, production provider implementation, production provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, and a disabled provider-selection boundary. Production implementation remains blocked until final KDF calibration across required platform/device classes, production provider implementation, production provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 
