@@ -54,6 +54,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertFalse(decision.canEnableProductionPersistence)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultImplementationUnavailable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
@@ -61,6 +62,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.warnings, EncryptedVaultWarning.KdfCalibrationProbeOnly)
         assertContains(decision.warnings, EncryptedVaultWarning.KdfCandidateParameterPolicyNotFinal)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DisabledCryptoProviderBoundary)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderSelectionBoundaryModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderKatContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
@@ -98,6 +100,7 @@ class EncryptedVaultReadinessPolicyTest {
         val requiredGates = setOf(
             EncryptedVaultRequirement.DependencySelectionReviewed,
             EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
+            EncryptedVaultRequirement.ProviderSelectionBoundaryModeled,
             EncryptedVaultRequirement.ProviderKatContractModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
@@ -128,6 +131,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.DisabledProviderBoundaryModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ProviderSelectionBoundaryModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

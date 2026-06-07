@@ -6,11 +6,14 @@ Skald Vault now has a Skald-owned provider-level known-answer-test contract for 
 
 A test-only provider KAT harness now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). That harness proves the Skald-owned request/result path can carry the public KDF/AEAD vectors and required negative cases through a test-scope implementation on desktop and Android runtime. It is not a production provider implementation.
 
+Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). The selection registry treats dependency-level KATs and test-only provider KATs as insufficient for production selection and returns only the disabled provider.
+
 This is contract and policy scaffolding only. It does not implement executable provider crypto, production KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every modeled provider operation.
+- `VaultCryptoProviderSelectionRegistry` selects only the disabled provider and blocks all future candidates.
 - Provider-level KAT requirements are modeled, and test-only provider KATs execute in test source sets.
 - Production provider-level KATs still cannot execute because no production provider exists.
 - Dependency-level KAT evidence does not satisfy provider-level KAT approval.
@@ -215,6 +218,8 @@ The Android connected run executed the expanded instrumented suite on Pixel 10 P
 `EncryptedVaultReadinessPolicy` records `ProviderKatContractModeled` as candidate-reviewed only and records the test-only provider harness as non-production capability. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
 
 `VaultCryptoDependencyProbeCatalog` records `ProviderKatContractModeled` and `TestOnlyProviderKatHarnessPresent` for the Tink plus Bouncy Castle candidate, but it also records `ProviderLevelKatExecutionMissing` for the production provider path. The candidate remains dependency-reviewed, provider-contract-modeled, and test-harness-validated only; it is not production-approved.
+
+`VaultCryptoProviderSelectionRegistry` records Tink plus Bouncy Castle as a blocked future candidate. Dependency-level KAT evidence and test-provider KAT evidence are retained as evidence fields but do not satisfy production provider selection.
 
 ## Next Step
 

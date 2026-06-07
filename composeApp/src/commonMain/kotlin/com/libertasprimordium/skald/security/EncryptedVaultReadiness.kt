@@ -134,6 +134,7 @@ data class EncryptedVaultPlatformPolicy(
 enum class EncryptedVaultRequirement(val label: String) {
     DependencySelectionReviewed("dependency selection reviewed"),
     DisabledProviderBoundaryModeled("disabled provider boundary modeled"),
+    ProviderSelectionBoundaryModeled("provider selection boundary modeled"),
     ProviderKatContractModeled("provider-level KAT contract modeled"),
     KdfCalibrationPolicyModeled("KDF calibration policy modeled"),
     KdfCandidateParameterPolicyModeled("candidate KDF parameter policy modeled"),
@@ -166,6 +167,7 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     VaultImplementationUnavailable("vault implementation unavailable"),
     CryptoDependenciesNotSelected("crypto dependencies not selected for implementation"),
     ProductionProviderImplementationUnavailable("production provider implementation unavailable"),
+    ProviderSelectionProductionBlocked("provider selection production blocked"),
     KdfParametersUncalibrated("KDF parameters uncalibrated"),
     AeadDependencyUnverified("AEAD dependency unverified"),
     ProviderKnownAnswerVectorsMissing("provider known-answer vectors missing"),
@@ -202,6 +204,7 @@ enum class EncryptedVaultCapability(
     Argon2idCalibrationPolicyModel("Argon2id calibration policy model", enabledInProduction = true),
     Argon2idCandidateParameterPolicyModel("Argon2id candidate parameter policy model", enabledInProduction = true),
     ProviderKatContractModel("provider-level KAT contract model", enabledInProduction = true),
+    ProviderSelectionBoundaryModel("provider selection boundary model", enabledInProduction = true),
     TestOnlyProviderKatHarnessModel("test-only provider KAT harness model", enabledInProduction = false),
     DisabledCryptoProviderBoundary("disabled crypto provider boundary", enabledInProduction = false),
     FutureEncryptedVaultImplementation("future encrypted vault implementation", enabledInProduction = false),
@@ -338,6 +341,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.ProviderSelectionBoundaryModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
             EncryptedVaultRequirement.ProviderKatContractModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -373,6 +380,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.VaultImplementationUnavailable,
             EncryptedVaultBlockingIssue.CryptoDependenciesNotSelected,
             EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable,
+            EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked,
             EncryptedVaultBlockingIssue.KdfParametersUncalibrated,
             EncryptedVaultBlockingIssue.AeadDependencyUnverified,
             EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing,
@@ -398,8 +406,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness and a disabled provider boundary are modeled, but the vault is not implemented. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, and a non-final Argon2id candidate parameter policy. Production implementation remains blocked until final KDF calibration across required platform/device classes, production provider implementation, production provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, and a disabled provider-selection boundary. Production implementation remains blocked until final KDF calibration across required platform/device classes, production provider implementation, production provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 

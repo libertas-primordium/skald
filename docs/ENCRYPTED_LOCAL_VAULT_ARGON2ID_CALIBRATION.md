@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
 
-This is calibration planning and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), and the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). Production provider-level KAT execution remains unavailable because no production provider exists.
+This is calibration planning and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
 
 Runtime behavior remains fail-closed:
 
@@ -12,6 +12,7 @@ Runtime behavior remains fail-closed:
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
+- `VaultCryptoProviderSelectionRegistry` blocks production selection on non-final parameters and unresolved Android baseline coverage.
 - The candidate parameter policy is present but not final.
 - Production persistence remains disabled.
 - Production sync remains disabled.
@@ -95,7 +96,7 @@ Summary:
 - Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19, for testing/fallback analysis only.
 - Android baseline: unresolved because low-end and mid-range Android coverage is missing.
 
-No row is production-final, universal Android policy, or enabled for production KDF execution.
+No row is production-final, universal Android policy, enabled for production KDF execution, or sufficient for provider selection.
 
 ## Probe Fixture Policy
 
@@ -145,21 +146,24 @@ Before Argon2id can be used for production vault unlock:
 
 1. Final dependency/provider choice must be explicitly approved.
 2. A Skald-owned executable provider boundary must exist behind disabled gates.
-3. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
-4. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage.
-5. Memory cost must be treated as a security requirement, not only a UX knob.
-6. Unlock latency targets must be reviewed with user-visible tradeoffs.
-7. Low-memory fallback behavior must fail closed or carry explicit degraded-strength labeling.
-8. Wrong-passphrase behavior must be tested.
-9. Lock/session lifecycle tests must prove derived key handles are unavailable after lock as far as practical.
-10. Redaction tests must prove no inputs, salts, derived bytes, or provider internals appear in logs, errors, docs, or build history.
-11. Vault container, migration, and corruption tests must pass before persistence.
+3. The provider-selection gates in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) must be satisfied before any non-disabled provider can be selected.
+4. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
+5. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage.
+6. Memory cost must be treated as a security requirement, not only a UX knob.
+7. Unlock latency targets must be reviewed with user-visible tradeoffs.
+8. Low-memory fallback behavior must fail closed or carry explicit degraded-strength labeling.
+9. Wrong-passphrase behavior must be tested.
+10. Lock/session lifecycle tests must prove derived key handles are unavailable after lock as far as practical.
+11. Redaction tests must prove no inputs, salts, derived bytes, or provider internals appear in logs, errors, docs, or build history.
+12. Vault container, migration, and corruption tests must pass before persistence.
 
 ## Readiness Alignment
 
 `EncryptedVaultReadinessPolicy` now records that KDF calibration policy and candidate parameter policy are modeled at candidate level, while `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy and candidate parameter policy modeled. That does not approve production use. The stack remains candidate-only.
+
+`VaultCryptoProviderSelectionRegistry` treats the non-final parameter policy and missing Android baseline coverage as blockers. It selects only the disabled provider.
 
 ## Explicit Non-Capabilities
 

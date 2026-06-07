@@ -9,6 +9,7 @@ This is test scaffolding only. It does not implement a production provider, prod
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every production operation and does not pass provider-level KATs.
+- The provider-selection registry documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) selects only `DisabledVaultCryptoProvider`.
 - The test-provider harness lives only in desktop and Android test source sets.
 - Production source still imports no Tink, Bouncy Castle, JCA/JCE, BDK, file, settings, network, or process APIs from the provider boundary.
 - `SecureSecretStorage` remains disabled.
@@ -78,6 +79,8 @@ The harness proves that the current Skald-owned provider interface can express a
 
 The harness does not prove a production provider is correct, because no production provider exists. It also does not approve vault storage, vault container format, key hierarchy execution, key generation, keyset storage, lock/session lifecycle behavior, migration/corruption handling, or mainnet relevance.
 
+The provider-selection boundary treats this harness as interface evidence only. It does not allow Tink plus Bouncy Castle to be selected as a production provider.
+
 ## Current Runtime Evidence
 
 Desktop JVM test-provider KAT harness execution passed through:
@@ -131,6 +134,8 @@ The harness does not persist inputs, outputs, ciphertexts, key material, keysets
 
 `EncryptedVaultReadinessPolicy` records a test-only provider KAT harness model as non-production capability. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
 
+`VaultCryptoProviderSelectionRegistry` records the harness evidence separately from production provider KAT evidence. The registry still selects only the disabled provider and blocks production selection on missing production provider implementation, missing production provider-level KAT execution, non-final Argon2id parameters, unresolved Android baseline coverage, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, and mainnet disablement.
+
 ## Next Step
 
-The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: decide whether to design a disabled executable production-provider skeleton with no storage, or collect remaining Android baseline Argon2id calibration evidence before provider implementation. Do not proceed to vault container read/write or persistence from this harness pass.
+The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: collect remaining Android baseline Argon2id calibration evidence or design a still-disabled production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from this harness pass.

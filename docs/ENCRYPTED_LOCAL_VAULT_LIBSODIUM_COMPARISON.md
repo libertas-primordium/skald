@@ -14,12 +14,13 @@ Runtime behavior remains fail-closed:
 - Production sync remains disabled.
 - Production secret and sensitive metadata persistence remain disabled.
 - Mainnet remains disabled.
+- The provider-selection registry documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) selects only `DisabledVaultCryptoProvider`.
 
 ## Comparison Result
 
 | Stack | Exact artifacts evaluated | Result | Reason |
 | --- | --- | --- | --- |
-| Tink plus Bouncy Castle split stack | `com.google.crypto.tink:tink-android:1.21.0`, `com.google.crypto.tink:tink:1.21.0`, `org.bouncycastle:bcprov-jdk18on:1.84` | Candidate reviewed; not production-approved | Android and Linux packaging pass in this project, desktop JVM public KATs pass, Android runtime KATs passed on Pixel 10 Pro XL / Android 16, no native library artifacts were introduced by Tink/Bouncy, candidate-level dependency/license/keyset/split-provider review is complete in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md), a disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), provider-level KAT contract requirements are modeled in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), and a test-only provider KAT harness is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). Production executable provider implementation and production provider-level KAT execution remain outstanding. |
+| Tink plus Bouncy Castle split stack | `com.google.crypto.tink:tink-android:1.21.0`, `com.google.crypto.tink:tink:1.21.0`, `org.bouncycastle:bcprov-jdk18on:1.84` | Candidate reviewed; not production-approved and not selectable | Android and Linux packaging pass in this project, desktop JVM public KATs pass, Android runtime KATs passed on Pixel 10 Pro XL / Android 16, no native library artifacts were introduced by Tink/Bouncy, candidate-level dependency/license/keyset/split-provider review is complete in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md), a disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), provider-selection blocking is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md), provider-level KAT contract requirements are modeled in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), and a test-only provider KAT harness is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). Production executable provider implementation, production provider selection, and production provider-level KAT execution remain outstanding. |
 | Lazysodium Java/Android | `com.goterl:lazysodium-java:5.2.0`, `com.goterl:lazysodium-android:5.2.0` | Rejected for the current vault branch | Primitive coverage is attractive, but Android packaging failed before APK output with duplicate `com.sun.jna.*` classes from `jna-5.17.0.aar` and `jna-5.17.0.jar`. The candidate was removed from runtime dependencies. |
 | IonSpin Kotlin Multiplatform libsodium bindings | `com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings:0.9.5`, `com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings-jvm:0.9.5`, `com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings-android:0.9.5` | Deferred after metadata/POM inspection | Promising KMP shape, but this pass did not add it to the build because Kotlin metadata compatibility, native-loader behavior, JNA/resource-loader transitive behavior, Android ABI packaging, Linux `.deb` behavior, and KAT mapping remain unverified. |
 
@@ -48,7 +49,7 @@ No libsodium dependency remains wired into the Gradle runtime after this compari
 
 ### Status
 
-This stack remains a candidate only. It is not production-approved and does not enable storage.
+This stack remains a candidate only. It is not production-approved, is not selected by the provider-selection registry, and does not enable storage.
 
 ## Candidate 2: Lazysodium Java/Android
 
@@ -142,7 +143,7 @@ These are preliminary notes only. Release review would need to include bundled n
 
 ### Status
 
-Rejected for the current vault branch. It remains a possible future investigation target only if a narrower branch can resolve the JNA variant conflict without weakening the build, hiding duplicate classes, or broadening production crypto usage.
+Rejected for the current vault branch and non-selectable in the provider-selection registry. It remains a possible future investigation target only if a narrower branch can resolve the JNA variant conflict without weakening the build, hiding duplicate classes, or broadening production crypto usage.
 
 ## Candidate 3: IonSpin Kotlin Multiplatform Libsodium Bindings
 
@@ -176,17 +177,17 @@ The project did not add IonSpin to the build in this pass. At the metadata/desig
 
 ### Status
 
-Deferred after comparison. A future branch may evaluate it only if the scope is explicitly narrowed to IonSpin packaging, KMP metadata compatibility, native library inventory, and public-vector mapping.
+Deferred after comparison and non-selectable in the provider-selection registry. A future branch may evaluate it only if the scope is explicitly narrowed to IonSpin packaging, KMP metadata compatibility, native library inventory, and public-vector mapping.
 
 ## Readiness Model Alignment
 
 `VaultCryptoDependencyProbeCatalog` now records:
 
-- `TinkBouncyCastleSplit`: `DependencyLicenseAndKeysetReviewCompleteCandidate` with a disabled provider boundary, provider-level KAT contract, test-only provider KAT harness, Argon2id calibration policy/probe-only status, and non-final candidate parameter policy modeled.
+- `TinkBouncyCastleSplit`: `DependencyLicenseAndKeysetReviewCompleteCandidate` with a disabled provider boundary, disabled provider-selection boundary, provider-level KAT contract, test-only provider KAT harness, Argon2id calibration policy/probe-only status, and non-final candidate parameter policy modeled.
 - `LazysodiumJavaAndroid`: `RejectedForCurrentVault`.
 - `IonSpinKmpLibsodium`: `DeferredAfterComparison`.
 
-No candidate is production-approved. All candidates report `implementationEnabled = false`, `storageEnabled = false`, `productionPersistenceEnabled = false`, and `mainnetEnabled = false`.
+No candidate is production-approved or production-selectable. All candidates report `implementationEnabled = false`, `storageEnabled = false`, `productionPersistenceEnabled = false`, and `mainnetEnabled = false`. `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.
 
 The Lazysodium model includes `AndroidDuplicateJnaClasspath`, `NativePackagingUnverified`, `NativePackagingReviewRequired`, `NativeLoaderRuntimeRisk`, `KnownAnswerVectorTestsMissing`, `AndroidKnownAnswerVectorRuntimeMissing`, `AndroidRuntimeProbeMissing`, `ProductionProviderBoundaryMissing`, and `VaultImplementationStillDisabled` blockers.
 
@@ -198,7 +199,7 @@ Before any encrypted vault implementation can use any primitive stack:
 2. Prove Android and Linux package behavior without duplicate classes or hidden native-library conflicts.
 3. Run official public KATs on every runtime that will execute the primitives.
 4. Keep the disabled Skald-owned `VaultCryptoProvider` boundary provider-free and storage-free until executable-provider work is explicitly approved.
-5. Pass provider-level public KATs and required negative/redaction/platform checks through any future executable production provider boundary according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md); the current test-only harness is not production approval.
+5. Pass provider-level public KATs and required negative/redaction/platform checks through any future executable production provider boundary according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md); the current test-only harness is not production approval or provider-selection approval.
 6. Keep explicit nonce handling and key hierarchy inside that reviewed boundary only.
 7. Review Argon2id calibration probe evidence and candidate parameter tiers, collect missing Android baseline evidence, and approve final memory-hard KDF parameter policy per platform/device class.
 8. Define redaction, error, logging, and test-vector policy.

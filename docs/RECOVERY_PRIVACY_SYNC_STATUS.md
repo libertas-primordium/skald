@@ -6,6 +6,8 @@ Skald Vault now surfaces disabled production sync, backend observation, receive-
 
 This is a status integration only. It does not enable production wallet sync, production backend clients, production observation persistence, app receive UI, wallet activation, descriptor persistence, address index persistence, UTXO persistence, secure storage, signing, broadcasting, Nostr parsing, Lightning, Cashu, Payjoin, public endpoint defaults, Skald-operated infrastructure, or mainnet.
 
+The disabled provider-selection boundary documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) reinforces these blockers: only the disabled provider is selected, and disabled secure storage/metadata persistence block any production provider use for wallet recovery or privacy metadata.
+
 ## Source Location
 
 Recovery status models:
@@ -27,6 +29,7 @@ Shared sync request/status source:
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/components/BitcoinWalletSyncStatusUiModel.kt
 ```
 
