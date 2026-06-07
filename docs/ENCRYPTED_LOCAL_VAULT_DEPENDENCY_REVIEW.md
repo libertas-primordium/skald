@@ -19,7 +19,7 @@ Runtime behavior remains fail-closed:
 
 The pinned Tink plus Bouncy Castle split stack remains the only current candidate with Android and Linux compile/package evidence, desktop JVM public-vector KAT evidence, and Android runtime public-vector KAT evidence.
 
-The review does not approve production vault implementation. It changes the candidate status only from "Android runtime KAT-validated candidate" to "dependency, license, and keyset review complete candidate." Later passes added a disabled Skald-owned provider boundary documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md) and Argon2id calibration policy/probes documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), but production implementation remains blocked by final KDF parameter calibration, an executable provider implementation, provider-level vectors, Tink keyset/key-material handling decisions, split-provider invariants, lock/session lifecycle tests, migration/corruption tests, redaction tests, vault container review, production storage review, and mainnet release-hardening review.
+The review does not approve production vault implementation. It changes the candidate status only from "Android runtime KAT-validated candidate" to "dependency, license, and keyset review complete candidate." Later passes added a disabled Skald-owned provider boundary documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), Argon2id calibration policy/probes documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but production implementation remains blocked by final KDF parameter approval, an executable provider implementation, provider-level vectors, Tink keyset/key-material handling decisions, split-provider invariants, lock/session lifecycle tests, migration/corruption tests, redaction tests, vault container review, production storage review, and mainnet release-hardening review.
 
 ## Exact Dependency Inventory
 
@@ -154,7 +154,7 @@ Risks that a future Skald-owned KDF boundary must eliminate:
 
 Future KDF boundary requirements:
 
-- one fixed Argon2id parameter-set type selected by calibration,
+- one fixed Argon2id parameter-set type selected only after final calibration approval,
 - no runtime algorithm selection by general callers,
 - typed output roles for vault key wrapping and key expansion,
 - explicit domain separation and associated-data policy,
@@ -244,7 +244,7 @@ That status does not mean:
 
 ## What Remains Unproven
 
-- Final KDF parameter calibration for Android and Linux desktop. Probe-only policy/harnesses exist, but they are not production settings.
+- Final KDF parameter approval for Android and Linux desktop. Probe-only policy/harnesses and candidate tiers exist, but they are not production settings.
 - Provider-boundary KAT behavior through an executable Skald-owned interface.
 - Whether Tink keysets or raw AEAD key material will be used inside the vault.
 - Whether Tink's production APIs can satisfy Skald's random-nonce record envelope without relying on internal explicit-nonce APIs.
@@ -257,4 +257,4 @@ That status does not mean:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: review Argon2id calibration probe evidence and decide whether to design a still-disabled executable-provider/KAT scaffold or evaluate an alternate KDF provider. Neither step should implement a vault container or enable persistence.
+The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: collect additional Android baseline Argon2id calibration evidence or design a still-disabled executable-provider/KAT scaffold. Neither step should implement a vault container or enable persistence.
