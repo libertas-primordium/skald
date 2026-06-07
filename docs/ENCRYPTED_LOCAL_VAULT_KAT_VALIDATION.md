@@ -25,7 +25,7 @@ The Android instrumented test `VaultCryptoAndroidKatValidationTest` mirrors thos
 
 Earlier connected-device attempts failed before any KAT assertion ran. The first failure was an APK install-signature conflict on a previously installed `com.libertasprimordium.skald` package. A later attempt was blocked by stale wireless-debugging mDNS target selection. The successful rerun is valid because `adb devices -l` reported the raw serial as `device`, `adb -s 192.168.1.155:44127 shell getprop ro.product.model` reported `Pixel 10 Pro XL`, `pm list packages` showed no installed Skald package before the test, and Gradle reported `Starting 2 tests on Pixel 10 Pro XL - 16` followed by `Finished 2 tests on Pixel 10 Pro XL - 16`.
 
-The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A disabled Skald-owned provider boundary now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but it performs no crypto. Argon2id calibration policy/probes are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but they do not select final production KDF parameters. A future executable provider implementation must pass provider-level KATs before vault storage is considered.
+The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A disabled Skald-owned provider boundary now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but it performs no crypto. The provider-level KAT contract that future executable providers must satisfy is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md); it is modeled only and does not pass in this branch. Argon2id calibration policy/probes are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but they do not select final production KDF parameters. A future executable provider implementation must pass provider-level KATs before vault storage is considered.
 
 The libsodium comparison documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md) did not add libsodium KATs. Lazysodium Java/Android was rejected at the Android packaging gate before KAT execution, and IonSpin KMP libsodium remains deferred pending an isolated packaging/KAT mapping spike.
 
@@ -102,12 +102,13 @@ Current evidence:
 - Android KAT test source is present and the test APK assembles.
 - Android runtime KAT execution passed on Pixel 10 Pro XL / Android 16 with the same official public vectors.
 - Candidate-level dependency, license, keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md).
+- Provider-level KAT contract requirements are modeled in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), but no executable provider exists and dependency-level KATs do not satisfy provider approval.
 
 It is not approved for production vault implementation yet. Remaining blockers:
 
 - Final KDF parameter approval on Android and Linux desktop; current calibration probes and candidate tiers are planning evidence only.
 - Executable Skald-owned `VaultCryptoProvider` implementation design; the current boundary is disabled only.
-- Provider-boundary public KATs on Android and desktop runtime through that executable provider.
+- Provider-boundary public KATs and required negative/redaction/platform contract checks on Android and desktop runtime through that executable provider.
 - Container/envelope parser and writer design.
 - Lock/session lifecycle tests.
 - Redaction tests.
@@ -143,4 +144,4 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: collect additional Android baseline calibration evidence or decide whether to add still-disabled executable-provider/KAT scaffolding before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.
+The next focused branch should remain design/probe-only unless explicitly narrowed otherwise: collect additional Android baseline calibration evidence or design a still-disabled executable provider test harness for the provider-level KAT contract before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.

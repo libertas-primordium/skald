@@ -16,7 +16,7 @@ Runtime behavior remains fail-closed:
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
-The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop and Android runtime known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). The candidate dependency, license, Tink keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). The disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md). Argon2id calibration policy and probe-only measurement planning is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and the candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require production provider implementation, provider-level KATs, final KDF parameter approval, container, storage, and release review.
+The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop and Android runtime known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). The candidate dependency, license, Tink keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). The disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), and the provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). Argon2id calibration policy and probe-only measurement planning is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and the candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require production provider implementation, provider-level KAT execution through the Skald-owned boundary, final KDF parameter approval, container, storage, and release review.
 
 ## Decision Summary
 
@@ -35,7 +35,7 @@ The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENC
 | Container format | Versioned vault container with plaintext unlock header and encrypted catalog/records. |
 | Backup/export | Separate encrypted export format with separate backup/export keys and explicit user-selected destination. |
 | Migration/corruption | Fail closed, authenticate every encrypted section, preserve old records until migration succeeds, avoid automatic destructive repair. |
-| Implementation readiness | Not ready. Desktop public KATs pass and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16. Dependency/license/package/keyset/split-provider review is complete at candidate level, a disabled Skald-owned provider boundary exists, and Argon2id calibration policy/probes plus non-final candidate parameter tiers exist, but production provider implementation, final KDF parameter approval, provider-boundary KATs, vault container review, storage review, and lock/session tests are still required before implementation. |
+| Implementation readiness | Not ready. Desktop public KATs pass and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16. Dependency/license/package/keyset/split-provider review is complete at candidate level, a disabled Skald-owned provider boundary exists, a provider-level KAT contract is modeled, and Argon2id calibration policy/probes plus non-final candidate parameter tiers exist. Production provider implementation, final KDF parameter approval, provider-boundary KAT execution, vault container review, storage review, and lock/session tests are still required before implementation. |
 
 ## Candidate Evaluation
 
@@ -273,7 +273,7 @@ Recommended path after the dependency spike:
 1. Keep the runtime fail-closed.
 2. Review the code-level vault readiness/policy models with no storage success paths.
 3. Treat the Tink plus Bouncy Castle split stack as the current dependency-reviewed, desktop and Android runtime KAT-validated candidate, not as an implementation-ready vault stack.
-4. Use the Argon2id calibration policy/probes and candidate parameter tiers as planning evidence only; complete final KDF parameter approval, production provider implementation design, provider-boundary KATs, vault container review, storage review, lock/session lifecycle tests, redaction tests, migration/corruption tests, and source-guard tests.
+4. Use the Argon2id calibration policy/probes, candidate parameter tiers, and provider-level KAT contract as planning evidence only; complete final KDF parameter approval, production provider implementation design, provider-boundary KAT execution, vault container review, storage review, lock/session lifecycle tests, redaction tests, migration/corruption tests, and source-guard tests.
 5. Only after those gates pass, implement a disabled vault container parser/validator.
 
 Algorithm recommendation:
@@ -289,7 +289,7 @@ Platform wrapping: optional; never primary storage
 Dependency recommendation:
 
 ```text
-Current dependency-probe outcome: Tink for XChaCha20-Poly1305 API plus Bouncy Castle for Argon2id API with desktop JVM and Android runtime public KAT validation.
+Current dependency-probe outcome: Tink for XChaCha20-Poly1305 API plus Bouncy Castle for Argon2id API with desktop JVM and Android runtime public KAT validation, plus a separate provider-level KAT contract that remains unexecuted until a future provider exists.
 Preferred long-term dependency outcome: one reviewed dependency stack that provides Argon2id and XChaCha20-Poly1305 on Android and Linux desktop.
 Fallback implementation outcome: Tink for AEAD plus a reviewed Argon2id provider.
 Rejected default outcome: platform-only PBKDF2 plus AES-GCM for the wallet vault.
@@ -553,7 +553,7 @@ Before using the pinned probe dependencies for executable vault code:
 - license/package review remains current for the release artifacts,
 - Android APK and Linux `.deb` packaging implications understood,
 - Android runtime verification completed where required; Android test APK assembly alone is not enough,
-- known-answer test vectors identified and passing through a selected executable provider boundary,
+- known-answer test vectors identified and passing through a selected executable provider boundary according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md),
 - source-guard tests planned,
 - secure metadata and secure secret storage remain fail-closed by default,
 - no production persistence success path exists.
@@ -576,7 +576,7 @@ Before enabling any real persistence:
 
 These remain unresolved and require focused provider-implementation, calibration, or implementation spikes:
 
-- Whether the candidate-reviewed Tink plus Bouncy Castle split stack should become the implementation candidate after final KDF parameter approval, disabled-boundary-to-executable-provider design, provider-boundary tests, vault container review, and storage review, or be replaced by a single reviewed stack such as libsodium/KMP.
+- Whether the candidate-reviewed Tink plus Bouncy Castle split stack should become the implementation candidate after final KDF parameter approval, disabled-boundary-to-executable-provider design, provider-level KAT contract execution, vault container review, and storage review, or be replaced by a single reviewed stack such as libsodium/KMP.
 - Exact production Argon2id parameters remain unresolved; the current candidate tiers are planning evidence only and still need low-end Android, mid-range Android, thermal/load, unlock UX, memory-pressure, and release-mode review.
 - Exact key-expansion primitive for record-class keys.
 - Whether backup/export uses dependency streaming AEAD or a Skald chunked envelope.
