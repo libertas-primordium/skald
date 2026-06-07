@@ -19,7 +19,7 @@ Runtime behavior remains fail-closed:
 
 The pinned Tink plus Bouncy Castle split stack remains the only current candidate with Android and Linux compile/package evidence, desktop JVM public-vector KAT evidence, and Android runtime public-vector KAT evidence.
 
-The review does not approve production vault implementation. It changes the candidate status only from "Android runtime KAT-validated candidate" to "dependency, license, and keyset review complete candidate." Production implementation remains blocked by KDF calibration, a reviewed Skald-owned provider boundary, provider-level vectors, Tink keyset/key-material handling decisions, split-provider invariants, lock/session lifecycle tests, migration/corruption tests, redaction tests, vault container review, production storage review, and mainnet release-hardening review.
+The review does not approve production vault implementation. It changes the candidate status only from "Android runtime KAT-validated candidate" to "dependency, license, and keyset review complete candidate." A later pass added a disabled Skald-owned provider boundary documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but production implementation remains blocked by KDF calibration, an executable provider implementation, provider-level vectors, Tink keyset/key-material handling decisions, split-provider invariants, lock/session lifecycle tests, migration/corruption tests, redaction tests, vault container review, production storage review, and mainnet release-hardening review.
 
 ## Exact Dependency Inventory
 
@@ -186,11 +186,11 @@ The split stack remains acceptable as a candidate after this review because no n
 
 ## Provider-Boundary Prerequisites
 
-A future disabled `VaultCryptoProvider` design branch should remain interface/policy-only unless explicitly approved otherwise.
+The disabled `VaultCryptoProvider` boundary now exists and remains interface/policy-only. Any future executable-provider branch should remain disabled unless explicitly approved otherwise.
 
 Required checklist for that branch:
 
-- define a Skald-owned provider interface with no provider-specific public types,
+- extend the existing disabled Skald-owned provider boundary without provider-specific public types,
 - expose only disabled/fail-closed provider readiness by default,
 - keep production storage and key generation disabled,
 - require candidate public KAT vectors at the provider boundary,
@@ -216,7 +216,7 @@ Provider-boundary non-goals:
 
 ## Current Model Status
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate`.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`.
 
 That status means:
 
@@ -225,14 +225,15 @@ That status means:
 - APK and `.deb` package inventories were inspected,
 - Tink keyset/storage risks were documented,
 - Bouncy Castle Argon2id API risks were documented,
-- split-provider boundary requirements were documented.
+- split-provider boundary requirements were documented,
+- a disabled Skald-owned provider boundary now exists and rejects every operation.
 
 That status does not mean:
 
 - production dependency approval,
 - legal approval,
 - KDF calibration,
-- provider-boundary approval,
+- executable provider-boundary approval,
 - keyset storage approval,
 - encrypted vault implementation,
 - secret or metadata persistence,
@@ -244,7 +245,7 @@ That status does not mean:
 ## What Remains Unproven
 
 - KDF parameter calibration for Android and Linux desktop.
-- Provider-boundary KAT behavior through a Skald-owned interface.
+- Provider-boundary KAT behavior through an executable Skald-owned interface.
 - Whether Tink keysets or raw AEAD key material will be used inside the vault.
 - Whether Tink's production APIs can satisfy Skald's random-nonce record envelope without relying on internal explicit-nonce APIs.
 - Vault container parser/writer design.
@@ -256,4 +257,4 @@ That status does not mean:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: design a disabled Skald-owned `VaultCryptoProvider` boundary with provider-level KAT requirements and no storage success path, or run KDF calibration planning for Argon2id on Android and Linux desktop. Neither step should implement a vault container or enable persistence.
+The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: plan KDF calibration for Argon2id on Android and Linux desktop, or design a still-disabled executable-provider/KAT scaffold that keeps all crypto and storage success paths blocked. Neither step should implement a vault container or enable persistence.

@@ -16,6 +16,7 @@ import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.DisabledSecureWalletMetadataRepository
 import com.libertasprimordium.skald.security.EncryptedVaultAeadAlgorithm
 import com.libertasprimordium.skald.security.EncryptedVaultBlockingIssue
+import com.libertasprimordium.skald.security.EncryptedVaultCapability
 import com.libertasprimordium.skald.security.EncryptedVaultDecisionRole
 import com.libertasprimordium.skald.security.EncryptedVaultImplementationStatus
 import com.libertasprimordium.skald.security.EncryptedVaultKdfAlgorithm
@@ -51,9 +52,12 @@ class EncryptedVaultReadinessPolicyTest {
         assertFalse(readiness.mainnetEnabled)
         assertFalse(decision.canEnableProductionPersistence)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultImplementationUnavailable)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
         assertContains(decision.warnings, EncryptedVaultWarning.ReadinessOnlyNoEncryption)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.DisabledCryptoProviderBoundary)
     }
 
     @Test
@@ -78,8 +82,10 @@ class EncryptedVaultReadinessPolicyTest {
         val readiness = EncryptedVaultReadinessPolicy.disabled()
         val requiredGates = setOf(
             EncryptedVaultRequirement.DependencySelectionReviewed,
+            EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
             EncryptedVaultRequirement.AeadImplementationVerified,
+            EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed,
             EncryptedVaultRequirement.KnownAnswerVectorsIdentified,
             EncryptedVaultRequirement.VaultContainerFormatImplemented,
             EncryptedVaultRequirement.VaultContainerParserImplemented,
@@ -100,6 +106,14 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.DependencySelectionReviewed],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.DisabledProviderBoundaryModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.Absent,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed],
         )
         assertTrue(EncryptedVaultRequirement.SecureSecretStorageAvailable in readiness.requirementStatuses)
         assertEquals(

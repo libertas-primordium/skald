@@ -104,7 +104,7 @@ Recovery/Privacy status consumes Skald-owned models only:
 - secure metadata persistence capability,
 - descriptor wallet metadata settings.
 
-It does not consume BDK types, Electrum/Esplora/Bitcoin Core clients, process handles, sockets, HTTP clients, or platform-native APIs.
+It does not consume BDK types, crypto provider types, Electrum/Esplora/Bitcoin Core clients, process handles, sockets, HTTP clients, or platform-native APIs.
 
 Future production sync must still pass through:
 
@@ -180,4 +180,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should design a narrow disabled crypto-provider boundary with provider-level KAT requirements or complete KDF calibration planning. Isolated libsodium/KMP native-packaging comparison remains a separate replacement-stack option if needed. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
+The next focused pass should complete KDF calibration planning or design still-disabled executable-provider/KAT scaffolding. The disabled provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md) and does not enable crypto or storage. Isolated libsodium/KMP native-packaging comparison remains a separate replacement-stack option if needed. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
