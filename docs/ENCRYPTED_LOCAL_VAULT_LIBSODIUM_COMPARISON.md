@@ -182,7 +182,7 @@ Deferred after comparison. A future branch may evaluate it only if the scope is 
 
 `VaultCryptoDependencyProbeCatalog` now records:
 
-- `TinkBouncyCastleSplit`: `DependencyLicenseAndKeysetReviewCompleteCandidate` with a disabled provider boundary modeled.
+- `TinkBouncyCastleSplit`: `DependencyLicenseAndKeysetReviewCompleteCandidate` with a disabled provider boundary and Argon2id calibration policy/probe-only status modeled.
 - `LazysodiumJavaAndroid`: `RejectedForCurrentVault`.
 - `IonSpinKmpLibsodium`: `DeferredAfterComparison`.
 
@@ -200,7 +200,7 @@ Before any encrypted vault implementation can use any primitive stack:
 4. Keep the disabled Skald-owned `VaultCryptoProvider` boundary provider-free and storage-free until executable-provider work is explicitly approved.
 5. Pass provider-level public KATs through any future executable provider boundary.
 6. Keep explicit nonce handling and key hierarchy inside that reviewed boundary only.
-7. Calibrate Argon2id or the selected memory-hard KDF per platform/device class.
+7. Review Argon2id calibration probe evidence and select final memory-hard KDF parameter policy per platform/device class.
 8. Define redaction, error, logging, and test-vector policy.
 9. Verify lock/session lifecycle and memory-clearing limits.
 10. Verify corruption and migration behavior.
@@ -223,11 +223,11 @@ Before any production secret or sensitive metadata persistence can succeed:
 
 Do not implement the vault on the Lazysodium Java/Android candidate in the current project state. The Android duplicate-JNA packaging failure is a concrete blocker.
 
-Keep the Tink plus Bouncy Castle split stack as the only currently packaged, dependency-reviewed, desktop and Android runtime KAT-validated candidate, but do not promote it to production implementation. Its remaining blockers are KDF calibration, executable provider implementation, provider-level KATs, lock/session lifecycle tests, migration/corruption tests, production storage review, mainnet release-hardening review, and explicit approval for any executable provider work.
+Keep the Tink plus Bouncy Castle split stack as the only currently packaged, dependency-reviewed, desktop and Android runtime KAT-validated candidate, but do not promote it to production implementation. Its remaining blockers are final KDF parameter selection after calibration-probe review, executable provider implementation, provider-level KATs, lock/session lifecycle tests, migration/corruption tests, production storage review, mainnet release-hardening review, and explicit approval for any executable provider work.
 
 The next focused branch should either:
 
-- complete KDF calibration planning,
+- review Argon2id calibration probe evidence and select final KDF parameter policy,
 - design still-disabled executable-provider/KAT scaffolding,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - or investigate a specific Lazysodium/JNA variant-resolution strategy without adding storage or provider implementation.

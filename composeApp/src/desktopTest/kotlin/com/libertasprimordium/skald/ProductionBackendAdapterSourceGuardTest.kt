@@ -246,6 +246,45 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun argon2idCalibrationPolicyDoesNotImportProvidersOrStorage() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/Argon2idCalibrationPolicy.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+com\.ionspin"""),
+            Regex("""import\s+com\.goterl"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bArgon2Parameters\b"""),
+            Regex("""\bInsecureNonceXChaCha20Poly1305\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\bSecretKeySpec\b"""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bjava\.io\b"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(offenders.isEmpty(), "Argon2id calibration policy must stay provider/storage free: $offenders")
+    }
+
+    @Test
     fun vaultCryptoDependenciesArePinnedAndScopedToPlatformProbes() {
         val root = repositoryRoot()
         val catalog = File(root, "gradle/libs.versions.toml").readText()
@@ -284,8 +323,10 @@ class ProductionBackendAdapterSourceGuardTest {
         val sourceRoot = File(root, "composeApp/src")
         val allowedFiles = setOf(
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidArgon2idCalibrationProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidKatValidationTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2idCalibrationProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
         )
         val cryptoImportPattern = Regex(
@@ -312,6 +353,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/Argon2idCalibrationPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt"),
         )

@@ -137,7 +137,8 @@ The readiness model still blocks on:
 
 - production provider implementation unavailable,
 - provider-level KATs missing,
-- KDF calibration missing,
+- final KDF parameter selection missing,
+- KDF calibration policy modeled with probe-only candidates but final parameters not selected,
 - AEAD verification incomplete,
 - vault container format absent,
 - lock/session lifecycle tests absent,
@@ -181,7 +182,7 @@ This boundary does not enable:
 
 Before any future branch implements provider crypto:
 
-1. KDF calibration policy must be selected for Android and Linux desktop.
+1. Argon2id calibration policy/probe evidence must be reviewed and final KDF parameter policy must be selected for Android and Linux desktop.
 2. Provider-level public KATs must be defined through the Skald-owned interface.
 3. Tink keyset versus raw AEAD key material handling must be finalized.
 4. Split-provider invariants must be reviewed again at implementation level.
@@ -191,4 +192,4 @@ Before any future branch implements provider crypto:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: either plan Argon2id KDF calibration for Android and Linux desktop, or add provider-level KAT scaffolding only after a still-disabled provider implementation shape is explicitly approved. Do not proceed to vault container read/write or persistence from this boundary pass.
+The next focused branch should remain design/probe-only: review Argon2id calibration probe evidence and then add provider-level KAT scaffolding only after a still-disabled provider implementation shape is explicitly approved. Do not proceed to vault container read/write or persistence from this boundary pass.
