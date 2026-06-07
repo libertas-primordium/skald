@@ -217,12 +217,20 @@ class ProductionBackendAdapterSourceGuardTest {
 
         assertTrue(catalog.contains("""tink = "1.21.0""""))
         assertTrue(catalog.contains("""bouncycastle = "1.84""""))
+        assertTrue(catalog.contains("""androidx-test-ext-junit = "1.2.1""""))
+        assertTrue(catalog.contains("""androidx-test-runner = "1.6.2""""))
         assertTrue(catalog.contains("""tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tink" }"""))
         assertTrue(catalog.contains("""tink-jvm = { module = "com.google.crypto.tink:tink", version.ref = "tink" }"""))
         assertTrue(catalog.contains("""bouncycastle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }"""))
+        assertTrue(catalog.contains("""androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }"""))
+        assertTrue(catalog.contains("""androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }"""))
         assertTrue(build.contains("implementation(libs.tink.android)"))
         assertTrue(build.contains("implementation(libs.tink.jvm)"))
         assertTrue(build.contains("implementation(libs.bouncycastle.provider)"))
+        assertTrue(build.contains("val androidInstrumentedTest by getting"))
+        assertTrue(build.contains("implementation(libs.androidx.test.ext.junit)"))
+        assertTrue(build.contains("implementation(libs.androidx.test.runner)"))
+        assertTrue(build.contains("""testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner""""))
         assertTrue(build.contains("""excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF""""))
         assertFalse(commonMainBlock.contains("libs.tink"))
         assertFalse(commonMainBlock.contains("libs.bouncycastle"))
@@ -238,6 +246,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val sourceRoot = File(root, "composeApp/src")
         val allowedFiles = setOf(
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidKatValidationTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
         )

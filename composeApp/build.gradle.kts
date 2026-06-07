@@ -54,6 +54,13 @@ kotlin {
                 implementation(libs.kotlin.test)
             }
         }
+
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.androidx.test.ext.junit)
+                implementation(libs.androidx.test.runner)
+            }
+        }
     }
 }
 
@@ -67,6 +74,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0-dev"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")

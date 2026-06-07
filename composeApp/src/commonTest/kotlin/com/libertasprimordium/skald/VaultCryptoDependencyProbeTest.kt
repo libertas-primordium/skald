@@ -13,11 +13,11 @@ import kotlin.test.assertTrue
 
 class VaultCryptoDependencyProbeTest {
     @Test
-    fun selectedSplitStackIsPackagingProbeOnly() {
+    fun selectedSplitStackIsAndroidRuntimeKatValidatedCandidateOnly() {
         val selected = VaultCryptoDependencyProbeCatalog.currentSpikeResults()
             .single { it.candidate == VaultCryptoDependencyCandidate.TinkBouncyCastleSplit }
 
-        assertTrue(selected.status == VaultCryptoDependencyProbeStatus.DesktopKatValidatedCandidate)
+        assertTrue(selected.status == VaultCryptoDependencyProbeStatus.AndroidRuntimeKatValidatedCandidate)
         assertTrue(selected.pinnedArtifacts.contains("com.google.crypto.tink:tink-android:1.21.0"))
         assertTrue(selected.pinnedArtifacts.contains("com.google.crypto.tink:tink:1.21.0"))
         assertTrue(selected.pinnedArtifacts.contains("org.bouncycastle:bcprov-jdk18on:1.84"))
@@ -25,13 +25,27 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.XChaCha20Poly1305ApiPresent)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.DesktopKnownAnswerVectorsPass)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.DesktopRuntimeProbePass)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidKnownAnswerVectorTestsPresent)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidKnownAnswerVectorsPass)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidTestApkAssemblyPass)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.KnownAnswerVectorReviewRequired)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PureJvmNoNativeLibraries)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderStack)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.KnownAnswerVectorTestsMissing))
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeMissing)
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeMissing))
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeUnverified))
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.AndroidRuntimeInstallConflict))
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.DependencyReviewIncomplete)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.LicenseReviewIncomplete)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.KdfCalibrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.RequiresSplitProviderDesign)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProductionProviderBoundaryMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.TinkKeysetStorageHandlingReviewMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.SplitProviderBoundaryReviewMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.LockSessionLifecycleTestsMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.MigrationCorruptionTestsMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProductionStorageReviewMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.MainnetReleaseHardeningReviewMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultImplementationStillDisabled)
         assertFalse(selected.implementationEnabled)
         assertFalse(selected.storageEnabled)

@@ -1,6 +1,8 @@
 [versions]
 agp = "8.9.1"
 androidx-activity-compose = "1.9.1"
+androidx-test-ext-junit = "1.2.1"
+androidx-test-runner = "1.6.2"
 compose = "1.8.2"
 bdk = "2.3.0"
 bouncycastle = "1.84"
@@ -9,6 +11,8 @@ tink = "1.21.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
 bdk-android = { module = "org.bitcoindevkit:bdk-android", version.ref = "bdk" }
 bdk-jvm = { module = "org.bitcoindevkit:bdk-jvm", version.ref = "bdk" }
 bouncycastle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }

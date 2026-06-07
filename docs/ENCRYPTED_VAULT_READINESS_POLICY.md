@@ -27,9 +27,9 @@ The readiness models capture:
 - key hierarchy requirements: separate metadata, secret payload, and backup/export keys,
 - Android platform policy: app-controlled vault primary, optional Keystore wrapping later,
 - Linux platform policy: app-controlled passphrase-first vault primary, no libsecret/KWallet primary storage,
-- readiness gates: dependency selection beyond the desktop KAT-validated candidate, Android runtime KAT validation, KDF calibration, AEAD verification, provider-boundary review, container format, lock/session tests, redaction tests, migration/corruption tests, secure secret storage, secure metadata storage, production persistence approval, and mainnet release approval.
+- readiness gates: dependency selection beyond the probe candidate, provider-boundary KAT validation, KDF calibration, AEAD verification, provider-boundary review, container format, lock/session tests, redaction tests, migration/corruption tests, secure secret storage, secure metadata storage, production persistence approval, and mainnet release approval.
 
-All production gates are unresolved, absent, or disabled by policy. Desktop public KATs now pass for the pinned probe stack, but the readiness decision still returns blockers for vault implementation unavailable, crypto dependencies not selected for implementation beyond the probe, KDF parameters uncalibrated, AEAD dependency unverified, cross-platform/provider-boundary known-answer vectors incomplete, vault container format absent, lock/session lifecycle untested, redaction tests missing, migration/corruption tests missing, secure secret storage disabled, secure metadata storage disabled, production persistence disabled, and mainnet disabled.
+All production gates are unresolved, absent, or disabled by policy. Desktop public KATs pass for the pinned probe stack, and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16 after raw ADB IP:port targeting. The readiness decision still returns blockers for vault implementation unavailable, crypto dependencies not selected for implementation beyond the probe, KDF parameters uncalibrated, AEAD dependency unverified, provider-boundary known-answer vectors incomplete, vault container format absent, lock/session lifecycle untested, redaction tests missing, migration/corruption tests missing, secure secret storage disabled, secure metadata storage disabled, production persistence disabled, and mainnet disabled.
 
 ## Sync Boundary Integration
 
@@ -63,7 +63,8 @@ Tests cover:
 - Linux passphrase-first policy,
 - Android wrapping optional and not primary storage,
 - Tor routing metadata classified as sensitive metadata,
-- desktop public KAT validation for the pinned Tink/Bouncy Castle probe,
+- desktop public KAT validation and Pixel 10 Pro XL / Android 16 runtime KAT validation for the pinned Tink/Bouncy Castle probe,
+- Android instrumented KAT test source, test APK assembly, and Pixel 10 Pro XL / Android 16 runtime execution for the pinned Tink/Bouncy Castle probe,
 - Lazysodium Java/Android rejected for this branch after Android duplicate-JNA packaging failure,
 - IonSpin KMP libsodium deferred after metadata/POM inspection,
 - sync preflight includes the encrypted-vault-unavailable blocker,
@@ -96,4 +97,4 @@ This readiness policy does not enable:
 
 ## Next Step
 
-The next focused pass should add Android runtime KAT validation for the pinned Tink/Bouncy Castle probe, evaluate IonSpin KMP libsodium packaging/KAT mapping in isolation, investigate a specific Lazysodium/JNA variant-resolution strategy, or design the narrow disabled crypto-provider boundary. Do not add production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.
+The next focused pass should complete dependency/license review, KDF calibration planning, Tink keyset/storage handling review, split-provider boundary review, or design the narrow disabled crypto-provider boundary. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA variant-resolution work remain separate replacement-stack probes if needed. Do not add production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.

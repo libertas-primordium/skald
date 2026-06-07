@@ -19,7 +19,7 @@ Runtime behavior remains fail-closed:
 
 | Stack | Exact artifacts evaluated | Result | Reason |
 | --- | --- | --- | --- |
-| Tink plus Bouncy Castle split stack | `com.google.crypto.tink:tink-android:1.21.0`, `com.google.crypto.tink:tink:1.21.0`, `org.bouncycastle:bcprov-jdk18on:1.84` | Remains desktop KAT-validated candidate only | Android and Linux packaging already pass in this project, desktop JVM public KATs pass, and no native library artifacts were introduced. Android runtime KAT validation and provider-boundary review remain outstanding. |
+| Tink plus Bouncy Castle split stack | `com.google.crypto.tink:tink-android:1.21.0`, `com.google.crypto.tink:tink:1.21.0`, `org.bouncycastle:bcprov-jdk18on:1.84` | Remains candidate only | Android and Linux packaging pass in this project, desktop JVM public KATs pass, Android runtime KATs passed on Pixel 10 Pro XL / Android 16, and no native library artifacts were introduced. Earlier connected-device failures were install/device-targeting environment blockers, not KAT failures. Provider-boundary review remains outstanding. |
 | Lazysodium Java/Android | `com.goterl:lazysodium-java:5.2.0`, `com.goterl:lazysodium-android:5.2.0` | Rejected for the current vault branch | Primitive coverage is attractive, but Android packaging failed before APK output with duplicate `com.sun.jna.*` classes from `jna-5.17.0.aar` and `jna-5.17.0.jar`. The candidate was removed from runtime dependencies. |
 | IonSpin Kotlin Multiplatform libsodium bindings | `com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings:0.9.5`, `com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings-jvm:0.9.5`, `com.ionspin.kotlin:multiplatform-crypto-libsodium-bindings-android:0.9.5` | Deferred after metadata/POM inspection | Promising KMP shape, but this pass did not add it to the build because Kotlin metadata compatibility, native-loader behavior, JNA/resource-loader transitive behavior, Android ABI packaging, Linux `.deb` behavior, and KAT mapping remain unverified. |
 
@@ -44,7 +44,7 @@ No libsodium dependency remains wired into the Gradle runtime after this compari
 - Native libraries: no Tink/Bouncy native `.so` entries were observed in the resolved JAR inventory from the earlier dependency spike.
 - Transitives: Tink JVM brings Gson, Protobuf, jsr305, and error-prone annotations; Bouncy Castle is direct.
 - Licensing: Tink declares Apache-2.0; Bouncy Castle declares the Bouncy Castle Licence. Release review is still required.
-- KAT coverage: desktop JVM public vectors pass for RFC 9106 Argon2id and XChaCha draft AEAD_XCHACHA20_POLY1305. Android runtime KAT coverage remains outstanding.
+- KAT coverage: desktop JVM public vectors pass for RFC 9106 Argon2id and XChaCha draft AEAD_XCHACHA20_POLY1305. Android instrumented runtime KATs mirror those vectors and passed on Pixel 10 Pro XL / Android 16 when the raw ADB IP:port serial was targeted.
 
 ### Status
 
@@ -182,7 +182,7 @@ Deferred after comparison. A future branch may evaluate it only if the scope is 
 
 `VaultCryptoDependencyProbeCatalog` now records:
 
-- `TinkBouncyCastleSplit`: `DesktopKatValidatedCandidate`.
+- `TinkBouncyCastleSplit`: `AndroidRuntimeKatValidatedCandidate`.
 - `LazysodiumJavaAndroid`: `RejectedForCurrentVault`.
 - `IonSpinKmpLibsodium`: `DeferredAfterComparison`.
 
@@ -222,10 +222,10 @@ Before any production secret or sensitive metadata persistence can succeed:
 
 Do not implement the vault on the Lazysodium Java/Android candidate in the current project state. The Android duplicate-JNA packaging failure is a concrete blocker.
 
-Keep the Tink plus Bouncy Castle split stack as the only currently packaged, desktop KAT-validated candidate, but do not promote it to production implementation. Its remaining blockers are Android runtime KAT validation, final dependency/license review, KDF calibration, and a narrow disabled provider-boundary design.
+Keep the Tink plus Bouncy Castle split stack as the only currently packaged, desktop and Android runtime KAT-validated candidate, but do not promote it to production implementation. Its remaining blockers are final dependency/license review, KDF calibration, Tink keyset/storage handling review, split-provider boundary review, lock/session lifecycle tests, migration/corruption tests, production storage review, mainnet release-hardening review, and a narrow disabled provider-boundary design.
 
 The next focused branch should either:
 
-- add Android runtime KAT validation for the current Tink/Bouncy candidate,
+- complete Tink/Bouncy dependency/license review, KDF calibration planning, Tink keyset/storage handling review, and split-provider boundary review,
 - evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
 - or investigate a specific Lazysodium/JNA variant-resolution strategy without adding storage or provider implementation.
