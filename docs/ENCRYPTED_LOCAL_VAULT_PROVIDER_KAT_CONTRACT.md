@@ -4,12 +4,15 @@
 
 Skald Vault now has a Skald-owned provider-level known-answer-test contract for the future app-controlled encrypted local vault `VaultCryptoProvider`.
 
+A test-only provider KAT harness now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). That harness proves the Skald-owned request/result path can carry the public KDF/AEAD vectors and required negative cases through a test-scope implementation on desktop and Android runtime. It is not a production provider implementation.
+
 This is contract and policy scaffolding only. It does not implement executable provider crypto, production KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every modeled provider operation.
-- Provider-level KAT requirements are modeled but cannot execute.
+- Provider-level KAT requirements are modeled, and test-only provider KATs execute in test source sets.
+- Production provider-level KATs still cannot execute because no production provider exists.
 - Dependency-level KAT evidence does not satisfy provider-level KAT approval.
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
@@ -33,6 +36,13 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProvide
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderKatContractTest.kt
 ```
 
+Test-only provider harnesses:
+
+```text
+composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTestProviderKatHarnessTest.kt
+composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt
+```
+
 Source guards:
 
 ```text
@@ -48,7 +58,9 @@ Dependency-level KATs prove that selected library APIs can reproduce public vect
 
 Provider-level KATs must prove that a future executable Skald-owned provider boundary uses those libraries correctly. That includes typed parameter selection, associated-data construction, nonce policy, redacted failures, algorithm rejection, platform runtime behavior, and provider-owned result/error mapping.
 
-Because no executable provider exists, provider-level KATs do not pass in this branch. The disabled provider reports `ContractModeledProviderMissing`, `DependencyLevelKatsDoNotSatisfyProviderContract`, and `ExecutableProviderMissing`.
+Because no executable production provider exists, production provider-level KATs do not pass in this branch. The disabled provider reports `ContractModeledProviderMissing`, `DependencyLevelKatsDoNotSatisfyProviderContract`, and `ExecutableProviderMissing`.
+
+The test-only harness is separate evidence: it runs through `VaultCryptoProvider.validateKat(...)` and returns redacted `VaultCryptoProviderKatEvidence` with `TestHarnessOnly` scope. That proves interface expressiveness and failure-mode coverage, not production provider approval.
 
 ## Contract Registry
 
@@ -69,7 +81,7 @@ The code-level registry uses Skald-owned vector identities and categories only. 
 
 ## Positive KAT Requirements
 
-Future provider implementation must pass positive KATs through the Skald-owned interface:
+Future provider implementation must pass positive KATs through the Skald-owned interface. The current test-only harness already exercises these through the same request/result model:
 
 - Argon2id KDF:
   - Argon2id only.
@@ -89,7 +101,7 @@ The current dependency-level vectors are necessary evidence, but they are not pr
 
 ## Negative KAT Requirements
 
-Future provider implementation must also pass negative KATs:
+Future provider implementation must also pass negative KATs. The current test-only harness exercises the following negative categories through the Skald-owned KAT request/result path:
 
 - wrong associated data fails closed,
 - modified ciphertext fails closed,
@@ -167,6 +179,27 @@ This contract does not enable:
 - Skald-operated infrastructure,
 - mainnet.
 
+## Test Harness Evidence
+
+The test-only harness currently covers:
+
+- Argon2id RFC 9106 section 5.3 through `VaultCryptoProvider.validateKat`.
+- XChaCha20-Poly1305 draft appendix A.1 through `VaultCryptoProvider.validateKat`.
+- wrong associated data,
+- modified ciphertext,
+- modified authentication tag,
+- wrong key,
+- unsupported algorithm rejection,
+- production nonce-bypass rejection,
+- caller-provided production nonce rejection,
+- PBKDF2 default rejection,
+- scrypt fallback non-selection,
+- redacted diagnostic/evidence behavior,
+- desktop runtime coverage,
+- Android runtime coverage.
+
+The Android connected run executed the expanded instrumented suite on Pixel 10 Pro XL / Android 16 and reported `Starting 9 tests` and `Finished 9 tests`. This result is test-scope evidence only.
+
 ## Current Model Status
 
 `VaultCryptoProvider.kt` now models:
@@ -176,12 +209,13 @@ This contract does not enable:
 - provider KAT blockers,
 - provider KAT contract status,
 - provider KAT validation result shape,
+- provider KAT request and redacted evidence shape,
 - positive, negative, redaction, platform, nonce-policy, algorithm-policy, and storage-separation requirements.
 
-`EncryptedVaultReadinessPolicy` records `ProviderKatContractModeled` as candidate-reviewed only. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
+`EncryptedVaultReadinessPolicy` records `ProviderKatContractModeled` as candidate-reviewed only and records the test-only provider harness as non-production capability. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
 
-`VaultCryptoDependencyProbeCatalog` records `ProviderKatContractModeled` for the Tink plus Bouncy Castle candidate, but it also records `ProviderLevelKatExecutionMissing`. The candidate remains dependency-reviewed and provider-contract-modeled only; it is not production-approved.
+`VaultCryptoDependencyProbeCatalog` records `ProviderKatContractModeled` and `TestOnlyProviderKatHarnessPresent` for the Tink plus Bouncy Castle candidate, but it also records `ProviderLevelKatExecutionMissing` for the production provider path. The candidate remains dependency-reviewed, provider-contract-modeled, and test-harness-validated only; it is not production-approved.
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: design a still-disabled executable provider test harness that runs provider-level KATs through the Skald-owned interface, without vault container read/write or persistence.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: decide whether to design a disabled executable production-provider skeleton with no storage, or collect remaining Android baseline Argon2id calibration evidence before provider implementation. Do not proceed to vault container read/write or persistence from the test harness.

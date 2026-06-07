@@ -1,10 +1,15 @@
 package com.libertasprimordium.skald
 
 import com.libertasprimordium.skald.security.VaultCryptoKatRequirementStatus
+import com.libertasprimordium.skald.security.VaultCryptoAssociatedDataContext
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatBlocker
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatCategory
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatContractStatus
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatEvidence
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatExecutionScope
+import com.libertasprimordium.skald.security.VaultCryptoProviderKatRequest
 import com.libertasprimordium.skald.security.VaultCryptoProviderKatVectorId
+import com.libertasprimordium.skald.security.VaultCryptoRecordPurpose
 import com.libertasprimordium.skald.security.commonProviderKatContract
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -98,5 +103,34 @@ class VaultCryptoProviderKatContractTest {
         assertTrue(result.dependencyLevelEvidenceOnly)
         assertFalse(result.providerLevelKatsPassed)
         assertFalse(result.canApproveProductionProvider)
+    }
+
+    @Test
+    fun providerKatRequestAndEvidenceUseOnlySkaldOwnedRedactedTypes() {
+        val contract = commonProviderKatContract()
+        val requirement = contract.requirements.single {
+            it.vectorId == VaultCryptoProviderKatVectorId.Argon2idRfc9106Section53
+        }
+        val request = VaultCryptoProviderKatRequest(
+            requirement = requirement,
+            context = VaultCryptoAssociatedDataContext(
+                containerVersion = 1,
+                recordPurpose = VaultCryptoRecordPurpose.ProviderKatTestRecord,
+                recordSchemaVersion = 1,
+                keyVersion = 1,
+            ),
+        )
+        val evidence = VaultCryptoProviderKatEvidence.redacted(
+            vectorId = request.vectorId,
+            category = request.category,
+            executionScope = VaultCryptoProviderKatExecutionScope.TestHarnessOnly,
+        )
+
+        assertEquals(VaultCryptoProviderKatVectorId.Argon2idRfc9106Section53, request.vectorId)
+        assertEquals(VaultCryptoProviderKatCategory.PositiveKdfVector, request.category)
+        assertEquals(VaultCryptoProviderKatExecutionScope.TestHarnessOnly, evidence.executionScope)
+        assertFalse(evidence.executionScope.productionProvider)
+        assertTrue(evidence.toString().contains("REDACTED"))
+        assertFalse(evidence.toString().contains("Argon2idRfc9106Section53"))
     }
 }

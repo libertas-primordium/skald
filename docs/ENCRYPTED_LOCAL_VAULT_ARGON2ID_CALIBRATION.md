@@ -4,11 +4,11 @@
 
 Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
 
-This is calibration planning and dependency probing only. It does not implement a production KDF, executable `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The future provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md) and remains unexecuted.
+This is calibration planning and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), and the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). Production provider-level KAT execution remains unavailable because no production provider exists.
 
 Runtime behavior remains fail-closed:
 
-- `DisabledVaultCryptoProvider` still rejects KDF, AEAD, key generation, keyset storage, and persistence operations.
+- `DisabledVaultCryptoProvider` still rejects KDF, AEAD, key generation, keyset storage, KAT validation, and persistence operations.
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
@@ -38,7 +38,7 @@ composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2
 composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidArgon2idCalibrationProbeTest.kt
 ```
 
-The production policy file imports no Bouncy Castle, Tink, JCA/JCE, BDK, file, settings, network, or process APIs. Bouncy Castle Argon2id execution is confined to the desktop and Android test/probe files above and the existing public-vector KAT tests.
+The production policy file imports no Bouncy Castle, Tink, JCA/JCE, BDK, file, settings, network, or process APIs. Bouncy Castle Argon2id execution is confined to the desktop and Android test/probe files above, the existing public-vector KAT tests, and the test-only provider KAT harness.
 
 ## Policy Model
 
@@ -145,7 +145,7 @@ Before Argon2id can be used for production vault unlock:
 
 1. Final dependency/provider choice must be explicitly approved.
 2. A Skald-owned executable provider boundary must exist behind disabled gates.
-3. Provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
+3. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
 4. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage.
 5. Memory cost must be treated as a security requirement, not only a UX knob.
 6. Unlock latency targets must be reviewed with user-visible tradeoffs.
@@ -190,4 +190,4 @@ This calibration branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence or design a still-disabled executable provider test harness for the provider-level KAT contract before any vault container or persistence implementation.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence or design a disabled production-provider skeleton with no storage before any vault container or persistence implementation.
