@@ -10,7 +10,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/Encrypted
 
 These models are disabled and fail-closed. They encode the vault design and crypto decision record as typed policy state only. They do not implement encryption, generate keys, derive keys, encrypt data, decrypt data, write files, use platform key stores, use OS keyrings, persist secrets, persist sensitive metadata, enable production sync, sign, broadcast, add Tor transport, or enable mainnet.
 
-The dependency spike documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) adds pinned platform-scoped Tink and Bouncy Castle compile probes. Desktop known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). Those probes do not change the readiness result: the vault remains not implemented/not ready, secure secret storage remains unavailable, and secure metadata storage remains disabled.
+The dependency spike documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) adds pinned platform-scoped Tink and Bouncy Castle compile probes. Desktop known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). Those probes do not change the readiness result: the vault remains not implemented/not ready, secure secret storage remains unavailable, and secure metadata storage remains disabled.
 
 ## What The Models Represent
 
@@ -64,6 +64,8 @@ Tests cover:
 - Android wrapping optional and not primary storage,
 - Tor routing metadata classified as sensitive metadata,
 - desktop public KAT validation for the pinned Tink/Bouncy Castle probe,
+- Lazysodium Java/Android rejected for this branch after Android duplicate-JNA packaging failure,
+- IonSpin KMP libsodium deferred after metadata/POM inspection,
 - sync preflight includes the encrypted-vault-unavailable blocker,
 - crypto dependencies pinned and confined to platform dependency probes,
 - no crypto/storage/client/process APIs imported by vault readiness source.
@@ -94,4 +96,4 @@ This readiness policy does not enable:
 
 ## Next Step
 
-The next focused pass should add Android runtime KAT validation for the pinned Tink/Bouncy Castle probe, compare a libsodium/KMP native-packaging option, or design the narrow disabled crypto-provider boundary. Do not add production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.
+The next focused pass should add Android runtime KAT validation for the pinned Tink/Bouncy Castle probe, evaluate IonSpin KMP libsodium packaging/KAT mapping in isolation, investigate a specific Lazysodium/JNA variant-resolution strategy, or design the narrow disabled crypto-provider boundary. Do not add production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.

@@ -226,7 +226,9 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(build.contains("""excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF""""))
         assertFalse(commonMainBlock.contains("libs.tink"))
         assertFalse(commonMainBlock.contains("libs.bouncycastle"))
-        assertFalse(build.contains("libsodium"))
+        assertFalse(catalog.contains("lazysodium"))
+        assertFalse(build.contains("libs.lazysodium"))
+        assertFalse(build.contains("com.goterl"))
         assertFalse(build.contains("com.ionspin"))
     }
 
@@ -240,7 +242,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
         )
         val cryptoImportPattern = Regex(
-            """import\s+(com\.google\.crypto\.tink|org\.bouncycastle|javax\.crypto|java\.security\.KeyStore)""",
+            """import\s+(com\.google\.crypto\.tink|com\.goterl\.lazysodium|org\.bouncycastle|javax\.crypto|java\.security\.KeyStore)""",
         )
         val offenders = sourceRoot
             .walkTopDown()

@@ -6,7 +6,7 @@ This document defines the app-controlled encrypted local vault design that Skald
 
 This is a design document only. It does not implement encryption, persist secrets, persist sensitive metadata, create wallets, activate production sync, construct transactions, sign, broadcast, parse Nostr keys, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
 
-The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). Desktop known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). Those probes add platform-scoped compile/package dependencies and desktop public-vector tests only; they do not add vault storage or make secure storage available.
+The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). Desktop known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). Those probes add platform-scoped compile/package dependencies and desktop public-vector tests only; they do not add vault storage or make secure storage available.
 
 Current runtime behavior remains fail-closed:
 

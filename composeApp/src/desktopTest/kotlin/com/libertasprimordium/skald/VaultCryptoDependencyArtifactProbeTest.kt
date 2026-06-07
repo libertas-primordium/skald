@@ -23,6 +23,17 @@ class VaultCryptoDependencyArtifactProbeTest {
     }
 
     @Test
+    fun desktopClasspathDoesNotCarryRejectedLazysodiumCandidate() {
+        val classpathEntries = System.getProperty("java.class.path")
+            .split(File.pathSeparator)
+
+        assertFalse(
+            classpathEntries.any { it.endsWith("lazysodium-java-5.2.0.jar") },
+            "Rejected Lazysodium candidate must not remain on the desktop runtime classpath.",
+        )
+    }
+
+    @Test
     fun dependencyProbeSourcesDoNotImplementVaultStorage() {
         val root = repositoryRoot()
         val files = listOf(

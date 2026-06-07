@@ -17,18 +17,21 @@ class VaultCryptoDependencyProbeTest {
         val selected = VaultCryptoDependencyProbeCatalog.currentSpikeResults()
             .single { it.candidate == VaultCryptoDependencyCandidate.TinkBouncyCastleSplit }
 
+        assertTrue(selected.status == VaultCryptoDependencyProbeStatus.DesktopKatValidatedCandidate)
         assertTrue(selected.pinnedArtifacts.contains("com.google.crypto.tink:tink-android:1.21.0"))
         assertTrue(selected.pinnedArtifacts.contains("com.google.crypto.tink:tink:1.21.0"))
         assertTrue(selected.pinnedArtifacts.contains("org.bouncycastle:bcprov-jdk18on:1.84"))
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idApiPresent)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.XChaCha20Poly1305ApiPresent)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.DesktopKnownAnswerVectorsPass)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.DesktopRuntimeProbePass)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.KnownAnswerVectorReviewRequired)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PureJvmNoNativeLibraries)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderStack)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.KnownAnswerVectorTestsMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.RequiresSplitProviderDesign)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProductionProviderBoundaryMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultImplementationStillDisabled)
         assertFalse(selected.implementationEnabled)
         assertFalse(selected.storageEnabled)
@@ -37,10 +40,42 @@ class VaultCryptoDependencyProbeTest {
     }
 
     @Test
+    fun libsodiumJavaAndroidComparisonIsRejectedForCurrentVaultPackaging() {
+        val result = VaultCryptoDependencyProbeCatalog.currentSpikeResults()
+            .single { it.candidate == VaultCryptoDependencyCandidate.LazysodiumJavaAndroid }
+
+        assertTrue(result.status == VaultCryptoDependencyProbeStatus.RejectedForCurrentVault)
+        assertTrue(result.pinnedArtifacts.contains("com.goterl:lazysodium-java:5.2.0"))
+        assertTrue(result.pinnedArtifacts.contains("com.goterl:lazysodium-android:5.2.0"))
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.Argon2idApiPresent)
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.XChaCha20Poly1305ApiPresent)
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.SecretStreamApiPresent)
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.SinglePrimitiveFamily)
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.NativeLibrariesRequired)
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.AndroidNativeAbiLibrariesPresent)
+        assertContains(result.capabilities, VaultCryptoDependencyCapability.LinuxNativeLibrariesPresent)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.AndroidDuplicateJnaClasspath)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.NativePackagingUnverified)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.NativePackagingReviewRequired)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.NativeLoaderRuntimeRisk)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.KnownAnswerVectorTestsMissing)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeMissing)
+        assertContains(result.blockers, VaultCryptoDependencyBlocker.ProductionProviderBoundaryMissing)
+        assertFalse(result.implementationEnabled)
+        assertFalse(result.storageEnabled)
+        assertFalse(result.productionPersistenceEnabled)
+        assertFalse(result.readyForVaultImplementation)
+    }
+
+    @Test
     fun otherCandidatesRemainDeferredOrRejected() {
         val results = VaultCryptoDependencyProbeCatalog.currentSpikeResults().associateBy { it.candidate }
 
-        assertTrue(results.getValue(VaultCryptoDependencyCandidate.LibsodiumKmp).status == VaultCryptoDependencyProbeStatus.DeferredPendingReview)
+        assertTrue(results.getValue(VaultCryptoDependencyCandidate.IonSpinKmpLibsodium).status == VaultCryptoDependencyProbeStatus.DeferredAfterComparison)
+        assertContains(
+            results.getValue(VaultCryptoDependencyCandidate.IonSpinKmpLibsodium).blockers,
+            VaultCryptoDependencyBlocker.KotlinMultiplatformCompatibilityUnverified,
+        )
         assertTrue(results.getValue(VaultCryptoDependencyCandidate.BouncyCastleOnly).status == VaultCryptoDependencyProbeStatus.InsufficientAsPrimaryVaultStack)
         assertTrue(results.getValue(VaultCryptoDependencyCandidate.PlatformCryptoOnly).status == VaultCryptoDependencyProbeStatus.RejectedAsDefaultVaultStack)
         assertContains(
