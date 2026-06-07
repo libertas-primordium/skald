@@ -2,9 +2,9 @@
 
 ## Status
 
-Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
+Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, a manual Android calibration evidence-capture model, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
 
-This is calibration planning and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
+This is calibration planning, manual evidence capture, and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
 
 Runtime behavior remains fail-closed:
 
@@ -30,6 +30,7 @@ Policy tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/Argon2idCalibrationPolicyTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/AndroidArgon2idCalibrationEvidenceTest.kt
 ```
 
 Probe-only runtime tests:
@@ -56,6 +57,8 @@ The calibration policy models:
 - probe-only warnings,
 - candidate desktop/high-end Android/fallback tiers,
 - unresolved Android baseline coverage,
+- manual Android device calibration evidence records,
+- Android device class, runtime environment, release-like, thermal/load, and repeated-run sufficiency gates,
 - final-approval blockers,
 - future calibration requirements,
 - coarse calibration result summaries,
@@ -95,6 +98,7 @@ Summary:
 - High-end Android candidate: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on Pixel 10 Pro XL / Android 16 evidence.
 - Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19, for testing/fallback analysis only.
 - Android baseline: unresolved because low-end and mid-range Android coverage is missing.
+- Manual Android evidence capture: modeled for future low-end, mid-range, high-end, release-like, and thermal/load records, but current captured evidence remains high-end debug/instrumented only.
 
 No row is production-final, universal Android policy, enabled for production KDF execution, or sufficient for provider selection.
 
@@ -148,7 +152,7 @@ Before Argon2id can be used for production vault unlock:
 2. A Skald-owned executable provider boundary must exist behind disabled gates.
 3. The provider-selection gates in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) must be satisfied before any non-disabled provider can be selected.
 4. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
-5. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage.
+5. Parameter calibration must cover supported Android device classes and Linux desktop, including low-end and mid-range Android coverage, using the capture discipline in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md).
 6. Memory cost must be treated as a security requirement, not only a UX knob.
 7. Unlock latency targets must be reviewed with user-visible tradeoffs.
 8. Low-memory fallback behavior must fail closed or carry explicit degraded-strength labeling.
@@ -194,4 +198,4 @@ This calibration branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence or design a disabled production-provider skeleton with no storage before any vault container or persistence implementation.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: collect additional Android baseline calibration evidence with the manual capture protocol, or design a disabled production-provider skeleton with no storage before any vault container or persistence implementation.

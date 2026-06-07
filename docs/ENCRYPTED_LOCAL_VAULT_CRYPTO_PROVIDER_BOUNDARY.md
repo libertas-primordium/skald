@@ -131,6 +131,8 @@ The disabled provider marks positive public-vector requirements as `DependencyLe
 
 The test-only provider harness runs the public positive vectors and required negative cases through `VaultCryptoProvider.validateKat(...)` in desktop and Android test source sets. Returned evidence is redacted and scoped as `TestHarnessOnly`. This proves the interface can carry the required checks; it does not approve production provider implementation or storage.
 
+Manual Android Argon2id calibration capture is documented separately in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It informs future parameter policy review only; it does not add provider crypto, run provider-level KATs, or make any provider selectable.
+
 ## Provider Type Confinement
 
 The provider boundary exposes no:
@@ -210,4 +212,4 @@ Before any future branch implements provider crypto:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: either collect additional Android baseline Argon2id calibration evidence or design a disabled production-provider skeleton with no storage, without vault container read/write or persistence.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: collect additional Android baseline Argon2id calibration evidence with the manual capture protocol or design a disabled production-provider skeleton with no storage, without vault container read/write or persistence.

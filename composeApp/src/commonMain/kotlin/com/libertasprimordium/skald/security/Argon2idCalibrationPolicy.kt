@@ -111,6 +111,7 @@ enum class Argon2idParameterApprovalBlocker(val label: String) {
 }
 
 enum class Argon2idFutureCalibrationRequirement(val label: String) {
+    AndroidManualEvidenceCaptureProtocol("manual Android calibration evidence capture protocol"),
     LowEndAndroidDeviceProbe("low-end Android device probe"),
     MidRangeAndroidDeviceProbe("mid-range Android device probe"),
     ThermalLoadRepeatabilityChecks("thermal/load repeatability checks"),
@@ -311,6 +312,543 @@ data class Argon2idCalibrationResultSummary(
 ) {
     val safeSummary: String =
         "ARGON2ID_CALIBRATION_PROBE candidate=$candidateId platform=${platformClass.name} elapsedMs=$elapsedMillis persisted=$persisted finalProductionSetting=$finalProductionSetting"
+}
+
+enum class AndroidArgon2idDeviceClass(val label: String) {
+    LowEnd("low-end Android"),
+    MidRange("mid-range Android"),
+    HighEnd("high-end Android"),
+    Unknown("unknown Android device class"),
+}
+
+enum class AndroidArgon2idBuildProfile(
+    val label: String,
+    val releaseLikeEvidence: Boolean,
+) {
+    DebugInstrumented("debug/instrumented test runtime", releaseLikeEvidence = false),
+    ReleaseLikeManual("release-like manual runtime", releaseLikeEvidence = true),
+    Unknown("unknown build profile", releaseLikeEvidence = false),
+}
+
+enum class AndroidArgon2idCalibrationEvidenceRejectionReason(val label: String) {
+    MissingRequiredField("missing required field"),
+    InvalidApiLevel("invalid Android API level"),
+    AmbiguousMemoryUnit("ambiguous memory unit"),
+    MemoryUnitMustBeMib("Android evidence memory must be recorded in MiB"),
+    InvalidElapsedMillis("invalid elapsed milliseconds"),
+    InvalidRunCount("invalid run count"),
+    InvalidRepeatedTiming("invalid repeated-run timing summary"),
+    InvalidCalibrationRun("invalid calibration run"),
+    SecretLikeFieldRejected("secret-like or personal-device field rejected"),
+}
+
+enum class AndroidArgon2idBaselineAcceptanceGate(val label: String) {
+    HighEndEvidencePresent("high-end Android evidence present"),
+    MidRangeEvidencePresent("mid-range Android evidence present"),
+    LowEndEvidencePresent("low-end Android evidence present"),
+    ReleaseLikeEvidencePresent("release-like Android evidence present"),
+    ThermalLoadRepeatabilityPresent("thermal/load repeatability evidence present"),
+    PublicNonSecretFixturesOnly("public non-secret fixtures only"),
+    ManualEvidenceDoesNotApproveProductionKdf("manual evidence does not approve production KDF"),
+}
+
+enum class AndroidArgon2idBaselineBlocker(val label: String) {
+    HighEndEvidenceMissing("high-end Android evidence missing"),
+    MidRangeEvidenceMissing("mid-range Android evidence missing"),
+    LowEndEvidenceMissing("low-end Android evidence missing"),
+    ReleaseLikeEvidenceMissing("release-like Android evidence missing"),
+    ThermalLoadRepeatabilityMissing("thermal/load repeatability evidence missing"),
+    NonSecretFixtureEvidenceMissing("public non-secret fixture evidence missing"),
+    ManualEvidenceCannotApproveProductionKdf("manual evidence cannot approve production KDF"),
+}
+
+sealed interface AndroidArgon2idCalibrationEvidenceResult<out T> {
+    data class Accepted<T>(
+        val value: T,
+    ) : AndroidArgon2idCalibrationEvidenceResult<T>
+
+    data class Rejected(
+        val reason: AndroidArgon2idCalibrationEvidenceRejectionReason,
+        val safeDetail: String,
+    ) : AndroidArgon2idCalibrationEvidenceResult<Nothing>
+}
+
+class AndroidArgon2idRuntimeEnvironment private constructor(
+    val androidVersion: String,
+    val apiLevel: Int,
+    val manufacturer: String?,
+    val model: String?,
+    val buildProfile: AndroidArgon2idBuildProfile,
+    val thermalStateNote: String,
+    val foregroundBackgroundNote: String,
+    val batteryChargingNote: String,
+    val memoryPressureNote: String,
+) {
+    val releaseLikeEvidence: Boolean
+        get() = buildProfile.releaseLikeEvidence
+
+    companion object {
+        fun recorded(
+            androidVersion: String,
+            apiLevel: Int,
+            manufacturer: String?,
+            model: String?,
+            buildProfile: AndroidArgon2idBuildProfile,
+            thermalStateNote: String,
+            foregroundBackgroundNote: String,
+            batteryChargingNote: String,
+            memoryPressureNote: String,
+        ): AndroidArgon2idCalibrationEvidenceResult<AndroidArgon2idRuntimeEnvironment> {
+            val fields = listOf(
+                "androidVersion" to androidVersion,
+                "manufacturer" to manufacturer,
+                "model" to model,
+                "thermalStateNote" to thermalStateNote,
+                "foregroundBackgroundNote" to foregroundBackgroundNote,
+                "batteryChargingNote" to batteryChargingNote,
+                "memoryPressureNote" to memoryPressureNote,
+            )
+            fields.firstOrNull { (name, value) ->
+                name != "manufacturer" && name != "model" && value.isNullOrBlank()
+            }?.let { (name, _) ->
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.MissingRequiredField,
+                    safeDetail = "Android calibration evidence field '$name' must be recorded.",
+                )
+            }
+            if (apiLevel <= 0) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidApiLevel,
+                    safeDetail = "Android calibration evidence API level must be positive.",
+                )
+            }
+            val secretLike = fields.firstOrNull { (_, value) ->
+                value != null && value.containsAndroidCalibrationSecretLikeText()
+            }
+            if (secretLike != null) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.SecretLikeFieldRejected,
+                    safeDetail = "Android calibration evidence must not record secrets, labels, credentials, addresses, serials, or personal device identifiers.",
+                )
+            }
+            return AndroidArgon2idCalibrationEvidenceResult.Accepted(
+                AndroidArgon2idRuntimeEnvironment(
+                    androidVersion = androidVersion.trim(),
+                    apiLevel = apiLevel,
+                    manufacturer = manufacturer?.trim()?.ifEmpty { null },
+                    model = model?.trim()?.ifEmpty { null },
+                    buildProfile = buildProfile,
+                    thermalStateNote = thermalStateNote.trim(),
+                    foregroundBackgroundNote = foregroundBackgroundNote.trim(),
+                    batteryChargingNote = batteryChargingNote.trim(),
+                    memoryPressureNote = memoryPressureNote.trim(),
+                ),
+            )
+        }
+    }
+}
+
+class AndroidArgon2idCalibrationRunResult private constructor(
+    val version: Argon2idVersion,
+    val memoryCost: Argon2idMemoryCost,
+    val passes: Argon2idPassCount,
+    val lanes: Argon2idLaneCount,
+    val outputLength: Argon2idOutputLength,
+    val elapsedMillis: Long,
+    val runCount: Int,
+    val minElapsedMillis: Long?,
+    val medianElapsedMillis: Long?,
+    val maxElapsedMillis: Long?,
+    val failureReason: String?,
+) {
+    val memoryMiB: Int
+        get() = memoryCost.kib / Argon2idMemoryUnit.MiB.kibMultiplier
+
+    val successful: Boolean
+        get() = failureReason == null
+
+    companion object {
+        fun recorded(
+            memoryLabel: String,
+            passes: Int,
+            lanes: Int,
+            outputBytes: Int,
+            elapsedMillis: Long,
+            runCount: Int,
+            minElapsedMillis: Long? = null,
+            medianElapsedMillis: Long? = null,
+            maxElapsedMillis: Long? = null,
+            failureReason: String? = null,
+            version: Argon2idVersion = Argon2idVersion.Version19,
+        ): AndroidArgon2idCalibrationEvidenceResult<AndroidArgon2idCalibrationRunResult> {
+            val memory = when (val result = Argon2idMemoryCost.fromExplicitLabel(memoryLabel)) {
+                is Argon2idCalibrationPolicyResult.Accepted -> result.value
+                is Argon2idCalibrationPolicyResult.Rejected -> {
+                    return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                        reason = AndroidArgon2idCalibrationEvidenceRejectionReason.AmbiguousMemoryUnit,
+                        safeDetail = "Android Argon2id calibration evidence must record memory with an explicit MiB unit.",
+                    )
+                }
+            }
+            if (!memoryLabel.trim().endsWith("MiB")) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.MemoryUnitMustBeMib,
+                    safeDetail = "Android Argon2id calibration evidence must use MiB, not KiB.",
+                )
+            }
+            return recorded(
+                memoryCost = memory,
+                passes = passes,
+                lanes = lanes,
+                outputBytes = outputBytes,
+                elapsedMillis = elapsedMillis,
+                runCount = runCount,
+                minElapsedMillis = minElapsedMillis,
+                medianElapsedMillis = medianElapsedMillis,
+                maxElapsedMillis = maxElapsedMillis,
+                failureReason = failureReason,
+                version = version,
+            )
+        }
+
+        fun recorded(
+            memoryMiB: Int,
+            passes: Int,
+            lanes: Int,
+            outputBytes: Int,
+            elapsedMillis: Long,
+            runCount: Int,
+            minElapsedMillis: Long? = null,
+            medianElapsedMillis: Long? = null,
+            maxElapsedMillis: Long? = null,
+            failureReason: String? = null,
+            version: Argon2idVersion = Argon2idVersion.Version19,
+        ): AndroidArgon2idCalibrationEvidenceResult<AndroidArgon2idCalibrationRunResult> {
+            val memory = when (val result = Argon2idMemoryCost.mib(memoryMiB)) {
+                is Argon2idCalibrationPolicyResult.Accepted -> result.value
+                is Argon2idCalibrationPolicyResult.Rejected -> {
+                    return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                        reason = AndroidArgon2idCalibrationEvidenceRejectionReason.AmbiguousMemoryUnit,
+                        safeDetail = "Android Argon2id calibration evidence memory must be a positive MiB value.",
+                    )
+                }
+            }
+            return recorded(
+                memoryCost = memory,
+                passes = passes,
+                lanes = lanes,
+                outputBytes = outputBytes,
+                elapsedMillis = elapsedMillis,
+                runCount = runCount,
+                minElapsedMillis = minElapsedMillis,
+                medianElapsedMillis = medianElapsedMillis,
+                maxElapsedMillis = maxElapsedMillis,
+                failureReason = failureReason,
+                version = version,
+            )
+        }
+
+        private fun recorded(
+            memoryCost: Argon2idMemoryCost,
+            passes: Int,
+            lanes: Int,
+            outputBytes: Int,
+            elapsedMillis: Long,
+            runCount: Int,
+            minElapsedMillis: Long?,
+            medianElapsedMillis: Long?,
+            maxElapsedMillis: Long?,
+            failureReason: String?,
+            version: Argon2idVersion,
+        ): AndroidArgon2idCalibrationEvidenceResult<AndroidArgon2idCalibrationRunResult> {
+            val passCount = when (val result = Argon2idPassCount.of(passes)) {
+                is Argon2idCalibrationPolicyResult.Accepted -> result.value
+                is Argon2idCalibrationPolicyResult.Rejected -> {
+                    return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                        reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidCalibrationRun,
+                        safeDetail = "Android Argon2id calibration evidence pass count must be positive.",
+                    )
+                }
+            }
+            val laneCount = when (val result = Argon2idLaneCount.of(lanes)) {
+                is Argon2idCalibrationPolicyResult.Accepted -> result.value
+                is Argon2idCalibrationPolicyResult.Rejected -> {
+                    return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                        reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidCalibrationRun,
+                        safeDetail = "Android Argon2id calibration evidence lane count must be positive.",
+                    )
+                }
+            }
+            val outputLength = when (val result = Argon2idOutputLength.ofBytes(outputBytes)) {
+                is Argon2idCalibrationPolicyResult.Accepted -> result.value
+                is Argon2idCalibrationPolicyResult.Rejected -> {
+                    return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                        reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidCalibrationRun,
+                        safeDetail = "Android Argon2id calibration evidence output length must be at least 32 bytes.",
+                    )
+                }
+            }
+            if (elapsedMillis <= 0) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidElapsedMillis,
+                    safeDetail = "Android Argon2id calibration evidence elapsed time must be positive.",
+                )
+            }
+            if (runCount <= 0) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidRunCount,
+                    safeDetail = "Android Argon2id calibration evidence run count must be positive.",
+                )
+            }
+            if (!repeatedTimingIsValid(runCount, minElapsedMillis, medianElapsedMillis, maxElapsedMillis)) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidRepeatedTiming,
+                    safeDetail = "Android Argon2id calibration evidence repeated timing summary must be positive and ordered.",
+                )
+            }
+            if (failureReason != null && failureReason.containsAndroidCalibrationSecretLikeText()) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.SecretLikeFieldRejected,
+                    safeDetail = "Android Argon2id calibration evidence failure reason must be redacted and non-secret.",
+                )
+            }
+            return AndroidArgon2idCalibrationEvidenceResult.Accepted(
+                AndroidArgon2idCalibrationRunResult(
+                    version = version,
+                    memoryCost = memoryCost,
+                    passes = passCount,
+                    lanes = laneCount,
+                    outputLength = outputLength,
+                    elapsedMillis = elapsedMillis,
+                    runCount = runCount,
+                    minElapsedMillis = minElapsedMillis,
+                    medianElapsedMillis = medianElapsedMillis,
+                    maxElapsedMillis = maxElapsedMillis,
+                    failureReason = failureReason?.trim()?.ifEmpty { null },
+                ),
+            )
+        }
+
+        private fun repeatedTimingIsValid(
+            runCount: Int,
+            minElapsedMillis: Long?,
+            medianElapsedMillis: Long?,
+            maxElapsedMillis: Long?,
+        ): Boolean {
+            val repeatedValues = listOf(minElapsedMillis, medianElapsedMillis, maxElapsedMillis)
+            if (repeatedValues.all { it == null }) return runCount == 1
+            if (runCount == 1) return false
+            if (repeatedValues.any { it == null || it <= 0 }) return false
+            val min = minElapsedMillis ?: return false
+            val median = medianElapsedMillis ?: return false
+            val max = maxElapsedMillis ?: return false
+            return min <= median && median <= max
+        }
+    }
+}
+
+class AndroidArgon2idCalibrationEvidence private constructor(
+    val deviceClass: AndroidArgon2idDeviceClass,
+    val runtimeEnvironment: AndroidArgon2idRuntimeEnvironment,
+    val runResults: List<AndroidArgon2idCalibrationRunResult>,
+    val publicNonSecretFixture: Boolean,
+    val thermalLoadRepeatabilityChecked: Boolean,
+    val evidenceNote: String,
+) {
+    val releaseLikeEvidence: Boolean
+        get() = runtimeEnvironment.releaseLikeEvidence
+
+    val productionKdfApproved: Boolean = false
+
+    val successfulRunResults: List<AndroidArgon2idCalibrationRunResult>
+        get() = runResults.filter { it.successful }
+
+    companion object {
+        fun recorded(
+            deviceClass: AndroidArgon2idDeviceClass,
+            runtimeEnvironment: AndroidArgon2idRuntimeEnvironment,
+            runResults: List<AndroidArgon2idCalibrationRunResult>,
+            publicNonSecretFixture: Boolean,
+            thermalLoadRepeatabilityChecked: Boolean,
+            evidenceNote: String,
+        ): AndroidArgon2idCalibrationEvidenceResult<AndroidArgon2idCalibrationEvidence> {
+            if (runResults.isEmpty()) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.InvalidCalibrationRun,
+                    safeDetail = "Android calibration evidence must include at least one Argon2id run result.",
+                )
+            }
+            if (evidenceNote.isBlank()) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.MissingRequiredField,
+                    safeDetail = "Android calibration evidence note must be recorded.",
+                )
+            }
+            if (evidenceNote.containsAndroidCalibrationSecretLikeText()) {
+                return AndroidArgon2idCalibrationEvidenceResult.Rejected(
+                    reason = AndroidArgon2idCalibrationEvidenceRejectionReason.SecretLikeFieldRejected,
+                    safeDetail = "Android calibration evidence note must not contain secrets, labels, credentials, addresses, or personal device identifiers.",
+                )
+            }
+            return AndroidArgon2idCalibrationEvidenceResult.Accepted(
+                AndroidArgon2idCalibrationEvidence(
+                    deviceClass = deviceClass,
+                    runtimeEnvironment = runtimeEnvironment,
+                    runResults = runResults,
+                    publicNonSecretFixture = publicNonSecretFixture,
+                    thermalLoadRepeatabilityChecked = thermalLoadRepeatabilityChecked,
+                    evidenceNote = evidenceNote.trim(),
+                ),
+            )
+        }
+    }
+}
+
+data class AndroidArgon2idBaselineGateState(
+    val gate: AndroidArgon2idBaselineAcceptanceGate,
+    val satisfied: Boolean,
+    val safeDetail: String,
+)
+
+data class AndroidArgon2idBaselineAssessment(
+    val highEndEvidencePresent: Boolean,
+    val midRangeEvidencePresent: Boolean,
+    val lowEndEvidencePresent: Boolean,
+    val releaseLikeEvidencePresent: Boolean,
+    val thermalLoadRepeatabilityPresent: Boolean,
+    val publicNonSecretFixtureEvidencePresent: Boolean,
+    val productionKdfApproved: Boolean,
+    val blockers: Set<AndroidArgon2idBaselineBlocker>,
+    val gates: List<AndroidArgon2idBaselineGateState>,
+) {
+    val androidBaselineSatisfied: Boolean
+        get() = blockers.isEmpty()
+
+    val finalProductionParametersApproved: Boolean = false
+}
+
+object AndroidArgon2idCalibrationEvidencePolicy {
+    fun currentPixel10ProXlAndroid16HighEndEvidence(): AndroidArgon2idCalibrationEvidence =
+        AndroidArgon2idCalibrationEvidence.recorded(
+            deviceClass = AndroidArgon2idDeviceClass.HighEnd,
+            runtimeEnvironment = AndroidArgon2idRuntimeEnvironment.recorded(
+                androidVersion = "Android 16",
+                apiLevel = 36,
+                manufacturer = "Google",
+                model = "Pixel 10 Pro XL",
+                buildProfile = AndroidArgon2idBuildProfile.DebugInstrumented,
+                thermalStateNote = "manual note: no thermal repeatability series recorded",
+                foregroundBackgroundNote = "manual note: foreground instrumented test runtime",
+                batteryChargingNote = "manual note: charging state not recorded",
+                memoryPressureNote = "manual note: memory pressure not recorded",
+            ).acceptedAndroidEvidenceValue(),
+            runResults = listOf(
+                AndroidArgon2idCalibrationRunResult.recorded(
+                    memoryMiB = 16,
+                    passes = 2,
+                    lanes = 1,
+                    outputBytes = 32,
+                    elapsedMillis = 321,
+                    runCount = 1,
+                ).acceptedAndroidEvidenceValue(),
+                AndroidArgon2idCalibrationRunResult.recorded(
+                    memoryMiB = 32,
+                    passes = 3,
+                    lanes = 1,
+                    outputBytes = 32,
+                    elapsedMillis = 707,
+                    runCount = 1,
+                ).acceptedAndroidEvidenceValue(),
+            ),
+            publicNonSecretFixture = true,
+            thermalLoadRepeatabilityChecked = false,
+            evidenceNote = "Pixel 10 Pro XL Android 16 debug instrumented calibration evidence; high-end class only.",
+        ).acceptedAndroidEvidenceValue()
+
+    fun assess(
+        evidence: List<AndroidArgon2idCalibrationEvidence> =
+            listOf(currentPixel10ProXlAndroid16HighEndEvidence()),
+    ): AndroidArgon2idBaselineAssessment {
+        val successfulEvidence = evidence.filter { it.successfulRunResults.isNotEmpty() }
+        val highEndEvidencePresent = successfulEvidence.any {
+            it.deviceClass == AndroidArgon2idDeviceClass.HighEnd
+        }
+        val midRangeEvidencePresent = successfulEvidence.any {
+            it.deviceClass == AndroidArgon2idDeviceClass.MidRange
+        }
+        val lowEndEvidencePresent = successfulEvidence.any {
+            it.deviceClass == AndroidArgon2idDeviceClass.LowEnd
+        }
+        val releaseLikeEvidencePresent = successfulEvidence.any { it.releaseLikeEvidence }
+        val thermalLoadRepeatabilityPresent = successfulEvidence.any {
+            it.thermalLoadRepeatabilityChecked
+        }
+        val publicNonSecretFixtureEvidencePresent = successfulEvidence.isNotEmpty() &&
+            successfulEvidence.all { it.publicNonSecretFixture }
+
+        val blockers = buildSet {
+            if (!highEndEvidencePresent) add(AndroidArgon2idBaselineBlocker.HighEndEvidenceMissing)
+            if (!midRangeEvidencePresent) add(AndroidArgon2idBaselineBlocker.MidRangeEvidenceMissing)
+            if (!lowEndEvidencePresent) add(AndroidArgon2idBaselineBlocker.LowEndEvidenceMissing)
+            if (!releaseLikeEvidencePresent) add(AndroidArgon2idBaselineBlocker.ReleaseLikeEvidenceMissing)
+            if (!thermalLoadRepeatabilityPresent) {
+                add(AndroidArgon2idBaselineBlocker.ThermalLoadRepeatabilityMissing)
+            }
+            if (!publicNonSecretFixtureEvidencePresent) {
+                add(AndroidArgon2idBaselineBlocker.NonSecretFixtureEvidenceMissing)
+            }
+        }
+
+        return AndroidArgon2idBaselineAssessment(
+            highEndEvidencePresent = highEndEvidencePresent,
+            midRangeEvidencePresent = midRangeEvidencePresent,
+            lowEndEvidencePresent = lowEndEvidencePresent,
+            releaseLikeEvidencePresent = releaseLikeEvidencePresent,
+            thermalLoadRepeatabilityPresent = thermalLoadRepeatabilityPresent,
+            publicNonSecretFixtureEvidencePresent = publicNonSecretFixtureEvidencePresent,
+            productionKdfApproved = false,
+            blockers = blockers,
+            gates = listOf(
+                gate(AndroidArgon2idBaselineAcceptanceGate.HighEndEvidencePresent, highEndEvidencePresent),
+                gate(AndroidArgon2idBaselineAcceptanceGate.MidRangeEvidencePresent, midRangeEvidencePresent),
+                gate(AndroidArgon2idBaselineAcceptanceGate.LowEndEvidencePresent, lowEndEvidencePresent),
+                gate(AndroidArgon2idBaselineAcceptanceGate.ReleaseLikeEvidencePresent, releaseLikeEvidencePresent),
+                gate(
+                    AndroidArgon2idBaselineAcceptanceGate.ThermalLoadRepeatabilityPresent,
+                    thermalLoadRepeatabilityPresent,
+                ),
+                gate(
+                    AndroidArgon2idBaselineAcceptanceGate.PublicNonSecretFixturesOnly,
+                    publicNonSecretFixtureEvidencePresent,
+                ),
+                gate(
+                    AndroidArgon2idBaselineAcceptanceGate.ManualEvidenceDoesNotApproveProductionKdf,
+                    true,
+                ),
+            ),
+        )
+    }
+
+    private fun gate(
+        gate: AndroidArgon2idBaselineAcceptanceGate,
+        satisfied: Boolean,
+    ): AndroidArgon2idBaselineGateState =
+        AndroidArgon2idBaselineGateState(
+            gate = gate,
+            satisfied = satisfied,
+            safeDetail = if (satisfied) {
+                "Gate evidence recorded."
+            } else {
+                "Gate remains blocked."
+            },
+        )
+
+    private fun <T> AndroidArgon2idCalibrationEvidenceResult<T>.acceptedAndroidEvidenceValue(): T =
+        when (this) {
+            is AndroidArgon2idCalibrationEvidenceResult.Accepted -> value
+            is AndroidArgon2idCalibrationEvidenceResult.Rejected ->
+                error("Invalid built-in Android Argon2id calibration evidence: ${reason.name}")
+        }
 }
 
 data class Argon2idCalibrationPolicy(
@@ -522,3 +1060,33 @@ data class Argon2idCalibrationPolicy(
 
 fun commonArgon2idCalibrationPolicy(): Argon2idCalibrationPolicy =
     Argon2idCalibrationPolicy.currentProbeOnly()
+
+private fun String.containsAndroidCalibrationSecretLikeText(): Boolean {
+    val lower = lowercase()
+    val forbiddenFragments = listOf(
+        "passphrase",
+        "password",
+        "mnemonic",
+        "seed",
+        "private",
+        "xprv",
+        "tprv",
+        "wif",
+        "nsec",
+        "token",
+        "macaroon",
+        "credential",
+        "cashu proof",
+        "rpc cookie",
+        "wallet label",
+        "utxo label",
+        "transaction note",
+        "serial",
+        "imei",
+        "android_id",
+        "android id",
+    )
+    return forbiddenFragments.any { it in lower } ||
+        Regex("""\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\b""").containsMatchIn(lower) ||
+        Regex("""\b[0-9a-f]{64}\b""").containsMatchIn(lower)
+}

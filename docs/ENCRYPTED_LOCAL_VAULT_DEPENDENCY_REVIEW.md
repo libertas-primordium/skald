@@ -220,7 +220,7 @@ Provider-boundary non-goals:
 
 ## Current Model Status
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, and `ProviderKatContractModeled`.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, `ProviderKatContractModeled`, `Argon2idCandidateParameterPolicyModeled`, and `AndroidArgon2idCalibrationEvidenceCaptureModeled`.
 
 That status means:
 
@@ -233,12 +233,14 @@ That status means:
 - a disabled Skald-owned provider boundary now exists and rejects every operation,
 - a provider-selection boundary now exists and selects only the disabled provider,
 - a provider-level KAT contract now exists, and a test-only harness can execute it without production storage or provider approval.
+- a manual Android calibration evidence-capture model exists for future low-end, mid-range, high-end, release-like, and thermal/load parameter evidence.
 
 That status does not mean:
 
 - production dependency approval,
 - legal approval,
 - KDF calibration,
+- Android baseline coverage,
 - executable provider-boundary approval,
 - production provider selection,
 - keyset storage approval,
