@@ -1,0 +1,17 @@
+package com.libertasprimordium.skald.security
+
+import com.google.crypto.tink.aead.XChaCha20Poly1305Key
+import org.bouncycastle.crypto.generators.Argon2BytesGenerator
+import org.bouncycastle.crypto.modes.ChaCha20Poly1305
+
+internal object DesktopVaultCryptoDependencyCompileProbe {
+    val availableApiClassNames: List<String> =
+        listOf(
+            XChaCha20Poly1305Key::class.java.name,
+            Argon2BytesGenerator::class.java.name,
+            ChaCha20Poly1305::class.java.name,
+        )
+
+    val note: String =
+        "Linux desktop compile probe only; no vault encryption, key derivation, storage, or persistence is performed."
+}
