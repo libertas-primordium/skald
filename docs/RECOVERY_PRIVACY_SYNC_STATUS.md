@@ -180,4 +180,4 @@ Tests verify that:
 
 ## Next Step
 
-The next focused pass should complete package verification and dependency review for the Tink/Bouncy Castle probe, add official non-secret known-answer-vector tests if approved, or compare a libsodium/KMP native-packaging option. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.
+The next focused pass should add Android runtime KAT validation for the Tink/Bouncy Castle probe, compare a libsodium/KMP native-packaging option, or design a narrow disabled crypto-provider boundary. Do not enable production sync, plaintext observation storage, backend clients, public endpoints, signing, broadcasting, Nostr parsing, or mainnet as part of that work.

@@ -13,6 +13,7 @@ class VaultCryptoDependencyArtifactProbeTest {
         val classNames = DesktopVaultCryptoDependencyCompileProbe.availableApiClassNames
 
         assertContains(classNames, "com.google.crypto.tink.aead.XChaCha20Poly1305Key")
+        assertContains(classNames, "com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305")
         assertContains(classNames, "org.bouncycastle.crypto.generators.Argon2BytesGenerator")
         assertContains(classNames, "org.bouncycastle.crypto.modes.ChaCha20Poly1305")
         classNames.forEach { className ->
@@ -28,6 +29,7 @@ class VaultCryptoDependencyArtifactProbeTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt"),
             File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt"),
             File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -47,6 +49,7 @@ class VaultCryptoDependencyArtifactProbeTest {
             Regex("""\bwriteText\("""),
             Regex("""\breadText\("""),
             Regex("""\bjava\.io\b"""),
+            Regex("""\bPath\("""),
         )
         val offenders = files
             .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }

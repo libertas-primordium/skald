@@ -237,6 +237,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val allowedFiles = setOf(
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
         )
         val cryptoImportPattern = Regex(
             """import\s+(com\.google\.crypto\.tink|org\.bouncycastle|javax\.crypto|java\.security\.KeyStore)""",

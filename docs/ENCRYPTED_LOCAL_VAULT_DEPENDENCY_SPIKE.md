@@ -22,13 +22,12 @@ The spike answers a narrow build question:
 Can a pinned dependency candidate expose Argon2id and XChaCha20-Poly1305 APIs on Android and Linux desktop packaging without adding native-library packaging risk or enabling vault storage?
 ```
 
-It does not answer the implementation questions that remain for a real vault:
+It does not answer all implementation questions that remain for a real vault:
 
 - KDF parameter calibration.
-- Known-answer vector test selection.
+- Android runtime known-answer-vector validation.
 - Vault envelope implementation.
 - Key hierarchy implementation.
-- Android runtime instrumentation.
 - Secure memory/session lifecycle behavior.
 - Migration/corruption behavior.
 - Redaction and failure-mode coverage for real encrypted records.
@@ -37,7 +36,7 @@ It does not answer the implementation questions that remain for a real vault:
 
 | Candidate | Spike result | Reason |
 | --- | --- | --- |
-| Tink AEAD plus Bouncy Castle Argon2id | Selected for packaging probe only | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts and no native library entries observed in resolved JARs. |
+| Tink AEAD plus Bouncy Castle Argon2id | Selected for dependency probe only | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts, no native library entries observed in resolved JARs, and desktop JVM public KAT validation. |
 | libsodium/KMP binding | Deferred | One primitive family could cover Argon2id and XChaCha20-Poly1305, but native library packaging, ABI coverage, binding maintenance, and `.deb` behavior need a separate review. |
 | Bouncy Castle only | Insufficient as primary stack | Provides Argon2id and ChaCha20-Poly1305-family APIs, but did not satisfy the preferred XChaCha20-Poly1305 record-AEAD target in this pass. |
 | Platform crypto only | Rejected as default vault stack | Does not provide a cross-platform memory-hard Argon2id default or the preferred XChaCha20-Poly1305 record AEAD. |
@@ -66,7 +65,7 @@ composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidV
 composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt
 ```
 
-These files reference candidate classes by type so Android and desktop compilation fail if the expected APIs disappear. They do not derive keys, generate keys, encrypt data, decrypt data, write files, call platform key stores, or persist anything.
+These files reference candidate classes by type so Android and desktop compilation fail if the expected APIs disappear. They include Tink's explicit-nonce XChaCha class only as a probe surface for public KAT validation. They do not derive production keys, generate keys, encrypt wallet data, decrypt wallet data, write files, call platform key stores, or persist anything.
 
 ## API Presence
 
@@ -74,13 +73,14 @@ The probe confirms these API classes compile on platform source sets:
 
 ```text
 com.google.crypto.tink.aead.XChaCha20Poly1305Key
+com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305
 org.bouncycastle.crypto.generators.Argon2BytesGenerator
 org.bouncycastle.crypto.modes.ChaCha20Poly1305
 ```
 
 The desktop artifact probe also loads those class names with `Class.forName()` as a runtime classpath check.
 
-This is not a cryptographic correctness test. Known-answer-vector tests are still required before implementation.
+The desktop KAT validation documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md) adds cryptographic correctness evidence for public vectors on desktop JVM. Android runtime KAT validation remains outstanding.
 
 ## Artifact And Packaging Observations
 
@@ -117,34 +117,36 @@ This is a preliminary packaging-spike note only. A final implementation branch s
 
 ## Known-Answer Vectors
 
-Known-answer-vector testing was intentionally not added in this pass.
+Known-answer-vector coverage now exists for desktop JVM only:
+
+- Bouncy Castle `Argon2BytesGenerator` matches the RFC 9106 Argon2id public test vector.
+- Tink `InsecureNonceXChaCha20Poly1305` matches the XChaCha draft AEAD_XCHACHA20_POLY1305 public test vector.
 
 Required future KAT work:
 
-- Argon2id official/reference vectors for the selected Bouncy Castle API usage or replacement provider.
-- XChaCha20-Poly1305 vectors for the selected Tink API usage or replacement provider.
-- Skald-owned envelope vectors using obvious non-wallet sentinel values.
-- Cross-platform Android/Linux verification.
+- Android runtime KAT validation for the selected API usage.
+- Skald-owned envelope vectors using obvious non-wallet sentinel values after a disabled provider/container boundary exists.
+- Cross-platform validation through the future provider boundary.
 
 No wallet data, mnemonic material, private descriptors, real addresses, real txids, credentials, labels, notes, or production metadata may be used as test vectors.
 
 ## Current Recommendation
 
-Use the Tink plus Bouncy Castle split stack as the next implementation-spike candidate, not as an approved production vault implementation.
+Use the Tink plus Bouncy Castle split stack as a desktop KAT-validated implementation candidate, not as an approved production vault implementation.
 
 Rationale:
 
 - It keeps common policy/source models independent of crypto providers.
 - It avoids native-library packaging risk for the first JVM/Android build probe.
 - It exposes the target AEAD API from Tink and the target KDF API from Bouncy Castle.
+- It now has desktop JVM public KAT evidence for both selected primitives.
 - It keeps libsodium available as a later alternative if a single primitive family is preferred and native packaging review passes.
 
 Blockers before implementation:
 
 - Final dependency and license review.
-- Android runtime/API verification.
+- Android runtime/API/KAT verification.
 - KDF parameter calibration.
-- Known-answer-vector tests.
 - Envelope/key-hierarchy implementation review.
 - Lock/session lifecycle implementation and tests.
 - Redaction/migration/corruption tests.
@@ -179,6 +181,6 @@ This dependency spike does not enable:
 
 Decide whether the next focused branch should:
 
-- add official non-secret KAT tests for the selected APIs without creating vault storage,
+- add Android runtime KAT validation for the selected APIs without creating vault storage,
 - compare libsodium/KMP native packaging directly,
-- or start a disabled encrypted-vault container/parser implementation behind fail-closed readiness gates.
+- or design a narrow disabled crypto-provider boundary before vault container work.
