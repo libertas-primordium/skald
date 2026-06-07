@@ -12,6 +12,7 @@ import com.libertasprimordium.skald.domain.onchain.ReceiveAddressState
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletContext
 import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletOperationalState
 import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.security.Argon2idCalibrationImplementationStatus
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.DisabledSecureWalletMetadataRepository
 import com.libertasprimordium.skald.security.EncryptedVaultAeadAlgorithm
@@ -57,7 +58,15 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
         assertContains(decision.warnings, EncryptedVaultWarning.ReadinessOnlyNoEncryption)
+        assertContains(decision.warnings, EncryptedVaultWarning.KdfCalibrationProbeOnly)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DisabledCryptoProviderBoundary)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
+        assertEquals(
+            Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
+            readiness.argon2idCalibrationPolicy.status,
+        )
+        assertFalse(readiness.argon2idCalibrationPolicy.productionKdfEnabled)
+        assertFalse(readiness.argon2idCalibrationPolicy.calibrationComplete)
     }
 
     @Test
@@ -83,6 +92,7 @@ class EncryptedVaultReadinessPolicyTest {
         val requiredGates = setOf(
             EncryptedVaultRequirement.DependencySelectionReviewed,
             EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
+            EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
             EncryptedVaultRequirement.AeadImplementationVerified,
             EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed,
@@ -110,6 +120,14 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.DisabledProviderBoundaryModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.KdfCalibrationPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.Unresolved,
+            readiness.requirementStatuses[EncryptedVaultRequirement.KdfParametersCalibrated],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.Absent,

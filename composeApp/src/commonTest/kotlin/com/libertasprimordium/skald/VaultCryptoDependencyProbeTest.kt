@@ -37,6 +37,8 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderBoundaryReviewDocumented)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.FutureProviderBoundaryPrerequisitesDocumented)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.DisabledProviderBoundaryModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationPolicyModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationProbeOnly)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PureJvmNoNativeLibraries)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderStack)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.KnownAnswerVectorTestsMissing))

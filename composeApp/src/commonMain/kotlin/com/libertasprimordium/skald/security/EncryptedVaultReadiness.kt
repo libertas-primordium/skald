@@ -134,6 +134,7 @@ data class EncryptedVaultPlatformPolicy(
 enum class EncryptedVaultRequirement(val label: String) {
     DependencySelectionReviewed("dependency selection reviewed"),
     DisabledProviderBoundaryModeled("disabled provider boundary modeled"),
+    KdfCalibrationPolicyModeled("KDF calibration policy modeled"),
     KdfParametersCalibrated("KDF parameters calibrated"),
     AeadImplementationVerified("AEAD implementation verified"),
     ProviderBoundaryKnownAnswerVectorsPassed("provider-boundary known-answer vectors passed"),
@@ -180,6 +181,7 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
 enum class EncryptedVaultWarning(val label: String) {
     ReadinessOnlyNoEncryption("readiness model only; no encryption"),
     AlgorithmTargetsAreDesignOnly("algorithm targets are design-only"),
+    KdfCalibrationProbeOnly("KDF calibration policy/probes are not production settings"),
     OsKeyringsNotPrimaryStorage("OS keyrings are not primary storage"),
     AndroidWrappingOptional("Android wrapping is optional"),
     LinuxPassphraseFirst("Linux passphrase-first vault policy"),
@@ -194,6 +196,7 @@ enum class EncryptedVaultCapability(
     ReadinessPolicyModel("readiness policy model", enabledInProduction = true),
     AlgorithmDecisionRecord("algorithm decision record", enabledInProduction = true),
     PlatformPolicyModel("platform policy model", enabledInProduction = true),
+    Argon2idCalibrationPolicyModel("Argon2id calibration policy model", enabledInProduction = true),
     DisabledCryptoProviderBoundary("disabled crypto provider boundary", enabledInProduction = false),
     FutureEncryptedVaultImplementation("future encrypted vault implementation", enabledInProduction = false),
     FutureProductionSecretPersistence("future production secret persistence", enabledInProduction = false),
@@ -240,6 +243,7 @@ data class EncryptedVaultAlgorithmPolicy(
 data class EncryptedVaultReadiness(
     val implementationStatus: EncryptedVaultImplementationStatus,
     val algorithmPolicy: EncryptedVaultAlgorithmPolicy,
+    val argon2idCalibrationPolicy: Argon2idCalibrationPolicy,
     val platformPolicies: Set<EncryptedVaultPlatformPolicy>,
     val requirementStatuses: Map<EncryptedVaultRequirement, EncryptedVaultRequirementStatus>,
     val blockers: Set<EncryptedVaultBlockingIssue>,
@@ -327,6 +331,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirement.DisabledProviderBoundaryModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
+        put(
+            EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
         put(EncryptedVaultRequirement.KdfParametersCalibrated, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.AeadImplementationVerified, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed, EncryptedVaultRequirementStatus.Absent)
@@ -344,6 +352,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
     return EncryptedVaultReadiness(
         implementationStatus = EncryptedVaultImplementationStatus.NotImplemented,
         algorithmPolicy = EncryptedVaultAlgorithmPolicy.currentDesign(),
+        argon2idCalibrationPolicy = commonArgon2idCalibrationPolicy(),
         platformPolicies = setOf(androidEncryptedVaultPlatformPolicy(), linuxDesktopEncryptedVaultPlatformPolicy()),
         requirementStatuses = requirementStatuses,
         blockers = setOf(
@@ -366,6 +375,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         warnings = setOf(
             EncryptedVaultWarning.ReadinessOnlyNoEncryption,
             EncryptedVaultWarning.AlgorithmTargetsAreDesignOnly,
+            EncryptedVaultWarning.KdfCalibrationProbeOnly,
             EncryptedVaultWarning.OsKeyringsNotPrimaryStorage,
             EncryptedVaultWarning.AndroidWrappingOptional,
             EncryptedVaultWarning.LinuxPassphraseFirst,
