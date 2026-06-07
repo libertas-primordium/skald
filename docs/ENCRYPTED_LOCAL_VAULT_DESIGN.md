@@ -6,7 +6,7 @@ This document defines the app-controlled encrypted local vault design that Skald
 
 This is a design document only. It does not implement encryption, persist secrets, persist sensitive metadata, create wallets, activate production sync, construct transactions, sign, broadcast, parse Nostr keys, add Tor transport, add public endpoints, add Skald-operated infrastructure, or enable mainnet.
 
-The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). Desktop and Android runtime known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). Those probes add platform-scoped compile/package dependencies and public-vector tests only; Android runtime KATs passed on Pixel 10 Pro XL / Android 16 after raw ADB IP:port targeting. They do not add vault storage or make secure storage available.
+The focused dependency spike for pinned Argon2id/XChaCha20-Poly1305 candidate APIs is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md). Desktop and Android runtime known-answer-vector validation is documented in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). The Tink/Bouncy dependency, license, keyset/storage, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). Those probes add platform-scoped compile/package dependencies, package review evidence, and public-vector tests only; Android runtime KATs passed on Pixel 10 Pro XL / Android 16 after raw ADB IP:port targeting. They do not add vault storage or make secure storage available.
 
 Current runtime behavior remains fail-closed:
 
@@ -14,7 +14,7 @@ Current runtime behavior remains fail-closed:
 - `SecureWalletMetadataRepository` is disabled.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
-- `EncryptedVaultReadinessPolicy` reports the vault implementation unavailable, dependency selection unresolved beyond the packaging probe, KDF/AEAD verification incomplete, secure storage disabled, secure metadata disabled, production persistence disabled, and mainnet disabled.
+- `EncryptedVaultReadinessPolicy` reports the vault implementation unavailable, dependency selection reviewed only at candidate level, KDF/AEAD verification incomplete, secure storage disabled, secure metadata disabled, production persistence disabled, and mainnet disabled.
 
 The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping implementation disabled.
 
@@ -541,7 +541,7 @@ Production secret or sensitive metadata persistence may not be enabled until:
 
 ## Open Questions
 
-- Whether the Tink plus Bouncy Castle split stack from [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md) should become the implementation candidate after package verification, license review, KDF calibration, Tink keyset/storage handling review, split-provider boundary review, and provider-boundary review.
+- Whether the candidate-reviewed Tink plus Bouncy Castle split stack from [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md) should become the implementation candidate after KDF calibration, provider-boundary design, provider-boundary KATs, vault container review, and storage review.
 - What exact Argon2id starting parameters and calibration policy should ship after platform measurement?
 - Should Android require hardware-backed wrapping for specific secret classes or make it an optional risk label?
 - How should Linux vault files be located, permissioned, backed up, and migrated?
@@ -561,7 +561,7 @@ Recommended next implementation sequence:
 1. Review this design plus [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md).
 2. Review the code-level vault policy/readiness models in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md).
 3. Keep tests proving secure storage, secure metadata, and vault readiness remain disabled.
-4. Complete package verification, dependency review, KDF calibration, Tink keyset/storage handling review, split-provider boundary review, and provider-boundary design for the Tink/Bouncy Castle probe, or choose a replacement stack through explicit review.
+4. Use the completed Tink/Bouncy dependency review as candidate evidence, then complete KDF calibration, provider-boundary design, provider-boundary KATs, vault container review, and storage review, or choose a replacement stack through explicit review.
 5. Design a narrow disabled provider boundary for selected KDF/AEAD APIs.
 6. Implement a disabled vault container parser/validator without storing real secrets.
 7. Implement encrypted vault storage behind a disabled feature gate.

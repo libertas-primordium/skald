@@ -97,6 +97,10 @@ class EncryptedVaultReadinessPolicyTest {
                 readiness.requirementStatuses[it]?.satisfiedForProductionPersistence == false
             },
         )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.DependencySelectionReviewed],
+        )
         assertTrue(EncryptedVaultRequirement.SecureSecretStorageAvailable in readiness.requirementStatuses)
         assertEquals(
             EncryptedVaultRequirementStatus.DisabledByPolicy,

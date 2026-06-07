@@ -101,18 +101,18 @@ Current evidence:
 - Android compile/package probes pass.
 - Android KAT test source is present and the test APK assembles.
 - Android runtime KAT execution passed on Pixel 10 Pro XL / Android 16 with the same official public vectors.
+- Candidate-level dependency, license, keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md).
 
 It is not approved for production vault implementation yet. Remaining blockers:
 
-- Final dependency and license review.
 - KDF calibration on Android and Linux desktop.
 - Narrow Skald-owned `VaultCryptoProvider`-style boundary design.
-- Tink keyset/storage handling review.
-- Split-provider boundary review.
+- Provider-boundary public KATs on Android and desktop runtime.
 - Container/envelope parser and writer design.
 - Lock/session lifecycle tests.
 - Redaction tests.
 - Migration and corruption tests.
+- Release-artifact dependency/license review before any release.
 - Explicit approval before any encrypted storage implementation.
 
 ## Non-Capabilities
@@ -143,4 +143,4 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: complete dependency/license review, KDF calibration planning, Tink keyset/storage handling review, split-provider boundary review, or design a narrow disabled `VaultCryptoProvider` boundary before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.
+The next focused branch should remain design/probe-only: design a narrow disabled `VaultCryptoProvider` boundary with provider-level KAT requirements, or complete KDF calibration planning before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result.

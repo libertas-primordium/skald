@@ -13,11 +13,11 @@ import kotlin.test.assertTrue
 
 class VaultCryptoDependencyProbeTest {
     @Test
-    fun selectedSplitStackIsAndroidRuntimeKatValidatedCandidateOnly() {
+    fun selectedSplitStackIsReviewedCandidateOnly() {
         val selected = VaultCryptoDependencyProbeCatalog.currentSpikeResults()
             .single { it.candidate == VaultCryptoDependencyCandidate.TinkBouncyCastleSplit }
 
-        assertTrue(selected.status == VaultCryptoDependencyProbeStatus.AndroidRuntimeKatValidatedCandidate)
+        assertTrue(selected.status == VaultCryptoDependencyProbeStatus.DependencyLicenseAndKeysetReviewCompleteCandidate)
         assertTrue(selected.pinnedArtifacts.contains("com.google.crypto.tink:tink-android:1.21.0"))
         assertTrue(selected.pinnedArtifacts.contains("com.google.crypto.tink:tink:1.21.0"))
         assertTrue(selected.pinnedArtifacts.contains("org.bouncycastle:bcprov-jdk18on:1.84"))
@@ -29,19 +29,26 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidKnownAnswerVectorsPass)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidTestApkAssemblyPass)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.KnownAnswerVectorReviewRequired)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.DependencyInventoryReviewed)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.LicenseDeclarationsInspected)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.PackageInventoriesReviewed)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.TinkKeysetStorageReviewDocumented)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.BouncyCastleArgon2idApiRisksDocumented)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderBoundaryReviewDocumented)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.FutureProviderBoundaryPrerequisitesDocumented)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PureJvmNoNativeLibraries)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderStack)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.KnownAnswerVectorTestsMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.AndroidKnownAnswerVectorRuntimeUnverified))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.AndroidRuntimeInstallConflict))
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.DependencyReviewIncomplete)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.LicenseReviewIncomplete)
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.DependencyReviewIncomplete))
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.LicenseReviewIncomplete))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.KdfCalibrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.RequiresSplitProviderDesign)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProductionProviderBoundaryMissing)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.TinkKeysetStorageHandlingReviewMissing)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.SplitProviderBoundaryReviewMissing)
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkKeysetStorageHandlingReviewMissing))
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.SplitProviderBoundaryReviewMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.LockSessionLifecycleTestsMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.MigrationCorruptionTestsMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProductionStorageReviewMissing)
