@@ -98,6 +98,16 @@ object RecoverySyncStatusPolicy {
                     ),
                 )
             }
+            if (BitcoinWalletSyncBlocker.EncryptedVaultUnavailable in syncResult.blockers) {
+                add(
+                    RecoverySyncStatusItem(
+                        label = "Encrypted vault readiness",
+                        state = RecoverySyncItemState.DeferredUntilEncryptedVault,
+                        detail = "The encrypted vault is modeled as a readiness policy only. Crypto dependencies, KDF calibration, AEAD verification, container format, lock/session tests, redaction tests, migration tests, secure storage, and secure metadata storage are not ready.",
+                        riskLevel = PrivacyRiskLevel.Danger,
+                    ),
+                )
+            }
             if (
                 BitcoinWalletSyncBlocker.ObservationPersistenceUnavailable in syncResult.blockers ||
                 !syncResult.observationPersistenceEnabled

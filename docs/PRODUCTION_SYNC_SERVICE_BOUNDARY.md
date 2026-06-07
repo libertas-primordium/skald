@@ -2,7 +2,7 @@
 
 ## Status
 
-Skald Vault now has a Skald-owned production wallet sync service facade over the backend adapter, endpoint policy, receive-address policy, secure-storage capability, secure metadata persistence capability, and backend observation models.
+Skald Vault now has a Skald-owned production wallet sync service facade over the backend adapter, endpoint policy, receive-address policy, secure-storage capability, encrypted vault readiness capability, secure metadata persistence capability, and backend observation models.
 
 The Nodes screen now includes a minimal read-only production sync preflight/status card backed by this facade. Recovery Center and the Privacy Analyzer also consume the same disabled result through status-only models documented in [`RECOVERY_PRIVACY_SYNC_STATUS.md`](RECOVERY_PRIVACY_SYNC_STATUS.md). These surfaces show blockers and warnings for selected backend/profile metadata, secure-storage state, secure metadata persistence, receive-address policy, and observation persistence, but they expose no working sync action and perform no connection test.
 
@@ -17,6 +17,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/Bit
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/recovery/RecoverySyncStatusModels.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/privacy/PrivacySyncStatusModels.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/components/BitcoinWalletSyncStatusUiModel.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/NodesScreen.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/RecoveryScreen.kt
@@ -28,6 +29,7 @@ Tests:
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncServiceTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncStatusUiModelTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/EncryptedVaultReadinessPolicyTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RecoveryPrivacySyncStatusTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/SecureMetadataBoundaryTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
@@ -55,6 +57,7 @@ The request and result types depend only on Skald-owned models:
 - backend observation summaries,
 - receive-address wallet and address state,
 - secure-storage capability state,
+- encrypted vault readiness state,
 - secure metadata persistence capability state.
 
 The facade does not expose BDK, Electrum, Esplora, Bitcoin Core RPC, HTTP, socket, process, wallet database, or platform-native client types.
@@ -117,6 +120,7 @@ It returns blocked results for:
 - credential material rejected,
 - mainnet disabled,
 - no operational wallet context,
+- encrypted vault unavailable,
 - secure storage unavailable,
 - disabled production backend adapter,
 - backend credentials unavailable,
@@ -137,6 +141,7 @@ It may call the disabled production backend adapter boundary to obtain a sanitiz
 - mainnet is rejected,
 - wallet context is operational before future sync,
 - receive-address policy can represent the address state,
+- encrypted vault readiness remains unavailable,
 - secure storage is unavailable for current secret-bearing flows,
 - secure metadata persistence is unavailable for observation history and address index state,
 - production backend adapter remains disabled,
@@ -161,6 +166,8 @@ BackendObservationSummary
         ↓
 Receive-address policy
         ↓
+Encrypted vault readiness policy
+        ↓
 Secure metadata persistence boundary
         ↓
 Future encrypted observation persistence
@@ -172,7 +179,7 @@ This pass defines only the service boundary and blocked preflight state. It does
 
 Production observation persistence remains explicitly deferred until app-controlled encrypted vault storage exists. Observed addresses, labels, UTXOs, transaction notes, backend metadata, wallet history, address index state, recovery metadata, Privacy Analyzer metadata, and identity-linkage metadata are sensitive metadata and are not persisted by the current facade. The disabled secure metadata repository is documented in [`SECURE_METADATA_BOUNDARY.md`](SECURE_METADATA_BOUNDARY.md).
 
-The vault architecture and key-lifecycle plan required before any production observation persistence is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). Those documents keep the app-controlled encrypted local vault as the primary storage model, treat OS keyrings only as optional future key-wrapping helpers, target Argon2id plus XChaCha20-Poly1305 pending dependency review, and keep production sync blocked until secure secret storage and secure metadata persistence are both approved.
+The vault architecture and key-lifecycle plan required before any production observation persistence is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The crypto/key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). The code-level readiness policy is documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). Those documents and models keep the app-controlled encrypted local vault as the primary storage model, treat OS keyrings only as optional future key-wrapping helpers, target Argon2id plus XChaCha20-Poly1305 pending dependency review, and keep production sync blocked until encrypted vault readiness, secure secret storage, and secure metadata persistence are all approved.
 
 ## Explicit Non-Capabilities
 
@@ -190,6 +197,7 @@ This boundary does not enable:
 - app receive UI,
 - descriptor persistence,
 - secure storage,
+- encrypted vault implementation,
 - secure metadata persistence,
 - transaction construction,
 - PSBT import/export/finalization,
@@ -210,6 +218,7 @@ Tests cover:
 - mainnet rejection,
 - non-operational wallet blocker,
 - secure-storage unavailable blocker,
+- encrypted vault unavailable blocker,
 - secure metadata persistence unavailable blocker,
 - public backend privacy warning,
 - onion/Tor labeling warning without Tor transport claims,
@@ -231,4 +240,4 @@ The source guard includes the sync facade, status UI files, and secure metadata 
 
 ## Next Step
 
-The next focused pass should turn the encrypted vault design and crypto decision into code-level readiness/policy models or run the dependency spike for Argon2id/XChaCha20-Poly1305 support and platform wrapping. Production backend clients and observation persistence should remain deferred until secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.
+The next focused pass should run the dependency spike for Argon2id/XChaCha20-Poly1305 support and platform wrapping, or refine vault readiness after review. Production backend clients and observation persistence should remain deferred until encrypted vault readiness, secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.

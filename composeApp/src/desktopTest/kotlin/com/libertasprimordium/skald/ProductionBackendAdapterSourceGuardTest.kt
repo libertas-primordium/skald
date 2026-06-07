@@ -170,6 +170,66 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(offenders.isEmpty(), "Secure metadata boundary must remain disabled and persistence/client free: $offenders")
     }
 
+    @Test
+    fun encryptedVaultReadinessModelsDoNotImplementCryptoOrStorage() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security\.KeyStore"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+com\.ionspin"""),
+            Regex("""import\s+com\.goterl"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\bSecretKeySpec\b"""),
+            Regex("""\bMac\("""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bjava\.io\b"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(offenders.isEmpty(), "Encrypted vault readiness must remain policy-only: $offenders")
+    }
+
+    @Test
+    fun buildFilesDoNotAddVaultCryptoDependencies() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "gradle/libs.versions.toml"),
+            File(root, "composeApp/build.gradle.kts"),
+        )
+        val forbiddenDependencyPatterns = listOf(
+            Regex("""(?i)libsodium"""),
+            Regex("""(?i)\btink\b"""),
+            Regex("""(?i)bouncycastle"""),
+            Regex("""(?i)argon2"""),
+            Regex("""(?i)\bscrypt\b"""),
+            Regex("""(?i)xchacha"""),
+            Regex("""(?i)javax\.crypto"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenDependencyPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(offenders.isEmpty(), "Vault crypto dependencies must not be added in this pass: $offenders")
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),
@@ -177,6 +237,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendValidation.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinWalletSyncService.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
         )
 
     private fun repositoryRoot(): File =

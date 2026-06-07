@@ -22,6 +22,7 @@ enum class SensitiveMetadataKind(
     TransactionNotes("transaction notes", WalletMetadataSensitivity.SensitiveWalletMetadata),
     BackendObservationHistory("backend observation history", WalletMetadataSensitivity.SensitiveWalletMetadata),
     BackendEndpointMetadata("privacy-sensitive backend endpoint metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    TorRoutingMetadata("Tor routing policy and transport metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
     NostrIdentityLinkageMetadata("Nostr identity-linkage metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
     PrivacyAnalyzerMetadata("Privacy Analyzer metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
     RecoveryMetadata("recovery metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
