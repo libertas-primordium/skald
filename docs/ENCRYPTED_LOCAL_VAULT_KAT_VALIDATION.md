@@ -23,6 +23,8 @@ The desktop test `VaultCryptoKatValidationTest` validates the pinned probe stack
 
 The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A future production implementation must wrap any primitive use behind a narrow Skald-owned provider boundary before vault storage is considered.
 
+The libsodium comparison documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md) did not add libsodium KATs. Lazysodium Java/Android was rejected at the Android packaging gate before KAT execution, and IonSpin KMP libsodium remains deferred pending an isolated packaging/KAT mapping spike.
+
 ## Vector Sources
 
 Argon2id:
@@ -100,4 +102,4 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should either add Android runtime KAT validation for the same split stack, compare a libsodium/KMP candidate with Android and Linux packaging, or design the narrow disabled `VaultCryptoProvider` boundary before any vault container work.
+The next focused branch should either add Android runtime KAT validation for the same split stack, evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation, investigate a specific Lazysodium/JNA conflict strategy, or design the narrow disabled `VaultCryptoProvider` boundary before any vault container work.

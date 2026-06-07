@@ -16,7 +16,7 @@ Runtime behavior remains fail-closed:
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
-The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
+The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require dependency review.
 
 ## Decision Summary
 
@@ -165,7 +165,7 @@ Allowed role:
 
 #### libsodium
 
-Decision: preferred primitive family if a Kotlin/Android/Linux packaging review can provide stable bindings without broad runtime risk.
+Decision: preferred primitive family only if a future Kotlin/Android/Linux packaging review can provide stable bindings without broad runtime risk. The current Lazysodium Java/Android candidate is rejected for this branch because Android packaging failed with duplicate JNA classes.
 
 Rationale:
 
@@ -180,9 +180,14 @@ Risks to resolve:
 - Reproducible build and F-Droid-style review.
 - Exact Kotlin/JVM binding maintenance status.
 
+Comparison result:
+
+- `com.goterl:lazysodium-java:5.2.0` and `com.goterl:lazysodium-android:5.2.0` expose relevant Argon2id, XChaCha20-Poly1305, secretstream, and KDF APIs, but Android APK packaging failed at duplicate `com.sun.jna.*` classes from simultaneous JNA AAR/JAR variants.
+- IonSpin KMP libsodium `0.9.5` artifacts were metadata/POM-inspected but not package-probed; Kotlin metadata, JNA/native-loader behavior, Android native libraries, Linux `.deb` output, and KAT mapping remain unverified.
+
 Decision gate:
 
-- Do not add libsodium until a focused dependency spike confirms Android APK and Linux `.deb` packaging, native library loading, license compatibility, version pinning, and test-vector coverage.
+- Do not use a libsodium stack for vault implementation until a focused dependency spike confirms Android APK and Linux `.deb` packaging, native library loading, license compatibility, version pinning, and test-vector coverage without duplicate class or hidden native-library conflicts.
 
 #### Google Tink
 

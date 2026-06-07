@@ -14,6 +14,8 @@ Runtime behavior remains fail-closed:
 - Production sync remains disabled.
 - Production secret and sensitive metadata persistence remain disabled.
 
+The follow-up libsodium comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). That comparison rejects Lazysodium Java/Android for the current vault branch because Android APK packaging failed at `checkDebugDuplicateClasses` with duplicate JNA classes, and it defers IonSpin KMP libsodium pending an isolated packaging/KAT spike.
+
 ## Probe Scope
 
 The spike answers a narrow build question:
@@ -37,7 +39,8 @@ It does not answer all implementation questions that remain for a real vault:
 | Candidate | Spike result | Reason |
 | --- | --- | --- |
 | Tink AEAD plus Bouncy Castle Argon2id | Selected for dependency probe only | Provides Tink XChaCha20-Poly1305 API and Bouncy Castle Argon2id API with pinned JVM/Android artifacts, no native library entries observed in resolved JARs, and desktop JVM public KAT validation. |
-| libsodium/KMP binding | Deferred | One primitive family could cover Argon2id and XChaCha20-Poly1305, but native library packaging, ABI coverage, binding maintenance, and `.deb` behavior need a separate review. |
+| Lazysodium Java/Android | Rejected for current vault branch | One primitive family covers Argon2id and XChaCha20-Poly1305 APIs, but Android packaging failed with duplicate JNA classes when `lazysodium-android:5.2.0` was added. |
+| IonSpin KMP libsodium binding | Deferred after comparison | Exact artifacts exist, but Kotlin metadata compatibility, JNA/native-loader behavior, Android ABI packaging, Linux `.deb` behavior, and KAT mapping remain unverified. |
 | Bouncy Castle only | Insufficient as primary stack | Provides Argon2id and ChaCha20-Poly1305-family APIs, but did not satisfy the preferred XChaCha20-Poly1305 record-AEAD target in this pass. |
 | Platform crypto only | Rejected as default vault stack | Does not provide a cross-platform memory-hard Argon2id default or the preferred XChaCha20-Poly1305 record AEAD. |
 | Kotlin Multiplatform crypto candidate | Deferred | Requires review for maintenance, audit history, Android/Linux packaging, known-answer vectors, and native dependencies before selection. |
@@ -140,7 +143,7 @@ Rationale:
 - It avoids native-library packaging risk for the first JVM/Android build probe.
 - It exposes the target AEAD API from Tink and the target KDF API from Bouncy Castle.
 - It now has desktop JVM public KAT evidence for both selected primitives.
-- It keeps libsodium available as a later alternative if a single primitive family is preferred and native packaging review passes.
+- The Lazysodium Java/Android path hit a concrete Android packaging blocker; IonSpin KMP remains a separate deferred comparison target rather than an accepted replacement.
 
 Blockers before implementation:
 
@@ -181,6 +184,7 @@ This dependency spike does not enable:
 
 Decide whether the next focused branch should:
 
-- add Android runtime KAT validation for the selected APIs without creating vault storage,
-- compare libsodium/KMP native packaging directly,
+- add Android runtime KAT validation for the current split stack,
+- evaluate IonSpin KMP libsodium packaging and KAT mapping in isolation,
+- investigate a specific Lazysodium/JNA variant-resolution strategy,
 - or design a narrow disabled crypto-provider boundary before vault container work.
