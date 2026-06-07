@@ -65,7 +65,7 @@ Because no executable production provider exists, production provider-level KATs
 
 The test-only harness is separate evidence: it runs through `VaultCryptoProvider.validateKat(...)` and returns redacted `VaultCryptoProviderKatEvidence` with `TestHarnessOnly` scope. That proves interface expressiveness and failure-mode coverage, not production provider approval.
 
-Manual Android Argon2id calibration capture is also separate evidence. It is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md) and records device-class timing context for future parameter policy only; it does not satisfy dependency-level KATs, test-provider KATs, production provider KATs, or provider selection.
+Manual Android Argon2id calibration capture is also separate evidence. It is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md) and records timing context for future parameter policy only; it does not satisfy dependency-level KATs, test-provider KATs, production provider KATs, or provider selection. Android compatibility and entropy gates are modeled separately in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md): low-end and mid-range model testing are not hard compatibility blockers, but supported OS baseline checks, runtime provider/primitive checks, approved cryptographic randomness, and fail-closed vault creation are required.
 
 ## Contract Registry
 
@@ -147,7 +147,7 @@ The disabled provider already uses redacted handles and safe status codes. A fut
 
 Before a future executable provider can be approved for vault implementation:
 
-1. Final Argon2id parameter policy must be approved per platform/device class.
+1. Final Argon2id parameter policy must be approved per supported platform, with Android compatibility based on supported OS baseline, runtime provider/primitive/randomness checks, and fail-closed behavior rather than mandatory exhaustive device-class coverage.
 2. The executable provider must expose no Tink, Bouncy Castle, JCA/JCE, BDK, platform, file, settings, network, or process types through public common models.
 3. Positive KDF and AEAD provider KATs must pass on desktop and Android runtime.
 4. Negative misuse KATs must pass and fail closed.
@@ -225,4 +225,4 @@ The Android connected run executed the expanded instrumented suite on Pixel 10 P
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: collect remaining Android baseline Argon2id calibration evidence with the manual capture protocol before provider implementation, or decide whether to design a disabled executable production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from the test harness.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work. Recommended next decision point: define runtime provider/primitive/randomness checks for the supported Android baseline, or decide whether to design a disabled executable production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from the test harness.

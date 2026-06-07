@@ -220,7 +220,7 @@ Provider-boundary non-goals:
 
 ## Current Model Status
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, `ProviderKatContractModeled`, `Argon2idCandidateParameterPolicyModeled`, and `AndroidArgon2idCalibrationEvidenceCaptureModeled`.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, `ProviderKatContractModeled`, `Argon2idCandidateParameterPolicyModeled`, `AndroidArgon2idCalibrationEvidenceCaptureModeled`, and `AndroidCompatibilityEntropyPolicyModeled`.
 
 That status means:
 
@@ -233,14 +233,15 @@ That status means:
 - a disabled Skald-owned provider boundary now exists and rejects every operation,
 - a provider-selection boundary now exists and selects only the disabled provider,
 - a provider-level KAT contract now exists, and a test-only harness can execute it without production storage or provider approval.
-- a manual Android calibration evidence-capture model exists for future low-end, mid-range, high-end, release-like, and thermal/load parameter evidence.
+- a manual Android calibration evidence-capture model exists for high-end, optional low-end/mid-range, release-like, and thermal/load parameter evidence.
+- Android compatibility/entropy policy exists: low-end and mid-range model testing are no longer hard compatibility blockers, approved cryptographic randomness is required, hardware-backed key protection is separate and optional after review, and unsupported/unknown vault creation states fail closed.
 
 That status does not mean:
 
 - production dependency approval,
 - legal approval,
 - KDF calibration,
-- Android baseline coverage,
+- supported-Android runtime provider/primitive/randomness checks for vault creation,
 - executable provider-boundary approval,
 - production provider selection,
 - keyset storage approval,
@@ -267,4 +268,4 @@ That status does not mean:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: collect additional Android baseline Argon2id calibration evidence or design a still-disabled production-provider skeleton with no storage. Neither step should select a non-disabled provider, implement a vault container, or enable persistence.
+The next focused branch should remain design/probe-only unless the user explicitly narrows it otherwise: define runtime provider/primitive/randomness checks for the supported Android baseline or design a still-disabled production-provider skeleton with no storage. Neither step should select a non-disabled provider, implement a vault container, or enable persistence.

@@ -132,7 +132,7 @@ enum class VaultCryptoProviderSelectionBlocker(val label: String) {
     ProductionProviderLevelKatsMissing("production provider-level KATs missing"),
     DependencyLevelKatsInsufficientForSelection("dependency-level KATs are insufficient for selection"),
     TestProviderKatsInsufficientForSelection("test-provider KATs are insufficient for production selection"),
-    AndroidBaselineParameterPolicyUnresolved("Android baseline parameter policy unresolved"),
+    AndroidCompatibilityRuntimeChecksMissing("Android compatibility runtime provider or randomness checks missing"),
     KdfParameterPolicyNotFinal("KDF parameter policy is not final"),
     TinkKeysetOrRawKeyHandlingUnapproved("Tink keyset or raw-key handling unapproved"),
     SecureSecretStorageDisabled("secure secret storage disabled"),
@@ -173,6 +173,9 @@ data class VaultCryptoProviderPlatformCoverageEvidence(
     val desktopRuntimeKatsPassed: Boolean,
     val androidRuntimeKatsPassed: Boolean,
     val androidBaselineParameterPolicySatisfied: Boolean,
+    val androidCompatibilityPlanningSatisfied: Boolean,
+    val lowEndModelTestingRequired: Boolean,
+    val midRangeModelTestingRequired: Boolean,
     val releaseLikeRuntimeCovered: Boolean,
     val safeDetail: String,
 )
@@ -253,6 +256,8 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
         readiness: EncryptedVaultReadiness = commonDisabledEncryptedVaultReadiness(),
         argon2idPolicy: Argon2idCalibrationPolicy = commonArgon2idCalibrationPolicy(),
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment =
+            commonAndroidVaultCompatibilityUnknownAssessment(),
     ): VaultCryptoProviderSelectionResult {
         val candidates = candidates(
             request = request,
@@ -260,6 +265,7 @@ object VaultCryptoProviderSelectionRegistry {
             secureMetadataCapability = secureMetadataCapability,
             readiness = readiness,
             argon2idPolicy = argon2idPolicy,
+            androidCompatibilityAssessment = androidCompatibilityAssessment,
         )
         val requestedCandidate = candidates.singleOrNull { it.id == request.requestedCandidate }
             ?: unavailableCandidate(request, secureStorageCapability, secureMetadataCapability, argon2idPolicy)
@@ -285,12 +291,40 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability = commonDisabledSecureMetadataCapability(),
         readiness: EncryptedVaultReadiness = commonDisabledEncryptedVaultReadiness(),
         argon2idPolicy: Argon2idCalibrationPolicy = commonArgon2idCalibrationPolicy(),
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment =
+            commonAndroidVaultCompatibilityUnknownAssessment(),
     ): List<VaultCryptoProviderSelectionCandidate> =
         listOf(
-            disabledCandidate(request, secureStorageCapability, secureMetadataCapability, readiness, argon2idPolicy),
-            tinkBouncyCandidate(request, secureStorageCapability, secureMetadataCapability, readiness, argon2idPolicy),
-            lazysodiumCandidate(request, secureStorageCapability, secureMetadataCapability, argon2idPolicy),
-            ionSpinCandidate(request, secureStorageCapability, secureMetadataCapability, argon2idPolicy),
+            disabledCandidate(
+                request,
+                secureStorageCapability,
+                secureMetadataCapability,
+                readiness,
+                argon2idPolicy,
+                androidCompatibilityAssessment,
+            ),
+            tinkBouncyCandidate(
+                request,
+                secureStorageCapability,
+                secureMetadataCapability,
+                readiness,
+                argon2idPolicy,
+                androidCompatibilityAssessment,
+            ),
+            lazysodiumCandidate(
+                request,
+                secureStorageCapability,
+                secureMetadataCapability,
+                argon2idPolicy,
+                androidCompatibilityAssessment,
+            ),
+            ionSpinCandidate(
+                request,
+                secureStorageCapability,
+                secureMetadataCapability,
+                argon2idPolicy,
+                androidCompatibilityAssessment,
+            ),
         )
 
     private fun disabledCandidate(
@@ -299,6 +333,7 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         readiness: EncryptedVaultReadiness,
         argon2idPolicy: Argon2idCalibrationPolicy,
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val blockers = setOf(
             VaultCryptoProviderSelectionBlocker.ProviderDisabledByPolicy,
@@ -326,6 +361,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability = secureMetadataCapability,
                 readiness = readiness,
                 argon2idPolicy = argon2idPolicy,
+                androidCompatibilityAssessment = androidCompatibilityAssessment,
                 safeDetail = "Disabled provider is the only runtime-selectable provider and performs no crypto.",
             ),
             productionApprovalGates = productionApprovalGates(
@@ -353,12 +389,17 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         readiness: EncryptedVaultReadiness,
         argon2idPolicy: Argon2idCalibrationPolicy,
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
     ): VaultCryptoProviderSelectionCandidate {
-        val androidBaselineBlockers = if (
+        val androidCompatibilityBlockers = if (
             request.platform == EncryptedVaultPlatform.Android ||
             request.requireUniversalAndroidParameterPolicy
         ) {
-            setOf(VaultCryptoProviderSelectionBlocker.AndroidBaselineParameterPolicyUnresolved)
+            if (androidCompatibilityAssessment.compatibilityPlanningSatisfied) {
+                emptySet()
+            } else {
+                setOf(VaultCryptoProviderSelectionBlocker.AndroidCompatibilityRuntimeChecksMissing)
+            }
         } else {
             emptySet()
         }
@@ -371,7 +412,7 @@ object VaultCryptoProviderSelectionRegistry {
             VaultCryptoProviderSelectionBlocker.TinkKeysetOrRawKeyHandlingUnapproved,
             VaultCryptoProviderSelectionBlocker.RedactionFailureModeTestsMissing,
             VaultCryptoProviderSelectionBlocker.MigrationCorruptionTestsMissing,
-        ) + androidBaselineBlockers +
+        ) + androidCompatibilityBlockers +
             storageBlockers(secureStorageCapability, secureMetadataCapability, readiness) +
             selectionUseBlockers(request)
         return VaultCryptoProviderSelectionCandidate(
@@ -394,6 +435,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability = secureMetadataCapability,
                 readiness = readiness,
                 argon2idPolicy = argon2idPolicy,
+                androidCompatibilityAssessment = androidCompatibilityAssessment,
                 safeDetail = "Tink plus Bouncy Castle has candidate-level dependency, runtime KAT, test-provider KAT, and package evidence, but no production provider exists.",
             ),
             productionApprovalGates = productionApprovalGates(
@@ -420,6 +462,7 @@ object VaultCryptoProviderSelectionRegistry {
         secureStorageCapability: SecureStorageCapability,
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         argon2idPolicy: Argon2idCalibrationPolicy,
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val blockers = setOf(
             VaultCryptoProviderSelectionBlocker.CandidateRejectedForCurrentVault,
@@ -452,6 +495,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability = secureMetadataCapability,
                 readiness = commonDisabledEncryptedVaultReadiness(),
                 argon2idPolicy = argon2idPolicy,
+                androidCompatibilityAssessment = androidCompatibilityAssessment,
                 safeDetail = "Rejected for this vault branch after Android duplicate JNA class packaging failure.",
             ),
             productionApprovalGates = productionApprovalGates(
@@ -478,6 +522,7 @@ object VaultCryptoProviderSelectionRegistry {
         secureStorageCapability: SecureStorageCapability,
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         argon2idPolicy: Argon2idCalibrationPolicy,
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val blockers = setOf(
             VaultCryptoProviderSelectionBlocker.CandidateDeferred,
@@ -510,6 +555,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability = secureMetadataCapability,
                 readiness = commonDisabledEncryptedVaultReadiness(),
                 argon2idPolicy = argon2idPolicy,
+                androidCompatibilityAssessment = androidCompatibilityAssessment,
                 safeDetail = "Deferred after metadata/POM inspection only; package and runtime behavior are unverified.",
             ),
             productionApprovalGates = productionApprovalGates(
@@ -557,6 +603,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability = secureMetadataCapability,
                 readiness = commonDisabledEncryptedVaultReadiness(),
                 argon2idPolicy = argon2idPolicy,
+                androidCompatibilityAssessment = commonAndroidVaultCompatibilityUnknownAssessment(),
                 safeDetail = "Requested provider candidate is unavailable.",
             ),
             productionApprovalGates = productionApprovalGates(
@@ -594,6 +641,7 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         readiness: EncryptedVaultReadiness,
         argon2idPolicy: Argon2idCalibrationPolicy,
+        androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
         safeDetail: String,
     ): VaultCryptoProviderEvidenceBundle =
         VaultCryptoProviderEvidenceBundle(
@@ -621,8 +669,12 @@ object VaultCryptoProviderSelectionRegistry {
                 androidRuntimeKatsPassed = androidRuntimeKatsPassed,
                 androidBaselineParameterPolicySatisfied =
                     argon2idPolicy.candidateParameterPolicy.androidBaselineCoverageSatisfied,
+                androidCompatibilityPlanningSatisfied =
+                    androidCompatibilityAssessment.compatibilityPlanningSatisfied,
+                lowEndModelTestingRequired = androidCompatibilityAssessment.lowEndModelTestingRequired,
+                midRangeModelTestingRequired = androidCompatibilityAssessment.midRangeModelTestingRequired,
                 releaseLikeRuntimeCovered = false,
-                safeDetail = "Runtime evidence does not replace production provider approval or release-like validation.",
+                safeDetail = "Runtime evidence and Android compatibility planning do not replace production provider approval or release-like validation.",
             ),
             parameterPolicy = VaultCryptoProviderParameterPolicyEvidence(
                 argon2idVersion = Argon2idVersion.Version19,

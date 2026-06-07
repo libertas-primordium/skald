@@ -42,6 +42,7 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.TestOnlyProviderKatHarnessPresent)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCandidateParameterPolicyModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidCompatibilityEntropyPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationProbeOnly)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PureJvmNoNativeLibraries)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.SplitProviderStack)

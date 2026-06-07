@@ -10,6 +10,9 @@ import com.libertasprimordium.skald.security.VaultCryptoProviderSelectionDecisio
 import com.libertasprimordium.skald.security.VaultCryptoProviderSelectionRegistry
 import com.libertasprimordium.skald.security.VaultCryptoProviderSelectionRequest
 import com.libertasprimordium.skald.security.VaultCryptoProviderSelectionUse
+import com.libertasprimordium.skald.security.AndroidVaultCompatibilityAssessmentRequest
+import com.libertasprimordium.skald.security.AndroidVaultCompatibilityEvidence
+import com.libertasprimordium.skald.security.commonAndroidVaultCompatibilityPolicy
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -94,25 +97,50 @@ class VaultCryptoProviderSelectionTest {
     }
 
     @Test
-    fun androidBaselineAndStorageGatesBlockUniversalAndroidSelection() {
+    fun androidCompatibilityPlanningAndStorageGatesDoNotSelectProductionProvider() {
+        val androidCompatibility = commonAndroidVaultCompatibilityPolicy().assess(
+            AndroidVaultCompatibilityAssessmentRequest(
+                evidence = AndroidVaultCompatibilityEvidence.supportedPlanningEvidence(),
+            ),
+        )
         val result = VaultCryptoProviderSelectionRegistry.select(
-            VaultCryptoProviderSelectionRequest(
+            request = VaultCryptoProviderSelectionRequest(
                 requestedCandidate = VaultCryptoProviderCandidateId.TinkBouncyCastleSplit,
                 platform = EncryptedVaultPlatform.Android,
                 use = VaultCryptoProviderSelectionUse.ProductionPersistence,
                 requireUniversalAndroidParameterPolicy = true,
             ),
+            androidCompatibilityAssessment = androidCompatibility,
         )
         val candidate = result.requestedCandidate
 
-        assertFalse(candidate.evidence.parameterPolicy.androidBaselineCoverageSatisfied)
+        assertTrue(candidate.evidence.parameterPolicy.androidBaselineCoverageSatisfied)
+        assertTrue(candidate.evidence.platformCoverage.androidCompatibilityPlanningSatisfied)
+        assertFalse(candidate.evidence.platformCoverage.lowEndModelTestingRequired)
+        assertFalse(candidate.evidence.platformCoverage.midRangeModelTestingRequired)
         assertFalse(candidate.evidence.parameterPolicy.finalParametersApproved)
-        assertContains(
-            candidate.blockers,
-            VaultCryptoProviderSelectionBlocker.AndroidBaselineParameterPolicyUnresolved,
-        )
+        assertFalse(VaultCryptoProviderSelectionBlocker.AndroidCompatibilityRuntimeChecksMissing in candidate.blockers)
         assertContains(candidate.blockers, VaultCryptoProviderSelectionBlocker.SecureSecretStorageDisabled)
         assertContains(candidate.blockers, VaultCryptoProviderSelectionBlocker.SecureMetadataStorageDisabled)
+        assertFalse(candidate.productionSelectable)
+    }
+
+    @Test
+    fun unknownAndroidCompatibilityEvidenceBlocksAndroidProviderPlanning() {
+        val result = VaultCryptoProviderSelectionRegistry.select(
+            request = VaultCryptoProviderSelectionRequest(
+                requestedCandidate = VaultCryptoProviderCandidateId.TinkBouncyCastleSplit,
+                platform = EncryptedVaultPlatform.Android,
+                requireUniversalAndroidParameterPolicy = true,
+            ),
+        )
+        val candidate = result.requestedCandidate
+
+        assertFalse(candidate.evidence.platformCoverage.androidCompatibilityPlanningSatisfied)
+        assertContains(
+            candidate.blockers,
+            VaultCryptoProviderSelectionBlocker.AndroidCompatibilityRuntimeChecksMissing,
+        )
         assertFalse(candidate.productionSelectable)
     }
 

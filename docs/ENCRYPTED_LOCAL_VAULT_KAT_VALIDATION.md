@@ -21,9 +21,9 @@ The desktop test `VaultCryptoKatValidationTest` validates the pinned probe stack
 - Bouncy Castle `org.bouncycastle.crypto.generators.Argon2BytesGenerator` against the RFC 9106 Argon2id test vector.
 - Tink `com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305` against the XChaCha draft AEAD_XChaCha20_Poly1305 test vector.
 
-The Android instrumented test `VaultCryptoAndroidKatValidationTest` mirrors those same public vectors under `composeApp/src/androidInstrumentedTest`. The Android test APK assembles, and Android runtime execution passed on a Pixel 10 Pro XL running Android 16 after targeting the raw ADB IP:port serial `192.168.1.155:44127` with both `ANDROID_SERIAL` and `-Pandroid.injected.device.serial`.
+The Android instrumented test `VaultCryptoAndroidKatValidationTest` mirrors those same public vectors under `composeApp/src/androidInstrumentedTest`. The Android test APK assembles, and Android runtime execution passed on a Pixel 10 Pro XL running Android 16 after targeting the connected device with both `ANDROID_SERIAL` and `-Pandroid.injected.device.serial`. Durable docs intentionally omit the concrete ADB serial/IP:port.
 
-Earlier connected-device attempts failed before any KAT assertion ran. The first failure was an APK install-signature conflict on a previously installed `com.libertasprimordium.skald` package. A later attempt was blocked by stale wireless-debugging mDNS target selection. The successful rerun is valid because `adb devices -l` reported the raw serial as `device`, `adb -s 192.168.1.155:44127 shell getprop ro.product.model` reported `Pixel 10 Pro XL`, `pm list packages` showed no installed Skald package before the test, and Gradle reported `Starting 2 tests on Pixel 10 Pro XL - 16` followed by `Finished 2 tests on Pixel 10 Pro XL - 16`.
+Earlier connected-device attempts failed before any KAT assertion ran. The first failure was an APK install-signature conflict on a previously installed `com.libertasprimordium.skald` package. A later attempt was blocked by stale wireless-debugging mDNS target selection. The successful rerun is valid because `adb devices -l` reported a connected target as `device`, device properties reported `Pixel 10 Pro XL` / Android 16, `pm list packages` showed no installed Skald package before the test, and Gradle reported `Starting 2 tests on Pixel 10 Pro XL - 16` followed by `Finished 2 tests on Pixel 10 Pro XL - 16`.
 
 The Tink explicit-nonce class is used only because official AEAD KATs require a fixed nonce. It is not an approved production vault API and is not wired into secure storage, secure metadata persistence, sync, UI, settings, wallet code, or repositories. A disabled Skald-owned provider boundary now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), but it performs no production crypto. The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md); it selects only `DisabledVaultCryptoProvider` and treats dependency-level KATs plus test-provider KATs as insufficient for production selection. The provider-level KAT contract that future executable providers must satisfy is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). A test-only provider KAT harness is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md); it runs the public vectors and required negative cases through `VaultCryptoProvider.validateKat(...)` on desktop and Android runtime while returning only redacted test-scope evidence. Argon2id calibration policy/probes are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), and non-final candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), but they do not select final production KDF parameters. A future production executable provider implementation must pass provider-level KATs and selection gates before vault storage is considered.
 
@@ -56,12 +56,12 @@ What is verified:
 - Android instrumented KAT source exists under `composeApp/src/androidInstrumentedTest`.
 - `:composeApp:assembleDebugAndroidTest` assembles the Android test APK.
 - `:composeApp:assembleDebug` assembles the debug APK.
-- `:composeApp:connectedDebugAndroidTest` executed two Android instrumented KAT tests on Pixel 10 Pro XL / Android 16 and passed when targeted with the raw ADB IP:port serial.
+- `:composeApp:connectedDebugAndroidTest` executed two Android instrumented KAT tests on Pixel 10 Pro XL / Android 16 and passed when targeted with the connected ADB serial.
 
 Runtime command that passed:
 
 ```bash
-GRADLE_USER_HOME=/tmp/skald-gradle-home ANDROID_USER_HOME=/tmp/skald-android-user-home ANDROID_HOME=/home/spencer/Android/Sdk ANDROID_SERIAL="192.168.1.155:44127" ./gradlew --no-daemon -Djava.net.preferIPv4Stack=true -Pkotlin.compiler.execution.strategy=in-process -Pandroid.injected.device.serial="192.168.1.155:44127" :composeApp:connectedDebugAndroidTest
+GRADLE_USER_HOME=/tmp/skald-gradle-home ANDROID_USER_HOME=/tmp/skald-android-user-home ANDROID_HOME=/home/spencer/Android/Sdk ANDROID_SERIAL="<serial-or-ip-port>" ./gradlew --no-daemon -Djava.net.preferIPv4Stack=true -Pkotlin.compiler.execution.strategy=in-process -Pandroid.injected.device.serial="<serial-or-ip-port>" :composeApp:connectedDebugAndroidTest
 ```
 
 Gradle reported:
@@ -77,8 +77,8 @@ What the earlier failures mean:
 - The install-signature conflict was an environment/device-state blocker that occurred before KAT execution.
 - The stale wireless-debugging mDNS target was an ADB device-targeting blocker.
 - The later `pm list packages` check showed only `package:com.libertasprimordium.othernote` and no installed `com.libertasprimordium.skald` package before the successful run.
-- `adb -s 192.168.1.155:44127 uninstall com.libertasprimordium.skald || true` returned `Failure [DELETE_FAILED_INTERNAL_ERROR]` because Skald was apparently not installed; no Skald package data was deleted.
-- The raw IP:port serial plus Gradle's injected device serial avoided the stale mDNS target and executed the KATs on Android runtime.
+- `adb -s <serial-or-ip-port> uninstall com.libertasprimordium.skald || true` returned `Failure [DELETE_FAILED_INTERNAL_ERROR]` because Skald was apparently not installed; no Skald package data was deleted.
+- Explicit ADB serial pinning plus Gradle's injected device serial avoided the stale mDNS target and executed the KATs on Android runtime.
 
 ## Test Provider Harness Status
 
@@ -160,4 +160,4 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless explicitly narrowed otherwise: collect additional Android baseline calibration evidence or design a disabled production-provider skeleton with no storage before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result or by the test-only provider KAT harness.
+The next focused branch should remain design/probe-only unless explicitly narrowed otherwise: define runtime provider/primitive/randomness checks for the supported Android baseline or design a disabled production-provider skeleton with no storage before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result, by Android compatibility/entropy policy modeling, or by the test-only provider KAT harness.

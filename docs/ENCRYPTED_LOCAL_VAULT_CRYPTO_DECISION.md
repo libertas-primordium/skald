@@ -17,18 +17,18 @@ Runtime behavior remains fail-closed:
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
-The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop and Android runtime known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). The candidate dependency, license, Tink keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). The disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md), the provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), and the test-only provider KAT harness is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). Argon2id calibration policy and probe-only measurement planning is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), and manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require production provider implementation, production provider selection, production provider-level KAT execution through the Skald-owned boundary, final KDF parameter approval, Android baseline evidence, container, storage, and release review.
+The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENCRYPTED_LOCAL_VAULT_DESIGN.md). The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). The focused dependency spike is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_SPIKE.md), with desktop and Android runtime known-answer-vector validation recorded in [`ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_KAT_VALIDATION.md). The libsodium/Kotlin packaging comparison is documented in [`ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md`](ENCRYPTED_LOCAL_VAULT_LIBSODIUM_COMPARISON.md). The candidate dependency, license, Tink keyset/storage, Bouncy Castle Argon2id API, and split-provider review is documented in [`ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md`](ENCRYPTED_LOCAL_VAULT_DEPENDENCY_REVIEW.md). The disabled Skald-owned provider boundary is documented in [`ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_PROVIDER_BOUNDARY.md), the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md), the provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), and the test-only provider KAT harness is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). Argon2id calibration policy and probe-only measurement planning is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md), candidate parameter tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md), manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md), and Android compatibility/entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). This record resolves the main crypto/key-lifecycle open questions into implementation targets and explicitly marks the items that still require production provider implementation, production provider selection, production provider-level KAT execution through the Skald-owned boundary, final KDF parameter approval, Android runtime provider/randomness checks, container, storage, and release review.
 
 ## Decision Summary
 
 | Area | Decision |
 | --- | --- |
 | Primary storage model | App-controlled encrypted local vault. OS keyrings are never primary storage. |
-| Passphrase KDF | Argon2id, calibrated per platform and per device class. |
+| Passphrase KDF | Argon2id, calibrated per supported platform. Optional device-class evidence may inform UX and parameter review, but low-end and mid-range Android model testing are not hard compatibility blockers. |
 | KDF fallback | scrypt only as a reviewed compatibility fallback; PBKDF2 is not acceptable for the default wallet vault. |
 | Record AEAD | XChaCha20-Poly1305 for vault records if dependency review confirms stable Android and Linux desktop support. |
 | AES role | AES-GCM or AES-GCM-SIV may be used for platform wrapping or if dependency review rejects XChaCha, but not as the first-choice record envelope. |
-| Nonce strategy | Random 24-byte nonce per XChaCha record from platform CSPRNG; nonce stored in the record envelope; never reuse under the same key. |
+| Nonce strategy | Random 24-byte nonce per XChaCha record from OS cryptographic randomness or reviewed crypto-provider randomness; nonce stored in the record envelope; never reuse under the same key. |
 | Associated data | Bind ciphertext to non-secret format context only: container version, vault ID, record ID, record class, schema version, key version, and envelope flags. |
 | Key hierarchy | Passphrase/PIN-derived KEK unwraps a random vault root key; record-class keys are derived from the root key; metadata, secret payload, and backup/export keys are separated. |
 | Android wrapping | Optional Android Keystore wrapping for vault key material; app-controlled passphrase/PIN vault remains primary. |
@@ -36,7 +36,7 @@ The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENC
 | Container format | Versioned vault container with plaintext unlock header and encrypted catalog/records. |
 | Backup/export | Separate encrypted export format with separate backup/export keys and explicit user-selected destination. |
 | Migration/corruption | Fail closed, authenticate every encrypted section, preserve old records until migration succeeds, avoid automatic destructive repair. |
-| Implementation readiness | Not ready. Desktop public KATs pass and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16. Test-only provider KATs also pass through the Skald-owned provider interface on desktop and Android runtime. Dependency/license/package/keyset/split-provider review is complete at candidate level, a disabled Skald-owned provider boundary exists, a disabled provider-selection boundary selects only the disabled provider, a provider-level KAT contract is modeled, and Argon2id calibration policy/probes plus non-final candidate parameter tiers and manual Android evidence capture exist. Current Android calibration evidence is high-end debug/instrumented only. Production provider implementation, production provider selection, final KDF parameter approval, Android baseline evidence, production provider-boundary KAT execution, vault container review, storage review, and lock/session tests are still required before implementation. |
+| Implementation readiness | Not ready. Desktop public KATs pass and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16. Test-only provider KATs also pass through the Skald-owned provider interface on desktop and Android runtime. Dependency/license/package/keyset/split-provider review is complete at candidate level, a disabled Skald-owned provider boundary exists, a disabled provider-selection boundary selects only the disabled provider, a provider-level KAT contract is modeled, and Argon2id calibration policy/probes plus non-final candidate parameter tiers, manual Android evidence capture, and Android compatibility/entropy policy exist. Current Android calibration evidence is high-end debug/instrumented only and does not prove all-device performance. Production provider implementation, production provider selection, final KDF parameter approval, runtime Android provider/randomness checks, production provider-boundary KAT execution, vault container review, storage review, and lock/session tests are still required before implementation. |
 
 ## Candidate Evaluation
 
@@ -65,8 +65,9 @@ Implementation policy:
 Current calibration status:
 
 - Probe-only candidate rows and bounded desktop/Android measurement harnesses are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md).
-- Non-final candidate tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md): 64 MiB / 3 passes / 1 lane for desktop candidate evidence, 32 MiB / 3 passes / 1 lane for high-end Android candidate evidence, 16 MiB / 2 passes / 1 lane as a fallback/probe floor only, and unresolved Android baseline coverage.
-- Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records future device-class evidence consistently, but cannot approve production KDF execution.
+- Non-final candidate tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md): 64 MiB / 3 passes / 1 lane for desktop candidate evidence, 32 MiB / 3 passes / 1 lane for high-end Android candidate evidence, and 16 MiB / 2 passes / 1 lane as a fallback/probe floor only.
+- Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records optional device-class evidence consistently, but cannot approve production KDF execution.
+- Android compatibility planning is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). It replaces mandatory low-end/mid-range model testing with supported OS baseline policy, runtime provider/primitive/randomness checks, and fail-closed vault creation behavior.
 - They are not final production parameters and do not enable production KDF execution.
 - Exact starting parameters remain unresolved until timing evidence, memory pressure, UX tradeoffs, provider-level KATs, lock/session tests, and storage review are complete.
 
@@ -265,7 +266,7 @@ Rationale:
 Allowed role:
 
 - Android Keystore wrapping.
-- JVM secure random and platform entropy.
+- OS cryptographic randomness or reviewed crypto-provider randomness.
 - Optional platform-backed key wrapping after review.
 
 ## Recommended Implementation Path
@@ -283,7 +284,7 @@ Algorithm recommendation:
 ```text
 Passphrase KDF: Argon2id
 Record AEAD: XChaCha20-Poly1305
-Record nonce: random 24-byte nonce per record
+Record nonce: random 24-byte nonce per record from OS cryptographic randomness or reviewed crypto-provider randomness
 Key separation: root key -> derived metadata/secret/backup keys
 Platform wrapping: optional; never primary storage
 ```
@@ -505,14 +506,16 @@ Implementation target:
 - Keep a migration journal encrypted when it contains record metadata.
 - Treat duplicate record IDs, duplicate nonces under one key, catalog/payload mismatch, and bad tags as corruption.
 
-## Hardware Entropy Decision
+## Randomness And Key Protection Decision
 
 Policy:
 
-- Vault root keys, record keys, salts, nonces, and backup keys must come from platform CSPRNG.
-- Future production seed generation should detect and prefer hardware-backed/platform CSPRNG entropy where available.
-- Hardware entropy detection is not part of this pass.
-- If platform entropy is unavailable or fails health checks, vault creation must fail closed.
+- Vault root keys, record keys, salts, nonces, backup keys, and unlock-related secret material must come from OS cryptographic randomness or reviewed crypto-provider randomness.
+- Kotlin, Java, or general-purpose random APIs must not be used for vault secrets, salts, nonces, keys, or unlock material. Forbidden sources include `kotlin.random.Random`, `java.util.Random`, `Math.random`, timestamps, UUID-derived values, and ad hoc PRNGs.
+- Linux compatibility planning requires kernel/OS CSPRNG-backed randomness such as `getrandom`/`urandom` through a reviewed provider or library path.
+- Android compatibility planning may use Android OS cryptographic randomness such as `SecureRandom` or a reviewed provider path, but this record does not claim Android random bytes are always hardware-backed.
+- Hardware-backed key protection is separate from random-byte generation. Android Keystore/StrongBox and any future Linux hardware-backed wrapping are optional key-protection mechanisms after review, not required entropy sources for basic vault compatibility.
+- If approved cryptographic randomness cannot be obtained or verified through the selected platform/provider path, vault creation must fail closed with a user-facing warning.
 
 ## Memory Lifecycle Decision
 
@@ -579,7 +582,7 @@ Before enabling any real persistence:
 These remain unresolved and require focused provider-implementation, calibration, or implementation spikes:
 
 - Whether the candidate-reviewed Tink plus Bouncy Castle split stack should become the implementation candidate after final KDF parameter approval, disabled-boundary-to-production-provider design, production provider-level KAT contract execution, vault container review, and storage review, or be replaced by a single reviewed stack such as libsodium/KMP.
-- Exact production Argon2id parameters remain unresolved; the current candidate tiers are planning evidence only and still need low-end Android, mid-range Android, thermal/load, unlock UX, memory-pressure, and release-mode review.
+- Exact production Argon2id parameters remain unresolved; the current candidate tiers are planning evidence only and still need supported-Android runtime provider/randomness checks, thermal/load, unlock UX, memory-pressure, and release-mode review. Low-end and mid-range Android model testing may still inform parameter choices, but it is not a hard compatibility blocker.
 - Exact key-expansion primitive for record-class keys.
 - Whether backup/export uses dependency streaming AEAD or a Skald chunked envelope.
 - Whether Linux should ever offer optional libsecret/KWallet wrapping after v1.

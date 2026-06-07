@@ -138,6 +138,10 @@ enum class EncryptedVaultRequirement(val label: String) {
     ProviderKatContractModeled("provider-level KAT contract modeled"),
     KdfCalibrationPolicyModeled("KDF calibration policy modeled"),
     KdfCandidateParameterPolicyModeled("candidate KDF parameter policy modeled"),
+    AndroidCompatibilityEntropyPolicyModeled("Android compatibility and entropy policy modeled"),
+    RuntimeCryptoProviderChecksModeled("runtime crypto provider checks modeled"),
+    RuntimeEntropyChecksModeled("runtime cryptographic randomness checks modeled"),
+    VaultCreationFailClosedWarningModeled("vault-creation fail-closed warning modeled"),
     KdfParametersCalibrated("KDF parameters calibrated"),
     AeadImplementationVerified("AEAD implementation verified"),
     ProviderBoundaryKnownAnswerVectorsPassed("provider-boundary known-answer vectors passed"),
@@ -209,6 +213,10 @@ enum class EncryptedVaultCapability(
     ),
     ProviderKatContractModel("provider-level KAT contract model", enabledInProduction = true),
     ProviderSelectionBoundaryModel("provider selection boundary model", enabledInProduction = true),
+    AndroidCompatibilityEntropyPolicyModel(
+        "Android compatibility and entropy policy model",
+        enabledInProduction = true,
+    ),
     TestOnlyProviderKatHarnessModel("test-only provider KAT harness model", enabledInProduction = false),
     DisabledCryptoProviderBoundary("disabled crypto provider boundary", enabledInProduction = false),
     FutureEncryptedVaultImplementation("future encrypted vault implementation", enabledInProduction = false),
@@ -257,6 +265,7 @@ data class EncryptedVaultReadiness(
     val implementationStatus: EncryptedVaultImplementationStatus,
     val algorithmPolicy: EncryptedVaultAlgorithmPolicy,
     val argon2idCalibrationPolicy: Argon2idCalibrationPolicy,
+    val androidCompatibilityPolicy: AndroidSupportedPlatformPolicy,
     val platformPolicies: Set<EncryptedVaultPlatformPolicy>,
     val requirementStatuses: Map<EncryptedVaultRequirement, EncryptedVaultRequirementStatus>,
     val blockers: Set<EncryptedVaultBlockingIssue>,
@@ -360,6 +369,22 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
+        put(
+            EncryptedVaultRequirement.AndroidCompatibilityEntropyPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.RuntimeCryptoProviderChecksModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.RuntimeEntropyChecksModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
         put(EncryptedVaultRequirement.KdfParametersCalibrated, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.AeadImplementationVerified, EncryptedVaultRequirementStatus.Unresolved)
         put(EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed, EncryptedVaultRequirementStatus.Absent)
@@ -378,6 +403,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         implementationStatus = EncryptedVaultImplementationStatus.NotImplemented,
         algorithmPolicy = EncryptedVaultAlgorithmPolicy.currentDesign(),
         argon2idCalibrationPolicy = commonArgon2idCalibrationPolicy(),
+        androidCompatibilityPolicy = commonAndroidVaultCompatibilityPolicy(),
         platformPolicies = setOf(androidEncryptedVaultPlatformPolicy(), linuxDesktopEncryptedVaultPlatformPolicy()),
         requirementStatuses = requirementStatuses,
         blockers = setOf(
@@ -410,8 +436,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, and a disabled provider-selection boundary. Production implementation remains blocked until final KDF calibration across required platform/device classes, production provider implementation, production provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, and a disabled provider-selection boundary. Production implementation remains blocked until final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 
@@ -423,7 +449,7 @@ fun androidEncryptedVaultPlatformPolicy(): EncryptedVaultPlatformPolicy =
         platformWrappingRole = EncryptedVaultPlatformWrappingRole.OptionalWrappingHelperAfterReview,
         hardwareBackedWrappingOptional = true,
         osKeyringPrimaryStorageAllowed = false,
-        implementationNote = "Android Keystore wrapping may be evaluated later, but the app-controlled vault/session-lock model remains primary.",
+        implementationNote = "Android OS cryptographic randomness or reviewed provider randomness is required for vault material. Keystore or StrongBox wrapping may be evaluated later as optional key protection, but the app-controlled vault/session-lock model remains primary.",
     )
 
 fun linuxDesktopEncryptedVaultPlatformPolicy(): EncryptedVaultPlatformPolicy =

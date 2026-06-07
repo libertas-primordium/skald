@@ -6,7 +6,9 @@ Skald Vault now has a Skald-owned manual Android Argon2id calibration evidence-c
 
 This is evidence modeling and manual capture guidance only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The current Pixel 10 Pro XL / Android 16 calibration evidence remains high-end Android debug/instrumented evidence only. It does not satisfy a universal Android baseline, release-like runtime coverage, low-end coverage, mid-range coverage, thermal/load repeatability, final parameter approval, provider selection, storage readiness, or production KDF approval.
+The current Pixel 10 Pro XL / Android 16 calibration evidence remains high-end Android debug/instrumented evidence only. It does not prove performance across all supported Android devices, release-like runtime behavior, thermal/load repeatability, final parameter approval, provider selection, storage readiness, or production KDF approval.
+
+Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). That policy records the user decision to forego low-end Android model testing as a hard compatibility blocker. Low-end and mid-range calibration evidence remains useful optional parameter/UX evidence; supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault creation gates now define compatibility planning.
 
 ## Source Location
 
@@ -69,7 +71,7 @@ The model rejects ambiguous memory units, KiB labels in Android manual evidence,
 - public non-secret fixture discipline,
 - final production KDF approval remains false.
 
-Manual calibration evidence can satisfy future Android baseline evidence requirements only when the reviewed device-class, release-like, thermal/load, and fixture gates are complete. Manual evidence cannot mark the production KDF approved. Final production parameters still require provider implementation review, production provider-level KATs, lock/session lifecycle tests, storage review, redaction/failure-mode tests, migration/corruption tests, and release-hardening review.
+Manual calibration evidence can inform future Android parameter review when the recorded device class, runtime profile, thermal/load notes, and fixture discipline are clear. It no longer functions as a mandatory low-end/mid-range compatibility gate. Manual evidence cannot mark the production KDF approved. Final production parameters still require supported-platform runtime provider and randomness checks, provider implementation review, production provider-level KATs, lock/session lifecycle tests, storage review, redaction/failure-mode tests, migration/corruption tests, and release-hardening review.
 
 ## Device-Class Coverage
 
@@ -78,11 +80,11 @@ Use these classes for review triage. They are not marketing labels.
 | Class | Intended evidence role | Notes |
 | --- | --- | --- |
 | High-end Android | Upper-bound performance and UX evidence. | Current Pixel 10 Pro XL / Android 16 evidence belongs here only. |
-| Mid-range Android | Mainstream supported-device baseline evidence. | Required before universal Android policy. |
-| Low-end Android | Memory-pressure and latency floor evidence. | Required before universal Android policy. |
-| Unknown | Temporary holding state for incomplete manual records. | Does not satisfy baseline coverage. |
+| Mid-range Android | Optional mainstream supported-device parameter and UX evidence. | Useful for tuning, no longer a hard compatibility blocker. |
+| Low-end Android | Optional memory-pressure and latency floor evidence. | Useful for tuning, no longer a hard compatibility blocker. |
+| Unknown | Temporary holding state for incomplete manual records. | Does not prove performance generalization. |
 
-At least one high-end, one mid-range, and one low-end device-class evidence record is required before Android baseline coverage can be considered. Release-like evidence and thermal/load repeatability are separate gates; debug/instrumented evidence does not satisfy them.
+The compatibility gate is not exhaustive device-class coverage. Supported Android baseline plus runtime primitive/provider checks, approved cryptographic randomness path, and fail-closed vault-creation behavior replace low-end/mid-range coverage as the Android compatibility gate. Release-like evidence and thermal/load repeatability remain desirable for UX and release review; debug/instrumented evidence does not satisfy release-like evidence.
 
 ## Manual Command Recipes
 
@@ -174,7 +176,8 @@ Assessment:
 - low-end evidence present:
 - release-like evidence present:
 - thermal/load repeatability present:
-- Android baseline satisfied:
+- compatibility planning affected by this evidence:
+- all-device performance proven: no
 - production KDF approved: no
 ```
 
@@ -193,7 +196,7 @@ Generic manufacturer, model, Android version, and API level are enough for manua
 
 ## How Evidence Feeds Policy
 
-Manual Android evidence feeds the future Argon2id parameter policy as device-class coverage and runtime-environment context. It may help decide whether the high-end Android candidate, mobile fallback/probe floor, or a future Android baseline candidate is usable.
+Manual Android evidence feeds the future Argon2id parameter policy as device-class and runtime-environment context. It may help decide whether the high-end Android candidate, mobile fallback/probe floor, or a future supported-Android candidate is usable. It is not a substitute for the compatibility/entropy gates in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md).
 
 It does not approve:
 
@@ -210,3 +213,4 @@ It does not approve:
 ## Next Step
 
 The next focused pass should remain design/probe-only: capture additional Android calibration evidence on at least one mid-range and one low-end supported device, preferably with release-like and thermal/load repeatability notes. Executable production provider work, vault containers, and persistence must remain separate branches with explicit approval.
+The next focused pass should remain design/probe-only unless explicitly narrowed by the user: define runtime provider/randomness compatibility checks for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Executable production provider work, vault containers, entropy collection, key generation, and persistence must remain separate branches with explicit approval.

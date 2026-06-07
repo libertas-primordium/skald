@@ -6,7 +6,7 @@ Skald Vault now has a disabled provider-selection and registry boundary for the 
 
 This is selection policy only. It does not implement executable provider crypto, production KDF execution, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). That capture model gives reviewers a consistent way to record future low-end, mid-range, high-end, release-like, and thermal/load evidence, but it does not change provider selection. Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented evidence only, and Android baseline coverage remains unresolved.
+Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
 
 The only runtime provider selected by this branch is:
 
@@ -22,6 +22,7 @@ Production-safe provider-selection models and registry:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt
 ```
 
 Disabled provider boundary:
@@ -64,6 +65,7 @@ The registry separates evidence into typed Skald-owned categories:
 - dependency evidence,
 - provider KAT evidence,
 - platform runtime coverage evidence,
+- Android compatibility and entropy policy evidence,
 - Argon2id parameter policy evidence,
 - secure storage and secure metadata readiness evidence,
 - production approval gates,
@@ -122,17 +124,17 @@ A future executable provider cannot become selectable until every required gate 
 
 Passing dependency-level KATs or test-provider KATs must not bypass these gates.
 
-## Platform And Parameter Policy
+## Platform, Compatibility, And Parameter Policy
 
 The Argon2id candidate policy is explicitly non-final:
 
 - Desktop candidate: 64 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19.
 - High-end Android candidate: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19.
 - Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19.
-- Android baseline coverage remains unresolved.
-- Manual Android capture protocol exists, but low-end, mid-range, release-like, and thermal/load evidence are still missing.
+- Android supported-compatibility planning is modeled separately from final KDF parameter approval.
+- Manual Android capture protocol exists for optional device-class and runtime-environment evidence; low-end and mid-range model evidence is no longer a compatibility hard blocker.
 
-The provider-selection boundary treats unresolved Android baseline coverage and non-final KDF parameters as blockers for production selection.
+The provider-selection boundary treats non-final KDF parameters, missing production provider implementation, missing production provider-level KATs, disabled storage, and Android runtime provider/randomness checks as production gates. Unknown Android provider or randomness state blocks Android provider planning. Satisfied compatibility planning still does not make a provider selectable.
 
 ## Storage And Mainnet Gates
 
@@ -187,16 +189,17 @@ The next provider-selection change may only consider a non-disabled provider aft
 1. executable production provider implementation behind Skald-owned interfaces,
 2. provider-level KAT execution through that production provider,
 3. Android and desktop runtime validation for the production provider,
-4. final Argon2id parameter approval for the target platform/device class,
-5. keyset/raw-key handling approval,
-6. secure storage and secure metadata approval,
-7. vault container/storage review,
-8. redaction and failure-mode tests,
-9. migration/corruption tests,
-10. explicit mainnet release-hardening if mainnet is requested.
+4. supported Android compatibility/runtime provider/randomness checks where Android is in scope,
+5. final Argon2id parameter approval for the target platform,
+6. keyset/raw-key handling approval,
+7. secure storage and secure metadata approval,
+8. vault container/storage review,
+9. redaction and failure-mode tests,
+10. migration/corruption tests,
+11. explicit mainnet release-hardening if mainnet is requested.
 
 Until then, the provider-selection registry must keep selecting the disabled provider only.
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: collect missing Android baseline Argon2id evidence with the manual capture protocol or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: define runtime provider/randomness compatibility checks for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.

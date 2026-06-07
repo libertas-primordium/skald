@@ -117,7 +117,7 @@ class Argon2idCalibrationPolicyTest {
         val desktop = policy.tier(Argon2idParameterTierKind.DesktopCandidate)
         val highEndAndroid = policy.tier(Argon2idParameterTierKind.HighEndAndroidCandidate)
         val floor = policy.tier(Argon2idParameterTierKind.MobileFallbackProbeFloor)
-        val androidBaseline = policy.tier(Argon2idParameterTierKind.AndroidBaselineUnresolved)
+        val androidCompatibility = policy.tier(Argon2idParameterTierKind.AndroidSupportedCompatibilityPlanning)
 
         assertEquals("argon2id-probe-64mib-3p-1lane", desktop.candidateId)
         assertEquals("64 MiB", desktop.candidate?.memoryCost?.label)
@@ -138,16 +138,18 @@ class Argon2idCalibrationPolicyTest {
         assertEquals("16 MiB", floor.candidate?.memoryCost?.label)
         assertFalse(floor.finalProductionApproved)
 
-        assertEquals("unresolved", androidBaseline.candidateId)
+        assertEquals("unresolved", androidCompatibility.candidateId)
         assertContains(
-            androidBaseline.evidence,
-            Argon2idDeviceClassEvidenceStatus.AndroidBaselineCoverageMissing,
+            androidCompatibility.evidence,
+            Argon2idDeviceClassEvidenceStatus.AndroidSupportedCompatibilityPolicyModeled,
         )
-        assertContains(
-            androidBaseline.evidence,
-            Argon2idDeviceClassEvidenceStatus.LowEndAndroidCoverageMissing,
+        assertFalse(
+            Argon2idDeviceClassEvidenceStatus.LowEndAndroidCoverageMissing in androidCompatibility.evidence,
         )
-        assertFalse(policy.androidBaselineCoverageSatisfied)
+        assertFalse(
+            Argon2idDeviceClassEvidenceStatus.MidRangeAndroidCoverageMissing in androidCompatibility.evidence,
+        )
+        assertTrue(policy.androidBaselineCoverageSatisfied)
         assertTrue(policy.tiers.all { !it.finalProductionApproved })
     }
 
@@ -155,9 +157,13 @@ class Argon2idCalibrationPolicyTest {
     fun finalApprovalBlockersKeepCandidatePolicyNonFinal() {
         val policy = commonArgon2idCalibrationPolicy().candidateParameterPolicy
 
-        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.LowEndAndroidProbeMissing)
-        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.MidRangeAndroidProbeMissing)
-        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ThermalLoadRepeatabilityMissing)
+        assertFalse(Argon2idParameterApprovalBlocker.LowEndAndroidProbeMissing in policy.finalApprovalBlockers)
+        assertFalse(Argon2idParameterApprovalBlocker.MidRangeAndroidProbeMissing in policy.finalApprovalBlockers)
+        assertFalse(Argon2idParameterApprovalBlocker.ThermalLoadRepeatabilityMissing in policy.finalApprovalBlockers)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.AndroidSupportedCompatibilityReviewMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.RuntimeCryptoProviderCheckMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.RuntimeEntropyCheckMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ApprovedRandomnessSourceMissing)
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.UnlockUxMeasurementMissing)
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ProviderBoundaryKnownAnswerVectorsMissing)
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ProductionKdfImplementationMissing)
@@ -177,8 +183,8 @@ class Argon2idCalibrationPolicyTest {
         assertContains(warnings, Argon2idCalibrationWarning.LowMemoryProbeCandidate)
         assertContains(warnings, Argon2idCalibrationWarning.TooFastSettingWouldBeWeak)
         assertContains(warnings, Argon2idCalibrationWarning.PixelEvidenceHighEndOnly)
-        assertContains(warnings, Argon2idCalibrationWarning.AndroidBaselineCoverageMissing)
-        assertContains(warnings, Argon2idCalibrationWarning.ThermalLoadRepeatabilityMissing)
+        assertContains(warnings, Argon2idCalibrationWarning.AndroidCompatibilityRuntimeChecksRequired)
+        assertContains(warnings, Argon2idCalibrationWarning.ThermalLoadRepeatabilityDesirable)
         assertContains(warnings, Argon2idCalibrationWarning.AndroidDeviceVariance)
         assertContains(warnings, Argon2idCalibrationWarning.TimingIsNotBenchmark)
         assertContains(warnings, Argon2idCalibrationWarning.MemoryZeroizationUnresolved)
