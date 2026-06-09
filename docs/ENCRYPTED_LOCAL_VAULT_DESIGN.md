@@ -33,7 +33,7 @@ The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READI
 - Closing, locking, timing out, or backgrounding the app should clear decrypted vault keys from memory as far as practical.
 - Metadata is sensitive even when it is not key material.
 - No production wallet operation should silently fall back to plaintext, public infrastructure, clearnet transport, or mainnet.
-- No vault secret, salt, nonce, key, unlock material, or vault record should use language-level or general-purpose randomness. Approved OS or reviewed-provider cryptographic randomness is required, and hardware-backed key protection is a separate optional wrapping concern.
+- No salt, nonce, future reviewed random vault material, unlock-related randomness, or vault record should use language-level or general-purpose randomness. Approved OS or reviewed-provider cryptographic randomness is required where randomness is needed, and hardware-backed key protection is a separate optional wrapping concern.
 
 ## Threat Model
 
@@ -186,9 +186,11 @@ User unlock secret
         ↓
 Passphrase/PIN key derivation
         ↓
-Vault key-encryption key
+Passphrase-derived root material
         ↓
-Encrypted vault root key
+Domain-separated key material
+        ├── vault header commitment key material
+        ├── record AEAD key material
         ↓
 Derived or wrapped record-class keys
         ├── metadata encryption key
@@ -197,7 +199,7 @@ Derived or wrapped record-class keys
         └── optional per-record subkeys
 ```
 
-Optional platform wrapping may protect the vault root key or key-encryption key:
+Optional platform wrapping may protect convenience unlock material after review:
 
 ```text
 Platform wrapping key
@@ -206,6 +208,8 @@ Wrapped vault key material
 ```
 
 Platform wrapping is optional defense-in-depth. It must not replace the app-controlled vault policy or session lock model.
+
+For the v1 production-provider acceptance contract, Skald prefers passphrase-derived raw AEAD key material and no persisted Tink keyset, provided public supported Tink APIs can construct the pinned XChaCha20-Poly1305 primitive from caller-supplied derived key bytes. The vault must verify a separate header commitment over canonical header fields before any record decrypt because Tink XChaCha20-Poly1305 is non-key-committing.
 
 ## Key Derivation
 
@@ -221,8 +225,8 @@ Requirements:
 - Treat wrong passphrase/PIN as a locked/unavailable state.
 - Never log unlock material, derived keys, salts, or intermediate values.
 - Never keep user passphrases in process-global state.
-- Use OS cryptographic randomness or reviewed crypto-provider randomness for vault key material, salts, nonces, backup keys, and unlock-related secret material.
-- Do not use Kotlin, Java, or general-purpose random APIs such as `kotlin.random.Random`, `java.util.Random`, `Math.random`, timestamps, UUID-derived values, or ad hoc PRNGs for vault secrets, salts, nonces, keys, or unlock material.
+- Use OS cryptographic randomness or reviewed crypto-provider randomness for salts, nonces, and any future reviewed random vault material.
+- Do not use Kotlin, Java, or general-purpose random APIs such as `kotlin.random.Random`, `java.util.Random`, `Math.random`, timestamps, UUID-derived values, or ad hoc PRNGs for vault salts, nonces, future reviewed random vault material, unlock-related randomness, or vault records.
 - Treat hardware-backed key protection separately from random-byte generation. Android Keystore/StrongBox and possible future Linux hardware-backed wrapping are optional key-protection mechanisms after review; they are not required entropy sources for basic vault compatibility.
 
 ## Record Encryption
@@ -301,7 +305,7 @@ The intended lifecycle:
 
 1. App starts with vault locked.
 2. User unlocks with passphrase/PIN and optional platform authentication.
-3. Vault root key is unwrapped/decrypted into session memory.
+3. Passphrase-derived root material is available only in scoped session memory after successful header-commitment verification.
 4. Only requested record-class keys are made available.
 5. Operations use keys through scoped service calls.
 6. Inactivity timeout, explicit lock, app backgrounding, app close, or high-risk device state clears unlocked vault state as far as practical.
@@ -343,7 +347,7 @@ Linux strategy:
 
 - app-controlled encrypted local vault is primary,
 - Linux vault random bytes must come from kernel/OS CSPRNG-backed randomness such as `getrandom`/`urandom` through a reviewed provider or library path,
-- Kotlin/JVM general-purpose random APIs, timestamps, UUID-derived values, and ad hoc PRNGs must not be used for vault secrets, salts, nonces, keys, or unlock material,
+- Kotlin/JVM general-purpose random APIs, timestamps, UUID-derived values, and ad hoc PRNGs must not be used for vault salts, nonces, future reviewed random vault material, unlock-related randomness, or vault records,
 - libsecret/KWallet are not primary storage,
 - OS keyrings may wrap vault keys only after explicit design review,
 - passphrase unlock must be supported,
@@ -382,7 +386,7 @@ Passphrase/PIN policy is not implemented yet.
 
 Design requirements:
 
-- passphrase/PIN unlock must protect vault root key material,
+- passphrase/PIN unlock must protect passphrase-derived root material,
 - biometric unlock may be convenience only,
 - biometric success must not authorize signing, broadcasting, secret export, backup-key export, or high-risk credential use,
 - failed unlock must not reveal more metadata than safe status labels,

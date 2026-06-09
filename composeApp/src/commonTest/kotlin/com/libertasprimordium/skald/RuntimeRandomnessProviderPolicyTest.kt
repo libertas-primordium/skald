@@ -41,10 +41,11 @@ class RuntimeRandomnessProviderPolicyTest {
         assertTrue(providerResult.acceptedForVaultMaterial)
         assertContains(policy.acceptedSources, RuntimeRandomnessSourceKind.OsCryptographicRandomness)
         assertContains(policy.acceptedSources, RuntimeRandomnessSourceKind.ReviewedCryptoProviderRandomness)
-        assertContains(policy.protectedUses, VaultRandomnessUse.VaultRootKey)
         assertContains(policy.protectedUses, VaultRandomnessUse.Salt)
         assertContains(policy.protectedUses, VaultRandomnessUse.Nonce)
-        assertContains(policy.protectedUses, VaultRandomnessUse.UnlockMaterial)
+        assertContains(policy.protectedUses, VaultRandomnessUse.FutureReviewedRandomVaultMaterial)
+        assertContains(policy.protectedUses, VaultRandomnessUse.FutureReviewedBackupMaterial)
+        assertContains(policy.protectedUses, VaultRandomnessUse.FutureReviewedUnlockMaterial)
     }
 
     @Test

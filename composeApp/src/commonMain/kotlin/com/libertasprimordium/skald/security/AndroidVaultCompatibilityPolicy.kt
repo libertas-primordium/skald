@@ -99,12 +99,11 @@ enum class VaultRandomnessSourceKind(
 }
 
 enum class VaultRandomnessUse(val label: String) {
-    VaultRootKey("vault root key"),
-    RecordKey("record key"),
     Salt("KDF salt"),
     Nonce("record nonce"),
-    BackupKey("backup key"),
-    UnlockMaterial("unlock material"),
+    FutureReviewedRandomVaultMaterial("future reviewed random vault material"),
+    FutureReviewedBackupMaterial("future reviewed backup/export random material"),
+    FutureReviewedUnlockMaterial("future reviewed unlock random material"),
 }
 
 enum class PlatformKeyProtectionAvailability(

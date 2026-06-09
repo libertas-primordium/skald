@@ -152,10 +152,11 @@ class AndroidVaultCompatibilityEntropyPolicyTest {
             assertFalse(assessment.randomnessAcceptedForVaultMaterial)
             assertContains(assessment.failClosedReasons, VaultCreationFailClosedReason.ForbiddenRandomnessSource)
         }
-        assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.VaultRootKey)
         assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.Salt)
         assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.Nonce)
-        assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.UnlockMaterial)
+        assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.FutureReviewedRandomVaultMaterial)
+        assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.FutureReviewedBackupMaterial)
+        assertContains(entropyPolicy.protectedUses, VaultRandomnessUse.FutureReviewedUnlockMaterial)
     }
 
     @Test

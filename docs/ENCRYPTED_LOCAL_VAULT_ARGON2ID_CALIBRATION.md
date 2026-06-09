@@ -95,12 +95,14 @@ The current candidate policy is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_P
 Summary:
 
 - Desktop candidate: 64 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on current Linux desktop JVM evidence.
-- High-end Android candidate: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on Pixel 10 Pro XL / Android 16 evidence.
+- High-end Android timing evidence: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on Pixel 10 Pro XL / Android 16 evidence. This is below the v1 acceptance-contract floor and does not approve an Android default.
 - Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19, for testing/fallback analysis only.
 - Android compatibility planning: based on supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault creation gates rather than mandatory low-end/mid-range model testing.
 - Manual Android evidence capture: modeled for optional low-end, mid-range, high-end, release-like, and thermal/load records; current captured evidence remains high-end debug/instrumented only and does not prove all-device performance.
 
 No row is production-final, universal Android policy, enabled for production KDF execution, or sufficient for provider selection.
+
+The v1 production-provider acceptance contract separately requires a shared minimum review floor of Argon2id version 19, 64 MiB, 3 passes, 1 lane, at least a 16-byte salt, preferred 32-byte salt for new vaults, and 64-byte derived root material. Bounded calibration may choose stronger desktop parameters, but it must not weaken parameters to force sub-1-second unlocks. Roughly 2 seconds is acceptable and not a failure condition.
 
 ## Probe Fixture Policy
 
@@ -153,13 +155,16 @@ Before Argon2id can be used for production vault unlock:
 3. The provider-selection gates in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) must be satisfied before any non-disabled provider can be selected.
 4. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
 5. Parameter calibration must respect the supported Android baseline, runtime provider/primitive/randomness checks, Linux desktop behavior, and fail-closed vault creation policy documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md) and [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). Low-end and mid-range Android evidence remains optional parameter/UX evidence, not a compatibility hard blocker.
-6. Memory cost must be treated as a security requirement, not only a UX knob.
-7. Unlock latency targets must be reviewed with user-visible tradeoffs.
-8. Low-memory fallback behavior must fail closed or carry explicit degraded-strength labeling.
-9. Wrong-passphrase behavior must be tested.
-10. Lock/session lifecycle tests must prove derived key handles are unavailable after lock as far as practical.
-11. Redaction tests must prove no inputs, salts, derived bytes, or provider internals appear in logs, errors, docs, or build history.
-12. Vault container, migration, and corruption tests must pass before persistence.
+6. Bounded calibration must approve the shared 64 MiB / t=3 / p=1 floor and any stronger platform-specific choices.
+7. Memory cost must be treated as a security requirement, not only a UX knob.
+8. Unlock latency targets must be reviewed with user-visible tradeoffs; roughly 2 seconds is acceptable.
+9. Minimum-floor allocation or execution failure during vault creation must fail closed.
+10. Stored existing-vault parameters must remain authoritative; unlock on a weaker device must fail closed if those parameters cannot allocate or complete.
+11. Any future downgrade or migration must require successful passphrase unlock and explicit user action.
+12. Wrong-passphrase behavior must be tested.
+13. Lock/session lifecycle tests must prove derived key handles are unavailable after lock as far as practical.
+14. Redaction tests must prove no inputs, salts, derived bytes, or provider internals appear in logs, errors, docs, or build history.
+15. Vault container, migration, and corruption tests must pass before persistence.
 
 ## Readiness Alignment
 
@@ -168,6 +173,8 @@ Before Argon2id can be used for production vault unlock:
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy and candidate parameter policy modeled. That does not approve production use. The stack remains candidate-only.
 
 `VaultCryptoProviderSelectionRegistry` treats the non-final parameter policy, missing production-provider evidence, disabled storage, and unknown runtime provider/primitive/randomness checks as blockers. It selects only the disabled provider.
+
+The production-provider acceptance contract also treats bounded calibration, memory-failure behavior, stored-parameter authority, and no silent downgrade as separate blockers until reviewed.
 
 ## Explicit Non-Capabilities
 

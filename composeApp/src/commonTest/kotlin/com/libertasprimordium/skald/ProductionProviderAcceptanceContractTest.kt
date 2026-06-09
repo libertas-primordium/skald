@@ -8,9 +8,15 @@ import com.libertasprimordium.skald.security.ProductionProviderAcceptanceBlocker
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidence
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidenceState
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceGate
+import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentFailClosedCondition
+import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentField
+import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
+import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
+import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
+import com.libertasprimordium.skald.security.ProductionProviderTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderWeakDeviceFailureMode
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
@@ -110,6 +116,114 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
+    fun headerCommitmentEvidenceMustBeKnownAndSatisfied() {
+        val missing = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+                ProductionProviderAcceptanceEvidenceState.Missing,
+            ),
+        )
+        val unknown = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+                ProductionProviderAcceptanceEvidenceState.Unknown,
+            ),
+        )
+
+        assertFalse(missing.allRequiredGatesSatisfied)
+        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
+        assertFalse(missing.productionProviderSelectable)
+        assertFalse(missing.productionPersistenceAllowed)
+
+        assertFalse(unknown.allRequiredGatesSatisfied)
+        assertContains(unknown.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertFalse(unknown.productionProviderSelectable)
+        assertFalse(unknown.productionPersistenceAllowed)
+    }
+
+    @Test
+    fun passphraseEncodingEvidenceMustBePresentAndSupported() {
+        val missing = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+                ProductionProviderAcceptanceEvidenceState.Missing,
+            ),
+        )
+        val unsupported = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+                ProductionProviderAcceptanceEvidenceState.Unsupported,
+            ),
+        )
+
+        assertFalse(missing.allRequiredGatesSatisfied)
+        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
+        assertFalse(missing.productionProviderSelectable)
+        assertFalse(missing.productionPersistenceAllowed)
+
+        assertFalse(unsupported.allRequiredGatesSatisfied)
+        assertContains(unsupported.blockers, ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence)
+        assertFalse(unsupported.productionProviderSelectable)
+        assertFalse(unsupported.productionPersistenceAllowed)
+    }
+
+    @Test
+    fun tinkRawKeyFeasibilityEvidenceMustBeKnownAndSuccessful() {
+        val unknown = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved,
+                ProductionProviderAcceptanceEvidenceState.Unknown,
+            ),
+        )
+        val failed = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved,
+                ProductionProviderAcceptanceEvidenceState.Failed,
+            ),
+        )
+
+        assertFalse(unknown.allRequiredGatesSatisfied)
+        assertContains(unknown.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertFalse(unknown.productionProviderSelectable)
+
+        assertFalse(failed.allRequiredGatesSatisfied)
+        assertContains(failed.blockers, ProductionProviderAcceptanceBlocker.FailedGateEvidence)
+        assertFalse(failed.productionPersistenceAllowed)
+    }
+
+    @Test
+    fun boundedArgon2idCalibrationEvidenceMustBeKnownAndSuccessful() {
+        val missing = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
+                ProductionProviderAcceptanceEvidenceState.Missing,
+            ),
+        )
+        val unknown = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
+                ProductionProviderAcceptanceEvidenceState.Unknown,
+            ),
+        )
+        val failed = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
+                ProductionProviderAcceptanceEvidenceState.Failed,
+            ),
+        )
+
+        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
+        assertContains(unknown.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertContains(failed.blockers, ProductionProviderAcceptanceBlocker.FailedGateEvidence)
+        assertFalse(missing.allRequiredGatesSatisfied)
+        assertFalse(unknown.allRequiredGatesSatisfied)
+        assertFalse(failed.allRequiredGatesSatisfied)
+        assertFalse(missing.productionProviderSelectable)
+        assertFalse(unknown.productionProviderSelectable)
+        assertFalse(failed.productionProviderSelectable)
+    }
+
+    @Test
     fun allGateEvidenceStillDoesNotSelectProviderInThisBranch() {
         val assessment = contract.assess(ProductionProviderAcceptanceEvidence.allSatisfiedForReviewOnly())
         val result = VaultCryptoProviderSelectionRegistry.select(
@@ -199,16 +313,122 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(64, policy.minimumMemoryMiB)
         assertEquals(3, policy.passes)
         assertEquals(1, policy.lanes)
+        assertEquals(16, policy.minimumSaltBytes)
+        assertEquals(32, policy.preferredNewVaultSaltBytes)
+        assertEquals(64, policy.derivedRootMaterialBytes)
         assertEquals(1_000, policy.preferredUnlockMillis)
         assertEquals(2_000, policy.acceptableUnlockMillis)
         assertFalse(policy.twoSecondsIsFailureCondition)
         assertFalse(policy.weakenToForceSubOneSecondAllowed)
+        assertTrue(policy.boundedPerPlatformCalibrationRequired)
+        assertTrue(policy.sharedMinimumFloorAcrossPlatforms)
+        assertTrue(policy.desktopMaySelectStrongerParametersThanAndroid)
+        assertTrue(policy.minimumFloorAllocationFailureBlocksVaultCreation)
+        assertTrue(policy.storedParameterAllocationFailureBlocksUnlock)
         assertTrue(policy.existingVaultParametersAuthoritative)
         assertFalse(policy.silentParameterDowngradeAllowed)
+        assertTrue(policy.downgradeMigrationRequiresSuccessfulUnlockAndExplicitUserAction)
         assertEquals(
             ProductionProviderWeakDeviceFailureMode.FailClosedWithUserMessage,
             policy.weakerDeviceFailureMode,
         )
+    }
+
+    @Test
+    fun headerCommitmentPolicyBindsCanonicalHeaderBeforeRecordDecrypt() {
+        val policy = contract.headerCommitmentPolicy
+
+        assertTrue(policy.requiredBeforeRecordDecrypt)
+        assertFalse(policy.recordDecryptAllowedBeforeVerification)
+        assertTrue(policy.commitmentKeyMaterialSeparatedFromRecordAeadKeyMaterial)
+        assertFalse(policy.productionExecutionImplemented)
+        assertEquals(
+            ProductionProviderHeaderCommitmentField.entries.toSet(),
+            policy.canonicalHeaderFields,
+        )
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.Salt)
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.VaultId)
+        assertContains(
+            policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.PassphraseEncodingPolicyId,
+        )
+        assertContains(
+            policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.KeyCommitmentPolicyVersion,
+        )
+        assertEquals(
+            ProductionProviderHeaderCommitmentFailClosedCondition.entries.toSet(),
+            policy.failClosedConditions,
+        )
+        assertContains(
+            policy.failClosedConditions,
+            ProductionProviderHeaderCommitmentFailClosedCondition.HeaderNonCanonical,
+        )
+        assertContains(
+            policy.failClosedConditions,
+            ProductionProviderHeaderCommitmentFailClosedCondition.UnsupportedKdfParameters,
+        )
+    }
+
+    @Test
+    fun passphraseEncodingPolicyCapturesNfcUtf8AndRejectionRules() {
+        val policy = contract.passphraseEncodingPolicy
+
+        assertEquals("unicode-nfc-utf8-no-controls-no-whitespace-v1", policy.policyId)
+        assertEquals("NFC", policy.normalizationForm)
+        assertEquals("UTF-8", policy.encodedForm)
+        assertContains(policy.forbiddenClasses, ProductionProviderPassphraseForbiddenClass.EmptyPassphrase)
+        assertContains(
+            policy.forbiddenClasses,
+            ProductionProviderPassphraseForbiddenClass.UnicodeControlCharacters,
+        )
+        assertContains(
+            policy.forbiddenClasses,
+            ProductionProviderPassphraseForbiddenClass.UnicodeWhitespaceCharacters,
+        )
+        assertContains(
+            policy.forbiddenClasses,
+            ProductionProviderPassphraseForbiddenClass.UnicodeSeparatorCharacters,
+        )
+        assertContains(
+            policy.forbiddenClasses,
+            ProductionProviderPassphraseForbiddenClass.InvisibleFormatCharacters,
+        )
+        assertContains(policy.noTransformRules, ProductionProviderPassphraseNoTransformRule.DoNotTrim)
+        assertContains(policy.noTransformRules, ProductionProviderPassphraseNoTransformRule.DoNotLowercase)
+        assertContains(policy.noTransformRules, ProductionProviderPassphraseNoTransformRule.DoNotUppercase)
+        assertContains(
+            policy.noTransformRules,
+            ProductionProviderPassphraseNoTransformRule.DoNotApplyLocaleSensitiveTransforms,
+        )
+        assertTrue(policy.composedAndDecomposedFormsMustCanonicalizeToSameNfcBytes)
+        assertContains(policy.allowedClasses, ProductionProviderPassphraseAllowedClass.VisibleUnicodeLetters)
+        assertContains(policy.allowedClasses, ProductionProviderPassphraseAllowedClass.VisibleUnicodeNumbers)
+        assertContains(policy.allowedClasses, ProductionProviderPassphraseAllowedClass.VisibleUnicodePunctuation)
+        assertContains(policy.allowedClasses, ProductionProviderPassphraseAllowedClass.VisibleUnicodeSymbols)
+        assertContains(policy.allowedClasses, ProductionProviderPassphraseAllowedClass.EmojiWithoutRejectedCharacters)
+        assertContains(policy.visibleSeparatorsSuggestedAsAlternativesToSpaces, "-")
+        assertContains(policy.visibleSeparatorsSuggestedAsAlternativesToSpaces, ".")
+        assertContains(policy.visibleSeparatorsSuggestedAsAlternativesToSpaces, "_")
+        assertFalse(policy.productionVaultCreationWired)
+    }
+
+    @Test
+    fun tinkRawKeyHandlingPolicyBlocksKeysetsRandomVaultKeysAndInternalApis() {
+        val policy = contract.tinkRawKeyHandlingPolicy
+
+        assertTrue(policy.preferredCallerSuppliedDerivedRawKeyMaterial)
+        assertFalse(policy.persistedPlaintextTinkKeysetsAllowed)
+        assertFalse(policy.persistedEncryptedTinkKeysetsAllowedInV1)
+        assertFalse(policy.randomTinkVaultKeysAllowed)
+        assertFalse(policy.tinkKeyRotationInV1Allowed)
+        assertFalse(policy.multipleActiveAeadKeysInV1Allowed)
+        assertTrue(policy.publicSupportedApiRequired)
+        assertFalse(policy.internalUnsupportedReflectiveApisAllowed)
+        assertFalse(policy.fallbackEncryptedKeysetModelImplemented)
+        assertFalse(policy.productionAeadExecutionImplemented)
+        assertEquals(ProductionProviderTinkRawKeyFeasibilityStatus.Unknown, policy.feasibilityStatus)
+        assertFalse(policy.feasibilityStatus.approvedForProductionProvider)
     }
 
     @Test
@@ -242,4 +462,14 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(androidWrapping.biometricUnlockReplacesPassphrase)
         assertTrue(androidWrapping.roughlyWeeklyPassphrasePromptAfterBiometricUnlockRequired)
     }
+
+    private fun evidenceWith(
+        gate: ProductionProviderAcceptanceGate,
+        state: ProductionProviderAcceptanceEvidenceState,
+    ): ProductionProviderAcceptanceEvidence =
+        ProductionProviderAcceptanceEvidence(
+            gateStates = ProductionProviderAcceptanceGate.entries.associateWith {
+                ProductionProviderAcceptanceEvidenceState.Satisfied
+            } + mapOf(gate to state),
+        )
 }

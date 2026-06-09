@@ -65,7 +65,7 @@ This does not approve production vault creation. It only prevents future branche
 
 Entropy/random byte generation is separate from hardware-backed key protection.
 
-Vault secrets, salts, nonces, keys, and unlock material require cryptographic randomness from one of:
+Vault salts, nonces, and any future reviewed random vault material require cryptographic randomness from one of:
 
 - OS cryptographic randomness,
 - reviewed crypto-provider randomness.

@@ -65,7 +65,7 @@ The model can say that compatibility planning has enough randomness/provider evi
 
 ## Accepted Randomness Source Classes
 
-Vault secrets, salts, nonces, keys, unlock material, and vault records may only use reviewed cryptographic randomness from one of:
+Vault salts, nonces, and any future reviewed random vault material may only use reviewed cryptographic randomness from one of:
 
 - OS cryptographic randomness,
 - reviewed crypto-provider randomness.
@@ -76,7 +76,7 @@ On Android, `SecureRandom` through Android OS cryptographic randomness is accept
 
 ## Forbidden Source Classes
 
-Skald must not use language-level or general-purpose random APIs for vault secrets, salts, nonces, keys, unlock material, or vault records.
+Skald must not use language-level or general-purpose random APIs for vault salts, nonces, future reviewed random vault material, unlock-related randomness, or vault records.
 
 Forbidden source classes include:
 

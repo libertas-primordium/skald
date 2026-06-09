@@ -117,9 +117,11 @@ A future executable provider cannot become selectable until every required gate 
 | Production provider-level KATs passed | Blocked. |
 | Android and desktop runtime coverage exists | Candidate evidence exists for dependency/test-provider paths, but not a production provider. |
 | Runtime randomness/provider checks pass | Test-only Android/Linux availability probes are modeled; they do not prove entropy quality or approve production randomness. |
-| Argon2id parameters final for the platform | Blocked. Candidate tiers are non-final. |
+| Argon2id parameters final for the platform | Blocked. Candidate tiers are non-final, and bounded calibration at the shared v1 floor is not approved. |
 | Dependency and license review complete | Candidate-level review complete for Tink plus Bouncy Castle only. |
-| Keyset or raw-key handling approved | Blocked. |
+| Header commitment policy approved and implemented | Blocked. Canonical header commitment is modeled but production execution is absent. |
+| Passphrase encoding policy approved | Blocked. `unicode-nfc-utf8-no-controls-no-whitespace-v1` is modeled, but production validation is not wired. |
+| Keyset or raw-key handling approved | Blocked. Raw-key feasibility through public supported Tink APIs remains unknown; no keyset persistence is approved. |
 | Secure secret storage approved | Blocked. |
 | Secure metadata storage approved | Blocked. |
 | Vault container/storage review complete | Blocked. |
@@ -136,12 +138,13 @@ The current v1 contract pins the review direction to Bouncy Castle Argon2id, Tin
 The Argon2id candidate policy is explicitly non-final:
 
 - Desktop candidate: 64 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19.
-- High-end Android candidate: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19.
+- High-end Android timing evidence: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19. This is historical probe evidence and does not satisfy the v1 floor.
 - Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19.
+- V1 acceptance-contract floor: 64 MiB, 3 passes, 1 lane, at least 16-byte salt, preferred 32-byte salt for new vaults, and 64-byte derived root material.
 - Android supported-compatibility planning is modeled separately from final KDF parameter approval.
 - Manual Android capture protocol exists for optional device-class and runtime-environment evidence; low-end and mid-range model evidence is no longer a compatibility hard blocker.
 
-The provider-selection boundary treats non-final KDF parameters, missing production provider implementation, missing production provider-level KATs, disabled storage, and runtime provider/primitive/randomness checks as production gates. Unknown runtime provider or randomness state blocks provider planning. Satisfied compatibility planning still does not make a provider selectable. Test-only randomness probes generate only non-secret samples and are not entropy-quality proof.
+The provider-selection boundary treats non-final KDF parameters, missing bounded-calibration approval, missing production provider implementation, missing production provider-level KATs, disabled storage, and runtime provider/primitive/randomness checks as production gates. Unknown runtime provider or randomness state blocks provider planning. Satisfied compatibility planning still does not make a provider selectable. Test-only randomness probes generate only non-secret samples and are not entropy-quality proof.
 
 ## Storage And Mainnet Gates
 
@@ -199,12 +202,14 @@ The next provider-selection change may only consider a non-disabled provider aft
 4. supported Android compatibility/runtime provider/randomness checks where Android is in scope,
 5. Linux runtime provider/randomness checks where Linux desktop is in scope,
 6. final Argon2id parameter approval for the target platform,
-7. keyset/raw-key handling approval,
-8. secure storage and secure metadata approval,
-9. vault container/storage review,
-10. redaction and failure-mode tests,
-11. migration/corruption tests,
-12. explicit mainnet release-hardening if mainnet is requested.
+7. header commitment implementation and key-commitment policy approval,
+8. passphrase encoding policy approval and production validation,
+9. raw-key handling approval through public supported Tink APIs or a separate human-approved alternative,
+10. secure storage and secure metadata approval,
+11. vault container/storage review,
+12. redaction and failure-mode tests,
+13. migration/corruption tests,
+14. explicit mainnet release-hardening if mainnet is requested.
 
 Until then, the provider-selection registry must keep selecting the disabled provider only.
 
