@@ -1252,12 +1252,12 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
-    fun providerLevelKatStrategyAndRandomizedAeadPolicyAreModeledOnly() {
+    fun providerLevelKatStrategyAndRandomizedAeadPolicyAreStillDisabledHarnessExecuted() {
         val strategy = contract.providerLevelKatStrategyPolicy
         val randomizedAead = contract.randomizedAeadBehavioralKatPolicy
 
         assertEquals("skald-vault-v1-provider-level-kat-strategy-v1", strategy.policyId)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, strategy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, strategy.contractStatus)
         assertEquals(ProductionProviderDeterministicKatVector.entries.toSet(), strategy.deterministicVectorsRequired)
         assertContains(
             strategy.deterministicVectorsRequired,
@@ -1280,10 +1280,12 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(strategy.providerLevelKatsMustRunOnDesktopJvm)
         assertTrue(strategy.providerLevelKatsMustRunOnAndroid)
         assertFalse(strategy.providerKatCompletionImpliesStorageApproval)
+        assertTrue(strategy.stillDisabledProviderIntegrationHarnessImplemented)
+        assertTrue(strategy.stillDisabledProviderLevelKatExecutionImplemented)
         assertFalse(strategy.productionProviderKatExecutionImplemented)
 
         assertEquals("skald-vault-v1-randomized-aead-behavioral-kat-v1", randomizedAead.policyId)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, randomizedAead.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, randomizedAead.contractStatus)
         assertEquals(EncryptedVaultAeadAlgorithm.XChaCha20Poly1305, randomizedAead.primitive)
         assertTrue(randomizedAead.tinkChoosesNonceInternally)
         assertFalse(randomizedAead.fixedCiphertextHexRequired)
@@ -1301,6 +1303,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderRandomizedAeadBehavioralKatCheck.WrongHeaderCommitmentContextFails,
         )
         assertFalse(randomizedAead.publicDeterministicNonceTestModeApproved)
+        assertTrue(randomizedAead.stillDisabledBehavioralKatExecutionImplemented)
         assertFalse(randomizedAead.productionProviderBehavioralKatExecutionImplemented)
     }
 
@@ -1309,7 +1312,7 @@ class ProductionProviderAcceptanceContractTest {
         val policy = contract.integratedVerificationOrderKatPolicy
 
         assertEquals("skald-vault-v1-integrated-verification-order-kat-v1", policy.policyId)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertEquals(
             listOf(
                 ProductionProviderIntegratedVerificationOrderKatStep.ValidatePassphrasePolicy,
@@ -1326,6 +1329,8 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertTrue(policy.headerCommitmentMustPrecedeRecordDecrypt)
         assertTrue(policy.recordDecryptRejectedWhenHeaderCommitmentFails)
+        assertTrue(policy.stillDisabledProviderIntegrationHarnessImplemented)
+        assertTrue(policy.stillDisabledVerificationOrderKatExecutionImplemented)
         assertFalse(policy.fullProviderIntegrationImplemented)
         assertFalse(policy.productionVerificationOrderKatsImplemented)
         assertTrue(
@@ -1406,6 +1411,40 @@ class ProductionProviderAcceptanceContractTest {
                 assertGateBlocks(gate = gate, state = state, blocker = blocker)
             }
         }
+    }
+
+    @Test
+    fun currentEvidenceRepresentsStillDisabledProviderKatExecutionButRemainsBlocked() {
+        val evidence = ProductionProviderAcceptanceEvidence.currentDesignOnly()
+
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved),
+        )
+
+        val assessment = contract.assess(evidence)
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertContains(
+            assessment.blockers,
+            ProductionProviderAcceptanceBlocker.ProductionProviderSelectionStillDisabled,
+        )
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
     }
 
     @Test

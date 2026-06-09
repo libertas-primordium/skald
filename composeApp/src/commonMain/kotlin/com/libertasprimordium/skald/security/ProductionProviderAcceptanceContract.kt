@@ -419,6 +419,8 @@ data class ProductionProviderLevelKatStrategyPolicy(
     val providerLevelKatsMustRunOnDesktopJvm: Boolean,
     val providerLevelKatsMustRunOnAndroid: Boolean,
     val providerKatCompletionImpliesStorageApproval: Boolean,
+    val stillDisabledProviderIntegrationHarnessImplemented: Boolean,
+    val stillDisabledProviderLevelKatExecutionImplemented: Boolean,
     val productionProviderKatExecutionImplemented: Boolean,
 )
 
@@ -431,6 +433,7 @@ data class ProductionProviderRandomizedAeadBehavioralKatPolicy(
     val deterministicAadHexRequired: Boolean,
     val behavioralChecksRequired: Set<ProductionProviderRandomizedAeadBehavioralKatCheck>,
     val publicDeterministicNonceTestModeApproved: Boolean,
+    val stillDisabledBehavioralKatExecutionImplemented: Boolean,
     val productionProviderBehavioralKatExecutionImplemented: Boolean,
 )
 
@@ -452,6 +455,8 @@ data class ProductionProviderIntegratedVerificationOrderKatPolicy(
     val orderedSteps: List<ProductionProviderIntegratedVerificationOrderKatStep>,
     val headerCommitmentMustPrecedeRecordDecrypt: Boolean,
     val recordDecryptRejectedWhenHeaderCommitmentFails: Boolean,
+    val stillDisabledProviderIntegrationHarnessImplemented: Boolean,
+    val stillDisabledVerificationOrderKatExecutionImplemented: Boolean,
     val fullProviderIntegrationImplemented: Boolean,
     val productionVerificationOrderKatsImplemented: Boolean,
 )
@@ -745,11 +750,11 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.ReleaseReadinessExcludesDebugTestProviders to
@@ -1048,7 +1053,7 @@ data class ProductionProviderAcceptanceContract(
                     ),
                 providerLevelKatStrategyPolicy = ProductionProviderLevelKatStrategyPolicy(
                     policyId = "skald-vault-v1-provider-level-kat-strategy-v1",
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     deterministicVectorsRequired = ProductionProviderDeterministicKatVector.entries.toSet(),
                     randomizedAeadBehavioralChecksRequired =
                         ProductionProviderRandomizedAeadBehavioralKatCheck.entries.toSet(),
@@ -1057,11 +1062,13 @@ data class ProductionProviderAcceptanceContract(
                     providerLevelKatsMustRunOnDesktopJvm = true,
                     providerLevelKatsMustRunOnAndroid = true,
                     providerKatCompletionImpliesStorageApproval = false,
+                    stillDisabledProviderIntegrationHarnessImplemented = true,
+                    stillDisabledProviderLevelKatExecutionImplemented = true,
                     productionProviderKatExecutionImplemented = false,
                 ),
                 randomizedAeadBehavioralKatPolicy = ProductionProviderRandomizedAeadBehavioralKatPolicy(
                     policyId = "skald-vault-v1-randomized-aead-behavioral-kat-v1",
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     primitive = EncryptedVaultAeadAlgorithm.XChaCha20Poly1305,
                     tinkChoosesNonceInternally = true,
                     fixedCiphertextHexRequired = false,
@@ -1069,11 +1076,12 @@ data class ProductionProviderAcceptanceContract(
                     behavioralChecksRequired =
                         ProductionProviderRandomizedAeadBehavioralKatCheck.entries.toSet(),
                     publicDeterministicNonceTestModeApproved = false,
+                    stillDisabledBehavioralKatExecutionImplemented = true,
                     productionProviderBehavioralKatExecutionImplemented = false,
                 ),
                 integratedVerificationOrderKatPolicy = ProductionProviderIntegratedVerificationOrderKatPolicy(
                     policyId = "skald-vault-v1-integrated-verification-order-kat-v1",
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     orderedSteps = listOf(
                         ProductionProviderIntegratedVerificationOrderKatStep.ValidatePassphrasePolicy,
                         ProductionProviderIntegratedVerificationOrderKatStep.DeriveArgon2idRootMaterial,
@@ -1089,6 +1097,8 @@ data class ProductionProviderAcceptanceContract(
                     ),
                     headerCommitmentMustPrecedeRecordDecrypt = true,
                     recordDecryptRejectedWhenHeaderCommitmentFails = true,
+                    stillDisabledProviderIntegrationHarnessImplemented = true,
+                    stillDisabledVerificationOrderKatExecutionImplemented = true,
                     fullProviderIntegrationImplemented = false,
                     productionVerificationOrderKatsImplemented = false,
                 ),

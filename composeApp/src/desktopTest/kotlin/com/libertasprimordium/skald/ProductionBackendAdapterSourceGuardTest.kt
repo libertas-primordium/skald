@@ -616,6 +616,7 @@ class ProductionBackendAdapterSourceGuardTest {
         )
         val allowedFiles = setOf(
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1HeaderCommitment.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
         )
@@ -662,6 +663,7 @@ class ProductionBackendAdapterSourceGuardTest {
         )
         val allowedFiles = setOf(
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1Argon2idRootDerivation.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
         )
@@ -704,6 +706,7 @@ class ProductionBackendAdapterSourceGuardTest {
         )
         val allowedFiles = setOf(
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicy.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1PassphrasePolicy.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1PassphrasePolicy.kt",
         )
@@ -774,6 +777,62 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Passphrase/Argon2id building blocks must not log, persist, generate randomness, or use AEAD: $offenders",
+        )
+    }
+
+    @Test
+    fun stillDisabledProviderKatHarnessDoesNotExposeSelectionStorageManifestLoggingOrPersistence() {
+        val root = repositoryRoot()
+        val file = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""\bVaultCryptoProviderSelectionRegistry\b"""),
+            Regex("""\bProductionVaultCryptoProvider\b"""),
+            Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
+            Regex("""\bcreateVault\("""),
+            Regex("""\bopenVault\("""),
+            Regex("""\bpersistVault\("""),
+            Regex("""\bVaultManifest(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bManifest(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bStorageIndex(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bVaultContainer(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteRecord\("""),
+            Regex("""\breadRecord\("""),
+            Regex("""\bFile\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(file.readText()) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Still-disabled provider KAT harness must not expose selection, storage, manifest, logging, or persistence: $offenders",
         )
     }
 
