@@ -871,6 +871,88 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun stillDisabledProviderFacadeDoesNotExposeSelectionStorageCryptoLoggingOrPersistence() {
+        val root = repositoryRoot()
+        val file = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt",
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""\bVaultCryptoProviderSelectionRegistry\b"""),
+            Regex("""\bProductionVaultCryptoProvider\b"""),
+            Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
+            Regex("""\bcreateVault\("""),
+            Regex("""\bopenVault\("""),
+            Regex("""\bpersistVault\("""),
+            Regex("""\bVaultManifest(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bManifest(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bStorageIndex(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bVaultContainer(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteRecord\("""),
+            Regex("""\breadRecord\("""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security\.SecureRandom"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bSecureRandom\("""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bFile\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(file.readText()) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Still-disabled provider facade must remain metadata-only and disabled: $offenders",
+        )
+    }
+
+    @Test
+    fun providerSelectionRegistryDoesNotReferenceStillDisabledProviderFacade() {
+        val root = repositoryRoot()
+        val file = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt",
+        )
+        val source = file.readText()
+
+        assertFalse(source.contains("SkaldVaultV1StillDisabledProviderFacade"))
+        assertFalse(source.contains("StillDisabledProviderFacade"))
+    }
+
+    @Test
     fun secureRandomImportsStayConfinedToApprovedRuntimeProbesAndBdkValidation() {
         val root = repositoryRoot()
         val sourceRoot = File(root, "composeApp/src")
@@ -980,6 +1062,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/Argon2idCalibrationPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),

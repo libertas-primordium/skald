@@ -4,7 +4,7 @@
 
 Skald Vault now has a disabled provider-selection and registry boundary for the future app-controlled encrypted local vault crypto provider.
 
-This is selection policy only. It does not implement provider selectability, final production calibration approval, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, manifest read/write, storage index read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The passphrase policy validator, explicit-parameter Argon2id root derivation, Argon2id calibration policy/candidate-selection/memory-failure/no-downgrade model, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 verification, strict AAD serialization, Tink record AEAD construction, and integrated provider KAT harness exist only as still-disabled building blocks/evidence and are not provider-selectable.
+This is selection policy only. It does not implement provider selectability, final production calibration approval, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, manifest read/write, storage index read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The passphrase policy validator, explicit-parameter Argon2id root derivation, Argon2id calibration policy/candidate-selection/memory-failure/no-downgrade model, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 verification, strict AAD serialization, Tink record AEAD construction, integrated provider KAT harness, and metadata-only still-disabled provider facade exist only as still-disabled building blocks/evidence and are not provider-selectable.
 
 Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The canonical header/HKDF/HMAC non-secret vector contract is documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy for randomized AEAD and the stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
 
@@ -30,6 +30,12 @@ Disabled provider boundary:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt
+```
+
+Metadata-only still-disabled provider facade:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt
 ```
 
 Selection tests:
@@ -110,6 +116,12 @@ That evidence is test-scope only. It does not satisfy production provider select
 
 `SkaldVaultV1StillDisabledProviderKatHarness` now composes the passphrase, Argon2id, HKDF, canonical header, HMAC header commitment, strict AAD, and Tink record AEAD building blocks with fixed non-secret fixtures. Its tests assert deterministic vector stages, randomized AEAD behavioral checks, and the required verification order: header commitment verification must complete before record AEAD use, and failed header commitment exits before record AEAD. This evidence is not selectable and exposes no vault creation, storage, manifest, secure-storage, wallet, or persistence API.
 
+## Still-Disabled Provider Facade
+
+`SkaldVaultV1StillDisabledProviderFacade` exists as a future provider-boundary status object only. It reports the pinned v1 suite id, selected KDF/AEAD/randomness labels, passphrase/key-expansion/key-separation/header-commitment/AAD/record-format policy ids, provider-level KAT policy ids, stale-record manifest policy id, calibration policy id, disabled reasons, remaining gates, and building-block evidence.
+
+The facade is not wired into `VaultCryptoProviderSelectionRegistry`, is not a `VaultCryptoProvider`, and cannot be selected by debug flags, test flags, KAT success, calibration evidence, or readiness evidence. Its operation-like entry points return typed disabled results only. They do not accept passphrases, root material, record keys, plaintext, ciphertext, AAD, vault ids, storage paths, or wallet inputs, and they do not execute crypto, randomness, vault creation, unlock, storage, manifest, secure-storage, wallet, sync, backend, or persistence behavior.
+
 ## Production Approval Gates
 
 A future executable provider cannot become selectable until every required gate is satisfied:
@@ -118,6 +130,7 @@ A future executable provider cannot become selectable until every required gate 
 | --- | --- |
 | Production provider acceptance contract satisfied | Blocked. The contract is modeled but incomplete for production implementation and persistence. |
 | Production provider implementation exists | Blocked. |
+| Still-disabled provider facade exists | Evidence exists as metadata/status only. It is not a selectable provider and exposes no usable vault operations. |
 | Still-disabled provider-level KATs passed | Evidence exists through the still-disabled integrated harness, but this is not selection approval. |
 | Provider-level KAT strategy approved | Still-disabled harness evidence exists for deterministic vectors plus randomized AEAD behavioral checks. |
 | Randomized AEAD behavioral KATs passed | Still-disabled harness evidence exists without fixed ciphertext hex. |
@@ -147,7 +160,7 @@ A future executable provider cannot become selectable until every required gate 
 | Migration and corruption tests passed | Blocked. |
 | Mainnet release-hardening approved | Blocked. |
 
-Passing dependency-level KATs, test-provider KATs, deterministic vector tests, randomized AEAD building-block tests, or documented KAT/manifest contracts must not bypass these gates.
+Passing dependency-level KATs, test-provider KATs, deterministic vector tests, randomized AEAD building-block tests, the still-disabled provider facade checks, or documented KAT/manifest contracts must not bypass these gates.
 
 The current v1 contract pins the review direction to Bouncy Castle Argon2id, Tink XChaCha20-Poly1305, and OS SecureRandom with one explicit suite id. It also records why Skald is not using day-one provider agility: one pinned suite reduces audit surface, KAT matrix size, migration complexity, and accidental selectability risk. This is a prerequisite contract only; it cannot select the provider.
 
@@ -193,6 +206,7 @@ This boundary does not enable:
 - provider-wired Argon2id passphrase derivation or final production calibration approval,
 - provider-wired AEAD execution,
 - fake encryption,
+- metadata-only still-disabled provider facade selectability,
 - key generation,
 - Tink keyset creation or persistence,
 - raw key material persistence,
@@ -243,4 +257,4 @@ Until then, the provider-selection registry must keep selecting the disabled pro
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider scope. Recommended decision point: review runtime provider/primitive/randomness check evidence for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage, then run production-provider KATs in a separate validation branch before any vault container or persistence work.
+The next focused branch should remain disabled unless the user explicitly approves provider-selectability scope. Remaining decision points are final Argon2id calibration approval, supported Android/Linux runtime provider and randomness review, manifest/storage stale-record enforcement design, vault container/storage review, secure storage review, lock/session lifecycle, redaction/leakage tests, migration/corruption tests, and release approval. The metadata-only facade is not a persistence or selection prerequisite by itself.

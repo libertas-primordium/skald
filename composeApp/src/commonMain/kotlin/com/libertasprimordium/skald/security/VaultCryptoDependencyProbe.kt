@@ -68,6 +68,9 @@ enum class VaultCryptoDependencyCapability(val label: String) {
     IntegratedVerificationOrderKatsExecutedInStillDisabledHarness(
         "integrated verification-order KATs execute in still-disabled harness",
     ),
+    StillDisabledProviderFacadeBoundaryModeled(
+        "still-disabled provider facade boundary modeled",
+    ),
     Argon2idCalibrationPolicyModeled("Argon2id calibration policy modeled"),
     Argon2idCandidateParameterPolicyModeled("Argon2id candidate parameter policy modeled"),
     Argon2idCalibrationPolicyImplementedTested(
@@ -207,6 +210,9 @@ enum class VaultCryptoDependencyBlocker(val label: String) {
     StillDisabledProviderIntegrationHarnessNotSelectable(
         "still-disabled provider integration harness is not a selectable production provider",
     ),
+    StillDisabledProviderFacadeNotSelectable(
+        "still-disabled provider facade is not a selectable production provider",
+    ),
     StaleRecordManifestIntegrationMissing(
         "record version/counter binding is not backed by a trusted manifest or storage index",
     ),
@@ -297,6 +303,7 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyCapability.ProviderLevelKatsExecutedInStillDisabledHarness,
                     VaultCryptoDependencyCapability.RandomizedAeadBehavioralKatsExecutedInStillDisabledHarness,
                     VaultCryptoDependencyCapability.IntegratedVerificationOrderKatsExecutedInStillDisabledHarness,
+                    VaultCryptoDependencyCapability.StillDisabledProviderFacadeBoundaryModeled,
                     VaultCryptoDependencyCapability.Argon2idCalibrationPolicyModeled,
                     VaultCryptoDependencyCapability.Argon2idCandidateParameterPolicyModeled,
                     VaultCryptoDependencyCapability.Argon2idCalibrationPolicyImplementedTested,
@@ -342,6 +349,7 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyBlocker.ProviderSelectionProductionBlocked,
                     VaultCryptoDependencyBlocker.ProductionProviderAcceptanceContractIncomplete,
                     VaultCryptoDependencyBlocker.StillDisabledProviderIntegrationHarnessNotSelectable,
+                    VaultCryptoDependencyBlocker.StillDisabledProviderFacadeNotSelectable,
                     VaultCryptoDependencyBlocker.StaleRecordManifestIntegrationMissing,
                     VaultCryptoDependencyBlocker.StaleRecordManifestPolicyImplementationMissing,
                     VaultCryptoDependencyBlocker.ManifestStorageAtomicityReviewMissing,
@@ -356,7 +364,7 @@ object VaultCryptoDependencyProbeCatalog {
                 storageEnabled = false,
                 productionPersistenceEnabled = false,
                 mainnetEnabled = false,
-                note = "Selected only as a reviewed candidate after Android/Linux compile and packaging feasibility, desktop and Android runtime public KAT validation, local dependency/POM license inspection, package inventory review, Tink keyset/storage review, desktop and Android test-scope Tink raw-key public API feasibility probing, Bouncy Castle Argon2id API risk review, split-provider boundary review, disabled provider-boundary modeling, provider-selection boundary modeling, provider-level KAT strategy modeling for deterministic vectors plus randomized AEAD behavioral checks, integrated verification-order KAT modeling, stale-record manifest policy modeling, test-only provider KAT harness modeling, implemented-still-disabled Argon2id calibration floor/candidate-selection/memory-failure/no-downgrade policy, manual Android calibration evidence-capture modeling, Android compatibility/entropy policy modeling, runtime randomness provider check modeling, v1 production-provider acceptance-contract modeling, header commitment policy modeling, HKDF-SHA-256 key-expansion policy modeling, HMAC-SHA-256 header-commitment primitive modeling, key-expansion output layout modeling, primitive threat-model rationale modeling, canonical header/HKDF/HMAC vector contract modeling, canonical header encoding policy modeling, key-separation labels modeling, still-disabled canonical header serializer/HKDF/HMAC implementations that match the non-secret vectors, strict AAD serialization and Tink record AEAD building blocks that match non-secret tests, Tink non-key-commitment mitigation modeling, passphrase encoding policy modeling and implementation, explicit-parameter Bouncy Castle Argon2id root derivation fixture testing, and still-disabled provider integration harness execution of deterministic provider-level vectors plus randomized AEAD behavioral KATs in the required verification order. It remains candidate-only: no final calibrated production parameters, selectable production provider implementation, provider selection, manifest read/write, keyset storage, vault storage, persistence, or mainnet path is enabled.",
+                note = "Selected only as a reviewed candidate after Android/Linux compile and packaging feasibility, desktop and Android runtime public KAT validation, local dependency/POM license inspection, package inventory review, Tink keyset/storage review, desktop and Android test-scope Tink raw-key public API feasibility probing, Bouncy Castle Argon2id API risk review, split-provider boundary review, disabled provider-boundary modeling, provider-selection boundary modeling, provider-level KAT strategy modeling for deterministic vectors plus randomized AEAD behavioral checks, integrated verification-order KAT modeling, stale-record manifest policy modeling, test-only provider KAT harness modeling, implemented-still-disabled Argon2id calibration floor/candidate-selection/memory-failure/no-downgrade policy, manual Android calibration evidence-capture modeling, Android compatibility/entropy policy modeling, runtime randomness provider check modeling, v1 production-provider acceptance-contract modeling, header commitment policy modeling, HKDF-SHA-256 key-expansion policy modeling, HMAC-SHA-256 header-commitment primitive modeling, key-expansion output layout modeling, primitive threat-model rationale modeling, canonical header/HKDF/HMAC vector contract modeling, canonical header encoding policy modeling, key-separation labels modeling, still-disabled canonical header serializer/HKDF/HMAC implementations that match the non-secret vectors, strict AAD serialization and Tink record AEAD building blocks that match non-secret tests, Tink non-key-commitment mitigation modeling, passphrase encoding policy modeling and implementation, explicit-parameter Bouncy Castle Argon2id root derivation fixture testing, still-disabled provider integration harness execution of deterministic provider-level vectors plus randomized AEAD behavioral KATs in the required verification order, and a still-disabled metadata-only provider facade. It remains candidate-only: no final calibrated production parameters, selectable production provider implementation, provider selection, manifest read/write, keyset storage, vault storage, persistence, or mainnet path is enabled.",
             ),
             VaultCryptoDependencyProbeResult(
                 candidate = VaultCryptoDependencyCandidate.LazysodiumJavaAndroid,

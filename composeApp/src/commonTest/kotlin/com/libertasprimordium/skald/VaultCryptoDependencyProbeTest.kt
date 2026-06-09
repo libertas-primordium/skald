@@ -70,6 +70,10 @@ class VaultCryptoDependencyProbeTest {
             selected.capabilities,
             VaultCryptoDependencyCapability.IntegratedVerificationOrderKatsExecutedInStillDisabledHarness,
         )
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.StillDisabledProviderFacadeBoundaryModeled,
+        )
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCandidateParameterPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidCompatibilityEntropyPolicyModeled)
@@ -131,6 +135,7 @@ class VaultCryptoDependencyProbeTest {
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.RandomizedAeadBehavioralKatExecutionMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.IntegratedVerificationOrderKatExecutionMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StillDisabledProviderIntegrationHarnessNotSelectable)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.StillDisabledProviderFacadeNotSelectable)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkRawKeyFeasibilityApprovalMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.VaultHeaderCommitmentImplementationMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.HkdfSha256KeyExpansionImplementationMissing))
