@@ -3,14 +3,18 @@ package com.libertasprimordium.skald
 import com.libertasprimordium.skald.security.Argon2idVersion
 import com.libertasprimordium.skald.security.DisabledVaultCryptoProvider
 import com.libertasprimordium.skald.security.EncryptedVaultAeadAlgorithm
+import com.libertasprimordium.skald.security.ProductionProviderAadFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderAadBindingField
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceBlocker
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidence
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidenceState
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceGate
 import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+import com.libertasprimordium.skald.security.ProductionProviderCanonicalHeaderEncodingRule
+import com.libertasprimordium.skald.security.ProductionProviderConstructionContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentField
+import com.libertasprimordium.skald.security.ProductionProviderKeySeparationLabel
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
@@ -71,6 +75,7 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(assessment.productionProviderSelectable)
         assertFalse(assessment.productionPersistenceAllowed)
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
         assertContains(
             assessment.blockers,
             ProductionProviderAcceptanceBlocker.ProductionProviderSelectionStillDisabled,
@@ -118,28 +123,108 @@ class ProductionProviderAcceptanceContractTest {
 
     @Test
     fun headerCommitmentEvidenceMustBeKnownAndSatisfied() {
-        val missing = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
-                ProductionProviderAcceptanceEvidenceState.Missing,
-            ),
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
         )
-        val unknown = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
-                ProductionProviderAcceptanceEvidenceState.Unknown,
-            ),
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
         )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.VaultKeyCommitmentHeaderAuthenticationImplemented,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+    }
 
-        assertFalse(missing.allRequiredGatesSatisfied)
-        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
-        assertFalse(missing.productionProviderSelectable)
-        assertFalse(missing.productionPersistenceAllowed)
+    @Test
+    fun canonicalHeaderEncodingEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+    }
 
-        assertFalse(unknown.allRequiredGatesSatisfied)
-        assertContains(unknown.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
-        assertFalse(unknown.productionProviderSelectable)
-        assertFalse(unknown.productionPersistenceAllowed)
+    @Test
+    fun keySeparationEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+    }
+
+    @Test
+    fun aadEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.AeadAadPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.AeadAadPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.AeadAadPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.AeadAadPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
     }
 
     @Test
@@ -224,6 +309,34 @@ class ProductionProviderAcceptanceContractTest {
         )
 
         assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
+    }
+
+    @Test
+    fun tinkRawKeyFeasibilityDoesNotSatisfyHeaderCommitmentOrAadGates() {
+        val assessment = contract.assess(
+            ProductionProviderAcceptanceEvidence(
+                gateStates = mapOf(
+                    ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
+                        ProductionProviderAcceptanceEvidenceState.Satisfied,
+                    ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.AeadAadPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                ),
+            ),
+        )
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
         assertFalse(assessment.productionProviderSelectable)
         assertFalse(assessment.productionPersistenceAllowed)
@@ -367,6 +480,33 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
+    fun allConstructionContractEvidenceAtModelOnlyStateDoesNotSelectProvider() {
+        val assessment = contract.assess(
+            ProductionProviderAcceptanceEvidence(
+                gateStates = ProductionProviderAcceptanceGate.entries.associateWith {
+                    ProductionProviderAcceptanceEvidenceState.Satisfied
+                } + mapOf(
+                    ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.AeadAadPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                ),
+            ),
+        )
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
+    }
+
+    @Test
     fun incompleteAcceptanceEvidenceBlocksProviderSelectionAndPersistence() {
         val result = VaultCryptoProviderSelectionRegistry.select(
             VaultCryptoProviderSelectionRequest(
@@ -443,6 +583,9 @@ class ProductionProviderAcceptanceContractTest {
     fun headerCommitmentPolicyBindsCanonicalHeaderBeforeRecordDecrypt() {
         val policy = contract.headerCommitmentPolicy
 
+        assertEquals("skald-vault-v1-header-commitment-v1", policy.policyId)
+        assertEquals(1, policy.policyVersion)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
         assertTrue(policy.requiredBeforeRecordDecrypt)
         assertFalse(policy.recordDecryptAllowedBeforeVerification)
         assertTrue(policy.commitmentKeyMaterialSeparatedFromRecordAeadKeyMaterial)
@@ -451,7 +594,15 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderHeaderCommitmentField.entries.toSet(),
             policy.canonicalHeaderFields,
         )
-        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.Salt)
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.VaultMagicDomainMarker)
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.ProviderSuiteId)
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.KdfAlgorithmId)
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.SaltLength)
+        assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.SaltBytes)
+        assertContains(
+            policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.DerivedRootMaterialLength,
+        )
         assertContains(policy.canonicalHeaderFields, ProductionProviderHeaderCommitmentField.VaultId)
         assertContains(
             policy.canonicalHeaderFields,
@@ -459,7 +610,15 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertContains(
             policy.canonicalHeaderFields,
-            ProductionProviderHeaderCommitmentField.KeyCommitmentPolicyVersion,
+            ProductionProviderHeaderCommitmentField.KeySeparationPolicyId,
+        )
+        assertContains(
+            policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.HeaderCommitmentPolicyId,
+        )
+        assertContains(
+            policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.AadPolicyId,
         )
         assertEquals(
             ProductionProviderHeaderCommitmentFailClosedCondition.entries.toSet(),
@@ -473,6 +632,84 @@ class ProductionProviderAcceptanceContractTest {
             policy.failClosedConditions,
             ProductionProviderHeaderCommitmentFailClosedCondition.UnsupportedKdfParameters,
         )
+        assertContains(
+            policy.failClosedConditions,
+            ProductionProviderHeaderCommitmentFailClosedCondition.RequiredHeaderFieldOmitted,
+        )
+        assertContains(
+            policy.failClosedConditions,
+            ProductionProviderHeaderCommitmentFailClosedCondition.RequiredHeaderFieldDuplicated,
+        )
+        assertContains(
+            policy.failClosedConditions,
+            ProductionProviderHeaderCommitmentFailClosedCondition.MalformedIntegerEncoding,
+        )
+        assertContains(
+            policy.failClosedConditions,
+            ProductionProviderHeaderCommitmentFailClosedCondition.UnsupportedFutureVersion,
+        )
+    }
+
+    @Test
+    fun canonicalHeaderEncodingPolicyIsDeterministicAndContractOnly() {
+        val policy = contract.canonicalHeaderEncodingPolicy
+
+        assertEquals("skald-vault-v1-canonical-header-encoding-v1", policy.policyId)
+        assertEquals(1, policy.policyVersion)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals("big-endian", policy.byteOrder)
+        assertEquals("UTF-8", policy.stringEncoding)
+        assertEquals("SKALD-VAULT-V1", policy.domainMagic)
+        assertEquals(ProductionProviderCanonicalHeaderEncodingRule.entries.toSet(), policy.rules)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.BigEndianIntegers)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.ExplicitFieldOrder)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.LengthPrefixesForVariableFields)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.NoDefaultObjectSerialization)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.NoNonCanonicalJson)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.NoPlatformNativeSerialization)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.SingleEncodingPerLogicalHeader)
+        assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.TestVectorsRequiredBeforeSelectability)
+        assertFalse(policy.productionSerializerImplemented)
+    }
+
+    @Test
+    fun keySeparationPolicyDefinesStableLabelsWithoutProductionDerivation() {
+        val policy = contract.keySeparationPolicy
+
+        assertEquals("skald-vault-v1-key-separation-labels-v1", policy.policyId)
+        assertEquals(1, policy.policyVersion)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderKeySeparationLabel.entries.toSet(), policy.labels)
+        assertEquals(
+            "skald-vault/v1/root-domain",
+            ProductionProviderKeySeparationLabel.RootDomain.labelValue,
+        )
+        assertEquals(
+            "skald-vault/v1/header-commitment-key",
+            ProductionProviderKeySeparationLabel.HeaderCommitmentKey.labelValue,
+        )
+        assertEquals(
+            "skald-vault/v1/record-aead-key",
+            ProductionProviderKeySeparationLabel.RecordAeadKey.labelValue,
+        )
+        assertEquals(
+            "skald-vault/v1/reserved/wrapping-metadata",
+            ProductionProviderKeySeparationLabel.FutureWrappingMetadata.labelValue,
+        )
+        assertEquals(
+            "skald-vault/v1/reserved/export-migration",
+            ProductionProviderKeySeparationLabel.FutureExportMigration.labelValue,
+        )
+        assertEquals(
+            "skald-vault/test-only/raw-key-probe",
+            ProductionProviderKeySeparationLabel.TestProbeDomain.labelValue,
+        )
+        assertFalse(policy.rootMaterialUsedDirectlyForMultiplePurposes)
+        assertTrue(policy.recordAeadAndHeaderCommitmentKeyMaterialSeparated)
+        assertTrue(policy.reservedFutureLabelsNotImplemented)
+        assertFalse(policy.keyExpansionPrimitiveApproved)
+        assertFalse(policy.productionKeyDerivationImplemented)
+        assertTrue(policy.unknownUnsupportedPolicyBlocksSelectability)
     }
 
     @Test
@@ -614,12 +851,74 @@ class ProductionProviderAcceptanceContractTest {
         val policy = contract.aeadPolicy
 
         assertEquals(EncryptedVaultAeadAlgorithm.XChaCha20Poly1305, policy.primitive)
+        assertEquals("skald-vault-v1-record-aad-v1", policy.aadPolicyId)
+        assertEquals(1, policy.aadPolicyVersion)
+        assertEquals("skald-vault-v1-record-format-v1", policy.recordFormatPolicyId)
+        assertEquals(1, policy.recordFormatPolicyVersion)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
         assertTrue(policy.nonKeyCommitting)
         assertFalse(policy.successfulDecryptAloneProvesCorrectVaultKey)
         assertTrue(policy.vaultLevelKeyCommitmentRequiredBeforeRecordDecrypt)
         assertTrue(policy.headerAuthenticationRequiredBeforeRecordDecrypt)
         assertEquals(ProductionProviderAadBindingField.entries.toSet(), policy.strictAadBindingFields)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.VaultMagicDomainMarker)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.VaultFormatVersion)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.ProviderSuiteId)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.VaultId)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordFormatPolicyId)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.AadPolicyId)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordType)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordId)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordVersionOrCounter)
+        assertContains(
+            policy.strictAadBindingFields,
+            ProductionProviderAadBindingField.CanonicalHeaderCommitmentValueOrIdentifier,
+        )
+        assertEquals(
+            ProductionProviderAadFailClosedCondition.entries.toSet(),
+            policy.aadMismatchFailClosedConditions,
+        )
+        assertContains(policy.aadMismatchFailClosedConditions, ProductionProviderAadFailClosedCondition.WrongVaultId)
+        assertContains(
+            policy.aadMismatchFailClosedConditions,
+            ProductionProviderAadFailClosedCondition.CiphertextCopiedBetweenVaults,
+        )
+        assertContains(
+            policy.aadMismatchFailClosedConditions,
+            ProductionProviderAadFailClosedCondition.CiphertextCopiedBetweenRecordIds,
+        )
+        assertContains(
+            policy.aadMismatchFailClosedConditions,
+            ProductionProviderAadFailClosedCondition.ReplayedStaleRecord,
+        )
         assertEquals(ProductionProviderTamperCoverage.entries.toSet(), policy.requiredTamperCoverage)
+        assertFalse(policy.rawKeyFeasibilityBypassesHeaderCommitment)
+        assertTrue(policy.wrongPassphraseResolvedByHeaderCommitmentBeforeRecordDecrypt)
+        assertFalse(policy.productionAeadExecutionImplemented)
+    }
+
+    @Test
+    fun constructionContractStatusesAreExactAndOnlyImplementedTestedSatisfiesSelectability() {
+        assertEquals(
+            setOf(
+                "Missing",
+                "Unknown",
+                "DocumentedModelOnly",
+                "FailedUnsupported",
+                "ApprovedForFutureImplementation",
+                "ImplementedTested",
+            ),
+            ProductionProviderConstructionContractStatus.entries.map { it.name }.toSet(),
+        )
+        assertFalse(ProductionProviderConstructionContractStatus.Missing.satisfiesProductionSelectability)
+        assertFalse(ProductionProviderConstructionContractStatus.Unknown.satisfiesProductionSelectability)
+        assertFalse(ProductionProviderConstructionContractStatus.DocumentedModelOnly.satisfiesProductionSelectability)
+        assertFalse(
+            ProductionProviderConstructionContractStatus.ApprovedForFutureImplementation
+                .satisfiesProductionSelectability,
+        )
+        assertFalse(ProductionProviderConstructionContractStatus.FailedUnsupported.satisfiesProductionSelectability)
+        assertTrue(ProductionProviderConstructionContractStatus.ImplementedTested.satisfiesProductionSelectability)
     }
 
     @Test
@@ -650,4 +949,17 @@ class ProductionProviderAcceptanceContractTest {
                 ProductionProviderAcceptanceEvidenceState.Satisfied
             } + mapOf(gate to state),
         )
+
+    private fun assertGateBlocks(
+        gate: ProductionProviderAcceptanceGate,
+        state: ProductionProviderAcceptanceEvidenceState,
+        blocker: ProductionProviderAcceptanceBlocker,
+    ) {
+        val assessment = contract.assess(evidenceWith(gate, state))
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, blocker)
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
+    }
 }

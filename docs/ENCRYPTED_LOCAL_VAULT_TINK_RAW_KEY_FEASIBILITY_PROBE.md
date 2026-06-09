@@ -13,6 +13,7 @@ Runtime behavior remains fail-closed:
 - Production persistence remains disabled.
 - Secure secret storage and secure metadata storage remain disabled.
 - Header commitment, passphrase validation, bounded Argon2id approval, provider implementation, production provider KATs, vault container/storage, and redaction/migration tests remain required.
+- The header commitment, canonical header encoding, key-separation label, and strict AAD contract remains a separate gate documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md).
 
 ## Results
 
@@ -134,7 +135,7 @@ The probes do not prove:
 - redaction readiness,
 - mainnet readiness.
 
-Tink XChaCha20-Poly1305 remains non-key-committing. Skald must still implement and test vault-level header commitment over canonical header fields before any record decrypt path can become selectable.
+Tink XChaCha20-Poly1305 remains non-key-committing. Skald must still implement and test vault-level header commitment over canonical header fields, separated header commitment key material, canonical header byte vectors, and strict record AAD before any record decrypt path can become selectable. Raw-key feasibility does not prove key commitment and cannot be used as a wrong-passphrase oracle.
 
 ## Source Guard Expectations
 
