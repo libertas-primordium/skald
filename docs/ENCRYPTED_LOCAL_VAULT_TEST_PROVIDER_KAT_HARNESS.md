@@ -22,6 +22,8 @@ Runtime behavior remains fail-closed:
 
 Tink raw-key feasibility is documented separately in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). Those probes record `FEASIBLE_PUBLIC_RAW_KEY_API` in desktop/JVM test scope and `ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API` in Android instrumented test scope. They are not provider-level KAT evidence, do not use the Skald provider interface, do not implement production AEAD, and do not approve provider selection.
 
+The header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). This harness does not implement that contract and does not mitigate Tink XChaCha20-Poly1305 being non-key-committing.
+
 ## Source Location
 
 Production-safe common provider request/result models:

@@ -16,6 +16,7 @@ import com.libertasprimordium.skald.security.Argon2idCalibrationImplementationSt
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.DisabledSecureWalletMetadataRepository
 import com.libertasprimordium.skald.security.EncryptedVaultAeadAlgorithm
+import com.libertasprimordium.skald.security.EncryptedVaultAssociatedDataRequirement
 import com.libertasprimordium.skald.security.EncryptedVaultBlockingIssue
 import com.libertasprimordium.skald.security.EncryptedVaultCapability
 import com.libertasprimordium.skald.security.EncryptedVaultDecisionRole
@@ -58,6 +59,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderEncodingUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeySeparationLabelsUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StrictAadContractUnimplemented)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.Argon2idBoundedCalibrationUnapproved)
@@ -77,6 +81,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.RuntimeRandomnessProviderCheckModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ProductionProviderAcceptanceContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.VaultHeaderCommitmentPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.CanonicalHeaderEncodingPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.KeySeparationLabelsPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StrictAadContractPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.TinkNonKeyCommitmentMitigationModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseEncodingPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TinkRawKeyFeasibilityPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idBoundedCalibrationPolicyModel)
@@ -108,8 +116,24 @@ class EncryptedVaultReadinessPolicyTest {
         assertTrue(policy.noncePolicy.randomPerRecord)
         assertTrue(policy.noncePolicy.designOnly)
         assertContains(
+            policy.associatedDataRequirements,
+            EncryptedVaultAssociatedDataRequirement.BindVaultMagicDomainMarker,
+        )
+        assertContains(
+            policy.associatedDataRequirements,
+            EncryptedVaultAssociatedDataRequirement.BindProviderSuiteId,
+        )
+        assertContains(
+            policy.associatedDataRequirements,
+            EncryptedVaultAssociatedDataRequirement.BindHeaderCommitmentContext,
+        )
+        assertContains(
             policy.keyHierarchyRequirements,
             EncryptedVaultKeyHierarchyRequirement.PassphraseDerivedRootMaterial,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.VersionedKeySeparationLabelsRequired,
         )
         assertContains(
             policy.keyHierarchyRequirements,
@@ -146,6 +170,10 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
             EncryptedVaultRequirement.ProductionProviderAcceptanceContractModeled,
             EncryptedVaultRequirement.VaultHeaderCommitmentPolicyModeled,
+            EncryptedVaultRequirement.CanonicalHeaderEncodingPolicyModeled,
+            EncryptedVaultRequirement.KeySeparationLabelsPolicyModeled,
+            EncryptedVaultRequirement.StrictAadContractModeled,
+            EncryptedVaultRequirement.TinkNonKeyCommitmentMitigationModeled,
             EncryptedVaultRequirement.PassphraseEncodingPolicyModeled,
             EncryptedVaultRequirement.TinkRawKeyFeasibilityPolicyModeled,
             EncryptedVaultRequirement.Argon2idBoundedCalibrationPolicyModeled,
@@ -220,6 +248,22 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.VaultHeaderCommitmentPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.CanonicalHeaderEncodingPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.KeySeparationLabelsPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.StrictAadContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.TinkNonKeyCommitmentMitigationModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

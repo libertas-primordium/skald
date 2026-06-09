@@ -6,6 +6,8 @@ This document defines the Skald Vault v1 production-provider acceptance contract
 
 It is design and acceptance-contract material only. It does not implement a production provider, production Argon2id execution, production Tink AEAD execution, production random-byte generation, key generation, vault container read/write, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
+The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). That document is part of this acceptance contract and remains contract-only.
+
 Runtime behavior remains fail-closed:
 
 - `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.
@@ -101,23 +103,55 @@ Before production selectability, the vault format must implement and test a sepa
 
 The committed canonical header data must include:
 
+- vault magic/domain marker,
 - vault format version,
 - provider suite id,
-- KDF algorithm,
+- KDF algorithm id,
 - KDF version,
 - KDF memory parameter,
 - KDF iteration/time parameter,
 - KDF parallelism parameter,
-- salt,
+- salt length and salt bytes,
+- derived root material length,
 - vault id,
 - passphrase encoding policy id,
-- AAD policy version,
-- key-commitment policy version,
-- future integrity-critical header metadata that is already modeled by the vault format.
+- key-separation policy id,
+- header commitment policy id,
+- AAD policy id/version,
+- record format policy id/version,
+- optional feature flags if present,
+- all integrity-critical header metadata.
 
-The commitment must fail closed if the header is modified, incomplete, non-canonical, has an unknown suite id, has unsupported KDF parameters, has an unknown policy version, or if commitment verification is unavailable. Unknown, missing, failed, unsupported, or unimplemented key-commitment evidence blocks production provider selectability.
+The commitment must fail closed if the header is modified, omits a required field, duplicates a required field, includes an unknown field in a non-extensible section, is non-canonical, has an unknown suite id, has unsupported KDF algorithm/version/parameters, has unsupported policy ids, has malformed length/integer/string encoding, has an unknown or unsupported future version, or if commitment verification is unavailable. Unknown, missing, documented/model-only, failed, unsupported, or unimplemented key-commitment evidence blocks production provider selectability.
 
-This branch does not implement the commitment construction, canonical encoder, key separation, or verification. It documents and models the requirement only.
+The v1 construction policy ids are:
+
+```text
+skald-vault-v1-header-commitment-v1
+skald-vault-v1-canonical-header-encoding-v1
+skald-vault-v1-key-separation-labels-v1
+skald-vault-v1-record-aad-v1
+skald-vault-v1-record-format-v1
+```
+
+Header commitment bytes must be canonical and deterministic across Linux desktop JVM and Android. The canonical header encoding contract requires an explicit domain/magic prefix, big-endian integers, explicit integer widths, UTF-8 strings, ASCII policy and suite ids, length prefixes, explicit field order, explicit optional-field handling, rejection of unknown non-extensible fields, maximum lengths for variable fields, versioning policy, and canonical header byte test vectors before production selectability. Default object serialization, non-canonical JSON, platform-native serialization, and unsorted map iteration are forbidden for committed bytes.
+
+The v1 key-separation labels are:
+
+```text
+skald-vault/v1/root-domain
+skald-vault/v1/header-commitment-key
+skald-vault/v1/record-aead-key
+skald-vault/v1/reserved/wrapping-metadata
+skald-vault/v1/reserved/export-migration
+skald-vault/test-only/raw-key-probe
+```
+
+The test/probe label is not a production label. The reserved labels are not implemented. The exact key-expansion primitive remains a human-review item for the future still-disabled provider implementation; this branch does not implement HKDF or any other production key derivation.
+
+Every future record AEAD operation must bind strict AAD to vault magic/domain marker, vault format version, provider suite id, vault id, record format policy id/version, AAD policy id/version, record type, record id, record version or monotonic counter, integrity-critical record metadata, header commitment policy id, canonical header commitment value or stable commitment identifier, and any future storage namespace where relevant. AAD mismatch must fail closed for wrong vault, suite, record type, record id, record version/counter, record metadata, AAD policy, header commitment context, copied ciphertext between vaults/records/types, and stale-record replay where the record version/counter policy rejects stale data.
+
+This branch does not implement the commitment construction, canonical encoder, key separation, AEAD AAD builder, record version/counter policy, or verification. It documents and models the requirement only. The detailed contract is in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md).
 
 Before production selectability, the broader vault format must also implement and test:
 
@@ -296,21 +330,24 @@ A production provider cannot become selectable until every gate below is satisfi
 6. XChaCha20-Poly1305 primitive/template/version is pinned.
 7. AEAD KATs pass through the production provider.
 8. Vault-level header commitment policy is approved.
-9. Passphrase encoding policy is approved.
-10. Tink raw-key feasibility is approved through public supported APIs.
-11. Vault-level key commitment and header authentication are implemented and tested.
-12. AEAD AAD policy binds vault header/version, provider suite id, record type, record id, record version/counter, and integrity-critical metadata.
-13. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
-14. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-15. Unknown randomness/provider state blocks vault creation.
-16. Forbidden random APIs remain guarded.
-17. Secure secret storage is reviewed and approved.
-18. Secure metadata storage is reviewed and approved.
-19. Crash, corruption, and partial-write behavior are reviewed.
-20. Redaction, logging, and crash-report leakage checks pass.
-21. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-22. A production provider implementation exists behind Skald-owned interfaces.
-23. Release readiness excludes debug and test-only providers from selection.
+9. Canonical header encoding policy is approved.
+10. Key-separation labels policy is approved.
+11. Passphrase encoding policy is approved.
+12. Tink raw-key feasibility is approved through public supported APIs.
+13. Vault-level key commitment and header authentication are implemented and tested.
+14. AEAD AAD policy binds vault header/version, provider suite id, vault id, record type, record id, record version/counter, header commitment context, and integrity-critical metadata.
+15. Tink non-key-commitment mitigation is approved at the vault-format layer.
+16. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
+17. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+18. Unknown randomness/provider state blocks vault creation.
+19. Forbidden random APIs remain guarded.
+20. Secure secret storage is reviewed and approved.
+21. Secure metadata storage is reviewed and approved.
+22. Crash, corruption, and partial-write behavior are reviewed.
+23. Redaction, logging, and crash-report leakage checks pass.
+24. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+25. A production provider implementation exists behind Skald-owned interfaces.
+26. Release readiness excludes debug and test-only providers from selection.
 
 Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, or a design-only acceptance assessment must not bypass these gates.
 

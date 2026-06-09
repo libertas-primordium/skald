@@ -85,20 +85,28 @@ data class EncryptedVaultNoncePolicy(
 }
 
 enum class EncryptedVaultAssociatedDataRequirement(val label: String) {
-    BindContainerVersion("bind container version"),
+    BindVaultMagicDomainMarker("bind vault magic/domain marker"),
+    BindVaultFormatVersion("bind vault format version"),
+    BindProviderSuiteId("bind provider suite id"),
     BindVaultId("bind opaque vault id"),
+    BindRecordFormatPolicyId("bind record format policy id"),
+    BindAadPolicyId("bind AAD policy id"),
     BindRecordId("bind opaque record id"),
     BindRecordClass("bind record class"),
-    BindRecordSchemaVersion("bind record schema version"),
-    BindKeyVersion("bind key version"),
+    BindRecordVersionOrCounter("bind record version or monotonic counter"),
+    BindHeaderCommitmentContext("bind header commitment context"),
+    BindIntegrityCriticalRecordMetadata("bind integrity-critical record metadata"),
     ExcludeSensitiveWalletMetadata("exclude sensitive wallet metadata from associated data"),
 }
 
 enum class EncryptedVaultKeyHierarchyRequirement(val label: String) {
     UserUnlockSecretRequired("user unlock secret required"),
     PassphraseDerivedRootMaterial("passphrase-derived root material"),
+    VersionedKeySeparationLabelsRequired("versioned key-separation labels required"),
     HeaderCommitmentKeySeparated("header commitment key material separated from record AEAD key material"),
     RecordAeadKeyMaterialDerivedFromRoot("record AEAD key material derived from root material"),
+    FutureWrappingMetadataLabelReserved("future wrapping metadata label reserved but not implemented"),
+    FutureExportMigrationLabelReserved("future export/migration label reserved but not implemented"),
     NoRandomTinkVaultKeyInV1("no random Tink vault key in v1"),
     NoPersistedTinkKeysetInV1("no persisted Tink keyset in v1"),
     SeparateMetadataEncryptionKey("separate metadata encryption key"),
@@ -147,6 +155,10 @@ enum class EncryptedVaultRequirement(val label: String) {
     VaultCreationFailClosedWarningModeled("vault-creation fail-closed warning modeled"),
     ProductionProviderAcceptanceContractModeled("production provider acceptance contract modeled"),
     VaultHeaderCommitmentPolicyModeled("vault header commitment policy modeled"),
+    CanonicalHeaderEncodingPolicyModeled("canonical header encoding policy modeled"),
+    KeySeparationLabelsPolicyModeled("key-separation labels policy modeled"),
+    StrictAadContractModeled("strict AEAD associated-data contract modeled"),
+    TinkNonKeyCommitmentMitigationModeled("Tink non-key-commitment mitigation modeled"),
     PassphraseEncodingPolicyModeled("passphrase encoding policy modeled"),
     TinkRawKeyFeasibilityPolicyModeled("Tink raw-key feasibility policy modeled"),
     Argon2idBoundedCalibrationPolicyModeled("bounded Argon2id calibration policy modeled"),
@@ -182,6 +194,9 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     ProviderSelectionProductionBlocked("provider selection production blocked"),
     ProductionProviderAcceptanceContractIncomplete("production provider acceptance contract incomplete"),
     VaultHeaderCommitmentUnimplemented("vault header commitment unimplemented"),
+    CanonicalHeaderEncodingUnimplemented("canonical header encoding unimplemented"),
+    KeySeparationLabelsUnimplemented("key-separation labels unimplemented"),
+    StrictAadContractUnimplemented("strict AEAD associated-data contract unimplemented"),
     PassphraseEncodingPolicyUnapproved("passphrase encoding policy unapproved"),
     TinkRawKeyFeasibilityProbeOnly("Tink raw-key feasibility probe is test-scope evidence only"),
     Argon2idBoundedCalibrationUnapproved("bounded Argon2id calibration unapproved"),
@@ -239,6 +254,16 @@ enum class EncryptedVaultCapability(
         enabledInProduction = true,
     ),
     VaultHeaderCommitmentPolicyModel("vault header commitment policy model", enabledInProduction = true),
+    CanonicalHeaderEncodingPolicyModel(
+        "canonical header encoding policy model",
+        enabledInProduction = true,
+    ),
+    KeySeparationLabelsPolicyModel("key-separation labels policy model", enabledInProduction = true),
+    StrictAadContractPolicyModel("strict AEAD associated-data contract policy model", enabledInProduction = true),
+    TinkNonKeyCommitmentMitigationModel(
+        "Tink non-key-commitment mitigation policy model",
+        enabledInProduction = true,
+    ),
     PassphraseEncodingPolicyModel("passphrase encoding policy model", enabledInProduction = true),
     TinkRawKeyFeasibilityPolicyModel("Tink raw-key feasibility policy model", enabledInProduction = true),
     Argon2idBoundedCalibrationPolicyModel("bounded Argon2id calibration policy model", enabledInProduction = true),
@@ -423,6 +448,22 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.CanonicalHeaderEncodingPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.KeySeparationLabelsPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.StrictAadContractModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.TinkNonKeyCommitmentMitigationModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
             EncryptedVaultRequirement.PassphraseEncodingPolicyModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -462,6 +503,9 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked,
             EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete,
             EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented,
+            EncryptedVaultBlockingIssue.CanonicalHeaderEncodingUnimplemented,
+            EncryptedVaultBlockingIssue.KeySeparationLabelsUnimplemented,
+            EncryptedVaultBlockingIssue.StrictAadContractUnimplemented,
             EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved,
             EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly,
             EncryptedVaultBlockingIssue.Argon2idBoundedCalibrationUnapproved,
@@ -490,8 +534,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, passphrase encoding policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, key commitment/header authentication, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, canonical header encoding, key-separation labels, strict AAD, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, canonical header encoding policy, key-separation labels policy, strict AAD policy, passphrase encoding policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, key commitment/header authentication, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 

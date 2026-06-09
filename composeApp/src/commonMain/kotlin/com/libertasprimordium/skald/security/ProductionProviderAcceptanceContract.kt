@@ -42,10 +42,13 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     XChaCha20Poly1305PrimitivePinned("XChaCha20-Poly1305 primitive/template/version pinned"),
     AeadKatsPassed("AEAD known-answer tests pass"),
     HeaderCommitmentPolicyApproved("vault-level header commitment policy approved"),
+    CanonicalHeaderEncodingPolicyApproved("canonical vault header encoding policy approved"),
+    KeySeparationLabelsPolicyApproved("key-separation labels policy approved"),
     PassphraseEncodingPolicyApproved("passphrase encoding policy approved"),
     TinkRawKeyFeasibilityApproved("Tink raw-key feasibility approved through public supported APIs"),
     VaultKeyCommitmentHeaderAuthenticationImplemented("vault-level key commitment and header authentication implemented"),
     AeadAadPolicyApproved("AEAD AAD policy approved"),
+    TinkNonKeyCommitmentMitigationApproved("Tink non-key-commitment mitigation approved"),
     TamperTestsPassed("tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata"),
     RuntimeOsSecureRandomEvidenceApproved("OS SecureRandom runtime provider/algorithm evidence approved"),
     UnknownRandomnessProviderStateRejected("unknown randomness/provider state rejected"),
@@ -64,6 +67,9 @@ enum class ProductionProviderAcceptanceEvidenceState(
     val satisfiesGate: Boolean,
 ) {
     Satisfied("satisfied", satisfiesGate = true),
+    DocumentedModelOnly("documented/model-only", satisfiesGate = false),
+    ApprovedForFutureImplementation("approved for future implementation", satisfiesGate = false),
+    ImplementedTested("implemented and tested", satisfiesGate = true),
     Missing("missing", satisfiesGate = false),
     Failed("failed", satisfiesGate = false),
     Unsupported("unsupported", satisfiesGate = false),
@@ -72,6 +78,7 @@ enum class ProductionProviderAcceptanceEvidenceState(
 
 enum class ProductionProviderAcceptanceBlocker(val label: String) {
     MissingGateEvidence("missing acceptance-gate evidence"),
+    ModelOnlyGateEvidence("model-only acceptance-gate evidence"),
     FailedGateEvidence("failed acceptance-gate evidence"),
     UnsupportedGateEvidence("unsupported acceptance-gate evidence"),
     UnknownGateEvidence("unknown acceptance-gate evidence"),
@@ -81,12 +88,34 @@ enum class ProductionProviderAcceptanceBlocker(val label: String) {
 }
 
 enum class ProductionProviderAadBindingField(val label: String) {
-    VaultHeaderVersion("vault header/version"),
+    VaultMagicDomainMarker("vault magic/domain marker"),
+    VaultFormatVersion("vault format version"),
     ProviderSuiteId("provider suite id"),
+    VaultId("vault id"),
+    RecordFormatPolicyId("record format policy id/version"),
+    AadPolicyId("AAD policy id/version"),
     RecordType("record type"),
     RecordId("record id"),
     RecordVersionOrCounter("record version/counter"),
-    IntegrityCriticalMetadata("integrity-critical metadata"),
+    IntegrityCriticalRecordMetadata("integrity-critical record metadata"),
+    HeaderCommitmentPolicyId("header commitment policy id"),
+    CanonicalHeaderCommitmentValueOrIdentifier("canonical header commitment value or stable identifier"),
+    StorageNamespace("future storage namespace when relevant"),
+}
+
+enum class ProductionProviderAadFailClosedCondition(val label: String) {
+    WrongVaultId("wrong vault id"),
+    WrongProviderSuiteId("wrong provider suite id"),
+    WrongRecordType("wrong record type"),
+    WrongRecordId("wrong record id"),
+    WrongRecordVersionOrCounter("wrong record version/counter"),
+    WrongRecordMetadata("wrong integrity-critical record metadata"),
+    WrongAadPolicyVersion("wrong AAD policy version"),
+    WrongHeaderCommitmentContext("wrong header commitment context"),
+    CiphertextCopiedBetweenVaults("ciphertext copied between vaults"),
+    CiphertextCopiedBetweenRecordIds("ciphertext copied between record ids"),
+    CiphertextCopiedBetweenRecordTypes("ciphertext copied between record types"),
+    ReplayedStaleRecord("replayed stale record where the version/counter policy rejects stale data"),
 }
 
 enum class ProductionProviderTamperCoverage(val label: String) {
@@ -104,38 +133,127 @@ enum class ProductionProviderWeakDeviceFailureMode(val label: String) {
 }
 
 enum class ProductionProviderHeaderCommitmentField(val label: String) {
+    VaultMagicDomainMarker("vault magic/domain marker"),
     VaultFormatVersion("vault format version"),
     ProviderSuiteId("provider suite id"),
-    KdfAlgorithm("KDF algorithm"),
+    KdfAlgorithmId("KDF algorithm id"),
     KdfVersion("KDF version"),
     KdfMemoryParameter("KDF memory parameter"),
     KdfTimeParameter("KDF iteration/time parameter"),
     KdfParallelismParameter("KDF parallelism parameter"),
-    Salt("salt"),
+    SaltLength("salt length"),
+    SaltBytes("salt bytes"),
+    DerivedRootMaterialLength("derived root material length"),
     VaultId("vault id"),
     PassphraseEncodingPolicyId("passphrase encoding policy id"),
-    AadPolicyVersion("AAD policy version"),
-    KeyCommitmentPolicyVersion("key-commitment policy version"),
-    FutureIntegrityCriticalHeaderMetadata("future integrity-critical header metadata"),
+    KeySeparationPolicyId("key-separation policy id"),
+    HeaderCommitmentPolicyId("header commitment policy id"),
+    AadPolicyId("AAD policy id/version"),
+    RecordFormatPolicyId("record format policy id/version"),
+    OptionalFeatureFlags("optional feature flags"),
+    IntegrityCriticalHeaderMetadata("all integrity-critical header metadata"),
 }
 
 enum class ProductionProviderHeaderCommitmentFailClosedCondition(val label: String) {
     HeaderModified("header modified"),
-    HeaderIncomplete("header incomplete"),
+    RequiredHeaderFieldOmitted("required header field omitted"),
+    RequiredHeaderFieldDuplicated("required header field duplicated"),
+    UnknownFieldInNonExtensibleSection("unknown field in non-extensible section"),
     HeaderNonCanonical("header non-canonical"),
     UnknownSuiteId("unknown suite id"),
+    UnsupportedKdfAlgorithmOrVersion("unsupported KDF algorithm/version"),
     UnsupportedKdfParameters("unsupported KDF parameters"),
+    UnsupportedPassphraseEncodingPolicy("unsupported passphrase encoding policy"),
+    UnsupportedKeySeparationPolicy("unsupported key-separation policy"),
+    UnsupportedAadPolicy("unsupported AAD policy"),
+    UnsupportedRecordFormatPolicy("unsupported record format policy"),
     UnknownPolicyVersion("unknown policy version"),
+    MalformedLength("malformed length"),
+    MalformedIntegerEncoding("malformed integer encoding"),
+    MalformedUtf8StringEncoding("malformed UTF-8/string encoding"),
+    UnsupportedFutureVersion("unsupported future version"),
     CommitmentUnimplemented("key commitment unimplemented"),
 }
 
+enum class ProductionProviderConstructionContractStatus(
+    val label: String,
+    val satisfiesProductionSelectability: Boolean,
+) {
+    Missing("missing", satisfiesProductionSelectability = false),
+    Unknown("unknown", satisfiesProductionSelectability = false),
+    DocumentedModelOnly("documented/model-only", satisfiesProductionSelectability = false),
+    FailedUnsupported("failed or unsupported", satisfiesProductionSelectability = false),
+    ApprovedForFutureImplementation("approved for future implementation", satisfiesProductionSelectability = false),
+    ImplementedTested("implemented and tested", satisfiesProductionSelectability = true),
+}
+
 data class ProductionProviderHeaderCommitmentAcceptancePolicy(
+    val policyId: String,
+    val policyVersion: Int,
+    val contractStatus: ProductionProviderConstructionContractStatus,
     val requiredBeforeRecordDecrypt: Boolean,
     val recordDecryptAllowedBeforeVerification: Boolean,
     val commitmentKeyMaterialSeparatedFromRecordAeadKeyMaterial: Boolean,
     val canonicalHeaderFields: Set<ProductionProviderHeaderCommitmentField>,
     val failClosedConditions: Set<ProductionProviderHeaderCommitmentFailClosedCondition>,
     val productionExecutionImplemented: Boolean,
+)
+
+enum class ProductionProviderCanonicalHeaderEncodingRule(val label: String) {
+    DeterministicAcrossJvmAndAndroid("deterministic across JVM desktop and Android"),
+    BigEndianIntegers("all integers use explicit big-endian byte order"),
+    ExplicitIntegerWidths("each numeric field has an explicit width"),
+    Utf8Strings("strings are encoded as UTF-8"),
+    PolicyAndSuiteIdsAsciiConstants("policy and suite identifiers are ASCII constants"),
+    LengthPrefixesForVariableFields("variable-length fields use explicit length prefixes"),
+    ExplicitFieldOrder("fields are encoded in explicit order"),
+    OptionalFieldsExplicitlyEncoded("optional fields have explicit presence/absence encoding"),
+    UnknownFieldsRejectedInNonExtensibleSections("unknown fields are rejected in non-extensible sections"),
+    VariableLengthMaximums("variable-length fields have explicit maximum lengths"),
+    DomainMagicPrefix("bytes include an explicit Skald Vault domain/magic prefix"),
+    VersionedHeaderFormat("header format has an explicit version policy"),
+    NoDefaultObjectSerialization("default object serialization is forbidden"),
+    NoNonCanonicalJson("non-canonical JSON is forbidden for committed bytes"),
+    NoUnsortedMapIterationOrder("map iteration order is forbidden unless keys are sorted and encoded"),
+    NoPlatformNativeSerialization("platform-native integer/string serialization is forbidden"),
+    SingleEncodingPerLogicalHeader("one logical header has exactly one byte encoding"),
+    TestVectorsRequiredBeforeSelectability("canonical header byte vectors are required before selectability"),
+}
+
+data class ProductionProviderCanonicalHeaderEncodingPolicy(
+    val policyId: String,
+    val policyVersion: Int,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val byteOrder: String,
+    val stringEncoding: String,
+    val domainMagic: String,
+    val rules: Set<ProductionProviderCanonicalHeaderEncodingRule>,
+    val productionSerializerImplemented: Boolean,
+)
+
+enum class ProductionProviderKeySeparationLabel(
+    val labelValue: String,
+    val productionLabel: Boolean,
+) {
+    RootDomain("skald-vault/v1/root-domain", productionLabel = true),
+    HeaderCommitmentKey("skald-vault/v1/header-commitment-key", productionLabel = true),
+    RecordAeadKey("skald-vault/v1/record-aead-key", productionLabel = true),
+    FutureWrappingMetadata("skald-vault/v1/reserved/wrapping-metadata", productionLabel = false),
+    FutureExportMigration("skald-vault/v1/reserved/export-migration", productionLabel = false),
+    TestProbeDomain("skald-vault/test-only/raw-key-probe", productionLabel = false),
+}
+
+data class ProductionProviderKeySeparationPolicy(
+    val policyId: String,
+    val policyVersion: Int,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val labels: Set<ProductionProviderKeySeparationLabel>,
+    val rootMaterialUsedDirectlyForMultiplePurposes: Boolean,
+    val recordAeadAndHeaderCommitmentKeyMaterialSeparated: Boolean,
+    val reservedFutureLabelsNotImplemented: Boolean,
+    val keyExpansionPrimitiveApproved: Boolean,
+    val productionKeyDerivationImplemented: Boolean,
+    val unknownUnsupportedPolicyBlocksSelectability: Boolean,
 )
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -262,12 +380,21 @@ data class ProductionProviderArgon2idAcceptancePolicy(
 
 data class ProductionProviderAeadAcceptancePolicy(
     val primitive: EncryptedVaultAeadAlgorithm,
+    val aadPolicyId: String,
+    val aadPolicyVersion: Int,
+    val recordFormatPolicyId: String,
+    val recordFormatPolicyVersion: Int,
+    val contractStatus: ProductionProviderConstructionContractStatus,
     val nonKeyCommitting: Boolean,
     val successfulDecryptAloneProvesCorrectVaultKey: Boolean,
     val vaultLevelKeyCommitmentRequiredBeforeRecordDecrypt: Boolean,
     val headerAuthenticationRequiredBeforeRecordDecrypt: Boolean,
     val strictAadBindingFields: Set<ProductionProviderAadBindingField>,
+    val aadMismatchFailClosedConditions: Set<ProductionProviderAadFailClosedCondition>,
     val requiredTamperCoverage: Set<ProductionProviderTamperCoverage>,
+    val rawKeyFeasibilityBypassesHeaderCommitment: Boolean,
+    val wrongPassphraseResolvedByHeaderCommitmentBeforeRecordDecrypt: Boolean,
+    val productionAeadExecutionImplemented: Boolean,
 )
 
 data class ProductionProviderRuntimeRandomnessAcceptancePolicy(
@@ -324,6 +451,16 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
+                    ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.AeadAadPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.ReleaseReadinessExcludesDebugTestProviders to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                 ),
@@ -358,6 +495,8 @@ data class ProductionProviderAcceptanceContract(
     val requiredGates: Set<ProductionProviderAcceptanceGate>,
     val argon2idPolicy: ProductionProviderArgon2idAcceptancePolicy,
     val headerCommitmentPolicy: ProductionProviderHeaderCommitmentAcceptancePolicy,
+    val canonicalHeaderEncodingPolicy: ProductionProviderCanonicalHeaderEncodingPolicy,
+    val keySeparationPolicy: ProductionProviderKeySeparationPolicy,
     val passphraseEncodingPolicy: ProductionProviderPassphraseEncodingPolicy,
     val tinkRawKeyHandlingPolicy: ProductionProviderTinkRawKeyHandlingPolicy,
     val aeadPolicy: ProductionProviderAeadAcceptancePolicy,
@@ -377,6 +516,12 @@ data class ProductionProviderAcceptanceContract(
                 state = state,
                 safeDetail = when (state) {
                     ProductionProviderAcceptanceEvidenceState.Satisfied -> "Gate evidence is recorded."
+                    ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly ->
+                        "Gate evidence is documented and modeled only."
+                    ProductionProviderAcceptanceEvidenceState.ApprovedForFutureImplementation ->
+                        "Gate evidence is approved for future implementation only."
+                    ProductionProviderAcceptanceEvidenceState.ImplementedTested ->
+                        "Gate evidence is implemented and tested."
                     ProductionProviderAcceptanceEvidenceState.Missing -> "Gate evidence is missing."
                     ProductionProviderAcceptanceEvidenceState.Failed -> "Gate evidence failed."
                     ProductionProviderAcceptanceEvidenceState.Unsupported -> "Gate evidence is unsupported."
@@ -387,6 +532,14 @@ data class ProductionProviderAcceptanceContract(
         val blockers = buildSet {
             if (gateStates.any { it.state == ProductionProviderAcceptanceEvidenceState.Missing }) {
                 add(ProductionProviderAcceptanceBlocker.MissingGateEvidence)
+            }
+            if (
+                gateStates.any {
+                    it.state == ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly ||
+                        it.state == ProductionProviderAcceptanceEvidenceState.ApprovedForFutureImplementation
+                }
+            ) {
+                add(ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
             }
             if (gateStates.any { it.state == ProductionProviderAcceptanceEvidenceState.Failed }) {
                 add(ProductionProviderAcceptanceBlocker.FailedGateEvidence)
@@ -482,6 +635,9 @@ data class ProductionProviderAcceptanceContract(
                     weakerDeviceFailureMode = ProductionProviderWeakDeviceFailureMode.FailClosedWithUserMessage,
                 ),
                 headerCommitmentPolicy = ProductionProviderHeaderCommitmentAcceptancePolicy(
+                    policyId = "skald-vault-v1-header-commitment-v1",
+                    policyVersion = 1,
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     requiredBeforeRecordDecrypt = true,
                     recordDecryptAllowedBeforeVerification = false,
                     commitmentKeyMaterialSeparatedFromRecordAeadKeyMaterial = true,
@@ -489,6 +645,28 @@ data class ProductionProviderAcceptanceContract(
                     failClosedConditions =
                         ProductionProviderHeaderCommitmentFailClosedCondition.entries.toSet(),
                     productionExecutionImplemented = false,
+                ),
+                canonicalHeaderEncodingPolicy = ProductionProviderCanonicalHeaderEncodingPolicy(
+                    policyId = "skald-vault-v1-canonical-header-encoding-v1",
+                    policyVersion = 1,
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    byteOrder = "big-endian",
+                    stringEncoding = "UTF-8",
+                    domainMagic = "SKALD-VAULT-V1",
+                    rules = ProductionProviderCanonicalHeaderEncodingRule.entries.toSet(),
+                    productionSerializerImplemented = false,
+                ),
+                keySeparationPolicy = ProductionProviderKeySeparationPolicy(
+                    policyId = "skald-vault-v1-key-separation-labels-v1",
+                    policyVersion = 1,
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    labels = ProductionProviderKeySeparationLabel.entries.toSet(),
+                    rootMaterialUsedDirectlyForMultiplePurposes = false,
+                    recordAeadAndHeaderCommitmentKeyMaterialSeparated = true,
+                    reservedFutureLabelsNotImplemented = true,
+                    keyExpansionPrimitiveApproved = false,
+                    productionKeyDerivationImplemented = false,
+                    unknownUnsupportedPolicyBlocksSelectability = true,
                 ),
                 passphraseEncodingPolicy = ProductionProviderPassphraseEncodingPolicy(
                     policyId = "unicode-nfc-utf8-no-controls-no-whitespace-v1",
@@ -530,12 +708,22 @@ data class ProductionProviderAcceptanceContract(
                 ),
                 aeadPolicy = ProductionProviderAeadAcceptancePolicy(
                     primitive = EncryptedVaultAeadAlgorithm.XChaCha20Poly1305,
+                    aadPolicyId = "skald-vault-v1-record-aad-v1",
+                    aadPolicyVersion = 1,
+                    recordFormatPolicyId = "skald-vault-v1-record-format-v1",
+                    recordFormatPolicyVersion = 1,
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     nonKeyCommitting = true,
                     successfulDecryptAloneProvesCorrectVaultKey = false,
                     vaultLevelKeyCommitmentRequiredBeforeRecordDecrypt = true,
                     headerAuthenticationRequiredBeforeRecordDecrypt = true,
                     strictAadBindingFields = ProductionProviderAadBindingField.entries.toSet(),
+                    aadMismatchFailClosedConditions =
+                        ProductionProviderAadFailClosedCondition.entries.toSet(),
                     requiredTamperCoverage = ProductionProviderTamperCoverage.entries.toSet(),
+                    rawKeyFeasibilityBypassesHeaderCommitment = false,
+                    wrongPassphraseResolvedByHeaderCommitmentBeforeRecordDecrypt = true,
+                    productionAeadExecutionImplemented = false,
                 ),
                 runtimeRandomnessPolicy = ProductionProviderRuntimeRandomnessAcceptancePolicy(
                     sourceKind = RuntimeRandomnessSourceKind.OsCryptographicRandomness,
