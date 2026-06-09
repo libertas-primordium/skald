@@ -120,8 +120,11 @@ A future executable provider cannot become selectable until every required gate 
 | Argon2id parameters final for the platform | Blocked. Candidate tiers are non-final, and bounded calibration at the shared v1 floor is not approved. |
 | Dependency and license review complete | Candidate-level review complete for Tink plus Bouncy Castle only. |
 | Header commitment policy approved and implemented | Blocked. Canonical header commitment is modeled but production execution is absent. |
+| HKDF-SHA-256 key-expansion primitive approved and implemented | Blocked. The primitive policy is selected and modeled, but production HKDF execution is absent. |
+| HMAC-SHA-256 header-commitment primitive approved and implemented | Blocked. The primitive policy is selected and modeled, but production HMAC/header-commitment execution is absent. |
+| Key-expansion output layout approved and implemented | Blocked. The 64-byte root, 32-byte header key, and 32-byte record AEAD key layout is selected and modeled, but no production key expansion exists. |
 | Canonical header encoding policy approved and implemented | Blocked. Deterministic header bytes and test vectors are modeled, but no production serializer exists. |
-| Key-separation labels policy approved and implemented | Blocked. Stable labels are modeled, but no production key derivation or key-expansion primitive is approved. |
+| Key-separation labels policy approved and implemented | Blocked. Stable labels and HKDF-SHA-256 expansion policy are modeled, but no production key derivation is implemented. |
 | Strict AAD contract approved and implemented | Blocked. Required AAD bindings are modeled, but no production AEAD path exists. |
 | Passphrase encoding policy approved | Blocked. `unicode-nfc-utf8-no-controls-no-whitespace-v1` is modeled, but production validation is not wired. |
 | Keyset or raw-key handling approved | Partially evidenced. The desktop/JVM test-scope result is `FEASIBLE_PUBLIC_RAW_KEY_API` and the Android instrumented test-scope result is `ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API`, but no production provider implementation, production provider KATs, header commitment implementation, or storage review is approved. No keyset persistence is approved. |
@@ -209,13 +212,14 @@ The next provider-selection change may only consider a non-disabled provider aft
 8. passphrase encoding policy approval and production validation,
 9. raw-key handling approval through public supported Tink APIs or a separate human-approved alternative,
 10. canonical header encoding implementation and test vectors,
-11. key-separation implementation with reviewed key-expansion primitive,
-12. strict AAD implementation and tamper/copy/replay tests,
-13. secure storage and secure metadata approval,
-14. vault container/storage review,
-15. redaction and failure-mode tests,
-16. migration/corruption tests,
-17. explicit mainnet release-hardening if mainnet is requested.
+11. HKDF-SHA-256 key expansion and HMAC-SHA-256 header commitment implemented and tested through the still-disabled provider,
+12. key-separation implementation with the selected key-expansion primitive,
+13. strict AAD implementation and tamper/copy/replay tests,
+14. secure storage and secure metadata approval,
+15. vault container/storage review,
+16. redaction and failure-mode tests,
+17. migration/corruption tests,
+18. explicit mainnet release-hardening if mainnet is requested.
 
 Until then, the provider-selection registry must keep selecting the disabled provider only.
 

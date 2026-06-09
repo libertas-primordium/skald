@@ -14,6 +14,8 @@ import com.libertasprimordium.skald.security.ProductionProviderCanonicalHeaderEn
 import com.libertasprimordium.skald.security.ProductionProviderConstructionContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentField
+import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentPrimitive
+import com.libertasprimordium.skald.security.ProductionProviderKeyExpansionPrimitive
 import com.libertasprimordium.skald.security.ProductionProviderKeySeparationLabel
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
@@ -204,6 +206,93 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
+    fun hkdfSha256KeyExpansionPrimitiveEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+    }
+
+    @Test
+    fun hmacSha256HeaderCommitmentPrimitiveEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+    }
+
+    @Test
+    fun keyExpansionOutputLayoutEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+    }
+
+    @Test
     fun aadEvidenceMustBeKnownImplementedAndSatisfied() {
         assertGateBlocks(
             gate = ProductionProviderAcceptanceGate.AeadAadPolicyApproved,
@@ -322,6 +411,14 @@ class ProductionProviderAcceptanceContractTest {
                     ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -488,6 +585,14 @@ class ProductionProviderAcceptanceContractTest {
                 } + mapOf(
                     ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
@@ -651,6 +756,60 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
+    fun hkdfSha256KeyExpansionPolicyIsSelectedAndContractOnly() {
+        val policy = contract.keyExpansionPrimitivePolicy
+
+        assertEquals("skald-vault-v1-hkdf-sha256-key-expansion-v1", policy.policyId)
+        assertEquals(ProductionProviderKeyExpansionPrimitive.HkdfSha256, policy.primitive)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertTrue(policy.argon2idRemainsPasswordKdf)
+        assertTrue(policy.usedOnlyAfterArgon2idRootMaterialExists)
+        assertFalse(policy.usedDirectlyOnPassphraseAllowed)
+        assertTrue(policy.domainSeparatedByStableAsciiLabels)
+        assertTrue(policy.avoidsManualRootMaterialSlicing)
+        assertFalse(policy.productionHkdfExecutionImplemented)
+    }
+
+    @Test
+    fun hmacSha256HeaderCommitmentPrimitivePolicyIsSelectedAndContractOnly() {
+        val policy = contract.headerCommitmentPrimitivePolicy
+
+        assertEquals("skald-vault-v1-hmac-sha256-header-commitment-v1", policy.policyId)
+        assertEquals(ProductionProviderHeaderCommitmentPrimitive.HmacSha256, policy.primitive)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals("canonical vault header bytes", policy.inputDescription)
+        assertTrue(policy.usesDerivedHeaderCommitmentKey)
+        assertTrue(policy.verifiesBeforeRecordDecrypt)
+        assertFalse(policy.successfulRecordDecryptAloneProvesCorrectVaultKey)
+        assertFalse(policy.productionHmacExecutionImplemented)
+        assertFalse(policy.productionHeaderCommitmentComputationImplemented)
+    }
+
+    @Test
+    fun keyExpansionOutputLayoutIsFixedButNotExecuted() {
+        val policy = contract.keyExpansionOutputLayoutPolicy
+
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(64, policy.argon2idRootMaterialBytes)
+        assertEquals(32, policy.headerCommitmentKeyBytes)
+        assertEquals(32, policy.recordAeadKeyBytes)
+        assertTrue(policy.recordAeadKeyFeedsTinkRawKeyPath)
+        assertFalse(policy.reservedFutureWrappingExportMigrationOutputsImplemented)
+    }
+
+    @Test
+    fun primitiveThreatModelRationaleIsModelOnlyAndDoesNotOverclaim() {
+        val policy = contract.primitiveThreatModelPolicy
+
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertTrue(policy.offlineAttackBecomesPassphraseGuessing)
+        assertTrue(policy.dependsOnPassphraseEntropyAndArgon2idParameters)
+        assertTrue(policy.hkdfAndHmacExpectedNotWeakLinkWhenCorrectlyImplemented)
+        assertFalse(policy.liveEndpointCompromiseCovered)
+        assertFalse(policy.weakPassphraseCompensatedByHkdfOrHmac)
+    }
+
+    @Test
     fun canonicalHeaderEncodingPolicyIsDeterministicAndContractOnly() {
         val policy = contract.canonicalHeaderEncodingPolicy
 
@@ -707,7 +866,7 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.rootMaterialUsedDirectlyForMultiplePurposes)
         assertTrue(policy.recordAeadAndHeaderCommitmentKeyMaterialSeparated)
         assertTrue(policy.reservedFutureLabelsNotImplemented)
-        assertFalse(policy.keyExpansionPrimitiveApproved)
+        assertTrue(policy.keyExpansionPrimitiveApproved)
         assertFalse(policy.productionKeyDerivationImplemented)
         assertTrue(policy.unknownUnsupportedPolicyBlocksSelectability)
     }

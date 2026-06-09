@@ -14,6 +14,7 @@ Runtime behavior remains fail-closed:
 - Secure secret storage and secure metadata storage remain disabled.
 - Header commitment, passphrase validation, bounded Argon2id approval, provider implementation, production provider KATs, vault container/storage, and redaction/migration tests remain required.
 - The header commitment, canonical header encoding, key-separation label, and strict AAD contract remains a separate gate documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md).
+- The selected HKDF-SHA-256 key-expansion and HMAC-SHA-256 header-commitment primitive policy remains a separate gate documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md).
 
 ## Results
 
@@ -48,7 +49,7 @@ Meaning:
 - no random Tink-generated vault key is required;
 - no key rotation or multiple active AEAD keys are required.
 
-Together these results satisfy only the cross-platform raw-key feasibility question. They do not approve the production provider, do not approve vault persistence, do not prove key commitment, and do not solve the non-key-committing AEAD risk.
+Together these results satisfy only the cross-platform raw-key feasibility question. The future v1 policy expects the 32-byte record AEAD key to come from HKDF-SHA-256 expansion of the 64-byte Argon2id root material, but this probe does not implement that production derivation. It does not approve the production provider, does not approve vault persistence, does not prove key commitment, and does not solve the non-key-committing AEAD risk.
 
 ## Tested API Paths
 
