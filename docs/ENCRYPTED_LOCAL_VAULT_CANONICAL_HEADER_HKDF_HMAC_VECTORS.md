@@ -8,7 +8,7 @@ This document defines deterministic Skald Vault v1 non-secret test-vector contra
 - HKDF-SHA-256 subkey expansion inputs and outputs,
 - HMAC-SHA-256 header commitment input and output.
 
-The canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, and HMAC-SHA-256 header commitment computation/verification now exist as isolated production-source building blocks. They are not wired into vault creation, vault unlock, provider selectability, vault container read/write, secure storage, or metadata persistence. This document and those building blocks do not implement production Argon2id execution, passphrase-to-root derivation, production Tink AEAD execution, production randomness, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+The canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, and HMAC-SHA-256 header commitment computation/verification now exist as isolated production-source building blocks. The downstream strict AAD serializer and Tink record AEAD building block also exist as still-disabled non-secret behavior-tested code. They are not wired into vault creation, vault unlock, provider selectability, vault container read/write, secure storage, or metadata persistence. This document and those building blocks do not implement calibrated production Argon2id execution, provider-wired passphrase-to-root derivation, provider-selectable Tink AEAD execution, production randomness, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 All byte strings below are fixed non-secret fixtures. They are not passphrases, salts from a real vault, vault ids from a real vault, wallet seeds, private keys, wallet labels, transaction notes, Bitcoin addresses, txids, Nostr secrets, Cashu proofs, backend credentials, or device identifiers.
 
@@ -227,7 +227,7 @@ Statuses distinguish:
 - failed or unsupported,
 - production implemented and tested.
 
-Missing, unknown, incomplete, pending, failed, unsupported, documented-only, test-scope-only, or unintegrated vector/building-block evidence blocks production provider selectability. Completed vectors and vector-matching building blocks still do not make the provider selectable because production provider implementation, production provider-level KATs, provider-wired Argon2id passphrase derivation and calibration, Tink AEAD execution, strict AAD implementation, vault storage, secure secret storage, secure metadata storage, and release review remain absent.
+Missing, unknown, incomplete, pending, failed, unsupported, documented-only, test-scope-only, or unintegrated vector/building-block evidence blocks production provider selectability. Completed vectors and vector-matching building blocks still do not make the provider selectable because production provider implementation, production provider-level KATs, provider-wired Argon2id passphrase derivation and calibration, provider-wired AEAD execution, vault storage, secure secret storage, secure metadata storage, stale-record manifest policy, and release review remain absent.
 
 ## Source-Guard Expectations
 
@@ -237,7 +237,7 @@ Source guards must continue proving:
 - HKDF execution appears only in the approved still-disabled building-block file and tests,
 - HMAC execution appears only in the approved still-disabled building-block files and tests,
 - header commitment computation appears only in the approved still-disabled building-block file and tests,
-- no production AEAD encrypt/decrypt path was added,
+- no provider-selectable AEAD encrypt/decrypt path was added,
 - no production vault persistence was added,
 - no production key generation was added,
 - no Tink keyset persistence was added,
@@ -261,7 +261,7 @@ Before still-disabled provider implementation can proceed, reviewers still need:
 - provider-level KATs through the future production provider,
 - integration of the vector-tested canonical serializer, HKDF expansion, and HMAC verification into a still-disabled provider/format boundary,
 - provider-wired Argon2id passphrase-to-root-material derivation or calibration,
-- production Tink AEAD implementation with strict AAD,
+- provider integration for the strict AAD serializer and Tink record AEAD building block,
 - final bounded Argon2id calibration approval,
 - record version/counter and stale-record policy,
 - vault container/storage review,

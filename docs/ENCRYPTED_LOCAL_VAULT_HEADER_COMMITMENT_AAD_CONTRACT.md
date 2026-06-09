@@ -4,7 +4,7 @@
 
 This document defines the Skald Vault v1 header commitment, canonical header encoding, key-separation label, and AEAD associated-data acceptance contract. The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented separately in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md).
 
-The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, and HMAC-SHA-256 header commitment computation/verification now exist as still-disabled production-source building blocks. This contract still does not implement calibration, provider-wired KDF execution, AEAD encryption, AEAD decryption, strict record AAD construction, random-byte generation, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header commitment computation/verification, strict record AAD serialization, and Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material now exist as still-disabled production-source building blocks. This contract still does not implement calibration, provider-wired KDF execution, provider-selectable AEAD, random-byte generation, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -19,7 +19,7 @@ Skald Vault v1 pins Tink XChaCha20-Poly1305 as the future record AEAD direction.
 
 The vault format must establish key correctness before any record decrypt. Skald does that at the vault-format layer by requiring a separate header commitment over canonical header bytes, verified with key material separated from record AEAD key material. Record decrypt is allowed only after header commitment verification succeeds.
 
-The desktop/JVM and Android Tink raw-key feasibility probes remain useful because they show that public Tink APIs can construct the pinned primitive from caller-supplied fixed raw key bytes in test scope. They do not remove this header commitment requirement, do not prove key commitment, and do not implement production AEAD.
+The desktop/JVM and Android Tink raw-key feasibility probes remain useful because they show that public Tink APIs can construct the pinned primitive from caller-supplied fixed raw key bytes in test scope. The still-disabled record AEAD building block now uses that public API family. It does not remove this header commitment requirement, does not prove key commitment, and does not make a production provider selectable.
 
 ## Header Commitment Contract
 
@@ -171,12 +171,14 @@ Every future record AEAD operation must bind encrypted records to the exact vaul
 - vault id,
 - record format policy id/version,
 - AAD policy id/version,
+- key-expansion policy id,
+- header-commitment primitive policy id,
+- header commitment policy id,
+- canonical header commitment value or stable commitment identifier,
 - record type,
 - record id,
 - record version or monotonic counter,
 - integrity-critical record metadata,
-- header commitment policy id,
-- canonical header commitment value or stable commitment identifier,
 - future storage namespace if relevant.
 
 AAD mismatch must fail closed for:
@@ -194,7 +196,29 @@ AAD mismatch must fail closed for:
 - copied ciphertext between record types,
 - replayed stale record where the version/counter policy rejects stale data.
 
-The AAD contract prevents cross-vault confusion, cross-record copying, record-type confusion, and stale-record replay only after the future format defines and implements the relevant record version/counter policy. This branch models that requirement; it does not implement AEAD execution or record storage.
+The production-source strict AAD serializer in `SkaldVaultV1RecordAead` now encodes these fields deterministically using explicit field order, big-endian integers, UTF-8 ASCII policy strings, and length-prefixed byte/string fields. It rejects unsupported suite ids, unsupported policy ids, unsupported versions, unsupported record types, malformed lengths, malformed integer values, and malformed strings before AEAD use.
+
+The current non-secret AAD fixture binds:
+
+- vault id bytes `202122232425262728292a2b2c2d2e2f`,
+- header commitment context `1d09a657d8929444c1e955410b2dcb3bfc0df2d19b128154e17a5fbd751237d5`,
+- record type `sensitive-metadata`,
+- record id bytes `404142434445464748494a4b4c4d4e4f`,
+- record version/counter `7`,
+- integrity-critical metadata string `skald-vault-v1-record-metadata-fixture`,
+- reserved local storage namespace `skald-vault/v1/local-records`.
+
+The deterministic AAD bytes for that fixture are:
+
+```text
+0001000e534b414c442d5641554c542d5631000200010003004b736b616c642d7661756c742d76312d626f756e6379636173746c652d6172676f6e3269642d74696e6b2d786368616368613230706f6c79313330352d6f732d73656375726572616e646f6d00040010202122232425262728292a2b2c2d2e2f0005001f736b616c642d7661756c742d76312d7265636f72642d666f726d61742d7631000600010007001c736b616c642d7661756c742d76312d7265636f72642d6161642d7631000800010009002b736b616c642d7661756c742d76312d686b64662d7368613235362d6b65792d657870616e73696f6e2d7631000a002f736b616c642d7661756c742d76312d686d61632d7368613235362d6865616465722d636f6d6d69746d656e742d7631000b0023736b616c642d7661756c742d76312d6865616465722d636f6d6d69746d656e742d7631000c00201d09a657d8929444c1e955410b2dcb3bfc0df2d19b128154e17a5fbd751237d5000d001273656e7369746976652d6d65746164617461000e0010404142434445464748494a4b4c4d4e4f000f000000000000000700100026736b616c642d7661756c742d76312d7265636f72642d6d657461646174612d666978747572650011001c736b616c642d7661756c742f76312f6c6f63616c2d7265636f726473
+```
+
+The record AEAD building block uses caller-supplied 32-byte record AEAD key material and the public Tink raw-key path proven on desktop/JVM and Android. It creates a transient in-memory keyset handle and does not persist keysets, generate Tink vault keys, rotate keys, use multiple active AEAD keys, use internal Tink APIs, or use reflection. Tests assert round-trip decrypt, wrong AAD failure, wrong vault id failure, wrong record identity failure, wrong version/counter failure, wrong header commitment context failure, wrong key failure, tampered ciphertext failure, tampered tag failure, invalid key length rejection, and unsupported policy rejection.
+
+Tink internally chooses the XChaCha20-Poly1305 nonce, so ciphertext is intentionally treated as nondeterministic. The fixture asserts deterministic AAD bytes and behavioral AEAD outcomes instead of a fixed ciphertext hex value.
+
+AAD binding mitigates cross-vault confusion, cross-record copying, record-type confusion, and cross-version substitution. It does not by itself provide full rollback resistance. Full stale-record enforcement still requires a future trusted manifest, vault index, storage layer, or sync conflict policy. A lower record version than the latest trusted local manifest state must eventually fail closed or be quarantined, but this branch does not implement that manifest/index/storage policy.
 
 ## Tink Non-Key-Commitment Integration
 
@@ -222,16 +246,18 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/Encrypted
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt
 ```
 
-Tests assert that missing, unknown, documented/model-only, failed, unsupported, or unimplemented evidence blocks selectability:
+Tests assert that missing, unknown, documented/model-only, failed, unsupported, or unimplemented evidence blocks selectability, and that the implemented strict AAD/record AEAD building blocks still do not make a provider selectable:
 
 ```text
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultRecordAeadBuildingBlockTest.kt
+composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidRecordAeadBuildingBlockTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/ProductionProviderAcceptanceContractTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/EncryptedVaultReadinessPolicyTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoDependencyProbeTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
 
-Source guards continue to prove that common production provider/selection/readiness code does not import Tink or Bouncy Castle provider APIs, does not execute production AEAD or Argon2id KDF operations, does not persist keysets, does not generate random Tink vault keys, and does not add vault storage. HKDF/HMAC/header-commitment execution is confined to the approved still-disabled building-block files and vector tests.
+Source guards continue to prove that common production provider/selection/readiness code does not import Tink or Bouncy Castle provider APIs, does not persist keysets, does not generate random Tink vault keys, and does not add vault storage. Tink record AEAD execution is confined to exact approved still-disabled platform building-block files and approved tests. HKDF/HMAC/header-commitment execution is confined to the approved still-disabled building-block files and vector tests.
 
 ## Remaining Implementation Blockers
 
@@ -239,8 +265,8 @@ Before a still-disabled provider implementation can proceed, human review must s
 
 - integration of the vector-tested canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification into a still-disabled provider/format boundary,
 - provider-wired Argon2id passphrase-to-root-material derivation or calibration,
-- production Tink AEAD implementation with strict AAD,
-- record version/counter and stale-record policy,
+- provider integration for the strict AAD serializer and Tink record AEAD building block,
+- record version/counter and stale-record manifest/index policy,
 - production provider-level KAT execution,
 - final bounded Argon2id calibration,
 - runtime randomness/provider evidence for supported platforms,

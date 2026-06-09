@@ -4,7 +4,7 @@
 
 This document records the finalized Skald Vault v1 key-expansion and header-commitment primitive decisions. The deterministic non-secret canonical header, HKDF, and HMAC vector contract is documented separately in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md).
 
-The canonical header serializer, HKDF-SHA-256 key-expansion building block, and HMAC-SHA-256 header-commitment computation/verification building block are now implemented in production source and vector-tested against the non-secret fixtures. They remain still-disabled building blocks. This branch does not implement production Argon2id execution, passphrase-to-root-material derivation, Tink AEAD execution, random-byte generation, key generation, vault creation, vault unlock, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+The canonical header serializer, HKDF-SHA-256 key-expansion building block, HMAC-SHA-256 header-commitment computation/verification building block, strict AAD serializer, and Tink record AEAD building block are now implemented in production source and vector/behavior-tested against non-secret fixtures. They remain still-disabled building blocks. This branch does not implement calibrated production Argon2id execution, provider-wired passphrase-to-root-material derivation, provider-selectable Tink AEAD execution, random-byte generation, key generation, vault creation, vault unlock, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -45,7 +45,7 @@ The v1 output layout is:
 | --- | ---: | --- |
 | Argon2id root material | 64 bytes | Selected policy; production KDF not implemented |
 | Header commitment key | 32 bytes | HKDF output; still-disabled production-source HKDF building block implemented and vector-tested |
-| Record AEAD key | 32 bytes | HKDF output feeding the probed Tink XChaCha20-Poly1305 raw-key path; still-disabled HKDF building block implemented, production AEAD not implemented |
+| Record AEAD key | 32 bytes | HKDF output feeding the probed Tink XChaCha20-Poly1305 raw-key path; still-disabled HKDF and record AEAD building blocks implemented, provider-selectable AEAD not implemented |
 
 Reserved future wrapping, export, and migration outputs are not implemented in this branch.
 
@@ -131,7 +131,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryp
 
 Missing, unknown, failed, unsupported, documented/model-only, or unimplemented key-expansion primitive evidence blocks production provider selectability. The same is true for header-commitment primitive evidence and output-layout evidence.
 
-The current branch records deterministic non-secret vectors and matches them from still-disabled production-source building blocks. Vector-matching HKDF/HMAC/header-commitment evidence and fixed passphrase/Argon2id fixture evidence still do not make the provider selectable because production provider implementation, provider-wired Argon2id passphrase derivation and calibration, Tink AEAD execution, strict AAD implementation, provider-level KATs, and storage review remain absent. Raw-key feasibility, header/AAD contract evidence, dependency-level KATs, test-provider KATs, and vector tests do not bypass these gates.
+The current branch records deterministic non-secret vectors and matches them from still-disabled production-source building blocks. Vector-matching HKDF/HMAC/header-commitment evidence, fixed passphrase/Argon2id fixture evidence, and strict AAD/record-AEAD behavior tests still do not make the provider selectable because production provider implementation, provider-wired Argon2id passphrase derivation and calibration, provider-wired AEAD execution, provider-level KATs, vault container/storage review, and stale-record manifest policy remain absent. Raw-key feasibility, header/AAD contract evidence, dependency-level KATs, test-provider KATs, and vector tests do not bypass these gates.
 
 ## Remaining Work
 
@@ -140,7 +140,8 @@ Before a still-disabled provider implementation can proceed, reviewers still nee
 - provider-level KAT execution through the future production provider,
 - integration of the canonical serializer, HKDF expansion, and HMAC verification into a still-disabled provider/format boundary,
 - provider-wired Argon2id passphrase-to-root-material derivation or calibration,
-- production Tink AEAD execution with strict AAD,
+- provider integration for the strict AAD serializer and Tink record AEAD building block,
+- record version/counter and stale-record manifest/index policy,
 - final bounded Argon2id calibration approval,
 - lock/session lifecycle tests,
 - redaction and failure-mode tests,

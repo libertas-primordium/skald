@@ -4,7 +4,7 @@
 
 This document records the Skald Vault v1 Tink raw-key feasibility probes.
 
-This is test/probe evidence only. It does not implement a production provider, production AEAD execution, production key derivation, production randomness, key generation, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+This began as test/probe evidence only and now feeds a still-disabled record AEAD building block. It does not implement a production provider, provider-selectable AEAD execution, production key derivation, production randomness, key generation, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -138,6 +138,8 @@ The probes do not prove:
 - mainnet readiness.
 
 Tink XChaCha20-Poly1305 remains non-key-committing. Skald must still implement and test vault-level header commitment over canonical header fields, separated header commitment key material, strict record AAD, and production implementation behavior matching the non-secret canonical header/HKDF/HMAC vectors before any record decrypt path can become selectable. Raw-key feasibility does not prove key commitment and cannot be used as a wrong-passphrase oracle.
+
+The still-disabled record AEAD building block now uses the same public API family with caller-supplied 32-byte record AEAD key material and deterministic strict AAD bytes. It keeps a transient in-memory Tink keyset handle, does not persist keysets, does not generate a random Tink vault key, does not use internal APIs or reflection, and does not make the provider selectable.
 
 ## Source Guard Expectations
 

@@ -67,7 +67,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutProviderIntegrationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderSerializerProviderIntegrationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeySeparationLabelsProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StrictAadContractUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StrictAadProviderIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRecordAeadProviderIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestIntegrationMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphrasePolicyProviderIntegrationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.Argon2idRootDerivationProviderIntegrationMissing)
@@ -108,6 +110,8 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.HkdfSha256KeyExpansionBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.HmacSha256HeaderCommitmentBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StrictAadContractPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StrictAadSerializationBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.TinkRecordAeadBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TinkNonKeyCommitmentMitigationModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseEncodingPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphrasePolicyValidationBuildingBlock)
@@ -229,6 +233,8 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.HkdfSha256KeyExpansionImplementedAndVectorTested,
             EncryptedVaultRequirement.HmacSha256HeaderCommitmentImplementedAndVectorTested,
             EncryptedVaultRequirement.StrictAadContractModeled,
+            EncryptedVaultRequirement.StrictAadSerializationImplementedAndTested,
+            EncryptedVaultRequirement.TinkRecordAeadBuildingBlockImplementedAndTested,
             EncryptedVaultRequirement.TinkNonKeyCommitmentMitigationModeled,
             EncryptedVaultRequirement.PassphraseEncodingPolicyModeled,
             EncryptedVaultRequirement.PassphrasePolicyValidationImplementedAndTested,
@@ -368,6 +374,18 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.StrictAadContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.StrictAadSerializationImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.TinkRecordAeadBuildingBlockImplementedAndTested
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

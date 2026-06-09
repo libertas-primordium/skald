@@ -112,6 +112,8 @@ enum class ProductionProviderAadBindingField(val label: String) {
     VaultId("vault id"),
     RecordFormatPolicyId("record format policy id/version"),
     AadPolicyId("AAD policy id/version"),
+    KeyExpansionPolicyId("key-expansion policy id"),
+    HeaderCommitmentPrimitivePolicyId("header-commitment primitive policy id"),
     RecordType("record type"),
     RecordId("record id"),
     RecordVersionOrCounter("record version/counter"),
@@ -482,6 +484,7 @@ data class ProductionProviderTinkRawKeyHandlingPolicy(
     val internalUnsupportedReflectiveApisAllowed: Boolean,
     val fallbackEncryptedKeysetModelImplemented: Boolean,
     val productionAeadExecutionImplemented: Boolean,
+    val stillDisabledRecordAeadBuildingBlockImplemented: Boolean,
     val desktopFeasibilityStatus: ProductionProviderTinkRawKeyFeasibilityStatus,
     val androidFeasibilityStatus: ProductionProviderAndroidTinkRawKeyFeasibilityStatus,
     val desktopTestedPublicApiPath: String,
@@ -535,6 +538,11 @@ data class ProductionProviderAeadAcceptancePolicy(
     val requiredTamperCoverage: Set<ProductionProviderTamperCoverage>,
     val rawKeyFeasibilityBypassesHeaderCommitment: Boolean,
     val wrongPassphraseResolvedByHeaderCommitmentBeforeRecordDecrypt: Boolean,
+    val strictAadSerializationImplemented: Boolean,
+    val recordAeadBuildingBlockImplemented: Boolean,
+    val recordVersionCounterBoundIntoAad: Boolean,
+    val staleRecordEnforcementDeferredToManifestOrStorage: Boolean,
+    val productionProviderWired: Boolean,
     val productionAeadExecutionImplemented: Boolean,
 )
 
@@ -619,7 +627,7 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.AeadAadPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.ReleaseReadinessExcludesDebugTestProviders to
@@ -975,6 +983,7 @@ data class ProductionProviderAcceptanceContract(
                     internalUnsupportedReflectiveApisAllowed = false,
                     fallbackEncryptedKeysetModelImplemented = false,
                     productionAeadExecutionImplemented = false,
+                    stillDisabledRecordAeadBuildingBlockImplemented = true,
                     desktopFeasibilityStatus =
                         ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
                     androidFeasibilityStatus =
@@ -997,7 +1006,7 @@ data class ProductionProviderAcceptanceContract(
                     aadPolicyVersion = 1,
                     recordFormatPolicyId = "skald-vault-v1-record-format-v1",
                     recordFormatPolicyVersion = 1,
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     nonKeyCommitting = true,
                     successfulDecryptAloneProvesCorrectVaultKey = false,
                     vaultLevelKeyCommitmentRequiredBeforeRecordDecrypt = true,
@@ -1008,6 +1017,11 @@ data class ProductionProviderAcceptanceContract(
                     requiredTamperCoverage = ProductionProviderTamperCoverage.entries.toSet(),
                     rawKeyFeasibilityBypassesHeaderCommitment = false,
                     wrongPassphraseResolvedByHeaderCommitmentBeforeRecordDecrypt = true,
+                    strictAadSerializationImplemented = true,
+                    recordAeadBuildingBlockImplemented = true,
+                    recordVersionCounterBoundIntoAad = true,
+                    staleRecordEnforcementDeferredToManifestOrStorage = true,
+                    productionProviderWired = false,
                     productionAeadExecutionImplemented = false,
                 ),
                 runtimeRandomnessPolicy = ProductionProviderRuntimeRandomnessAcceptancePolicy(
