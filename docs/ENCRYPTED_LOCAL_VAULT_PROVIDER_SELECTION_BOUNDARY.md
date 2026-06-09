@@ -6,7 +6,7 @@ Skald Vault now has a disabled provider-selection and registry boundary for the 
 
 This is selection policy only. It does not implement executable provider crypto, production KDF execution, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
+Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The canonical header/HKDF/HMAC non-secret vector contract is documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
 
 The only runtime provider selected by this branch is:
 
@@ -123,7 +123,8 @@ A future executable provider cannot become selectable until every required gate 
 | HKDF-SHA-256 key-expansion primitive approved and implemented | Blocked. The primitive policy is selected and modeled, but production HKDF execution is absent. |
 | HMAC-SHA-256 header-commitment primitive approved and implemented | Blocked. The primitive policy is selected and modeled, but production HMAC/header-commitment execution is absent. |
 | Key-expansion output layout approved and implemented | Blocked. The 64-byte root, 32-byte header key, and 32-byte record AEAD key layout is selected and modeled, but no production key expansion exists. |
-| Canonical header encoding policy approved and implemented | Blocked. Deterministic header bytes and test vectors are modeled, but no production serializer exists. |
+| Canonical header/HKDF/HMAC vectors approved and implemented | Blocked for production. Test-scope non-secret vectors exist, but production serialization, HKDF, HMAC, and header-commitment execution are absent. |
+| Canonical header encoding policy approved and implemented | Blocked. Deterministic header bytes and test-scope vectors are modeled, but no production serializer exists. |
 | Key-separation labels policy approved and implemented | Blocked. Stable labels and HKDF-SHA-256 expansion policy are modeled, but no production key derivation is implemented. |
 | Strict AAD contract approved and implemented | Blocked. Required AAD bindings are modeled, but no production AEAD path exists. |
 | Passphrase encoding policy approved | Blocked. `unicode-nfc-utf8-no-controls-no-whitespace-v1` is modeled, but production validation is not wired. |
@@ -211,15 +212,16 @@ The next provider-selection change may only consider a non-disabled provider aft
 7. header commitment implementation and key-commitment policy approval,
 8. passphrase encoding policy approval and production validation,
 9. raw-key handling approval through public supported Tink APIs or a separate human-approved alternative,
-10. canonical header encoding implementation and test vectors,
-11. HKDF-SHA-256 key expansion and HMAC-SHA-256 header commitment implemented and tested through the still-disabled provider,
-12. key-separation implementation with the selected key-expansion primitive,
-13. strict AAD implementation and tamper/copy/replay tests,
-14. secure storage and secure metadata approval,
-15. vault container/storage review,
-16. redaction and failure-mode tests,
-17. migration/corruption tests,
-18. explicit mainnet release-hardening if mainnet is requested.
+10. canonical header encoding implementation that matches the non-secret test vectors,
+11. canonical header, HKDF-SHA-256, and HMAC-SHA-256 production implementation tests matching the non-secret vectors,
+12. HKDF-SHA-256 key expansion and HMAC-SHA-256 header commitment implemented and tested through the still-disabled provider,
+13. key-separation implementation with the selected key-expansion primitive,
+14. strict AAD implementation and tamper/copy/replay tests,
+15. secure storage and secure metadata approval,
+16. vault container/storage review,
+17. redaction and failure-mode tests,
+18. migration/corruption tests,
+19. explicit mainnet release-hardening if mainnet is requested.
 
 Until then, the provider-selection registry must keep selecting the disabled provider only.
 

@@ -6,7 +6,7 @@ This document defines the Skald Vault v1 production-provider acceptance contract
 
 It is design and acceptance-contract material only. It does not implement a production provider, production Argon2id execution, production Tink AEAD execution, production random-byte generation, key generation, vault container read/write, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Both documents are part of this acceptance contract and remain contract-only.
+The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). These documents are part of this acceptance contract and remain contract/test-vector-only.
 
 Runtime behavior remains fail-closed:
 
@@ -115,7 +115,9 @@ The committed canonical header data must include:
 - derived root material length,
 - vault id,
 - passphrase encoding policy id,
+- key-expansion policy id,
 - key-separation policy id,
+- header-commitment primitive policy id,
 - header commitment policy id,
 - AAD policy id/version,
 - record format policy id/version,
@@ -165,7 +167,9 @@ skald-vault-v1-hmac-sha256-header-commitment-v1
 
 HMAC-SHA-256 uses the derived 32-byte header commitment key. It authenticates the exact canonical header before record decrypt and is the vault-format mitigation for Tink XChaCha20-Poly1305 being non-key-committing.
 
-This branch does not implement HKDF, HMAC, production key derivation, or production header commitment execution.
+This branch does not implement production HKDF, production HMAC, production key derivation, or production header commitment execution.
+
+The non-secret vector contract fixes the first canonical header byte fixture and the HKDF/HMAC outputs for a sentinel 64-byte root-material fixture. These vectors are test-scope evidence only. They do not implement production serialization, production HKDF, production HMAC, production header commitment, vault unlock, vault storage, or provider selectability.
 
 Every future record AEAD operation must bind strict AAD to vault magic/domain marker, vault format version, provider suite id, vault id, record format policy id/version, AAD policy id/version, record type, record id, record version or monotonic counter, integrity-critical record metadata, header commitment policy id, canonical header commitment value or stable commitment identifier, and any future storage namespace where relevant. AAD mismatch must fail closed for wrong vault, suite, record type, record id, record version/counter, record metadata, AAD policy, header commitment context, copied ciphertext between vaults/records/types, and stale-record replay where the record version/counter policy rejects stale data.
 
@@ -352,26 +356,29 @@ A production provider cannot become selectable until every gate below is satisfi
 10. HMAC-SHA-256 header-commitment primitive policy is implemented and tested.
 11. The 64-byte root, 32-byte header commitment key, and 32-byte record AEAD key output layout is implemented and tested.
 12. Primitive threat-model and rationale review is complete.
-13. Canonical header encoding policy is approved.
-14. Key-separation labels policy is approved.
-15. Passphrase encoding policy is approved.
-16. Tink raw-key feasibility is approved through public supported APIs.
-17. Vault-level key commitment and header authentication are implemented and tested.
-18. AEAD AAD policy binds vault header/version, provider suite id, vault id, record type, record id, record version/counter, header commitment context, and integrity-critical metadata.
-19. Tink non-key-commitment mitigation is approved at the vault-format layer.
-20. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
-21. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-22. Unknown randomness/provider state blocks vault creation.
-23. Forbidden random APIs remain guarded.
-24. Secure secret storage is reviewed and approved.
-25. Secure metadata storage is reviewed and approved.
-26. Crash, corruption, and partial-write behavior are reviewed.
-27. Redaction, logging, and crash-report leakage checks pass.
-28. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-29. A production provider implementation exists behind Skald-owned interfaces.
-30. Release readiness excludes debug and test-only providers from selection.
+13. Canonical header byte vectors are complete and later matched by production implementation tests.
+14. HKDF-SHA-256 vectors are complete and later matched by production implementation tests.
+15. HMAC-SHA-256 header-commitment vectors are complete and later matched by production implementation tests.
+16. Canonical header encoding policy is approved.
+17. Key-separation labels policy is approved.
+18. Passphrase encoding policy is approved.
+19. Tink raw-key feasibility is approved through public supported APIs.
+20. Vault-level key commitment and header authentication are implemented and tested.
+21. AEAD AAD policy binds vault header/version, provider suite id, vault id, record type, record id, record version/counter, header commitment context, and integrity-critical metadata.
+22. Tink non-key-commitment mitigation is approved at the vault-format layer.
+23. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
+24. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+25. Unknown randomness/provider state blocks vault creation.
+26. Forbidden random APIs remain guarded.
+27. Secure secret storage is reviewed and approved.
+28. Secure metadata storage is reviewed and approved.
+29. Crash, corruption, and partial-write behavior are reviewed.
+30. Redaction, logging, and crash-report leakage checks pass.
+31. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+32. A production provider implementation exists behind Skald-owned interfaces.
+33. Release readiness excludes debug and test-only providers from selection.
 
-Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, or a design-only acceptance assessment must not bypass these gates.
+Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, test-scope canonical/HKDF/HMAC vectors, or a design-only acceptance assessment must not bypass these gates.
 
 ## Source And Storage Boundaries
 

@@ -398,6 +398,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2idCalibrationProbeTest.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCanonicalHeaderHkdfHmacVectorTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTinkRawKeyFeasibilityProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTestProviderKatHarnessTest.kt",
@@ -497,6 +498,39 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Common production source must not use Tink keyset persistence/generation, internal APIs, or AEAD execution: $offenders",
+        )
+    }
+
+    @Test
+    fun productionSourceDoesNotExecuteHkdfHmacOrHeaderCommitmentVectors() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bSecretKeySpec\b"""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHMac\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bHKDFParameters\b"""),
+            Regex("""\bSHA256Digest\b"""),
+        )
+        val offenders = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "HKDF/HMAC/header-commitment vector execution must stay out of production source: $offenders",
         )
     }
 

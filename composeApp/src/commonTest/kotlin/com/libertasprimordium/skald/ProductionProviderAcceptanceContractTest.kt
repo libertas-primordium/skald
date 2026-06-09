@@ -23,6 +23,7 @@ import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTrans
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
+import com.libertasprimordium.skald.security.ProductionProviderTestVectorContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderWeakDeviceFailureMode
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
@@ -78,6 +79,10 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(assessment.productionPersistenceAllowed)
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
+        assertContains(
+            assessment.blockers,
+            ProductionProviderAcceptanceBlocker.TestScopeVectorEvidenceOnly,
+        )
         assertContains(
             assessment.blockers,
             ProductionProviderAcceptanceBlocker.ProductionProviderSelectionStillDisabled,
@@ -179,6 +184,63 @@ class ProductionProviderAcceptanceContractTest {
             state = ProductionProviderAcceptanceEvidenceState.Unsupported,
             blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
         )
+    }
+
+    @Test
+    fun canonicalHeaderVectorEvidenceMustBeCompleteAndStillNonProduction() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved,
+            state = ProductionProviderAcceptanceEvidenceState.VectorInputsDefinedOutputsPending,
+            blocker = ProductionProviderAcceptanceBlocker.PendingVectorEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved,
+            state = ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+            blocker = ProductionProviderAcceptanceBlocker.TestScopeVectorEvidenceOnly,
+        )
+    }
+
+    @Test
+    fun hkdfAndHmacVectorEvidenceMustBeCompleteAndStillNonProduction() {
+        listOf(
+            ProductionProviderAcceptanceGate.HkdfSha256VectorContractApproved,
+            ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentVectorContractApproved,
+        ).forEach { gate ->
+            assertGateBlocks(gate, ProductionProviderAcceptanceEvidenceState.Missing, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
+            assertGateBlocks(gate, ProductionProviderAcceptanceEvidenceState.Unknown, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+            assertGateBlocks(
+                gate,
+                ProductionProviderAcceptanceEvidenceState.VectorInputsDefinedOutputsPending,
+                ProductionProviderAcceptanceBlocker.PendingVectorEvidence,
+            )
+            assertGateBlocks(gate, ProductionProviderAcceptanceEvidenceState.Failed, ProductionProviderAcceptanceBlocker.FailedGateEvidence)
+            assertGateBlocks(gate, ProductionProviderAcceptanceEvidenceState.Unsupported, ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence)
+            assertGateBlocks(
+                gate,
+                ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                ProductionProviderAcceptanceBlocker.TestScopeVectorEvidenceOnly,
+            )
+        }
     }
 
     @Test
@@ -420,6 +482,12 @@ class ProductionProviderAcceptanceContractTest {
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                    ProductionProviderAcceptanceGate.HkdfSha256VectorContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                    ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentVectorContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
@@ -593,6 +661,12 @@ class ProductionProviderAcceptanceContractTest {
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                    ProductionProviderAcceptanceGate.HkdfSha256VectorContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                    ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentVectorContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
@@ -607,6 +681,7 @@ class ProductionProviderAcceptanceContractTest {
 
         assertFalse(assessment.allRequiredGatesSatisfied)
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.TestScopeVectorEvidenceOnly)
         assertFalse(assessment.productionProviderSelectable)
         assertFalse(assessment.productionPersistenceAllowed)
     }
@@ -715,7 +790,15 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertContains(
             policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.KeyExpansionPolicyId,
+        )
+        assertContains(
+            policy.canonicalHeaderFields,
             ProductionProviderHeaderCommitmentField.KeySeparationPolicyId,
+        )
+        assertContains(
+            policy.canonicalHeaderFields,
+            ProductionProviderHeaderCommitmentField.HeaderCommitmentPrimitivePolicyId,
         )
         assertContains(
             policy.canonicalHeaderFields,
@@ -807,6 +890,49 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.hkdfAndHmacExpectedNotWeakLinkWhenCorrectlyImplemented)
         assertFalse(policy.liveEndpointCompromiseCovered)
         assertFalse(policy.weakPassphraseCompensatedByHkdfOrHmac)
+    }
+
+    @Test
+    fun canonicalHeaderHkdfAndHmacVectorContractsAreTestScopeOnly() {
+        val canonical = contract.canonicalHeaderVectorContract
+        val hkdf = contract.hkdfVectorContract
+        val hmac = contract.hmacHeaderCommitmentVectorContract
+
+        assertEquals(
+            ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+            canonical.status,
+        )
+        assertEquals(
+            "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
+            canonical.documentPath,
+        )
+        assertTrue(canonical.logicalFixtureFieldsDefined)
+        assertTrue(canonical.canonicalFieldOrderDefined)
+        assertTrue(canonical.byteEncodingRulesDefined)
+        assertTrue(canonical.finalCanonicalHeaderHexDocumented)
+        assertTrue(canonical.testScopeEncoderExists)
+        assertFalse(canonical.productionSerializerImplemented)
+
+        assertEquals(ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope, hkdf.status)
+        assertEquals("SHA-256", hkdf.hash)
+        assertEquals(64, hkdf.inputKeyingMaterialBytes)
+        assertTrue(hkdf.saltDefined)
+        assertTrue(hkdf.infoConstructionDefined)
+        assertTrue(hkdf.headerCommitmentInfoDefined)
+        assertTrue(hkdf.recordAeadInfoDefined)
+        assertEquals(32, hkdf.outputBytesPerPurpose)
+        assertTrue(hkdf.expectedOutputsDocumented)
+        assertTrue(hkdf.testScopeHkdfExecutionExists)
+        assertFalse(hkdf.productionHkdfExecutionImplemented)
+
+        assertEquals(ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope, hmac.status)
+        assertEquals("SHA-256", hmac.hash)
+        assertEquals("HKDF header commitment key vector output", hmac.hmacKeySource)
+        assertEquals("canonical header vector bytes", hmac.messageSource)
+        assertTrue(hmac.expectedTagDocumented)
+        assertTrue(hmac.testScopeHmacExecutionExists)
+        assertFalse(hmac.productionHmacExecutionImplemented)
+        assertFalse(hmac.productionHeaderCommitmentExecutionImplemented)
     }
 
     @Test
@@ -1078,6 +1204,38 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertFalse(ProductionProviderConstructionContractStatus.FailedUnsupported.satisfiesProductionSelectability)
         assertTrue(ProductionProviderConstructionContractStatus.ImplementedTested.satisfiesProductionSelectability)
+    }
+
+    @Test
+    fun testVectorContractStatusesAreExactAndOnlyProductionImplementedSatisfiesSelectability() {
+        assertEquals(
+            setOf(
+                "Missing",
+                "Unknown",
+                "DocumentedOnly",
+                "InputsDefinedOutputsPending",
+                "VectorsCompleteInTestScope",
+                "FailedUnsupported",
+                "ProductionImplementedTested",
+            ),
+            ProductionProviderTestVectorContractStatus.entries.map { it.name }.toSet(),
+        )
+        assertFalse(ProductionProviderTestVectorContractStatus.Missing.satisfiesProductionSelectability)
+        assertFalse(ProductionProviderTestVectorContractStatus.Unknown.satisfiesProductionSelectability)
+        assertFalse(ProductionProviderTestVectorContractStatus.DocumentedOnly.satisfiesProductionSelectability)
+        assertFalse(
+            ProductionProviderTestVectorContractStatus.InputsDefinedOutputsPending
+                .satisfiesProductionSelectability,
+        )
+        assertFalse(
+            ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope
+                .satisfiesProductionSelectability,
+        )
+        assertFalse(ProductionProviderTestVectorContractStatus.FailedUnsupported.satisfiesProductionSelectability)
+        assertTrue(
+            ProductionProviderTestVectorContractStatus.ProductionImplementedTested
+                .satisfiesProductionSelectability,
+        )
     }
 
     @Test

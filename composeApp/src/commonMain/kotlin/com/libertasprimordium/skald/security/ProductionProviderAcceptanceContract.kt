@@ -48,6 +48,11 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     ),
     KeyExpansionOutputLayoutApproved("key-expansion output layout approved"),
     PrimitiveThreatModelRationaleDocumented("primitive threat model and rationale documented"),
+    CanonicalHeaderByteVectorsApproved("canonical header byte vectors approved"),
+    HkdfSha256VectorContractApproved("HKDF-SHA-256 vector contract approved"),
+    HmacSha256HeaderCommitmentVectorContractApproved(
+        "HMAC-SHA-256 header-commitment vector contract approved",
+    ),
     CanonicalHeaderEncodingPolicyApproved("canonical vault header encoding policy approved"),
     KeySeparationLabelsPolicyApproved("key-separation labels policy approved"),
     PassphraseEncodingPolicyApproved("passphrase encoding policy approved"),
@@ -74,6 +79,8 @@ enum class ProductionProviderAcceptanceEvidenceState(
 ) {
     Satisfied("satisfied", satisfiesGate = true),
     DocumentedModelOnly("documented/model-only", satisfiesGate = false),
+    VectorInputsDefinedOutputsPending("vector inputs defined; outputs pending", satisfiesGate = false),
+    TestScopeVectorsComplete("test-scope vectors complete", satisfiesGate = false),
     ApprovedForFutureImplementation("approved for future implementation", satisfiesGate = false),
     ImplementedTested("implemented and tested", satisfiesGate = true),
     Missing("missing", satisfiesGate = false),
@@ -85,6 +92,8 @@ enum class ProductionProviderAcceptanceEvidenceState(
 enum class ProductionProviderAcceptanceBlocker(val label: String) {
     MissingGateEvidence("missing acceptance-gate evidence"),
     ModelOnlyGateEvidence("model-only acceptance-gate evidence"),
+    PendingVectorEvidence("test vector evidence has pending outputs"),
+    TestScopeVectorEvidenceOnly("test vectors are complete only in test scope"),
     FailedGateEvidence("failed acceptance-gate evidence"),
     UnsupportedGateEvidence("unsupported acceptance-gate evidence"),
     UnknownGateEvidence("unknown acceptance-gate evidence"),
@@ -152,7 +161,9 @@ enum class ProductionProviderHeaderCommitmentField(val label: String) {
     DerivedRootMaterialLength("derived root material length"),
     VaultId("vault id"),
     PassphraseEncodingPolicyId("passphrase encoding policy id"),
+    KeyExpansionPolicyId("key-expansion policy id"),
     KeySeparationPolicyId("key-separation policy id"),
+    HeaderCommitmentPrimitivePolicyId("header-commitment primitive policy id"),
     HeaderCommitmentPolicyId("header commitment policy id"),
     AadPolicyId("AAD policy id/version"),
     RecordFormatPolicyId("record format policy id/version"),
@@ -191,6 +202,19 @@ enum class ProductionProviderConstructionContractStatus(
     FailedUnsupported("failed or unsupported", satisfiesProductionSelectability = false),
     ApprovedForFutureImplementation("approved for future implementation", satisfiesProductionSelectability = false),
     ImplementedTested("implemented and tested", satisfiesProductionSelectability = true),
+}
+
+enum class ProductionProviderTestVectorContractStatus(
+    val label: String,
+    val satisfiesProductionSelectability: Boolean,
+) {
+    Missing("missing", satisfiesProductionSelectability = false),
+    Unknown("unknown", satisfiesProductionSelectability = false),
+    DocumentedOnly("documented only", satisfiesProductionSelectability = false),
+    InputsDefinedOutputsPending("inputs defined; outputs pending", satisfiesProductionSelectability = false),
+    VectorsCompleteInTestScope("vectors complete in test scope", satisfiesProductionSelectability = false),
+    FailedUnsupported("failed or unsupported", satisfiesProductionSelectability = false),
+    ProductionImplementedTested("production implemented and tested", satisfiesProductionSelectability = true),
 }
 
 data class ProductionProviderHeaderCommitmentAcceptancePolicy(
@@ -310,6 +334,44 @@ data class ProductionProviderPrimitiveThreatModelPolicy(
     val hkdfAndHmacExpectedNotWeakLinkWhenCorrectlyImplemented: Boolean,
     val liveEndpointCompromiseCovered: Boolean,
     val weakPassphraseCompensatedByHkdfOrHmac: Boolean,
+)
+
+data class ProductionProviderCanonicalHeaderVectorContract(
+    val status: ProductionProviderTestVectorContractStatus,
+    val documentPath: String,
+    val logicalFixtureFieldsDefined: Boolean,
+    val canonicalFieldOrderDefined: Boolean,
+    val byteEncodingRulesDefined: Boolean,
+    val finalCanonicalHeaderHexDocumented: Boolean,
+    val testScopeEncoderExists: Boolean,
+    val productionSerializerImplemented: Boolean,
+)
+
+data class ProductionProviderHkdfVectorContract(
+    val status: ProductionProviderTestVectorContractStatus,
+    val documentPath: String,
+    val hash: String,
+    val inputKeyingMaterialBytes: Int,
+    val saltDefined: Boolean,
+    val infoConstructionDefined: Boolean,
+    val headerCommitmentInfoDefined: Boolean,
+    val recordAeadInfoDefined: Boolean,
+    val outputBytesPerPurpose: Int,
+    val expectedOutputsDocumented: Boolean,
+    val testScopeHkdfExecutionExists: Boolean,
+    val productionHkdfExecutionImplemented: Boolean,
+)
+
+data class ProductionProviderHmacHeaderCommitmentVectorContract(
+    val status: ProductionProviderTestVectorContractStatus,
+    val documentPath: String,
+    val hash: String,
+    val hmacKeySource: String,
+    val messageSource: String,
+    val expectedTagDocumented: Boolean,
+    val testScopeHmacExecutionExists: Boolean,
+    val productionHmacExecutionImplemented: Boolean,
+    val productionHeaderCommitmentExecutionImplemented: Boolean,
 )
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -517,6 +579,12 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                    ProductionProviderAcceptanceGate.HkdfSha256VectorContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                    ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentVectorContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
@@ -563,6 +631,9 @@ data class ProductionProviderAcceptanceContract(
     val headerCommitmentPrimitivePolicy: ProductionProviderHeaderCommitmentPrimitivePolicy,
     val keyExpansionOutputLayoutPolicy: ProductionProviderKeyExpansionOutputLayoutPolicy,
     val primitiveThreatModelPolicy: ProductionProviderPrimitiveThreatModelPolicy,
+    val canonicalHeaderVectorContract: ProductionProviderCanonicalHeaderVectorContract,
+    val hkdfVectorContract: ProductionProviderHkdfVectorContract,
+    val hmacHeaderCommitmentVectorContract: ProductionProviderHmacHeaderCommitmentVectorContract,
     val canonicalHeaderEncodingPolicy: ProductionProviderCanonicalHeaderEncodingPolicy,
     val keySeparationPolicy: ProductionProviderKeySeparationPolicy,
     val passphraseEncodingPolicy: ProductionProviderPassphraseEncodingPolicy,
@@ -586,6 +657,10 @@ data class ProductionProviderAcceptanceContract(
                     ProductionProviderAcceptanceEvidenceState.Satisfied -> "Gate evidence is recorded."
                     ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly ->
                         "Gate evidence is documented and modeled only."
+                    ProductionProviderAcceptanceEvidenceState.VectorInputsDefinedOutputsPending ->
+                        "Vector inputs are defined, but one or more expected outputs are pending."
+                    ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete ->
+                        "Vector evidence is complete in test scope only; production implementation is absent."
                     ProductionProviderAcceptanceEvidenceState.ApprovedForFutureImplementation ->
                         "Gate evidence is approved for future implementation only."
                     ProductionProviderAcceptanceEvidenceState.ImplementedTested ->
@@ -604,10 +679,26 @@ data class ProductionProviderAcceptanceContract(
             if (
                 gateStates.any {
                     it.state == ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly ||
+                        it.state == ProductionProviderAcceptanceEvidenceState.VectorInputsDefinedOutputsPending ||
+                        it.state == ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete ||
                         it.state == ProductionProviderAcceptanceEvidenceState.ApprovedForFutureImplementation
                 }
             ) {
                 add(ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
+            }
+            if (
+                gateStates.any {
+                    it.state == ProductionProviderAcceptanceEvidenceState.VectorInputsDefinedOutputsPending
+                }
+            ) {
+                add(ProductionProviderAcceptanceBlocker.PendingVectorEvidence)
+            }
+            if (
+                gateStates.any {
+                    it.state == ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete
+                }
+            ) {
+                add(ProductionProviderAcceptanceBlocker.TestScopeVectorEvidenceOnly)
             }
             if (gateStates.any { it.state == ProductionProviderAcceptanceEvidenceState.Failed }) {
                 add(ProductionProviderAcceptanceBlocker.FailedGateEvidence)
@@ -752,6 +843,45 @@ data class ProductionProviderAcceptanceContract(
                     liveEndpointCompromiseCovered = false,
                     weakPassphraseCompensatedByHkdfOrHmac = false,
                 ),
+                canonicalHeaderVectorContract = ProductionProviderCanonicalHeaderVectorContract(
+                    status = ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+                    documentPath =
+                        "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
+                    logicalFixtureFieldsDefined = true,
+                    canonicalFieldOrderDefined = true,
+                    byteEncodingRulesDefined = true,
+                    finalCanonicalHeaderHexDocumented = true,
+                    testScopeEncoderExists = true,
+                    productionSerializerImplemented = false,
+                ),
+                hkdfVectorContract = ProductionProviderHkdfVectorContract(
+                    status = ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+                    documentPath =
+                        "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
+                    hash = "SHA-256",
+                    inputKeyingMaterialBytes = 64,
+                    saltDefined = true,
+                    infoConstructionDefined = true,
+                    headerCommitmentInfoDefined = true,
+                    recordAeadInfoDefined = true,
+                    outputBytesPerPurpose = 32,
+                    expectedOutputsDocumented = true,
+                    testScopeHkdfExecutionExists = true,
+                    productionHkdfExecutionImplemented = false,
+                ),
+                hmacHeaderCommitmentVectorContract =
+                    ProductionProviderHmacHeaderCommitmentVectorContract(
+                        status = ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+                        documentPath =
+                            "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
+                        hash = "SHA-256",
+                        hmacKeySource = "HKDF header commitment key vector output",
+                        messageSource = "canonical header vector bytes",
+                        expectedTagDocumented = true,
+                        testScopeHmacExecutionExists = true,
+                        productionHmacExecutionImplemented = false,
+                        productionHeaderCommitmentExecutionImplemented = false,
+                    ),
                 canonicalHeaderEncodingPolicy = ProductionProviderCanonicalHeaderEncodingPolicy(
                     policyId = "skald-vault-v1-canonical-header-encoding-v1",
                     policyVersion = 1,

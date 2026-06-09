@@ -15,6 +15,7 @@ Runtime behavior remains fail-closed:
 - Header commitment, passphrase validation, bounded Argon2id approval, provider implementation, production provider KATs, vault container/storage, and redaction/migration tests remain required.
 - The header commitment, canonical header encoding, key-separation label, and strict AAD contract remains a separate gate documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md).
 - The selected HKDF-SHA-256 key-expansion and HMAC-SHA-256 header-commitment primitive policy remains a separate gate documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md).
+- Deterministic non-secret canonical header/HKDF/HMAC vectors are a separate test-vector contract documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md).
 
 ## Results
 
@@ -136,7 +137,7 @@ The probes do not prove:
 - redaction readiness,
 - mainnet readiness.
 
-Tink XChaCha20-Poly1305 remains non-key-committing. Skald must still implement and test vault-level header commitment over canonical header fields, separated header commitment key material, canonical header byte vectors, and strict record AAD before any record decrypt path can become selectable. Raw-key feasibility does not prove key commitment and cannot be used as a wrong-passphrase oracle.
+Tink XChaCha20-Poly1305 remains non-key-committing. Skald must still implement and test vault-level header commitment over canonical header fields, separated header commitment key material, strict record AAD, and production implementation behavior matching the non-secret canonical header/HKDF/HMAC vectors before any record decrypt path can become selectable. Raw-key feasibility does not prove key commitment and cannot be used as a wrong-passphrase oracle.
 
 ## Source Guard Expectations
 
