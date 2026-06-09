@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the Skald Vault v1 header commitment, canonical header encoding, key-separation label, and AEAD associated-data acceptance contract. The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented separately in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md).
+This document defines the Skald Vault v1 header commitment, canonical header encoding, key-separation label, and AEAD associated-data acceptance contract. The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented separately in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md).
 
 It is design, model, and acceptance-contract evidence only. It does not implement production header commitment computation, canonical serialization, key derivation, AEAD encryption, AEAD decryption, random-byte generation, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
@@ -51,7 +51,9 @@ The commitment must bind at least:
 - derived root material length,
 - vault id,
 - passphrase encoding policy id,
+- key-expansion policy id,
 - key-separation policy id,
+- header-commitment primitive policy id,
 - header commitment policy id,
 - AAD policy id/version,
 - record format policy id/version,
@@ -110,7 +112,7 @@ Required canonical encoding rules:
 - forbid platform-native integer/string serialization,
 - require canonical header byte test vectors before production selectability.
 
-This branch does not add a production serializer. A future implementation branch must produce non-secret canonical header test vectors before the production provider can be selectable.
+This branch does not add a production serializer. The current vector contract defines non-secret canonical header bytes and test-scope encoder assertions, but those vectors remain test-scope evidence only. A future implementation branch must match the vectors through the still-disabled production format/provider boundary before the production provider can be selectable.
 
 ## Key-Separation Label Contract
 
@@ -143,7 +145,7 @@ skald-vault-v1-hkdf-sha256-key-expansion-v1
 
 Argon2id produces 64 bytes of root material. HKDF-SHA-256 expands that root material into a 32-byte header commitment key and a 32-byte record AEAD key. The record AEAD key feeds the previously probed public Tink XChaCha20-Poly1305 raw-key API path.
 
-This branch does not implement HKDF, HMAC, or any production key derivation.
+This branch does not implement production HKDF, production HMAC, or any production key derivation.
 
 Unknown or unsupported key-separation policy evidence blocks production provider selectability.
 
@@ -235,9 +237,9 @@ Source guards continue to prove that common production source does not import Ti
 
 Before a still-disabled provider implementation can proceed, human review must still resolve:
 
-- production HKDF-SHA-256 key-expansion implementation and non-secret test vectors,
-- canonical header byte test vectors,
-- production HMAC-SHA-256 header-commitment implementation and non-secret test vectors,
+- production HKDF-SHA-256 key-expansion implementation that matches the non-secret vector outputs,
+- production canonical header serialization that matches the non-secret canonical byte vector,
+- production HMAC-SHA-256 header-commitment implementation that matches the non-secret vector tag,
 - record version/counter and stale-record policy,
 - production provider-level KAT execution,
 - final bounded Argon2id calibration,
