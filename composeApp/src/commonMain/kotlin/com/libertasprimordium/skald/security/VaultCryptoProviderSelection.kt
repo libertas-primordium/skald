@@ -106,6 +106,7 @@ enum class VaultCryptoProviderSelectionDecision(
 }
 
 enum class VaultCryptoProviderProductionApprovalGate(val label: String) {
+    ProductionProviderAcceptanceContractSatisfied("production provider acceptance contract satisfied"),
     ProductionProviderImplementationExists("production provider implementation exists"),
     ProductionProviderLevelKatsPassed("production provider-level KATs passed"),
     AndroidAndDesktopRuntimeCoverage("Android and desktop runtime coverage exists"),
@@ -128,6 +129,7 @@ data class VaultCryptoProviderProductionApprovalGateState(
 
 enum class VaultCryptoProviderSelectionBlocker(val label: String) {
     ProviderDisabledByPolicy("provider disabled by policy"),
+    ProductionProviderAcceptanceContractIncomplete("production provider acceptance contract incomplete"),
     ProductionProviderImplementationMissing("production provider implementation missing"),
     ProductionProviderLevelKatsMissing("production provider-level KATs missing"),
     DependencyLevelKatsInsufficientForSelection("dependency-level KATs are insufficient for selection"),
@@ -198,12 +200,22 @@ data class VaultCryptoProviderStorageReadinessEvidence(
     val safeDetail: String,
 )
 
+data class VaultCryptoProviderProductionAcceptanceEvidence(
+    val suiteId: String,
+    val allRequiredGatesSatisfied: Boolean,
+    val productionProviderSelectableByContract: Boolean,
+    val productionPersistenceAllowedByContract: Boolean,
+    val blockerCount: Int,
+    val safeDetail: String,
+)
+
 data class VaultCryptoProviderEvidenceBundle(
     val dependencyEvidence: VaultCryptoProviderDependencyEvidence,
     val katEvidence: VaultCryptoProviderKatEvidenceSummary,
     val platformCoverage: VaultCryptoProviderPlatformCoverageEvidence,
     val parameterPolicy: VaultCryptoProviderParameterPolicyEvidence,
     val storageReadiness: VaultCryptoProviderStorageReadinessEvidence,
+    val productionAcceptance: VaultCryptoProviderProductionAcceptanceEvidence,
 )
 
 data class VaultCryptoProviderSelectionRequest(
@@ -258,6 +270,8 @@ object VaultCryptoProviderSelectionRegistry {
         argon2idPolicy: Argon2idCalibrationPolicy = commonArgon2idCalibrationPolicy(),
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment =
             commonAndroidVaultCompatibilityUnknownAssessment(),
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment =
+            commonCurrentProductionProviderAcceptanceAssessment(),
     ): VaultCryptoProviderSelectionResult {
         val candidates = candidates(
             request = request,
@@ -266,6 +280,7 @@ object VaultCryptoProviderSelectionRegistry {
             readiness = readiness,
             argon2idPolicy = argon2idPolicy,
             androidCompatibilityAssessment = androidCompatibilityAssessment,
+            productionProviderAcceptanceAssessment = productionProviderAcceptanceAssessment,
         )
         val requestedCandidate = candidates.singleOrNull { it.id == request.requestedCandidate }
             ?: unavailableCandidate(request, secureStorageCapability, secureMetadataCapability, argon2idPolicy)
@@ -293,6 +308,8 @@ object VaultCryptoProviderSelectionRegistry {
         argon2idPolicy: Argon2idCalibrationPolicy = commonArgon2idCalibrationPolicy(),
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment =
             commonAndroidVaultCompatibilityUnknownAssessment(),
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment =
+            commonCurrentProductionProviderAcceptanceAssessment(),
     ): List<VaultCryptoProviderSelectionCandidate> =
         listOf(
             disabledCandidate(
@@ -302,6 +319,7 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness,
                 argon2idPolicy,
                 androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment,
             ),
             tinkBouncyCandidate(
                 request,
@@ -310,6 +328,7 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness,
                 argon2idPolicy,
                 androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment,
             ),
             lazysodiumCandidate(
                 request,
@@ -317,6 +336,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability,
                 argon2idPolicy,
                 androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment,
             ),
             ionSpinCandidate(
                 request,
@@ -324,6 +344,7 @@ object VaultCryptoProviderSelectionRegistry {
                 secureMetadataCapability,
                 argon2idPolicy,
                 androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment,
             ),
         )
 
@@ -334,12 +355,14 @@ object VaultCryptoProviderSelectionRegistry {
         readiness: EncryptedVaultReadiness,
         argon2idPolicy: Argon2idCalibrationPolicy,
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val blockers = setOf(
             VaultCryptoProviderSelectionBlocker.ProviderDisabledByPolicy,
             VaultCryptoProviderSelectionBlocker.ProductionProviderImplementationMissing,
             VaultCryptoProviderSelectionBlocker.ProductionProviderLevelKatsMissing,
-        ) + storageBlockers(secureStorageCapability, secureMetadataCapability, readiness) +
+        ) + acceptanceContractBlockers(productionProviderAcceptanceAssessment) +
+            storageBlockers(secureStorageCapability, secureMetadataCapability, readiness) +
             selectionUseBlockers(request)
         return VaultCryptoProviderSelectionCandidate(
             id = VaultCryptoProviderCandidateId.DisabledFailClosed,
@@ -362,9 +385,12 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness = readiness,
                 argon2idPolicy = argon2idPolicy,
                 androidCompatibilityAssessment = androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment = productionProviderAcceptanceAssessment,
                 safeDetail = "Disabled provider is the only runtime-selectable provider and performs no crypto.",
             ),
             productionApprovalGates = productionApprovalGates(
+                productionProviderAcceptanceContractSatisfied =
+                    productionProviderAcceptanceAssessment.allRequiredGatesSatisfied,
                 dependencyLicenseReviewComplete = false,
                 runtimeCoverageComplete = false,
                 finalParametersApproved = false,
@@ -390,6 +416,7 @@ object VaultCryptoProviderSelectionRegistry {
         readiness: EncryptedVaultReadiness,
         argon2idPolicy: Argon2idCalibrationPolicy,
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val androidCompatibilityBlockers = if (
             request.platform == EncryptedVaultPlatform.Android ||
@@ -413,6 +440,7 @@ object VaultCryptoProviderSelectionRegistry {
             VaultCryptoProviderSelectionBlocker.RedactionFailureModeTestsMissing,
             VaultCryptoProviderSelectionBlocker.MigrationCorruptionTestsMissing,
         ) + androidCompatibilityBlockers +
+            acceptanceContractBlockers(productionProviderAcceptanceAssessment) +
             storageBlockers(secureStorageCapability, secureMetadataCapability, readiness) +
             selectionUseBlockers(request)
         return VaultCryptoProviderSelectionCandidate(
@@ -436,9 +464,12 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness = readiness,
                 argon2idPolicy = argon2idPolicy,
                 androidCompatibilityAssessment = androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment = productionProviderAcceptanceAssessment,
                 safeDetail = "Tink plus Bouncy Castle has candidate-level dependency, runtime KAT, test-provider KAT, and package evidence, but no production provider exists.",
             ),
             productionApprovalGates = productionApprovalGates(
+                productionProviderAcceptanceContractSatisfied =
+                    productionProviderAcceptanceAssessment.allRequiredGatesSatisfied,
                 dependencyLicenseReviewComplete = true,
                 runtimeCoverageComplete = true,
                 finalParametersApproved = argon2idPolicy.candidateParameterPolicy.finalProductionParametersApproved,
@@ -463,6 +494,7 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         argon2idPolicy: Argon2idCalibrationPolicy,
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val blockers = setOf(
             VaultCryptoProviderSelectionBlocker.CandidateRejectedForCurrentVault,
@@ -470,11 +502,12 @@ object VaultCryptoProviderSelectionRegistry {
             VaultCryptoProviderSelectionBlocker.DependencyLicenseReviewIncomplete,
             VaultCryptoProviderSelectionBlocker.ProductionProviderImplementationMissing,
             VaultCryptoProviderSelectionBlocker.ProductionProviderLevelKatsMissing,
-        ) + storageBlockers(
-            secureStorageCapability,
-            secureMetadataCapability,
-            commonDisabledEncryptedVaultReadiness(),
-        ) + selectionUseBlockers(request)
+        ) + acceptanceContractBlockers(productionProviderAcceptanceAssessment) +
+            storageBlockers(
+                secureStorageCapability,
+                secureMetadataCapability,
+                commonDisabledEncryptedVaultReadiness(),
+            ) + selectionUseBlockers(request)
         return VaultCryptoProviderSelectionCandidate(
             id = VaultCryptoProviderCandidateId.LazysodiumJavaAndroid,
             implementationState = VaultCryptoProviderImplementationState.ExecutableUnavailable,
@@ -496,9 +529,12 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness = commonDisabledEncryptedVaultReadiness(),
                 argon2idPolicy = argon2idPolicy,
                 androidCompatibilityAssessment = androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment = productionProviderAcceptanceAssessment,
                 safeDetail = "Rejected for this vault branch after Android duplicate JNA class packaging failure.",
             ),
             productionApprovalGates = productionApprovalGates(
+                productionProviderAcceptanceContractSatisfied =
+                    productionProviderAcceptanceAssessment.allRequiredGatesSatisfied,
                 dependencyLicenseReviewComplete = false,
                 runtimeCoverageComplete = false,
                 finalParametersApproved = false,
@@ -523,6 +559,7 @@ object VaultCryptoProviderSelectionRegistry {
         secureMetadataCapability: SecureMetadataPersistenceCapability,
         argon2idPolicy: Argon2idCalibrationPolicy,
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment,
     ): VaultCryptoProviderSelectionCandidate {
         val blockers = setOf(
             VaultCryptoProviderSelectionBlocker.CandidateDeferred,
@@ -530,11 +567,12 @@ object VaultCryptoProviderSelectionRegistry {
             VaultCryptoProviderSelectionBlocker.DependencyLicenseReviewIncomplete,
             VaultCryptoProviderSelectionBlocker.ProductionProviderImplementationMissing,
             VaultCryptoProviderSelectionBlocker.ProductionProviderLevelKatsMissing,
-        ) + storageBlockers(
-            secureStorageCapability,
-            secureMetadataCapability,
-            commonDisabledEncryptedVaultReadiness(),
-        ) + selectionUseBlockers(request)
+        ) + acceptanceContractBlockers(productionProviderAcceptanceAssessment) +
+            storageBlockers(
+                secureStorageCapability,
+                secureMetadataCapability,
+                commonDisabledEncryptedVaultReadiness(),
+            ) + selectionUseBlockers(request)
         return VaultCryptoProviderSelectionCandidate(
             id = VaultCryptoProviderCandidateId.IonSpinKmpLibsodium,
             implementationState = VaultCryptoProviderImplementationState.ExecutableUnavailable,
@@ -556,9 +594,12 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness = commonDisabledEncryptedVaultReadiness(),
                 argon2idPolicy = argon2idPolicy,
                 androidCompatibilityAssessment = androidCompatibilityAssessment,
+                productionProviderAcceptanceAssessment = productionProviderAcceptanceAssessment,
                 safeDetail = "Deferred after metadata/POM inspection only; package and runtime behavior are unverified.",
             ),
             productionApprovalGates = productionApprovalGates(
+                productionProviderAcceptanceContractSatisfied =
+                    productionProviderAcceptanceAssessment.allRequiredGatesSatisfied,
                 dependencyLicenseReviewComplete = false,
                 runtimeCoverageComplete = false,
                 finalParametersApproved = false,
@@ -604,9 +645,11 @@ object VaultCryptoProviderSelectionRegistry {
                 readiness = commonDisabledEncryptedVaultReadiness(),
                 argon2idPolicy = argon2idPolicy,
                 androidCompatibilityAssessment = commonAndroidVaultCompatibilityUnknownAssessment(),
+                productionProviderAcceptanceAssessment = commonCurrentProductionProviderAcceptanceAssessment(),
                 safeDetail = "Requested provider candidate is unavailable.",
             ),
             productionApprovalGates = productionApprovalGates(
+                productionProviderAcceptanceContractSatisfied = false,
                 dependencyLicenseReviewComplete = false,
                 runtimeCoverageComplete = false,
                 finalParametersApproved = false,
@@ -642,6 +685,7 @@ object VaultCryptoProviderSelectionRegistry {
         readiness: EncryptedVaultReadiness,
         argon2idPolicy: Argon2idCalibrationPolicy,
         androidCompatibilityAssessment: AndroidVaultCompatibilityAssessment,
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment,
         safeDetail: String,
     ): VaultCryptoProviderEvidenceBundle =
         VaultCryptoProviderEvidenceBundle(
@@ -704,9 +748,20 @@ object VaultCryptoProviderSelectionRegistry {
                 productionPersistenceApproved = readiness.productionPersistenceEnabled,
                 safeDetail = "Storage readiness is disabled/fail-closed; provider selection cannot enable persistence.",
             ),
+            productionAcceptance = VaultCryptoProviderProductionAcceptanceEvidence(
+                suiteId = productionProviderAcceptanceAssessment.contract.suite.suiteId,
+                allRequiredGatesSatisfied = productionProviderAcceptanceAssessment.allRequiredGatesSatisfied,
+                productionProviderSelectableByContract =
+                    productionProviderAcceptanceAssessment.productionProviderSelectable,
+                productionPersistenceAllowedByContract =
+                    productionProviderAcceptanceAssessment.productionPersistenceAllowed,
+                blockerCount = productionProviderAcceptanceAssessment.blockers.size,
+                safeDetail = "Production-provider acceptance contract is modeled as non-production evidence; it cannot select a provider or enable persistence in this branch.",
+            ),
         )
 
     private fun productionApprovalGates(
+        productionProviderAcceptanceContractSatisfied: Boolean,
         dependencyLicenseReviewComplete: Boolean,
         runtimeCoverageComplete: Boolean,
         finalParametersApproved: Boolean,
@@ -721,6 +776,10 @@ object VaultCryptoProviderSelectionRegistry {
         mainnetReleaseHardeningApproved: Boolean,
     ): List<VaultCryptoProviderProductionApprovalGateState> =
         listOf(
+            gateState(
+                VaultCryptoProviderProductionApprovalGate.ProductionProviderAcceptanceContractSatisfied,
+                productionProviderAcceptanceContractSatisfied,
+            ),
             gateState(
                 VaultCryptoProviderProductionApprovalGate.ProductionProviderImplementationExists,
                 productionProviderImplementationExists,
@@ -810,6 +869,15 @@ object VaultCryptoProviderSelectionRegistry {
             if (!readiness.productionPersistenceEnabled) {
                 add(VaultCryptoProviderSelectionBlocker.VaultContainerStorageReviewMissing)
             }
+        }
+
+    private fun acceptanceContractBlockers(
+        productionProviderAcceptanceAssessment: ProductionProviderAcceptanceAssessment,
+    ): Set<VaultCryptoProviderSelectionBlocker> =
+        if (productionProviderAcceptanceAssessment.allRequiredGatesSatisfied) {
+            emptySet()
+        } else {
+            setOf(VaultCryptoProviderSelectionBlocker.ProductionProviderAcceptanceContractIncomplete)
         }
 
     private fun selectionUseBlockers(

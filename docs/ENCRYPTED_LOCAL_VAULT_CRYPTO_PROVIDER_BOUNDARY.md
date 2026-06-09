@@ -6,7 +6,7 @@ Skald Vault now has a narrow Skald-owned disabled `VaultCryptoProvider` boundary
 
 This is a provider-boundary and policy-model pass only. It does not implement encryption, KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material storage, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
+Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
 
 Runtime behavior remains fail-closed:
 
@@ -137,6 +137,8 @@ Manual Android Argon2id calibration capture is documented separately in [`ENCRYP
 
 Runtime randomness/provider checks are documented separately in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). They prove only test-scope availability of approved randomness paths with small non-secret samples; they do not prove entropy quality, generate production vault material, run provider-level KATs, or make any provider selectable.
 
+The production-provider acceptance contract pins the v1 review direction to Bouncy Castle Argon2id, Tink XChaCha20-Poly1305, and OS SecureRandom. It also documents the non-key-committing AEAD risk and requires future vault-level key commitment, header authentication, and strict AAD binding before any production provider can be selectable.
+
 ## Provider Type Confinement
 
 The provider boundary exposes no:
@@ -207,12 +209,13 @@ This boundary does not enable:
 Before any future branch implements provider crypto:
 
 1. Argon2id calibration policy/probe evidence and candidate parameter tiers must be reviewed, and final KDF parameter policy must be approved for Android and Linux desktop. Android compatibility planning must use the supported OS baseline, runtime provider/primitive checks, approved cryptographic randomness checks, and fail-closed vault creation behavior documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md) and [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md); low-end and mid-range model testing are no longer hard blockers.
-2. Provider-level public KATs must be defined through the Skald-owned interface.
-3. Tink keyset versus raw AEAD key material handling must be finalized.
-4. Split-provider invariants must be reviewed again at implementation level.
-5. Redacted error behavior must be tested against failure modes.
-6. No provider-specific types may escape the boundary.
-7. No vault container or storage success path may be added unless that branch is explicitly scoped and approved.
+2. The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) must be satisfied.
+3. Provider-level public KATs must be defined through the Skald-owned interface.
+4. Tink keyset versus raw AEAD key material handling must be finalized.
+5. Split-provider invariants must be reviewed again at implementation level.
+6. Redacted error behavior must be tested against failure modes.
+7. No provider-specific types may escape the boundary.
+8. No vault container or storage success path may be added unless that branch is explicitly scoped and approved.
 
 ## Next Step
 

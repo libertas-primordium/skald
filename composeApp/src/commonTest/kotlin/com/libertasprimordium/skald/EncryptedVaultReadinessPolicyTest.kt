@@ -55,6 +55,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultImplementationUnavailable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
@@ -69,6 +70,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateParameterPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidCompatibilityEntropyPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RuntimeRandomnessProviderCheckModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ProductionProviderAcceptanceContractModel)
         assertEquals(
             Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
             readiness.argon2idCalibrationPolicy.status,
@@ -113,6 +115,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.RuntimeRandomnessProviderChecksModeled,
             EncryptedVaultRequirement.RuntimeEntropyChecksModeled,
             EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
+            EncryptedVaultRequirement.ProductionProviderAcceptanceContractModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
             EncryptedVaultRequirement.AeadImplementationVerified,
             EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed,
@@ -176,6 +179,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ProductionProviderAcceptanceContractModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.Unresolved,
