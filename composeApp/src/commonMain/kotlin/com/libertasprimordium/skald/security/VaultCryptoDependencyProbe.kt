@@ -40,6 +40,13 @@ enum class VaultCryptoDependencyCapability(val label: String) {
     PackageInventoriesReviewed("APK and deb package inventories reviewed"),
     TinkKeysetStorageReviewDocumented("Tink keyset/storage handling review documented"),
     TinkRawKeyFeasibilityPublicApiProbePass("Tink raw-key public API feasibility probe passes"),
+    AndroidTinkRawKeyFeasibilityPublicApiProbePass("Android Tink raw-key public API feasibility probe passes"),
+    AndroidTinkRawKeyFeasibilityPublicApiProbePresent(
+        "Android Tink raw-key public API feasibility probe present",
+    ),
+    CrossPlatformTinkRawKeyFeasibilityPublicApiProbePass(
+        "desktop and Android Tink raw-key public API feasibility probes pass",
+    ),
     BouncyCastleArgon2idApiRisksDocumented("Bouncy Castle Argon2id API risks documented"),
     SplitProviderBoundaryReviewDocumented("split-provider boundary review documented"),
     FutureProviderBoundaryPrerequisitesDocumented("future provider-boundary prerequisites documented"),
@@ -153,6 +160,9 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyCapability.PackageInventoriesReviewed,
                     VaultCryptoDependencyCapability.TinkKeysetStorageReviewDocumented,
                     VaultCryptoDependencyCapability.TinkRawKeyFeasibilityPublicApiProbePass,
+                    VaultCryptoDependencyCapability.AndroidTinkRawKeyFeasibilityPublicApiProbePresent,
+                    VaultCryptoDependencyCapability.AndroidTinkRawKeyFeasibilityPublicApiProbePass,
+                    VaultCryptoDependencyCapability.CrossPlatformTinkRawKeyFeasibilityPublicApiProbePass,
                     VaultCryptoDependencyCapability.BouncyCastleArgon2idApiRisksDocumented,
                     VaultCryptoDependencyCapability.SplitProviderBoundaryReviewDocumented,
                     VaultCryptoDependencyCapability.FutureProviderBoundaryPrerequisitesDocumented,
@@ -197,7 +207,7 @@ object VaultCryptoDependencyProbeCatalog {
                 storageEnabled = false,
                 productionPersistenceEnabled = false,
                 mainnetEnabled = false,
-                note = "Selected only as a reviewed candidate after Android/Linux compile and packaging feasibility, desktop and Android runtime public KAT validation, local dependency/POM license inspection, package inventory review, Tink keyset/storage review, test-scope Tink raw-key public API feasibility probing, Bouncy Castle Argon2id API risk review, split-provider boundary review, disabled provider-boundary modeling, provider-selection boundary modeling, provider-level KAT contract modeling, test-only provider KAT harness modeling, non-final Argon2id candidate parameter policy modeling, manual Android calibration evidence-capture modeling, Android compatibility/entropy policy modeling, runtime randomness provider check modeling, v1 production-provider acceptance-contract modeling, header commitment policy modeling, passphrase encoding policy modeling, and bounded Argon2id calibration policy modeling. It remains candidate-only: no final calibrated production parameters, production provider implementation, production provider-level KAT execution, provider selection, keyset storage, vault storage, persistence, or mainnet path is enabled.",
+                note = "Selected only as a reviewed candidate after Android/Linux compile and packaging feasibility, desktop and Android runtime public KAT validation, local dependency/POM license inspection, package inventory review, Tink keyset/storage review, desktop and Android test-scope Tink raw-key public API feasibility probing, Bouncy Castle Argon2id API risk review, split-provider boundary review, disabled provider-boundary modeling, provider-selection boundary modeling, provider-level KAT contract modeling, test-only provider KAT harness modeling, non-final Argon2id candidate parameter policy modeling, manual Android calibration evidence-capture modeling, Android compatibility/entropy policy modeling, runtime randomness provider check modeling, v1 production-provider acceptance-contract modeling, header commitment policy modeling, passphrase encoding policy modeling, and bounded Argon2id calibration policy modeling. It remains candidate-only: no final calibrated production parameters, production provider implementation, production provider-level KAT execution, provider selection, keyset storage, vault storage, persistence, or mainnet path is enabled.",
             ),
             VaultCryptoDependencyProbeResult(
                 candidate = VaultCryptoDependencyCandidate.LazysodiumJavaAndroid,
