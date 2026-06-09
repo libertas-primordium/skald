@@ -64,6 +64,10 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     AeadAadPolicyApproved("AEAD AAD policy approved"),
     TinkNonKeyCommitmentMitigationApproved("Tink non-key-commitment mitigation approved"),
     TamperTestsPassed("tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata"),
+    ProviderLevelKatStrategyApproved("provider-level KAT strategy approved"),
+    RandomizedAeadBehavioralKatPolicyApproved("randomized AEAD behavioral KAT policy approved"),
+    IntegratedVerificationOrderKatPolicyApproved("integrated verification-order KAT policy approved"),
+    StaleRecordManifestPolicyApproved("stale-record and rollback manifest policy approved"),
     RuntimeOsSecureRandomEvidenceApproved("OS SecureRandom runtime provider/algorithm evidence approved"),
     UnknownRandomnessProviderStateRejected("unknown randomness/provider state rejected"),
     ForbiddenRandomApisGuarded("forbidden language and ad hoc random APIs guarded"),
@@ -379,6 +383,116 @@ data class ProductionProviderHmacHeaderCommitmentVectorContract(
     val productionHeaderCommitmentExecutionImplemented: Boolean,
 )
 
+enum class ProductionProviderDeterministicKatVector(val label: String) {
+    PassphrasePolicyNormalizationVector("passphrase policy normalization vector"),
+    Argon2idRootMaterialFixture("Argon2id fixed non-secret root-material fixture"),
+    CanonicalHeaderByteVector("canonical header byte vector"),
+    HkdfInfoByteVectors("HKDF info byte vectors"),
+    HkdfHeaderCommitmentKeyVector("HKDF header commitment key vector"),
+    HkdfRecordAeadKeyVector("HKDF record AEAD key vector"),
+    HmacHeaderCommitmentVector("HMAC header commitment vector"),
+    StrictAadByteVector("strict AAD byte vector"),
+}
+
+enum class ProductionProviderRandomizedAeadBehavioralKatCheck(val label: String) {
+    EncryptDecryptRoundTrip("encrypt then decrypt fixed non-secret plaintext with same key and AAD"),
+    CiphertextNotTreatedAsDeterministic("ciphertext is not treated as deterministic"),
+    WrongAadFails("wrong AAD fails"),
+    WrongKeyFails("wrong key fails"),
+    TamperedCiphertextFails("tampered ciphertext fails"),
+    TamperedTagFails("tampered tag fails"),
+    WrongVaultIdFails("wrong vault id in AAD fails"),
+    WrongRecordIdFails("wrong record id in AAD fails"),
+    WrongRecordTypeFails("wrong record type in AAD fails"),
+    WrongRecordVersionCounterFails("wrong record version/counter in AAD fails"),
+    WrongProviderSuiteIdFails("wrong provider suite id in AAD fails"),
+    WrongHeaderCommitmentContextFails("wrong header commitment context in AAD fails"),
+}
+
+data class ProductionProviderLevelKatStrategyPolicy(
+    val policyId: String,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val deterministicVectorsRequired: Set<ProductionProviderDeterministicKatVector>,
+    val randomizedAeadBehavioralChecksRequired: Set<ProductionProviderRandomizedAeadBehavioralKatCheck>,
+    val fixedCiphertextHexRequiredForRandomizedAead: Boolean,
+    val deterministicAadHexRequired: Boolean,
+    val providerLevelKatsMustRunOnDesktopJvm: Boolean,
+    val providerLevelKatsMustRunOnAndroid: Boolean,
+    val providerKatCompletionImpliesStorageApproval: Boolean,
+    val productionProviderKatExecutionImplemented: Boolean,
+)
+
+data class ProductionProviderRandomizedAeadBehavioralKatPolicy(
+    val policyId: String,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val primitive: EncryptedVaultAeadAlgorithm,
+    val tinkChoosesNonceInternally: Boolean,
+    val fixedCiphertextHexRequired: Boolean,
+    val deterministicAadHexRequired: Boolean,
+    val behavioralChecksRequired: Set<ProductionProviderRandomizedAeadBehavioralKatCheck>,
+    val publicDeterministicNonceTestModeApproved: Boolean,
+    val productionProviderBehavioralKatExecutionImplemented: Boolean,
+)
+
+enum class ProductionProviderIntegratedVerificationOrderKatStep(val label: String) {
+    ValidatePassphrasePolicy("validate passphrase policy"),
+    DeriveArgon2idRootMaterial("derive Argon2id root material from fixed non-secret fixture"),
+    DeriveHkdfSubkeys("derive HKDF subkeys"),
+    CanonicalizeHeaderBytes("canonicalize header bytes"),
+    VerifyHmacHeaderCommitment("verify HMAC header commitment"),
+    ConstructRecordAeadAfterHeaderCommitment("construct/use record AEAD only after header commitment"),
+    SerializeStrictAad("serialize strict AAD"),
+    DecryptRecord("decrypt record"),
+    RejectRecordDecryptWhenHeaderCommitmentFails("reject record decrypt when header commitment verification fails"),
+}
+
+data class ProductionProviderIntegratedVerificationOrderKatPolicy(
+    val policyId: String,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val orderedSteps: List<ProductionProviderIntegratedVerificationOrderKatStep>,
+    val headerCommitmentMustPrecedeRecordDecrypt: Boolean,
+    val recordDecryptRejectedWhenHeaderCommitmentFails: Boolean,
+    val fullProviderIntegrationImplemented: Boolean,
+    val productionVerificationOrderKatsImplemented: Boolean,
+)
+
+enum class ProductionProviderStaleRecordManifestBinding(val label: String) {
+    VaultId("vault id"),
+    ProviderSuiteId("provider suite id"),
+    HeaderCommitmentContext("header commitment context"),
+    ManifestPolicyIdVersion("manifest policy id/version"),
+    RecordNamespace("record namespace"),
+    LatestTrustedRecordVersionCounterByRecordId("latest trusted record version/counter per record id"),
+}
+
+enum class ProductionProviderStaleRecordManifestRequirement(val label: String) {
+    TracksLatestTrustedCounterPerRecordId("future manifest tracks latest trusted record version/counter per record id"),
+    IntegrityProtectedManifest("future manifest is integrity-protected"),
+    BoundToVaultProviderHeaderPolicyNamespace("future manifest binds vault id, provider suite id, header commitment context, policy, and namespace"),
+    AtomicUpdateOrCrashSafeRecovery("future manifest is updated atomically with records or has crash-safe recovery"),
+    RejectOrQuarantineLowerCounter("future manifest rejects or quarantines lower version/counter records"),
+    RejectOrQuarantineConflictingDuplicateRecordId("future manifest rejects or quarantines duplicate record ids with conflicting latest counters"),
+    ConflictHandlingBeforeSyncOrImport("conflict handling is defined before sync or import behavior"),
+    NoGlobalRollbackClaimWithoutAnchor("no global rollback-resistance claim without external or trusted monotonic anchor"),
+    NoManifestReadWriteInThisBranch("no manifest reader or writer exists in this branch"),
+}
+
+data class ProductionProviderStaleRecordManifestPolicy(
+    val policyId: String,
+    val manifestStoragePolicyId: String,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val recordVersionCounterBoundIntoAad: Boolean,
+    val bindings: Set<ProductionProviderStaleRecordManifestBinding>,
+    val requirements: Set<ProductionProviderStaleRecordManifestRequirement>,
+    val manifestReadWriteImplemented: Boolean,
+    val storageIndexReadWriteImplemented: Boolean,
+    val staleRecordEnforcementImplemented: Boolean,
+    val fullLocalDirectoryRollbackResistanceClaimed: Boolean,
+    val externalOrTrustedMonotonicAnchorDesigned: Boolean,
+    val antiRollbackAnchorRequiredForGlobalRollbackResistance: Boolean,
+    val providerSelectabilityBlockedUntilImplementedAndTested: Boolean,
+)
+
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
     EmptyPassphrase("empty passphrase"),
     UnicodeControlCharacters("Unicode control characters"),
@@ -630,6 +744,14 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.ReleaseReadinessExcludesDebugTestProviders to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                 ),
@@ -671,6 +793,10 @@ data class ProductionProviderAcceptanceContract(
     val canonicalHeaderVectorContract: ProductionProviderCanonicalHeaderVectorContract,
     val hkdfVectorContract: ProductionProviderHkdfVectorContract,
     val hmacHeaderCommitmentVectorContract: ProductionProviderHmacHeaderCommitmentVectorContract,
+    val providerLevelKatStrategyPolicy: ProductionProviderLevelKatStrategyPolicy,
+    val randomizedAeadBehavioralKatPolicy: ProductionProviderRandomizedAeadBehavioralKatPolicy,
+    val integratedVerificationOrderKatPolicy: ProductionProviderIntegratedVerificationOrderKatPolicy,
+    val staleRecordManifestPolicy: ProductionProviderStaleRecordManifestPolicy,
     val canonicalHeaderEncodingPolicy: ProductionProviderCanonicalHeaderEncodingPolicy,
     val keySeparationPolicy: ProductionProviderKeySeparationPolicy,
     val passphraseEncodingPolicy: ProductionProviderPassphraseEncodingPolicy,
@@ -920,6 +1046,67 @@ data class ProductionProviderAcceptanceContract(
                         productionHmacExecutionImplemented = true,
                         productionHeaderCommitmentExecutionImplemented = true,
                     ),
+                providerLevelKatStrategyPolicy = ProductionProviderLevelKatStrategyPolicy(
+                    policyId = "skald-vault-v1-provider-level-kat-strategy-v1",
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    deterministicVectorsRequired = ProductionProviderDeterministicKatVector.entries.toSet(),
+                    randomizedAeadBehavioralChecksRequired =
+                        ProductionProviderRandomizedAeadBehavioralKatCheck.entries.toSet(),
+                    fixedCiphertextHexRequiredForRandomizedAead = false,
+                    deterministicAadHexRequired = true,
+                    providerLevelKatsMustRunOnDesktopJvm = true,
+                    providerLevelKatsMustRunOnAndroid = true,
+                    providerKatCompletionImpliesStorageApproval = false,
+                    productionProviderKatExecutionImplemented = false,
+                ),
+                randomizedAeadBehavioralKatPolicy = ProductionProviderRandomizedAeadBehavioralKatPolicy(
+                    policyId = "skald-vault-v1-randomized-aead-behavioral-kat-v1",
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    primitive = EncryptedVaultAeadAlgorithm.XChaCha20Poly1305,
+                    tinkChoosesNonceInternally = true,
+                    fixedCiphertextHexRequired = false,
+                    deterministicAadHexRequired = true,
+                    behavioralChecksRequired =
+                        ProductionProviderRandomizedAeadBehavioralKatCheck.entries.toSet(),
+                    publicDeterministicNonceTestModeApproved = false,
+                    productionProviderBehavioralKatExecutionImplemented = false,
+                ),
+                integratedVerificationOrderKatPolicy = ProductionProviderIntegratedVerificationOrderKatPolicy(
+                    policyId = "skald-vault-v1-integrated-verification-order-kat-v1",
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    orderedSteps = listOf(
+                        ProductionProviderIntegratedVerificationOrderKatStep.ValidatePassphrasePolicy,
+                        ProductionProviderIntegratedVerificationOrderKatStep.DeriveArgon2idRootMaterial,
+                        ProductionProviderIntegratedVerificationOrderKatStep.DeriveHkdfSubkeys,
+                        ProductionProviderIntegratedVerificationOrderKatStep.CanonicalizeHeaderBytes,
+                        ProductionProviderIntegratedVerificationOrderKatStep.VerifyHmacHeaderCommitment,
+                        ProductionProviderIntegratedVerificationOrderKatStep
+                            .ConstructRecordAeadAfterHeaderCommitment,
+                        ProductionProviderIntegratedVerificationOrderKatStep.SerializeStrictAad,
+                        ProductionProviderIntegratedVerificationOrderKatStep.DecryptRecord,
+                        ProductionProviderIntegratedVerificationOrderKatStep
+                            .RejectRecordDecryptWhenHeaderCommitmentFails,
+                    ),
+                    headerCommitmentMustPrecedeRecordDecrypt = true,
+                    recordDecryptRejectedWhenHeaderCommitmentFails = true,
+                    fullProviderIntegrationImplemented = false,
+                    productionVerificationOrderKatsImplemented = false,
+                ),
+                staleRecordManifestPolicy = ProductionProviderStaleRecordManifestPolicy(
+                    policyId = "skald-vault-v1-stale-record-manifest-policy-v1",
+                    manifestStoragePolicyId = "skald-vault-v1-local-manifest-storage-policy-v1",
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    recordVersionCounterBoundIntoAad = true,
+                    bindings = ProductionProviderStaleRecordManifestBinding.entries.toSet(),
+                    requirements = ProductionProviderStaleRecordManifestRequirement.entries.toSet(),
+                    manifestReadWriteImplemented = false,
+                    storageIndexReadWriteImplemented = false,
+                    staleRecordEnforcementImplemented = false,
+                    fullLocalDirectoryRollbackResistanceClaimed = false,
+                    externalOrTrustedMonotonicAnchorDesigned = false,
+                    antiRollbackAnchorRequiredForGlobalRollbackResistance = true,
+                    providerSelectabilityBlockedUntilImplementedAndTested = true,
+                ),
                 canonicalHeaderEncodingPolicy = ProductionProviderCanonicalHeaderEncodingPolicy(
                     policyId = "skald-vault-v1-canonical-header-encoding-v1",
                     policyVersion = 1,

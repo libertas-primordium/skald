@@ -6,7 +6,7 @@ This document defines the Skald Vault v1 production-provider acceptance contract
 
 It is design and acceptance-contract material with isolated still-disabled building blocks. The passphrase policy validator/NFC UTF-8 encoder, Bouncy Castle Argon2id explicit-parameter passphrase-to-root-material derivation, canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, HMAC-SHA-256 header commitment computation/verification, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material now exist as production-source building blocks. This contract still does not implement a selectable production provider, provider-wired KDF execution, calibration, provider-wired Tink AEAD execution, production random-byte generation, key generation, vault creation, vault unlock, vault container read/write, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). These documents are part of this acceptance contract; the vector-matched building blocks remain isolated and non-selectable.
+The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy for randomized Tink AEAD and the stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). These documents are part of this acceptance contract; the vector-matched building blocks and contract models remain isolated and non-selectable.
 
 Runtime behavior remains fail-closed:
 
@@ -385,18 +385,22 @@ A production provider cannot become selectable until every gate below is satisfi
 22. AEAD AAD policy binds vault header/version, provider suite id, vault id, key-expansion policy id, header-commitment primitive policy id, record type, record id, record version/counter, header commitment context, and integrity-critical metadata.
 23. Tink non-key-commitment mitigation is approved at the vault-format layer.
 24. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
-25. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-26. Unknown randomness/provider state blocks vault creation.
-27. Forbidden random APIs remain guarded.
-28. Secure secret storage is reviewed and approved.
-29. Secure metadata storage is reviewed and approved.
-30. Crash, corruption, and partial-write behavior are reviewed.
-31. Redaction, logging, and crash-report leakage checks pass.
-32. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-33. A production provider implementation exists behind Skald-owned interfaces.
-34. Release readiness excludes debug and test-only providers from selection.
+25. Provider-level KAT strategy is approved for deterministic vectors plus randomized AEAD behavioral checks.
+26. Randomized AEAD behavioral KAT policy is approved and does not require fixed ciphertext hex for Tink XChaCha20-Poly1305.
+27. Integrated verification-order KAT policy proves header commitment verification before record decrypt.
+28. Stale-record and rollback manifest policy is approved, including local manifest binding, atomicity/crash recovery review, stale-record quarantine/rejection behavior, and no global rollback-resistance claim without an anti-rollback anchor.
+29. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+30. Unknown randomness/provider state blocks vault creation.
+31. Forbidden random APIs remain guarded.
+32. Secure secret storage is reviewed and approved.
+33. Secure metadata storage is reviewed and approved.
+34. Crash, corruption, and partial-write behavior are reviewed.
+35. Redaction, logging, and crash-report leakage checks pass.
+36. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+37. A production provider implementation exists behind Skald-owned interfaces.
+38. Release readiness excludes debug and test-only providers from selection.
 
-Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, strict AAD/record-AEAD building-block tests, or a design-only acceptance assessment must not bypass these gates.
+Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, strict AAD/record-AEAD building-block tests, randomized AEAD behavioral building-block tests, documented provider-level KAT strategy, documented stale-record manifest policy, or a design-only acceptance assessment must not bypass these gates.
 
 ## Source And Storage Boundaries
 

@@ -6,7 +6,7 @@ Skald Vault now has a narrow Skald-owned disabled `VaultCryptoProvider` boundary
 
 This is a provider-boundary and policy-model pass. The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 header commitment verification, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material now exist as still-disabled building blocks. The provider boundary still does not implement selectable provider crypto, calibration, provider-wired Argon2id passphrase KDF execution, provider-wired AEAD execution, key generation, Tink keyset creation or storage, raw key material storage, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, strict AAD construction contract, deterministic AAD bytes, and record AEAD behavioral fixture are documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key expansion, HMAC-SHA-256 header commitment, and output layout are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Deterministic non-secret canonical header/HKDF/HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
+Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, strict AAD construction contract, deterministic AAD bytes, and record AEAD behavioral fixture are documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key expansion, HMAC-SHA-256 header commitment, and output layout are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Deterministic non-secret canonical header/HKDF/HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy for randomized AEAD and stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
 
 Runtime behavior remains fail-closed:
 
@@ -119,8 +119,9 @@ Those are dependency/probe KATs, not provider-boundary KATs. The provider-level 
 
 The boundary records provider-level KAT requirements for:
 
-- Argon2id KDF through the future Skald-owned provider interface,
-- XChaCha20-Poly1305 record AEAD through the future Skald-owned provider interface,
+- deterministic passphrase policy, Argon2id root-material, canonical header, HKDF info/output, HMAC header commitment, and strict AAD vectors through the future Skald-owned provider interface,
+- randomized XChaCha20-Poly1305 record AEAD behavioral checks through the future Skald-owned provider interface, without requiring fixed ciphertext hex,
+- integrated verification-order checks proving HMAC header commitment before record AEAD use,
 - negative misuse cases such as wrong associated data, tampered ciphertext/tag, and wrong key,
 - unsupported algorithm and production nonce-policy bypass rejection,
 - redacted provider diagnostics,
@@ -129,7 +130,7 @@ The boundary records provider-level KAT requirements for:
 - release-like runtime coverage as a future gate,
 - public non-wallet vectors only.
 
-The disabled provider marks positive public-vector requirements as `DependencyLevelPassedProviderLevelMissing` and marks negative/redaction/platform/storage requirements as required but unsatisfied. No production provider-level KAT path exists yet because no production executable provider implementation exists. Passing dependency-level KATs remains necessary evidence, but it does not satisfy provider approval.
+The disabled provider marks public-vector requirements as dependency/test evidence only and marks randomized AEAD behavioral, verification-order, negative, redaction, platform, and storage requirements as required but unsatisfied. No production provider-level KAT path exists yet because no production executable provider implementation exists. Passing dependency-level KATs remains necessary evidence, but it does not satisfy provider approval.
 
 The test-only provider harness runs the public positive vectors and required negative cases through `VaultCryptoProvider.validateKat(...)` in desktop and Android test source sets. Returned evidence is redacted and scoped as `TestHarnessOnly`. This proves the interface can carry the required checks; it does not approve production provider implementation or storage.
 
@@ -137,7 +138,7 @@ Manual Android Argon2id calibration capture is documented separately in [`ENCRYP
 
 Runtime randomness/provider checks are documented separately in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). They prove only test-scope availability of approved randomness paths with small non-secret samples; they do not prove entropy quality, generate production vault material, run provider-level KATs, or make any provider selectable.
 
-The production-provider acceptance contract pins the v1 review direction to Bouncy Castle Argon2id, HKDF-SHA-256 key expansion, HMAC-SHA-256 header commitment over canonical header bytes, Tink XChaCha20-Poly1305, and OS SecureRandom. It also documents the non-key-committing AEAD risk and requires future vault-level header commitment over canonical header fields, deterministic canonical header bytes, separated commitment key material, strict AAD binding to vault and record context, the `unicode-nfc-utf8-no-controls-no-whitespace-v1` passphrase encoding policy, Tink raw-key feasibility review, bounded Argon2id calibration, and production implementation tests matching the non-secret canonical header/HKDF/HMAC vectors before any production provider can be selectable.
+The production-provider acceptance contract pins the v1 review direction to Bouncy Castle Argon2id, HKDF-SHA-256 key expansion, HMAC-SHA-256 header commitment over canonical header bytes, Tink XChaCha20-Poly1305, and OS SecureRandom. It also documents the non-key-committing AEAD risk and requires future vault-level header commitment over canonical header fields, deterministic canonical header bytes, separated commitment key material, strict AAD binding to vault and record context, the `unicode-nfc-utf8-no-controls-no-whitespace-v1` passphrase encoding policy, Tink raw-key feasibility review, bounded Argon2id calibration, provider-level deterministic vector KATs, randomized AEAD behavioral KATs, verification-order KATs, stale-record manifest/storage policy, and production implementation tests matching the non-secret canonical header/HKDF/HMAC/AAD vectors before any production provider can be selectable.
 
 The raw-key feasibility review now has test-scope outcomes of `FEASIBLE_PUBLIC_RAW_KEY_API` on desktop/JVM and `ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API` on Android. The probes use fixed non-secret bytes and public Tink APIs to build a transient in-memory primitive from caller-supplied key bytes. The still-disabled record AEAD building block now uses that public API family. It does not persist a Tink keyset, does not generate a Tink vault key, does not use internal APIs, does not make a provider selectable, and does not remove the header-commitment requirement.
 
@@ -163,10 +164,14 @@ The readiness model still blocks on:
 
 - production provider implementation unavailable,
 - provider-level KATs missing,
+- randomized AEAD behavioral KATs missing,
+- integrated verification-order KATs missing,
 - final KDF parameter approval missing,
 - KDF calibration policy modeled with probe-only candidates and non-final parameter tiers documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md),
 - AEAD verification incomplete,
 - vault container format absent,
+- stale-record manifest/storage policy unimplemented,
+- manifest/storage atomicity and crash recovery unreviewed,
 - lock/session lifecycle tests absent,
 - redaction tests missing,
 - migration/corruption tests missing,

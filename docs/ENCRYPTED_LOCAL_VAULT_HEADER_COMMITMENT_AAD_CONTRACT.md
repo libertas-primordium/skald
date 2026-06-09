@@ -218,7 +218,11 @@ The record AEAD building block uses caller-supplied 32-byte record AEAD key mate
 
 Tink internally chooses the XChaCha20-Poly1305 nonce, so ciphertext is intentionally treated as nondeterministic. The fixture asserts deterministic AAD bytes and behavioral AEAD outcomes instead of a fixed ciphertext hex value.
 
-AAD binding mitigates cross-vault confusion, cross-record copying, record-type confusion, and cross-version substitution. It does not by itself provide full rollback resistance. Full stale-record enforcement still requires a future trusted manifest, vault index, storage layer, or sync conflict policy. A lower record version than the latest trusted local manifest state must eventually fail closed or be quarantined, but this branch does not implement that manifest/index/storage policy.
+AAD binding mitigates cross-vault confusion, cross-record copying, record-type confusion, and cross-version substitution. It does not by itself provide freshness or full rollback resistance. Full stale-record enforcement is a future manifest/storage responsibility documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
+
+A future local manifest or vault index must track the latest trusted record version/counter per record id, be integrity-protected, bind vault id, provider suite id, header commitment context, manifest policy id/version, and record namespace, and update atomically with record writes or define crash-safe recovery. It must reject or quarantine records with a lower version/counter than the latest trusted local manifest state and reject or quarantine duplicate record ids with conflicting latest counters. Conflict handling must be defined before sync or import behavior is enabled.
+
+For v1 local-only persistence, Skald must distinguish intra-vault substitution detection via AAD from stale-record detection against the latest trusted local manifest state. It must not claim global rollback resistance against a fully rolled-back local storage directory unless an external anchor, trusted monotonic counter, append-only log, remote checkpoint, or other anti-rollback anchor is designed. This branch does not implement a manifest reader, manifest writer, storage index, conflict resolver, sync path, storage path, or anti-rollback anchor.
 
 ## Tink Non-Key-Commitment Integration
 
