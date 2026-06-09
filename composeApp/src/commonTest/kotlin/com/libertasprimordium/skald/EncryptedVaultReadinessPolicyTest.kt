@@ -58,18 +58,15 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HkdfSha256KeyExpansionUnimplemented)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HmacSha256HeaderCommitmentUnimplemented)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutUnimplemented)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderByteVectorsTestScopeOnly)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HkdfSha256VectorsTestScopeOnly)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentProviderIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HkdfSha256KeyExpansionProviderIntegrationMissing)
         assertContains(
             decision.blockers,
-            EncryptedVaultBlockingIssue.HmacSha256HeaderCommitmentVectorsTestScopeOnly,
+            EncryptedVaultBlockingIssue.HmacSha256HeaderCommitmentProviderIntegrationMissing,
         )
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderEncodingUnimplemented)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeySeparationLabelsUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutProviderIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderSerializerProviderIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeySeparationLabelsProviderIntegrationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StrictAadContractUnimplemented)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly)
@@ -105,6 +102,9 @@ class EncryptedVaultReadinessPolicyTest {
         )
         assertContains(readiness.capabilities, EncryptedVaultCapability.CanonicalHeaderEncodingPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.KeySeparationLabelsPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.CanonicalHeaderSerializerBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.HkdfSha256KeyExpansionBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.HmacSha256HeaderCommitmentBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StrictAadContractPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TinkNonKeyCommitmentMitigationModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseEncodingPolicyModel)
@@ -221,6 +221,9 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.HmacSha256HeaderCommitmentVectorContractModeled,
             EncryptedVaultRequirement.CanonicalHeaderEncodingPolicyModeled,
             EncryptedVaultRequirement.KeySeparationLabelsPolicyModeled,
+            EncryptedVaultRequirement.CanonicalHeaderSerializerImplementedAndVectorTested,
+            EncryptedVaultRequirement.HkdfSha256KeyExpansionImplementedAndVectorTested,
+            EncryptedVaultRequirement.HmacSha256HeaderCommitmentImplementedAndVectorTested,
             EncryptedVaultRequirement.StrictAadContractModeled,
             EncryptedVaultRequirement.TinkNonKeyCommitmentMitigationModeled,
             EncryptedVaultRequirement.PassphraseEncodingPolicyModeled,
@@ -337,6 +340,24 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.KeySeparationLabelsPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.CanonicalHeaderSerializerImplementedAndVectorTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.HkdfSha256KeyExpansionImplementedAndVectorTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.HmacSha256HeaderCommitmentImplementedAndVectorTested
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

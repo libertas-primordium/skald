@@ -392,11 +392,13 @@ class ProductionBackendAdapterSourceGuardTest {
         val sourceRoot = File(root, "composeApp/src")
         val allowedFiles = setOf(
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidArgon2idCalibrationProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidKatValidationTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTinkRawKeyFeasibilityProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2idCalibrationProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCanonicalHeaderHkdfHmacVectorTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
@@ -502,12 +504,17 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
-    fun productionSourceDoesNotExecuteHkdfHmacOrHeaderCommitmentVectors() {
+    fun hkdfHmacExecutionStaysInApprovedBuildingBlocksAndTests() {
         val root = repositoryRoot()
         val productionRoots = listOf(
             File(root, "composeApp/src/commonMain"),
             File(root, "composeApp/src/androidMain"),
             File(root, "composeApp/src/desktopMain"),
+        )
+        val allowedFiles = setOf(
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1HeaderCommitment.kt",
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+javax\.crypto"""),
@@ -518,19 +525,27 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bHKDFBytesGenerator\b"""),
             Regex("""\bHKDFParameters\b"""),
             Regex("""\bSHA256Digest\b"""),
+            Regex("""\bhkdfSha256\("""),
+            Regex("""\bcomputeHeaderCommitment\("""),
+            Regex("""\bverifyHeaderCommitment\("""),
+            Regex("""\bskaldVaultV1HmacSha256\("""),
         )
         val offenders = productionRoots
             .flatMap { sourceRoot ->
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
-                    .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative !in allowedFiles &&
+                            forbiddenPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
             }
 
         assertTrue(
             offenders.isEmpty(),
-            "HKDF/HMAC/header-commitment vector execution must stay out of production source: $offenders",
+            "HKDF/HMAC/header-commitment execution must stay in approved building blocks/tests: $offenders",
         )
     }
 

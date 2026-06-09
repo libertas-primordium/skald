@@ -570,25 +570,25 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.CanonicalHeaderByteVectorsApproved to
-                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.HkdfSha256VectorContractApproved to
-                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentVectorContractApproved to
-                        ProductionProviderAcceptanceEvidenceState.TestScopeVectorsComplete,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.AeadAadPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.TinkNonKeyCommitmentMitigationApproved to
@@ -796,39 +796,39 @@ data class ProductionProviderAcceptanceContract(
                 headerCommitmentPolicy = ProductionProviderHeaderCommitmentAcceptancePolicy(
                     policyId = "skald-vault-v1-header-commitment-v1",
                     policyVersion = 1,
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     requiredBeforeRecordDecrypt = true,
                     recordDecryptAllowedBeforeVerification = false,
                     commitmentKeyMaterialSeparatedFromRecordAeadKeyMaterial = true,
                     canonicalHeaderFields = ProductionProviderHeaderCommitmentField.entries.toSet(),
                     failClosedConditions =
                         ProductionProviderHeaderCommitmentFailClosedCondition.entries.toSet(),
-                    productionExecutionImplemented = false,
+                    productionExecutionImplemented = true,
                 ),
                 keyExpansionPrimitivePolicy = ProductionProviderKeyExpansionPrimitivePolicy(
                     policyId = "skald-vault-v1-hkdf-sha256-key-expansion-v1",
                     primitive = ProductionProviderKeyExpansionPrimitive.HkdfSha256,
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     argon2idRemainsPasswordKdf = true,
                     usedOnlyAfterArgon2idRootMaterialExists = true,
                     usedDirectlyOnPassphraseAllowed = false,
                     domainSeparatedByStableAsciiLabels = true,
                     avoidsManualRootMaterialSlicing = true,
-                    productionHkdfExecutionImplemented = false,
+                    productionHkdfExecutionImplemented = true,
                 ),
                 headerCommitmentPrimitivePolicy = ProductionProviderHeaderCommitmentPrimitivePolicy(
                     policyId = "skald-vault-v1-hmac-sha256-header-commitment-v1",
                     primitive = ProductionProviderHeaderCommitmentPrimitive.HmacSha256,
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     inputDescription = "canonical vault header bytes",
                     usesDerivedHeaderCommitmentKey = true,
                     verifiesBeforeRecordDecrypt = true,
                     successfulRecordDecryptAloneProvesCorrectVaultKey = false,
-                    productionHmacExecutionImplemented = false,
-                    productionHeaderCommitmentComputationImplemented = false,
+                    productionHmacExecutionImplemented = true,
+                    productionHeaderCommitmentComputationImplemented = true,
                 ),
                 keyExpansionOutputLayoutPolicy = ProductionProviderKeyExpansionOutputLayoutPolicy(
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     argon2idRootMaterialBytes = 64,
                     headerCommitmentKeyBytes = 32,
                     recordAeadKeyBytes = 32,
@@ -844,7 +844,7 @@ data class ProductionProviderAcceptanceContract(
                     weakPassphraseCompensatedByHkdfOrHmac = false,
                 ),
                 canonicalHeaderVectorContract = ProductionProviderCanonicalHeaderVectorContract(
-                    status = ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+                    status = ProductionProviderTestVectorContractStatus.ProductionImplementedTested,
                     documentPath =
                         "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
                     logicalFixtureFieldsDefined = true,
@@ -852,10 +852,10 @@ data class ProductionProviderAcceptanceContract(
                     byteEncodingRulesDefined = true,
                     finalCanonicalHeaderHexDocumented = true,
                     testScopeEncoderExists = true,
-                    productionSerializerImplemented = false,
+                    productionSerializerImplemented = true,
                 ),
                 hkdfVectorContract = ProductionProviderHkdfVectorContract(
-                    status = ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+                    status = ProductionProviderTestVectorContractStatus.ProductionImplementedTested,
                     documentPath =
                         "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
                     hash = "SHA-256",
@@ -867,11 +867,11 @@ data class ProductionProviderAcceptanceContract(
                     outputBytesPerPurpose = 32,
                     expectedOutputsDocumented = true,
                     testScopeHkdfExecutionExists = true,
-                    productionHkdfExecutionImplemented = false,
+                    productionHkdfExecutionImplemented = true,
                 ),
                 hmacHeaderCommitmentVectorContract =
                     ProductionProviderHmacHeaderCommitmentVectorContract(
-                        status = ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+                        status = ProductionProviderTestVectorContractStatus.ProductionImplementedTested,
                         documentPath =
                             "docs/ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md",
                         hash = "SHA-256",
@@ -879,29 +879,29 @@ data class ProductionProviderAcceptanceContract(
                         messageSource = "canonical header vector bytes",
                         expectedTagDocumented = true,
                         testScopeHmacExecutionExists = true,
-                        productionHmacExecutionImplemented = false,
-                        productionHeaderCommitmentExecutionImplemented = false,
+                        productionHmacExecutionImplemented = true,
+                        productionHeaderCommitmentExecutionImplemented = true,
                     ),
                 canonicalHeaderEncodingPolicy = ProductionProviderCanonicalHeaderEncodingPolicy(
                     policyId = "skald-vault-v1-canonical-header-encoding-v1",
                     policyVersion = 1,
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     byteOrder = "big-endian",
                     stringEncoding = "UTF-8",
                     domainMagic = "SKALD-VAULT-V1",
                     rules = ProductionProviderCanonicalHeaderEncodingRule.entries.toSet(),
-                    productionSerializerImplemented = false,
+                    productionSerializerImplemented = true,
                 ),
                 keySeparationPolicy = ProductionProviderKeySeparationPolicy(
                     policyId = "skald-vault-v1-key-separation-labels-v1",
                     policyVersion = 1,
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     labels = ProductionProviderKeySeparationLabel.entries.toSet(),
                     rootMaterialUsedDirectlyForMultiplePurposes = false,
                     recordAeadAndHeaderCommitmentKeyMaterialSeparated = true,
                     reservedFutureLabelsNotImplemented = true,
                     keyExpansionPrimitiveApproved = true,
-                    productionKeyDerivationImplemented = false,
+                    productionKeyDerivationImplemented = true,
                     unknownUnsupportedPolicyBlocksSelectability = true,
                 ),
                 passphraseEncodingPolicy = ProductionProviderPassphraseEncodingPolicy(

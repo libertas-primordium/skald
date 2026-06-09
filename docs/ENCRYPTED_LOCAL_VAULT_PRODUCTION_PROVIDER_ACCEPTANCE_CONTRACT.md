@@ -4,9 +4,9 @@
 
 This document defines the Skald Vault v1 production-provider acceptance contract.
 
-It is design and acceptance-contract material only. It does not implement a production provider, production Argon2id execution, production Tink AEAD execution, production random-byte generation, key generation, vault container read/write, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+It is design and acceptance-contract material. The canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, and HMAC-SHA-256 header commitment computation/verification now exist as still-disabled production-source building blocks. This contract still does not implement a selectable production provider, production Argon2id passphrase derivation, production Tink AEAD execution, production random-byte generation, key generation, vault creation, vault unlock, vault container read/write, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
-The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). These documents are part of this acceptance contract and remain contract/test-vector-only.
+The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). These documents are part of this acceptance contract; the vector-matched building blocks remain isolated and non-selectable.
 
 Runtime behavior remains fail-closed:
 
@@ -167,9 +167,9 @@ skald-vault-v1-hmac-sha256-header-commitment-v1
 
 HMAC-SHA-256 uses the derived 32-byte header commitment key. It authenticates the exact canonical header before record decrypt and is the vault-format mitigation for Tink XChaCha20-Poly1305 being non-key-committing.
 
-This branch does not implement production HKDF, production HMAC, production key derivation, or production header commitment execution.
+This branch implements HKDF, HMAC, canonical header serialization, and header-commitment verification only as isolated still-disabled building blocks. It does not implement Argon2id passphrase derivation, Tink AEAD execution, full vault unlock ordering, provider integration, or persistence.
 
-The non-secret vector contract fixes the first canonical header byte fixture and the HKDF/HMAC outputs for a sentinel 64-byte root-material fixture. These vectors are test-scope evidence only. They do not implement production serialization, production HKDF, production HMAC, production header commitment, vault unlock, vault storage, or provider selectability.
+The non-secret vector contract fixes the first canonical header byte fixture and the HKDF/HMAC outputs for a sentinel 64-byte root-material fixture. The building blocks match those vectors. They do not implement Argon2id, passphrase handling, production AEAD, vault unlock, vault storage, or provider selectability.
 
 Every future record AEAD operation must bind strict AAD to vault magic/domain marker, vault format version, provider suite id, vault id, record format policy id/version, AAD policy id/version, record type, record id, record version or monotonic counter, integrity-critical record metadata, header commitment policy id, canonical header commitment value or stable commitment identifier, and any future storage namespace where relevant. AAD mismatch must fail closed for wrong vault, suite, record type, record id, record version/counter, record metadata, AAD policy, header commitment context, copied ciphertext between vaults/records/types, and stale-record replay where the record version/counter policy rejects stale data.
 
@@ -356,9 +356,9 @@ A production provider cannot become selectable until every gate below is satisfi
 10. HMAC-SHA-256 header-commitment primitive policy is implemented and tested.
 11. The 64-byte root, 32-byte header commitment key, and 32-byte record AEAD key output layout is implemented and tested.
 12. Primitive threat-model and rationale review is complete.
-13. Canonical header byte vectors are complete and later matched by production implementation tests.
-14. HKDF-SHA-256 vectors are complete and later matched by production implementation tests.
-15. HMAC-SHA-256 header-commitment vectors are complete and later matched by production implementation tests.
+13. Canonical header byte vectors are complete and matched by still-disabled building-block implementation tests.
+14. HKDF-SHA-256 vectors are complete and matched by still-disabled building-block implementation tests.
+15. HMAC-SHA-256 header-commitment vectors are complete and matched by still-disabled building-block implementation tests.
 16. Canonical header encoding policy is approved.
 17. Key-separation labels policy is approved.
 18. Passphrase encoding policy is approved.
@@ -378,7 +378,7 @@ A production provider cannot become selectable until every gate below is satisfi
 32. A production provider implementation exists behind Skald-owned interfaces.
 33. Release readiness excludes debug and test-only providers from selection.
 
-Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, test-scope canonical/HKDF/HMAC vectors, or a design-only acceptance assessment must not bypass these gates.
+Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, or a design-only acceptance assessment must not bypass these gates.
 
 ## Source And Storage Boundaries
 
@@ -387,8 +387,8 @@ This contract does not allow:
 - Bouncy Castle imports in commonMain production provider or selection code,
 - Tink imports in commonMain production provider or selection code,
 - production KDF execution,
-- production HKDF execution,
-- production HMAC execution,
+- HKDF execution outside the approved still-disabled building-block files,
+- HMAC execution outside the approved still-disabled building-block files,
 - production AEAD execution,
 - production random-byte generation,
 - key generation,
@@ -405,7 +405,7 @@ This contract does not allow:
 - backend clients,
 - mainnet.
 
-Source guards must continue proving that production provider/selection/readiness/contract code stays policy-only.
+Source guards must continue proving that production provider/selection/readiness/contract code stays policy-only, and that HKDF/HMAC/header-commitment execution is confined to the approved building-block files and vector tests.
 
 ## Relationship To Provider Selection
 

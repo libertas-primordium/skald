@@ -1,168 +1,305 @@
 package com.libertasprimordium.skald
 
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
+import com.libertasprimordium.skald.security.SkaldVaultV1HeaderCommitment
+import com.libertasprimordium.skald.security.SkaldVaultV1HeaderCommitmentRejectionReason
+import com.libertasprimordium.skald.security.SkaldVaultV1HeaderCommitmentResult
+import com.libertasprimordium.skald.security.SkaldVaultV1KeyPurpose
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class VaultCanonicalHeaderHkdfHmacVectorTest {
     @Test
-    fun canonicalHeaderFixtureBytesMatchDocumentedHex() {
-        assertEquals(EXPECTED_CANONICAL_HEADER_HEX, canonicalHeaderBytes().toHex())
-        assertEquals(509, canonicalHeaderBytes().size)
+    fun productionSourceCanonicalHeaderSerializerMatchesDocumentedHex() {
+        val canonicalHeader = acceptedValue(
+            SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(
+                SkaldVaultV1HeaderCommitment.vectorFixtureHeader(),
+            ),
+        )
+
+        assertEquals(EXPECTED_CANONICAL_HEADER_HEX, canonicalHeader.toHex())
+        assertEquals(509, canonicalHeader.size)
     }
 
     @Test
-    fun hkdfInfoFixturesMatchDocumentedHex() {
-        assertEquals(EXPECTED_HEADER_INFO_HEX, hkdfInfoBytes(HEADER_COMMITMENT_KEY_LABEL).toHex())
-        assertEquals(EXPECTED_RECORD_INFO_HEX, hkdfInfoBytes(RECORD_AEAD_KEY_LABEL).toHex())
-    }
-
-    @Test
-    fun hkdfSha256VectorsMatchDocumentedOutputs() {
+    fun productionSourceHkdfInfoFixturesMatchDocumentedHex() {
         assertEquals(
-            EXPECTED_HEADER_COMMITMENT_KEY_HEX,
-            hkdfSha256(
-                inputKeyingMaterial = ROOT_MATERIAL_FIXTURE,
-                salt = SALT_FIXTURE,
-                info = hkdfInfoBytes(HEADER_COMMITMENT_KEY_LABEL),
-                outputBytes = 32,
+            EXPECTED_HEADER_INFO_HEX,
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.hkdfInfoBytes(
+                    SkaldVaultV1KeyPurpose.HeaderCommitment,
+                ),
             ).toHex(),
         )
         assertEquals(
-            EXPECTED_RECORD_AEAD_KEY_HEX,
-            hkdfSha256(
-                inputKeyingMaterial = ROOT_MATERIAL_FIXTURE,
-                salt = SALT_FIXTURE,
-                info = hkdfInfoBytes(RECORD_AEAD_KEY_LABEL),
-                outputBytes = 32,
+            EXPECTED_RECORD_INFO_HEX,
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.hkdfInfoBytes(
+                    SkaldVaultV1KeyPurpose.RecordAead,
+                ),
             ).toHex(),
         )
     }
 
     @Test
-    fun hmacSha256HeaderCommitmentVectorMatchesDocumentedOutput() {
-        val headerCommitmentKey = EXPECTED_HEADER_COMMITMENT_KEY_HEX.hexToBytes()
+    fun productionSourceHkdfSha256VectorsMatchDocumentedOutputs() {
+        val expandedKeys = acceptedValue(
+            SkaldVaultV1HeaderCommitment.expandRootMaterial(
+                rootMaterial = ROOT_MATERIAL_FIXTURE,
+                header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader(),
+            ),
+        )
 
-        assertContentEquals(
-            headerCommitmentKey,
-            hkdfSha256(
-                inputKeyingMaterial = ROOT_MATERIAL_FIXTURE,
-                salt = SALT_FIXTURE,
-                info = hkdfInfoBytes(HEADER_COMMITMENT_KEY_LABEL),
-                outputBytes = 32,
+        assertEquals(EXPECTED_HEADER_COMMITMENT_KEY_HEX, expandedKeys.headerCommitmentKey.toHex())
+        assertEquals(EXPECTED_RECORD_AEAD_KEY_HEX, expandedKeys.recordAeadKey.toHex())
+    }
+
+    @Test
+    fun expandedKeysReturnDefensiveCopies() {
+        val expandedKeys = acceptedValue(
+            SkaldVaultV1HeaderCommitment.expandRootMaterial(
+                rootMaterial = ROOT_MATERIAL_FIXTURE,
+                header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader(),
+            ),
+        )
+        val firstRead = expandedKeys.headerCommitmentKey
+
+        firstRead[0] = (firstRead[0].toInt() xor 0xff).toByte()
+
+        assertEquals(EXPECTED_HEADER_COMMITMENT_KEY_HEX, expandedKeys.headerCommitmentKey.toHex())
+    }
+
+    @Test
+    fun productionSourceHmacSha256HeaderCommitmentVectorMatchesDocumentedOutput() {
+        val header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader()
+        val canonicalHeader = acceptedValue(SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(header))
+        val expandedKeys = acceptedValue(
+            SkaldVaultV1HeaderCommitment.expandRootMaterial(
+                rootMaterial = ROOT_MATERIAL_FIXTURE,
+                header = header,
+            ),
+        )
+        val tag = acceptedValue(
+            SkaldVaultV1HeaderCommitment.computeHeaderCommitment(
+                headerCommitmentKey = expandedKeys.headerCommitmentKey,
+                canonicalHeaderBytes = canonicalHeader,
+            ),
+        )
+
+        assertEquals(EXPECTED_HEADER_COMMITMENT_TAG_HEX, tag.toHex())
+        assertTrue(
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    headerCommitmentKey = expandedKeys.headerCommitmentKey,
+                    canonicalHeaderBytes = canonicalHeader,
+                    expectedTag = tag,
+                ),
+            ),
+        )
+        assertTrue(
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    header = header,
+                    rootMaterial = ROOT_MATERIAL_FIXTURE,
+                    expectedTag = tag,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun headerCommitmentVerificationFailsClosedForWrongHeaderKeyAndTag() {
+        val header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader()
+        val canonicalHeader = acceptedValue(SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(header))
+        val expandedKeys = acceptedValue(
+            SkaldVaultV1HeaderCommitment.expandRootMaterial(
+                rootMaterial = ROOT_MATERIAL_FIXTURE,
+                header = header,
+            ),
+        )
+        val tag = acceptedValue(
+            SkaldVaultV1HeaderCommitment.computeHeaderCommitment(
+                headerCommitmentKey = expandedKeys.headerCommitmentKey,
+                canonicalHeaderBytes = canonicalHeader,
+            ),
+        )
+        val wrongHeader = canonicalHeader.copyOf().also { bytes ->
+            bytes[bytes.lastIndex] = (bytes.last().toInt() xor 0x01).toByte()
+        }
+        val wrongTag = tag.copyOf().also { bytes ->
+            bytes[bytes.lastIndex] = (bytes.last().toInt() xor 0x01).toByte()
+        }
+        val wrongKey = expandedKeys.headerCommitmentKey.also { bytes ->
+            bytes[bytes.lastIndex] = (bytes.last().toInt() xor 0x01).toByte()
+        }
+        val wrongRootMaterial = ROOT_MATERIAL_FIXTURE.copyOf().also { bytes ->
+            bytes[bytes.lastIndex] = (bytes.last().toInt() xor 0x01).toByte()
+        }
+
+        assertFalse(
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    headerCommitmentKey = expandedKeys.headerCommitmentKey,
+                    canonicalHeaderBytes = wrongHeader,
+                    expectedTag = tag,
+                ),
+            ),
+        )
+        assertFalse(
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    headerCommitmentKey = wrongKey,
+                    canonicalHeaderBytes = canonicalHeader,
+                    expectedTag = tag,
+                ),
+            ),
+        )
+        assertFalse(
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    headerCommitmentKey = expandedKeys.headerCommitmentKey,
+                    canonicalHeaderBytes = canonicalHeader,
+                    expectedTag = wrongTag,
+                ),
+            ),
+        )
+        assertFalse(
+            acceptedValue(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    header = header,
+                    rootMaterial = wrongRootMaterial,
+                    expectedTag = tag,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun invalidInputLengthsAreRejected() {
+        val header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader()
+        val canonicalHeader = acceptedValue(SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(header))
+        val validKey = EXPECTED_HEADER_COMMITMENT_KEY_HEX.hexToBytes()
+        val validTag = EXPECTED_HEADER_COMMITMENT_TAG_HEX.hexToBytes()
+
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.InvalidRootMaterialLength,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.expandRootMaterial(
+                    rootMaterial = ROOT_MATERIAL_FIXTURE.copyOf(63),
+                    header = header,
+                ),
             ),
         )
         assertEquals(
-            EXPECTED_HEADER_COMMITMENT_TAG_HEX,
-            hmacSha256(headerCommitmentKey, canonicalHeaderBytes()).toHex(),
+            SkaldVaultV1HeaderCommitmentRejectionReason.InvalidHeaderCommitmentKeyLength,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.computeHeaderCommitment(
+                    headerCommitmentKey = validKey.copyOf(31),
+                    canonicalHeaderBytes = canonicalHeader,
+                ),
+            ),
+        )
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.InvalidHeaderCommitmentKeyLength,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    headerCommitmentKey = validKey.copyOf(31),
+                    canonicalHeaderBytes = canonicalHeader,
+                    expectedTag = validTag,
+                ),
+            ),
+        )
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.InvalidHeaderCommitmentTagLength,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.verifyHeaderCommitment(
+                    headerCommitmentKey = validKey,
+                    canonicalHeaderBytes = canonicalHeader,
+                    expectedTag = validTag.copyOf(31),
+                ),
+            ),
         )
     }
 
-    private fun canonicalHeaderBytes(): ByteArray =
-        byteList {
-            putStringField(1, VAULT_MAGIC)
-            putU16Field(2, VAULT_FORMAT_VERSION)
-            putStringField(3, PROVIDER_SUITE_ID)
-            putStringField(4, KDF_ALGORITHM_ID)
-            putU16Field(5, KDF_VERSION)
-            putU32Field(6, KDF_MEMORY_KIB)
-            putU32Field(7, KDF_TIME_COST)
-            putU32Field(8, KDF_PARALLELISM)
-            putBytesField(9, SALT_FIXTURE)
-            putU16Field(10, ARGON2ID_ROOT_MATERIAL_BYTES)
-            putBytesField(11, VAULT_ID_FIXTURE)
-            putStringField(12, PASSPHRASE_ENCODING_POLICY_ID)
-            putStringField(13, KEY_EXPANSION_POLICY_ID)
-            putStringField(14, KEY_SEPARATION_POLICY_ID)
-            putStringField(15, HEADER_COMMITMENT_PRIMITIVE_POLICY_ID)
-            putStringField(16, HEADER_COMMITMENT_POLICY_ID)
-            putStringField(17, AAD_POLICY_ID)
-            putU16Field(18, AAD_POLICY_VERSION)
-            putStringField(19, RECORD_FORMAT_POLICY_ID)
-            putU16Field(20, RECORD_FORMAT_POLICY_VERSION)
-            putU32Field(21, FEATURE_FLAGS)
-            putBytesField(22, INTEGRITY_CRITICAL_HEADER_METADATA_FIXTURE)
+    @Test
+    fun unsupportedPurposePolicyAndSuiteAreRejected() {
+        val header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader()
+
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.UnsupportedKeyPurpose,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.expandRootMaterialForPurpose(
+                    rootMaterial = ROOT_MATERIAL_FIXTURE,
+                    header = header,
+                    purposeLabel = "skald-vault/v1/unsupported-purpose",
+                ),
+            ),
+        )
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.UnsupportedPolicyId,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(
+                    header.copy(
+                        keyExpansionPolicyId =
+                            "skald-vault-v1-unsupported-key-expansion-policy",
+                    ),
+                ),
+            ),
+        )
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.UnsupportedSuiteId,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(
+                    header.copy(providerSuiteId = "skald-vault-v1-unsupported-suite"),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun malformedHeaderEvidenceIsRejectedBeforeCommitmentUse() {
+        val header = SkaldVaultV1HeaderCommitment.vectorFixtureHeader()
+
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.MalformedLength,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(
+                    header.copy(salt = ByteArray(15)),
+                ),
+            ),
+        )
+        assertEquals(
+            SkaldVaultV1HeaderCommitmentRejectionReason.MalformedStringValue,
+            rejectedReason(
+                SkaldVaultV1HeaderCommitment.canonicalHeaderBytes(
+                    header.copy(aadPolicyId = "skald-vault-v1-record-aad-v1\n"),
+                ),
+            ),
+        )
+    }
+
+    private fun <T> acceptedValue(
+        result: SkaldVaultV1HeaderCommitmentResult<T>,
+    ): T =
+        when (result) {
+            is SkaldVaultV1HeaderCommitmentResult.Accepted -> result.value
+            is SkaldVaultV1HeaderCommitmentResult.Rejected -> error(result.safeMessage)
         }
 
-    private fun hkdfInfoBytes(purposeLabel: String): ByteArray =
-        byteList {
-            putStringField(1, ROOT_DOMAIN_LABEL)
-            putStringField(2, PROVIDER_SUITE_ID)
-            putStringField(3, purposeLabel)
-            putStringField(4, KEY_EXPANSION_POLICY_ID)
-            putU16Field(5, VAULT_FORMAT_VERSION)
+    private fun rejectedReason(
+        result: SkaldVaultV1HeaderCommitmentResult<*>,
+    ): SkaldVaultV1HeaderCommitmentRejectionReason =
+        when (result) {
+            is SkaldVaultV1HeaderCommitmentResult.Accepted ->
+                error("Expected rejection but received an accepted result.")
+            is SkaldVaultV1HeaderCommitmentResult.Rejected -> result.reason
         }
-
-    private fun hkdfSha256(
-        inputKeyingMaterial: ByteArray,
-        salt: ByteArray,
-        info: ByteArray,
-        outputBytes: Int,
-    ): ByteArray {
-        val pseudorandomKey = hmacSha256(salt, inputKeyingMaterial)
-        val output = mutableListOf<Byte>()
-        var previous = ByteArray(0)
-        var counter = 1
-
-        while (output.size < outputBytes) {
-            previous = hmacSha256(pseudorandomKey, previous + info + byteArrayOf(counter.toByte()))
-            output.addAll(previous.toList())
-            counter += 1
-        }
-
-        return output.take(outputBytes).toByteArray()
-    }
-
-    private fun hmacSha256(key: ByteArray, message: ByteArray): ByteArray {
-        val mac = Mac.getInstance(HMAC_SHA256)
-        mac.init(SecretKeySpec(key, HMAC_SHA256))
-        return mac.doFinal(message)
-    }
-
-    private fun byteList(block: MutableList<Byte>.() -> Unit): ByteArray =
-        mutableListOf<Byte>().apply(block).toByteArray()
-
-    private fun MutableList<Byte>.putStringField(fieldId: Int, value: String) {
-        putU16(fieldId)
-        putLengthPrefixedBytes(value.encodeToByteArray())
-    }
-
-    private fun MutableList<Byte>.putBytesField(fieldId: Int, value: ByteArray) {
-        putU16(fieldId)
-        putLengthPrefixedBytes(value)
-    }
-
-    private fun MutableList<Byte>.putU16Field(fieldId: Int, value: Int) {
-        putU16(fieldId)
-        putU16(value)
-    }
-
-    private fun MutableList<Byte>.putU32Field(fieldId: Int, value: Int) {
-        putU16(fieldId)
-        putU32(value)
-    }
-
-    private fun MutableList<Byte>.putLengthPrefixedBytes(value: ByteArray) {
-        putU16(value.size)
-        value.forEach { add(it) }
-    }
-
-    private fun MutableList<Byte>.putU16(value: Int) {
-        add(((value ushr 8) and 0xff).toByte())
-        add((value and 0xff).toByte())
-    }
-
-    private fun MutableList<Byte>.putU32(value: Int) {
-        add(((value ushr 24) and 0xff).toByte())
-        add(((value ushr 16) and 0xff).toByte())
-        add(((value ushr 8) and 0xff).toByte())
-        add((value and 0xff).toByte())
-    }
 
     private fun ByteArray.toHex(): String =
-        joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xff) }
+        joinToString(separator = "") { byte ->
+            (byte.toInt() and 0xff).toString(radix = 16).padStart(2, '0')
+        }
 
     private fun String.hexToBytes(): ByteArray {
         require(length % 2 == 0)
@@ -172,40 +309,7 @@ class VaultCanonicalHeaderHkdfHmacVectorTest {
     }
 
     private companion object {
-        const val HMAC_SHA256 = "HmacSHA256"
-        const val VAULT_MAGIC = "SKALD-VAULT-V1"
-        const val VAULT_FORMAT_VERSION = 1
-        const val PROVIDER_SUITE_ID =
-            "skald-vault-v1-bouncycastle-argon2id-tink-xchacha20poly1305-os-securerandom"
-        const val KDF_ALGORITHM_ID = "argon2id"
-        const val KDF_VERSION = 19
-        const val KDF_MEMORY_KIB = 65_536
-        const val KDF_TIME_COST = 3
-        const val KDF_PARALLELISM = 1
-        const val ARGON2ID_ROOT_MATERIAL_BYTES = 64
-        const val PASSPHRASE_ENCODING_POLICY_ID =
-            "unicode-nfc-utf8-no-controls-no-whitespace-v1"
-        const val KEY_EXPANSION_POLICY_ID =
-            "skald-vault-v1-hkdf-sha256-key-expansion-v1"
-        const val KEY_SEPARATION_POLICY_ID =
-            "skald-vault-v1-key-separation-labels-v1"
-        const val HEADER_COMMITMENT_PRIMITIVE_POLICY_ID =
-            "skald-vault-v1-hmac-sha256-header-commitment-v1"
-        const val HEADER_COMMITMENT_POLICY_ID =
-            "skald-vault-v1-header-commitment-v1"
-        const val AAD_POLICY_ID = "skald-vault-v1-record-aad-v1"
-        const val AAD_POLICY_VERSION = 1
-        const val RECORD_FORMAT_POLICY_ID = "skald-vault-v1-record-format-v1"
-        const val RECORD_FORMAT_POLICY_VERSION = 1
-        const val FEATURE_FLAGS = 0
-        const val ROOT_DOMAIN_LABEL = "skald-vault/v1/root-domain"
-        const val HEADER_COMMITMENT_KEY_LABEL = "skald-vault/v1/header-commitment-key"
-        const val RECORD_AEAD_KEY_LABEL = "skald-vault/v1/record-aead-key"
-
-        val SALT_FIXTURE: ByteArray = (0x00..0x1f).map { it.toByte() }.toByteArray()
-        val VAULT_ID_FIXTURE: ByteArray = (0x20..0x2f).map { it.toByte() }.toByteArray()
         val ROOT_MATERIAL_FIXTURE: ByteArray = (0xa0..0xdf).map { it.toByte() }.toByteArray()
-        val INTEGRITY_CRITICAL_HEADER_METADATA_FIXTURE: ByteArray = ByteArray(0)
 
         const val EXPECTED_CANONICAL_HEADER_HEX =
             "0001000e534b414c442d5641554c542d5631000200010003004b736b616c642d7661756c742d76312d" +
