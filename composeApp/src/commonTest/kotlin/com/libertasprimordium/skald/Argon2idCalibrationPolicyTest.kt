@@ -14,6 +14,13 @@ import com.libertasprimordium.skald.security.Argon2idMemoryUnit
 import com.libertasprimordium.skald.security.Argon2idOutputLength
 import com.libertasprimordium.skald.security.Argon2idVersion
 import com.libertasprimordium.skald.security.EncryptedVaultKdfAlgorithm
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idCalibrationLatencyClass
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idCalibrationObservation
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idCalibrationParameterStrength
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idCalibrationPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idCalibrationResult
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idParameters
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
 import com.libertasprimordium.skald.security.VaultCryptoProviderBlocker
 import com.libertasprimordium.skald.security.commonArgon2idCalibrationPolicy
 import com.libertasprimordium.skald.security.commonDisabledVaultCryptoProviderStatus
@@ -29,14 +36,17 @@ class Argon2idCalibrationPolicyTest {
     fun calibrationPolicyIsProbeOnlyAndProductionKdfRemainsDisabled() {
         val policy = commonArgon2idCalibrationPolicy()
 
-        assertEquals(Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly, policy.status)
+        assertEquals(Argon2idCalibrationImplementationStatus.StillDisabledBuildingBlockImplemented, policy.status)
         assertEquals(EncryptedVaultKdfAlgorithm.Argon2id, policy.targetKdf)
         assertEquals(Argon2idVersion.Version19, policy.version)
         assertEquals(19, policy.version.numericVersion)
         assertFalse(policy.calibrationComplete)
         assertFalse(policy.productionKdfEnabled)
+        assertTrue(policy.status.stillDisabledBuildingBlockImplemented)
+        assertTrue(policy.status.candidateSelectionImplemented)
+        assertTrue(policy.status.memoryFailureHandlingImplemented)
         assertEquals(
-            Argon2idParameterPolicyStatus.CandidatePolicyPresentNotFinal,
+            Argon2idParameterPolicyStatus.SharedFloorPolicyImplementedStillDisabled,
             policy.candidateParameterPolicy.status,
         )
         assertFalse(policy.candidateParameterPolicy.finalProductionParametersApproved)
@@ -100,15 +110,17 @@ class Argon2idCalibrationPolicyTest {
         val policy = commonArgon2idCalibrationPolicy()
         val candidateIds = policy.candidateParameters.map { it.id }.toSet()
 
-        assertContains(candidateIds, "argon2id-probe-16mib-2p-1lane")
-        assertContains(candidateIds, "argon2id-probe-32mib-3p-1lane")
-        assertContains(candidateIds, "argon2id-probe-64mib-3p-1lane")
+        assertContains(candidateIds, "argon2id-v1-floor-64mib-t3-p1-root64")
+        assertContains(candidateIds, "argon2id-v1-desktop-stronger-96mib-t3-p1-root64")
         assertTrue(policy.candidateParameters.all { it.version == Argon2idVersion.Version19 })
-        assertTrue(policy.candidateParameters.all { it.outputLength.bytes == 32 })
+        assertTrue(policy.candidateParameters.all { it.outputLength.bytes == 64 })
+        assertTrue(policy.candidateParameters.all { it.memoryCost.kib >= 64 * 1024 })
+        assertTrue(policy.candidateParameters.all { it.passes.value >= 3 })
+        assertTrue(policy.candidateParameters.all { it.lanes.value == 1 })
         assertTrue(policy.candidateParameters.all { !it.productionRecommendation })
         assertTrue(policy.candidateParameters.all { it.memoryCost.label.endsWith("MiB") })
-        assertTrue(policy.androidRuntimeProbeCandidates.size == 2)
-        assertTrue(policy.desktopProbeCandidates.size == 3)
+        assertEquals(1, policy.androidRuntimeProbeCandidates.size)
+        assertEquals(2, policy.desktopProbeCandidates.size)
     }
 
     @Test
@@ -119,23 +131,27 @@ class Argon2idCalibrationPolicyTest {
         val floor = policy.tier(Argon2idParameterTierKind.MobileFallbackProbeFloor)
         val androidCompatibility = policy.tier(Argon2idParameterTierKind.AndroidSupportedCompatibilityPlanning)
 
-        assertEquals("argon2id-probe-64mib-3p-1lane", desktop.candidateId)
-        assertEquals("64 MiB", desktop.candidate?.memoryCost?.label)
+        assertEquals("argon2id-v1-desktop-stronger-96mib-t3-p1-root64", desktop.candidateId)
+        assertEquals("96 MiB", desktop.candidate?.memoryCost?.label)
         assertEquals(3, desktop.candidate?.passes?.value)
         assertEquals(1, desktop.candidate?.lanes?.value)
+        assertEquals(64, desktop.candidate?.outputLength?.bytes)
         assertContains(desktop.evidence, Argon2idDeviceClassEvidenceStatus.DesktopJvmProbeMeasured)
 
-        assertEquals("argon2id-probe-32mib-3p-1lane", highEndAndroid.candidateId)
-        assertEquals("32 MiB", highEndAndroid.candidate?.memoryCost?.label)
+        assertEquals("argon2id-v1-floor-64mib-t3-p1-root64", highEndAndroid.candidateId)
+        assertEquals("64 MiB", highEndAndroid.candidate?.memoryCost?.label)
         assertContains(
             highEndAndroid.evidence,
             Argon2idDeviceClassEvidenceStatus.Pixel10ProXlAndroid16ProbeMeasured,
         )
         assertFalse(highEndAndroid.universalAndroidPolicy)
 
-        assertEquals("argon2id-probe-16mib-2p-1lane", floor.candidateId)
+        assertEquals("argon2id-v1-floor-64mib-t3-p1-root64", floor.candidateId)
         assertEquals(policy.minimumProbeFloorCandidateId, floor.candidateId)
-        assertEquals("16 MiB", floor.candidate?.memoryCost?.label)
+        assertEquals("64 MiB", floor.candidate?.memoryCost?.label)
+        assertEquals(3, floor.candidate?.passes?.value)
+        assertEquals(1, floor.candidate?.lanes?.value)
+        assertEquals(64, floor.candidate?.outputLength?.bytes)
         assertFalse(floor.finalProductionApproved)
 
         assertEquals("unresolved", androidCompatibility.candidateId)
@@ -166,22 +182,24 @@ class Argon2idCalibrationPolicyTest {
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ApprovedRandomnessSourceMissing)
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.UnlockUxMeasurementMissing)
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ProviderBoundaryKnownAnswerVectorsMissing)
-        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.ProductionKdfImplementationMissing)
+        assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.FinalProductionCalibrationApprovalMissing)
+        assertFalse(policy.finalApprovalBlockers.contains(Argon2idParameterApprovalBlocker.ProductionKdfImplementationMissing))
+        assertFalse(policy.finalApprovalBlockers.contains(Argon2idParameterApprovalBlocker.MemoryPressureFailureBehaviorMissing))
         assertContains(policy.finalApprovalBlockers, Argon2idParameterApprovalBlocker.SecureStorageStillDisabled)
         assertFalse(policy.finalProductionParametersApproved)
     }
 
     @Test
-    fun lowMemoryAndAndroidProbeWarningsRemainExplicit() {
+    fun sharedFloorAndroidProbeWarningsRemainExplicitWithoutBelowFloorApproval() {
         val policy = commonArgon2idCalibrationPolicy()
-        val lowMemoryAndroid = policy.candidateParameters.single { it.id == "argon2id-probe-16mib-2p-1lane" }
-        val warnings = policy.warningsFor(lowMemoryAndroid)
+        val androidFloor = policy.candidateParameters.single { it.id == "argon2id-v1-floor-64mib-t3-p1-root64" }
+        val warnings = policy.warningsFor(androidFloor)
 
-        assertContains(lowMemoryAndroid.platformClasses, Argon2idCalibrationPlatformClass.AndroidRuntime)
+        assertContains(androidFloor.platformClasses, Argon2idCalibrationPlatformClass.AndroidRuntime)
         assertContains(warnings, Argon2idCalibrationWarning.ProbeOnlyNotProductionSetting)
         assertContains(warnings, Argon2idCalibrationWarning.CandidateParameterPolicyNotFinal)
-        assertContains(warnings, Argon2idCalibrationWarning.LowMemoryProbeCandidate)
-        assertContains(warnings, Argon2idCalibrationWarning.TooFastSettingWouldBeWeak)
+        assertFalse(warnings.contains(Argon2idCalibrationWarning.LowMemoryProbeCandidate))
+        assertFalse(warnings.contains(Argon2idCalibrationWarning.TooFastSettingWouldBeWeak))
         assertContains(warnings, Argon2idCalibrationWarning.PixelEvidenceHighEndOnly)
         assertContains(warnings, Argon2idCalibrationWarning.AndroidCompatibilityRuntimeChecksRequired)
         assertContains(warnings, Argon2idCalibrationWarning.ThermalLoadRepeatabilityDesirable)
@@ -200,5 +218,238 @@ class Argon2idCalibrationPolicyTest {
         assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.ProviderDisabledByPolicy)
         assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.ProductionPersistenceDisabled)
         assertContains(providerStatus.blockers, VaultCryptoProviderBlocker.MainnetDisabled)
+    }
+
+    @Test
+    fun v1CalibrationEvidenceCapturesFloorLatencyAndNoDowngradePolicy() {
+        val evidence = SkaldVaultV1Argon2idCalibrationPolicy.evidence
+
+        assertEquals(Argon2idCalibrationImplementationStatus.StillDisabledBuildingBlockImplemented, evidence.implementationStatus)
+        assertEquals(64, evidence.minimumMemoryMiB)
+        assertEquals(3, evidence.minimumIterations)
+        assertEquals(1, evidence.requiredParallelism)
+        assertEquals(16, evidence.minimumSaltBytes)
+        assertEquals(32, evidence.preferredNewVaultSaltBytes)
+        assertEquals(64, evidence.outputRootMaterialBytes)
+        assertEquals(1_000, evidence.preferredUnlockMillis)
+        assertEquals(2_000, evidence.acceptableUnlockMillis)
+        assertFalse(evidence.twoSecondsIsFailureCondition)
+        assertFalse(evidence.weakenToForceSubOneSecondAllowed)
+        assertTrue(evidence.existingStoredParametersAuthoritative)
+        assertFalse(evidence.silentDowngradeAllowed)
+        assertFalse(evidence.productionKdfEnabled)
+    }
+
+    @Test
+    fun v1CalibrationValidationAcceptsOnlyAtOrAboveTheSharedFloor() {
+        val floor = acceptedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(),
+                saltLengthBytes = 16,
+            ),
+        )
+        val stronger = acceptedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = strongerParameters(),
+                saltLengthBytes = 32,
+            ),
+        )
+
+        assertEquals(SkaldVaultV1Argon2idCalibrationParameterStrength.Floor, floor.strength)
+        assertEquals(SkaldVaultV1Argon2idCalibrationParameterStrength.StrongerThanFloor, stronger.strength)
+        assertFalse(floor.downgradeAllowed)
+        assertFalse(stronger.downgradeAllowed)
+
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(memoryKiB = 64 * 1024 - 1),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.MemoryBelowV1Floor,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(iterations = 2),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.IterationsBelowV1Floor,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(parallelism = 0),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.UnsupportedParallelism,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(parallelism = 2),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.UnsupportedParallelism,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(),
+                saltLengthBytes = 15,
+            ),
+            Argon2idCalibrationRejectionReason.SaltTooShort,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(outputBytes = 32),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.UnsupportedOutputLength,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(type = SkaldVaultV1Argon2idType.Argon2i),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.UnsupportedArgon2Type,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.validateCreationParameters(
+                parameters = floorParameters(version = 16),
+                saltLengthBytes = 16,
+            ),
+            Argon2idCalibrationRejectionReason.UnsupportedArgon2Version,
+        )
+    }
+
+    @Test
+    fun candidateSelectionAllowsOneToTwoSecondsAndDoesNotWeakenBelowFloor() {
+        val selected = acceptedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.selectCandidate(
+                listOf(
+                    observation("below-floor-fast", floorParameters(memoryKiB = 32 * 1024), 500),
+                    observation("floor-preferred", floorParameters(), 900),
+                    observation("desktop-stronger-allowed", strongerParameters(), 1_500),
+                ),
+            ),
+        )
+        val twoSecondFloor = acceptedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.assessCreationExecution(
+                observation("floor-two-second", floorParameters(), 2_000),
+            ),
+        )
+
+        assertEquals("desktop-stronger-allowed", selected.candidateId)
+        assertEquals(SkaldVaultV1Argon2idCalibrationParameterStrength.StrongerThanFloor, selected.strength)
+        assertEquals(SkaldVaultV1Argon2idCalibrationLatencyClass.AcceptableAtOrBelowTwoSeconds, selected.latencyClass)
+        assertFalse(selected.selectedBelowFloor)
+        assertFalse(selected.selectedToForceSubOneSecond)
+        assertFalse(selected.productionKdfEnabled)
+
+        assertEquals(SkaldVaultV1Argon2idCalibrationLatencyClass.AcceptableAtOrBelowTwoSeconds, twoSecondFloor.latencyClass)
+        assertFalse(twoSecondFloor.selectedToForceSubOneSecond)
+    }
+
+    @Test
+    fun floorExecutionFailureFailsClosed() {
+        val failedFloor = SkaldVaultV1Argon2idCalibrationPolicy.assessCreationExecution(
+            observation("floor-failed", floorParameters(), elapsedMillis = 1_000, executionSucceeded = false),
+        )
+        val noCandidate = SkaldVaultV1Argon2idCalibrationPolicy.selectCandidate(
+            listOf(
+                observation("below-floor-fast", floorParameters(memoryKiB = 32 * 1024), 500),
+            ),
+        )
+
+        assertRejectedCalibration(failedFloor, Argon2idCalibrationRejectionReason.CalibrationFailedAtFloor)
+        assertRejectedCalibration(noCandidate, Argon2idCalibrationRejectionReason.NoSuccessfulCandidateAtOrAboveFloor)
+    }
+
+    @Test
+    fun storedVaultParametersAreAuthoritativeAndNeverSilentlyDowngraded() {
+        val accepted = acceptedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.assessStoredVaultExecution(
+                parameters = strongerParameters(memoryKiB = 128 * 1024),
+                saltLengthBytes = 32,
+                executionSucceeded = true,
+            ),
+        )
+
+        assertTrue(accepted.authoritative)
+        assertTrue(accepted.unlockAllowed)
+        assertFalse(accepted.downgradeAttempted)
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.assessStoredVaultExecution(
+                parameters = strongerParameters(memoryKiB = 128 * 1024),
+                saltLengthBytes = 32,
+                executionSucceeded = false,
+            ),
+            Argon2idCalibrationRejectionReason.StoredParametersUnsupportedOnDevice,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.assessStoredVaultExecution(
+                parameters = floorParameters(memoryKiB = 32 * 1024),
+                saltLengthBytes = 32,
+                executionSucceeded = true,
+            ),
+            Argon2idCalibrationRejectionReason.MemoryBelowV1Floor,
+        )
+        assertRejectedCalibration(
+            SkaldVaultV1Argon2idCalibrationPolicy.rejectDowngradeAttempt(),
+            Argon2idCalibrationRejectionReason.DowngradeNotAllowed,
+        )
+    }
+
+    private fun floorParameters(
+        type: SkaldVaultV1Argon2idType = SkaldVaultV1Argon2idType.Argon2id,
+        version: Int = 19,
+        memoryKiB: Int = 64 * 1024,
+        iterations: Int = 3,
+        parallelism: Int = 1,
+        outputBytes: Int = 64,
+    ): SkaldVaultV1Argon2idParameters =
+        SkaldVaultV1Argon2idParameters(
+            type = type,
+            version = version,
+            memoryKiB = memoryKiB,
+            iterations = iterations,
+            parallelism = parallelism,
+            outputBytes = outputBytes,
+        )
+
+    private fun strongerParameters(
+        memoryKiB: Int = 96 * 1024,
+        iterations: Int = 3,
+    ): SkaldVaultV1Argon2idParameters =
+        floorParameters(memoryKiB = memoryKiB, iterations = iterations)
+
+    private fun observation(
+        id: String,
+        parameters: SkaldVaultV1Argon2idParameters,
+        elapsedMillis: Long,
+        executionSucceeded: Boolean = true,
+        saltLengthBytes: Int = 32,
+    ): SkaldVaultV1Argon2idCalibrationObservation =
+        SkaldVaultV1Argon2idCalibrationObservation(
+            candidateId = id,
+            parameters = parameters,
+            saltLengthBytes = saltLengthBytes,
+            elapsedMillis = elapsedMillis,
+            executionSucceeded = executionSucceeded,
+        )
+
+    private fun <T> acceptedCalibration(result: SkaldVaultV1Argon2idCalibrationResult<T>): T =
+        when (result) {
+            is SkaldVaultV1Argon2idCalibrationResult.Accepted -> result.value
+            is SkaldVaultV1Argon2idCalibrationResult.Rejected -> error(result.safeMessage)
+        }
+
+    private fun assertRejectedCalibration(
+        result: SkaldVaultV1Argon2idCalibrationResult<*>,
+        reason: Argon2idCalibrationRejectionReason,
+    ) {
+        val rejected = when (result) {
+            is SkaldVaultV1Argon2idCalibrationResult.Accepted -> error("Expected calibration rejection.")
+            is SkaldVaultV1Argon2idCalibrationResult.Rejected -> result
+        }
+
+        assertEquals(reason, rejected.reason)
+        assertFalse(rejected.safeMessage.contains("Skald-Vault.Test_Fixture-01"))
     }
 }

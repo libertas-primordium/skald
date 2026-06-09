@@ -118,10 +118,17 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idPassphraseRootDerivationBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TinkRawKeyFeasibilityPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idBoundedCalibrationPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateSelectionPolicyBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idMemoryFailureHandlingModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idStoredParameterNoDowngradeModel)
         assertEquals(
-            Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
+            Argon2idCalibrationImplementationStatus.StillDisabledBuildingBlockImplemented,
             readiness.argon2idCalibrationPolicy.status,
         )
+        assertTrue(readiness.argon2idCalibrationPolicy.status.stillDisabledBuildingBlockImplemented)
+        assertTrue(readiness.argon2idCalibrationPolicy.status.candidateSelectionImplemented)
+        assertTrue(readiness.argon2idCalibrationPolicy.status.memoryFailureHandlingImplemented)
         assertFalse(readiness.argon2idCalibrationPolicy.productionKdfEnabled)
         assertFalse(readiness.argon2idCalibrationPolicy.calibrationComplete)
         assertFalse(readiness.argon2idCalibrationPolicy.candidateParameterPolicy.finalProductionParametersApproved)
@@ -221,6 +228,10 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.StaleRecordManifestPolicyModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
+            EncryptedVaultRequirement.Argon2idCalibrationPolicyImplementedAndTested,
+            EncryptedVaultRequirement.Argon2idCandidateSelectionPolicyImplementedAndTested,
+            EncryptedVaultRequirement.Argon2idMemoryFailureHandlingModeledAndTested,
+            EncryptedVaultRequirement.Argon2idStoredParameterNoDowngradeModeledAndTested,
             EncryptedVaultRequirement.AndroidCompatibilityEntropyPolicyModeled,
             EncryptedVaultRequirement.RuntimeCryptoProviderChecksModeled,
             EncryptedVaultRequirement.RuntimeRandomnessProviderChecksModeled,
@@ -308,6 +319,30 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.Argon2idCalibrationPolicyImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.Argon2idCandidateSelectionPolicyImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.Argon2idMemoryFailureHandlingModeledAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.Argon2idStoredParameterNoDowngradeModeledAndTested
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

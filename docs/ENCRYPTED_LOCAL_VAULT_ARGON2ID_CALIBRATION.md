@@ -2,18 +2,19 @@
 
 ## Status
 
-Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, a manual Android calibration evidence-capture model, bounded test/probe-only Bouncy Castle Argon2id measurement harnesses, and a still-disabled explicit-parameter Bouncy Castle Argon2id passphrase-to-root-material building block.
+Skald Vault now has a Skald-owned Argon2id calibration policy building block, deterministic candidate-selection policy, memory/execution failure modeling, stored-parameter no-downgrade modeling, a manual Android calibration evidence-capture model, bounded test/probe-only Bouncy Castle Argon2id measurement harnesses, and a still-disabled explicit-parameter Bouncy Castle Argon2id passphrase-to-root-material building block.
 
-This is calibration planning, manual evidence capture, dependency probing, and isolated building-block implementation only. It does not implement calibration, an executable production `VaultCryptoProvider`, provider-selectable KDF execution, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Runtime randomness/provider availability checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
+This is calibration policy, manual evidence capture, dependency probing, and isolated building-block implementation only. It does not implement vault creation, unlock UI, storage, an executable selectable production `VaultCryptoProvider`, provider-selectable KDF execution, production AEAD record encryption, production key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Runtime randomness/provider availability checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider selectability remains unavailable because no selectable production provider exists, and provider selection returns only the disabled provider.
 
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` still rejects KDF, AEAD, key generation, keyset storage, KAT validation, and persistence operations.
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
-- `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
+- `EncryptedVaultReadinessPolicy` reports Argon2id calibration policy, candidate selection, memory-failure handling, and stored-parameter no-downgrade modeling as implemented but still disabled.
+- `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated` and final bounded calibration approval blockers.
 - `VaultCryptoProviderSelectionRegistry` blocks production selection on non-final parameters, missing production-provider evidence, disabled storage, and runtime provider/primitive/randomness gates when they are unknown.
-- The candidate parameter policy is present but not final.
+- The shared 64 MiB / t=3 / p=1 floor policy is implemented as a still-disabled building block, but final production calibration approval remains blocked.
 - Production persistence remains disabled.
 - Production sync remains disabled.
 - Mainnet remains disabled.
@@ -50,12 +51,20 @@ The calibration policy models:
 - explicit memory units (`KiB` and `MiB` only),
 - pass count,
 - lane count,
-- output length with a 32-byte minimum for vault KDF output,
+- output length with the v1 64-byte root-material requirement,
 - platform/device-class labels,
 - target latency bands,
 - candidate rejection reasons,
 - probe-only warnings,
-- candidate desktop/high-end Android/fallback tiers,
+- candidate desktop/shared-floor/high-end Android evidence tiers,
+- deterministic candidate selection from synthetic observation inputs,
+- preferred unlock target around 1 second,
+- acceptable unlock duration around 2 seconds,
+- no weakening below the v1 floor merely to force sub-1-second unlock,
+- minimum-floor allocation/execution failure as fail-closed evidence,
+- existing stored vault parameters as authoritative,
+- stored-parameter unsupported-on-device failure as fail-closed unlock evidence,
+- silent downgrade rejection,
 - supported Android compatibility planning,
 - manual Android device calibration evidence records,
 - Android device class, runtime environment, release-like, thermal/load, and repeated-run evidence fields,
@@ -70,7 +79,17 @@ The model rejects:
 - ambiguous memory labels such as `32M` or `64 K`,
 - zero pass count,
 - zero lane count,
-- output shorter than 32 bytes,
+- output shorter than 32 bytes in legacy policy parsing,
+- v1 creation/stored parameters below 64 MiB memory,
+- v1 creation/stored parameters below t=3,
+- v1 creation/stored parameters with p other than 1,
+- salt shorter than 16 bytes,
+- root output length other than 64 bytes,
+- unsupported Argon2 type or version,
+- invalid elapsed timing observations,
+- failed minimum-floor execution,
+- stored parameters unsupported on the current device,
+- silent downgrade attempts,
 - PBKDF2 as the default production vault KDF,
 - any claim that calibration or provider-selectable KDF execution is available in this branch.
 
@@ -78,15 +97,14 @@ scrypt remains a reviewed compatibility fallback only. It is not selected for th
 
 ## Probe Candidates
 
-These candidates are explicitly probe-only and are not production recommendations:
+These candidates are still-disabled policy/probe candidates and are not production recommendations:
 
 | Candidate ID | Memory | Passes | Lanes | Output | Version | Platform scope |
 | --- | ---: | ---: | ---: | ---: | --- | --- |
-| `argon2id-probe-16mib-2p-1lane` | 16 MiB | 2 | 1 | 32 bytes | Argon2 version 19 | Linux desktop JVM, Android runtime, Android memory-constrained class |
-| `argon2id-probe-32mib-3p-1lane` | 32 MiB | 3 | 1 | 32 bytes | Argon2 version 19 | Linux desktop JVM, Android runtime |
-| `argon2id-probe-64mib-3p-1lane` | 64 MiB | 3 | 1 | 32 bytes | Argon2 version 19 | Linux desktop JVM, desktop extended probe |
+| `argon2id-v1-floor-64mib-t3-p1-root64` | 64 MiB | 3 | 1 | 64 bytes | Argon2 version 19 | Linux desktop JVM, Android runtime |
+| `argon2id-v1-desktop-stronger-96mib-t3-p1-root64` | 96 MiB | 3 | 1 | 64 bytes | Argon2 version 19 | Linux desktop JVM, desktop extended probe |
 
-The Android runtime probe intentionally runs only the 16 MiB and 32 MiB rows. The 64 MiB row is modeled for desktop probing and future explicit Android/device-class review; it is not run by default on Android in this branch to avoid unnecessary memory pressure.
+The Android runtime probe now runs the shared 64 MiB / t=3 / p=1 floor row only. The desktop probe runs the shared floor and the 96 MiB stronger desktop candidate. Both probes remain test/probe-only and do not persist results or approve production parameters.
 
 ## Candidate Parameter Policy
 
@@ -94,15 +112,15 @@ The current candidate policy is documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_P
 
 Summary:
 
-- Desktop candidate: 64 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on current Linux desktop JVM evidence.
-- High-end Android timing evidence: 32 MiB, 3 passes, 1 lane, 32-byte output, Argon2 version 19, based on Pixel 10 Pro XL / Android 16 evidence. This is below the v1 acceptance-contract floor and does not approve an Android default.
-- Mobile fallback/probe floor: 16 MiB, 2 passes, 1 lane, 32-byte output, Argon2 version 19, for testing/fallback analysis only.
+- Shared v1 floor: 64 MiB, 3 passes, 1 lane, 64-byte output, Argon2 version 19, used by Android and desktop as the minimum policy floor.
+- Desktop stronger candidate: 96 MiB, 3 passes, 1 lane, 64-byte output, Argon2 version 19, for bounded desktop candidate-selection evidence only.
+- Historical 16 MiB and 32 MiB probe evidence remains useful timing history only; it is below the v1 floor and is not an active v1 floor or fallback.
 - Android compatibility planning: based on supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault creation gates rather than mandatory low-end/mid-range model testing.
 - Manual Android evidence capture: modeled for optional low-end, mid-range, high-end, release-like, and thermal/load records; current captured evidence remains high-end debug/instrumented only and does not prove all-device performance.
 
 No row is production-final, universal Android policy, enabled for provider-selectable KDF execution, or sufficient for provider selection.
 
-The v1 production-provider acceptance contract separately requires a shared minimum review floor of Argon2id version 19, 64 MiB, 3 passes, 1 lane, at least a 16-byte salt, preferred 32-byte salt for new vaults, and 64-byte derived root material. Bounded calibration may choose stronger desktop parameters, but it must not weaken parameters to force sub-1-second unlocks. Roughly 2 seconds is acceptable and not a failure condition.
+The v1 production-provider acceptance contract requires the shared minimum review floor of Argon2id version 19, 64 MiB, 3 passes, 1 lane, at least a 16-byte salt, preferred 32-byte salt for new vaults, and 64-byte derived root material. The policy building block enforces those minima for creation/stored-parameter validation. Bounded calibration may choose stronger desktop parameters, but it must not weaken parameters to force sub-1-second unlocks. Roughly 2 seconds is acceptable and not a failure condition.
 
 ## Probe Fixture Policy
 
@@ -155,11 +173,11 @@ Before Argon2id can be used for production vault unlock:
 3. The provider-selection gates in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md) must be satisfied before any non-disabled provider can be selected.
 4. Production provider-level Argon2id KATs must pass on Android and Linux desktop according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current test-only harness is not production provider approval.
 5. Parameter calibration must respect the supported Android baseline, runtime provider/primitive/randomness checks, Linux desktop behavior, and fail-closed vault creation policy documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md) and [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). Low-end and mid-range Android evidence remains optional parameter/UX evidence, not a compatibility hard blocker.
-6. Bounded calibration must approve the shared 64 MiB / t=3 / p=1 floor and any stronger platform-specific choices.
+6. Bounded calibration must approve the shared 64 MiB / t=3 / p=1 floor and any stronger platform-specific choices. The still-disabled policy model now enforces the floor, but final production calibration approval remains a separate blocker.
 7. Memory cost must be treated as a security requirement, not only a UX knob.
 8. Unlock latency targets must be reviewed with user-visible tradeoffs; roughly 2 seconds is acceptable.
-9. Minimum-floor allocation or execution failure during vault creation must fail closed.
-10. Stored existing-vault parameters must remain authoritative; unlock on a weaker device must fail closed if those parameters cannot allocate or complete.
+9. Minimum-floor allocation or execution failure during vault creation must fail closed. The still-disabled policy model maps floor execution failure to a fail-closed result; no vault creation path exists.
+10. Stored existing-vault parameters must remain authoritative; unlock on a weaker device must fail closed if those parameters cannot allocate or complete. The still-disabled policy model maps unsupported stored parameters to a fail-closed result; no unlock path exists.
 11. Any future downgrade or migration must require successful passphrase unlock and explicit user action.
 12. Wrong-passphrase behavior must be tested.
 13. Lock/session lifecycle tests must prove derived key handles are unavailable after lock as far as practical.
@@ -168,19 +186,21 @@ Before Argon2id can be used for production vault unlock:
 
 ## Readiness Alignment
 
-`EncryptedVaultReadinessPolicy` now records that KDF calibration policy and candidate parameter policy are modeled at candidate level, while the passphrase policy validation and explicit-parameter Argon2id root-derivation building blocks are implemented but still disabled. `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
+`EncryptedVaultReadinessPolicy` now records that the Argon2id calibration policy, deterministic candidate selection, memory-failure handling, and stored-parameter no-downgrade modeling are implemented as still-disabled building blocks, while passphrase policy validation and explicit-parameter Argon2id root derivation are also implemented but still disabled. `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy and candidate parameter policy modeled. That does not approve production use. The stack remains candidate-only.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having still-disabled Argon2id calibration policy, candidate selection, memory-failure handling, and stored-parameter no-downgrade evidence. That does not approve production use. The stack remains candidate-only.
 
-`VaultCryptoProviderSelectionRegistry` treats the non-final parameter policy, missing production-provider evidence, disabled storage, and unknown runtime provider/primitive/randomness checks as blockers. It selects only the disabled provider.
+`VaultCryptoProviderSelectionRegistry` treats missing final production calibration approval, missing production-provider evidence, disabled storage, and unknown runtime provider/primitive/randomness checks as blockers. It selects only the disabled provider.
 
-The production-provider acceptance contract also treats bounded calibration, memory-failure behavior, stored-parameter authority, and no silent downgrade as separate blockers until reviewed.
+The production-provider acceptance contract records bounded calibration and memory-failure evidence as implemented/tested at the still-disabled building-block level, while final production calibration approval and release/storage/provider gates remain blocked.
 
 ## Explicit Non-Capabilities
 
 This calibration branch does not enable:
 
-- calibration or provider-selectable KDF execution,
+- provider-selectable KDF execution,
+- vault creation or unlock,
+- final production calibration approval,
 - production `VaultCryptoProvider` execution,
 - AEAD execution beyond existing dependency KAT tests,
 - encrypted vault implementation,
@@ -205,4 +225,4 @@ This calibration branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable-provider work. Recommended next decision point: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths or capture optional additional Android calibration evidence for parameter/UX review before any vault container or persistence implementation.
+The next focused branch should keep provider selection disabled unless the user explicitly approves provider-selectability work. Recommended next decision point: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, then decide whether final production calibration approval can move forward before any vault container or persistence implementation.
