@@ -6,7 +6,7 @@ Skald Vault now has a Skald-owned provider-level known-answer-test contract for 
 
 A test-only provider KAT harness now exists and is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md). That harness proves the Skald-owned request/result path can carry the public KDF/AEAD vectors and required negative cases through a test-scope implementation on desktop and Android runtime. It is not a production provider implementation.
 
-Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The selection registry treats dependency-level KATs, test-only provider KATs, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
+Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The selection registry treats dependency-level KATs, test-only provider KATs, randomized AEAD building-block tests, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
 
 This is contract and policy scaffolding only. It does not implement executable provider crypto, provider-selectable KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
@@ -15,6 +15,8 @@ Runtime behavior remains fail-closed:
 - `DisabledVaultCryptoProvider` rejects every modeled provider operation.
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider and blocks all future candidates.
 - Provider-level KAT requirements are modeled, and test-only provider KATs execute in test source sets.
+- The v1 provider-level KAT strategy is now explicit: deterministic vectors are required for passphrase, Argon2id, canonical header, HKDF, HMAC, and strict AAD; record AEAD is validated behaviorally because Tink chooses XChaCha20-Poly1305 nonces internally.
+- Stale-record and rollback handling is modeled as a future manifest/storage responsibility, not as an AEAD property.
 - Production provider-level KATs still cannot execute because no production provider exists.
 - Dependency-level KAT evidence does not satisfy provider-level KAT approval.
 - `SecureSecretStorage` remains disabled.
@@ -59,7 +61,7 @@ Dependency-level KATs prove that selected library APIs can reproduce public vect
 - Bouncy Castle Argon2id against RFC 9106 section 5.3 on desktop JVM and Android runtime.
 - Tink XChaCha20-Poly1305 against the XChaCha draft appendix A.1 on desktop JVM and Android runtime.
 
-Provider-level KATs must prove that a future executable Skald-owned provider boundary uses those libraries correctly. That includes typed parameter selection, associated-data construction, nonce policy, redacted failures, algorithm rejection, platform runtime behavior, and provider-owned result/error mapping.
+Provider-level KATs must prove that a future executable Skald-owned provider boundary uses those libraries correctly. That includes passphrase normalization, typed Argon2id parameters, canonical header bytes, HKDF info construction, HMAC header commitment, strict AAD serialization, randomized AEAD behavior, redacted failures, algorithm rejection, platform runtime behavior, and provider-owned result/error mapping.
 
 Because no executable production provider exists, production provider-level KATs do not pass in this branch. The disabled provider reports `ContractModeledProviderMissing`, `DependencyLevelKatsDoNotSatisfyProviderContract`, and `ExecutableProviderMissing`.
 
@@ -73,9 +75,9 @@ The provider contract registry models required categories:
 
 | Category | Requirement |
 | --- | --- |
-| Positive KDF vector | Argon2id version 19 with explicit memory, passes, lanes, output length, and an official public vector such as RFC 9106 section 5.3. |
-| Positive AEAD vector | XChaCha20-Poly1305 with a 24-byte nonce, associated data, and a public vector such as XChaCha draft appendix A.1. |
-| Negative AEAD misuse | Wrong associated data, modified ciphertext, modified tag, and wrong key must fail closed. |
+| Deterministic provider vectors | Passphrase policy, Argon2id root material, canonical header bytes, HKDF info/output, HMAC header commitment, and strict AAD bytes must match documented fixed non-secret vectors. |
+| Randomized AEAD behavior | XChaCha20-Poly1305 must round trip fixed non-secret plaintext with deterministic AAD and fail closed for wrong AAD, wrong key, tampered ciphertext/tag, and wrong vault/record/header context without requiring fixed ciphertext hex. |
+| Legacy dependency/test-harness AEAD vector | Fixed-nonce public vectors may remain dependency or test-harness evidence only; they do not replace provider-level behavioral AEAD KATs. |
 | Algorithm policy | Unsupported algorithms must be rejected, PBKDF2 must not become the production default, and scrypt must remain unselected unless explicitly reviewed. |
 | Nonce policy | Production callers must not provide arbitrary nonces; fixed nonces may exist only in test/KAT-only paths. |
 | Redaction | Diagnostics and errors must not expose plaintext, derived keys, unlock material, secret keys, or decrypted payloads. |
@@ -84,9 +86,88 @@ The provider contract registry models required categories:
 
 The code-level registry uses Skald-owned vector identities and categories only. It does not embed vector bytes, provider types, crypto imports, storage paths, or wallet metadata.
 
-## Positive KAT Requirements
+## V1 Provider-Level KAT Strategy
 
-Future provider implementation must pass positive KATs through the Skald-owned interface. The current test-only harness already exercises these through the same request/result model:
+The v1 production provider must validate the integrated provider without relying on deterministic ciphertext. Tink XChaCha20-Poly1305 uses randomized nonces through the public AEAD API path, so fixed ciphertext hex is not a provider-level requirement unless a public, supported deterministic nonce test mode is separately approved later. The approved v1 strategy is:
+
+- deterministic vectors for the deterministic parts of the pipeline,
+- deterministic strict AAD bytes,
+- behavioral AEAD checks for randomized record encryption,
+- integrated order checks proving header commitment happens before record decrypt,
+- platform execution on desktop/JVM and Android before selectability,
+- storage and manifest review as separate gates after provider KATs.
+
+Required deterministic vector KATs:
+
+- passphrase policy normalization vector,
+- Argon2id fixed non-secret root-material fixture,
+- canonical header byte vector,
+- HKDF info byte vectors,
+- HKDF header commitment key vector,
+- HKDF record AEAD key vector,
+- HMAC header commitment vector,
+- strict AAD byte vector.
+
+Required randomized AEAD behavioral KATs:
+
+- encrypt fixed non-secret plaintext with fixed non-secret record AEAD key and deterministic AAD,
+- decrypt the resulting ciphertext with the same key and AAD,
+- assert plaintext round trip succeeds,
+- assert ciphertext is not treated as deterministic,
+- assert wrong AAD fails,
+- assert wrong key fails,
+- assert tampered ciphertext fails,
+- assert tampered tag fails,
+- assert wrong vault id in AAD fails,
+- assert wrong record id in AAD fails,
+- assert wrong record type in AAD fails,
+- assert wrong record version/counter in AAD fails,
+- assert wrong provider suite id in AAD fails,
+- assert wrong header commitment context in AAD fails.
+
+This strategy does not weaken the AEAD requirement. It recognizes that the ciphertext includes nonce-dependent randomness while still requiring deterministic inputs, deterministic AAD, successful round trip, and negative tamper/mismatch behavior.
+
+## Integrated Verification-Order KAT Strategy
+
+Future provider-level KATs must prove the full provider order:
+
+1. Validate passphrase policy.
+2. Derive Argon2id root material from the fixed non-secret fixture.
+3. Derive HKDF subkeys.
+4. Canonicalize header bytes.
+5. Verify HMAC-SHA-256 header commitment.
+6. Only then construct or use record AEAD.
+7. Serialize strict AAD.
+8. Decrypt record.
+9. Reject record decrypt attempts when header commitment verification fails.
+
+These KATs are not implemented in this branch because no full provider integration exists. The contract is modeled by `ProductionProviderAcceptanceContract` as documented/model-only evidence, and documented/model-only evidence blocks selectability.
+
+## Stale-Record And Rollback Manifest Contract
+
+The current strict AAD building block binds record version/counter into AAD. This detects cross-vault, cross-record, cross-type, and cross-version substitution for a given ciphertext/AAD context, but it does not prove freshness by itself.
+
+Full stale-record and rollback handling is a future manifest/storage responsibility. A future local manifest or vault index must:
+
+- track the latest trusted record version/counter per record id,
+- be integrity-protected,
+- bind vault id, provider suite id, header commitment context, manifest policy id/version, and record namespace,
+- update atomically with record writes or define a crash-safe recovery strategy,
+- reject or quarantine records with a lower version/counter than the latest trusted local manifest state,
+- reject or quarantine duplicate record ids with conflicting latest counters,
+- define conflict handling before sync or import behavior is enabled.
+
+For v1 local-only persistence, Skald must distinguish:
+
+- intra-vault substitution detection via AAD,
+- stale-record detection against the latest trusted local manifest state,
+- full storage rollback resistance, which is not claimed unless an external anchor, trusted monotonic counter, append-only log, remote checkpoint, or other anti-rollback anchor is designed.
+
+This branch does not implement a manifest reader, manifest writer, storage index, vault container, persistence path, conflict resolver, sync path, or anti-rollback anchor. Provider selectability remains blocked until manifest/storage stale-record policy is implemented and tested and crash/corruption/partial-write behavior is reviewed.
+
+## Legacy Dependency/Test-Harness KAT Requirements
+
+The current dependency-level and test-only harness evidence includes fixed public vectors through the Skald-owned request/result model:
 
 - Argon2id KDF:
   - Argon2id only.
@@ -102,7 +183,7 @@ Future provider implementation must pass positive KATs through the Skald-owned i
   - public vector requirement.
   - fixed nonce allowed only through a test/KAT-only path.
 
-The current dependency-level vectors are necessary evidence, but they are not provider approval because they do not exercise the Skald-owned request/result/error boundary.
+The current dependency-level and test-harness vectors are necessary evidence, but they are not provider approval because they do not exercise the future full Skald-owned production provider pipeline or manifest/storage policy. They also do not replace the randomized AEAD behavioral provider KAT strategy above, and their fixed-nonce vector shape must not be copied into ordinary production record encryption.
 
 ## Negative KAT Requirements
 
@@ -149,14 +230,18 @@ Before a future executable provider can be approved for vault implementation:
 
 1. Final Argon2id parameter policy must be approved per supported platform, with Android compatibility based on supported OS baseline, runtime provider/primitive/randomness checks, and fail-closed behavior rather than mandatory exhaustive device-class coverage.
 2. The executable provider must expose no Tink, Bouncy Castle, JCA/JCE, BDK, platform, file, settings, network, or process types through public common models.
-3. Positive KDF and AEAD provider KATs must pass on desktop and Android runtime.
-4. Negative misuse KATs must pass and fail closed.
-5. Redaction tests must pass.
-6. Unsupported algorithm and nonce-policy-bypass tests must pass.
-7. Provider errors must be Skald-owned and redacted.
-8. Tink keyset or raw AEAD key material handling must be reviewed.
-9. Lock/session lifecycle behavior must be tested.
-10. Vault container and storage approval must remain separate.
+3. Deterministic vector KATs must pass for passphrase policy, Argon2id, canonical header bytes, HKDF info/output, HMAC header commitment, and strict AAD.
+4. Randomized AEAD behavioral KATs must pass without requiring fixed ciphertext hex.
+5. Integrated verification-order KATs must prove header commitment before record decrypt and reject decrypt when commitment verification fails.
+6. Provider-level KATs must pass on desktop and Android runtime.
+7. Negative misuse KATs must pass and fail closed.
+8. Redaction tests must pass.
+9. Unsupported algorithm and nonce-policy-bypass tests must pass.
+10. Provider errors must be Skald-owned and redacted.
+11. Tink keyset or raw AEAD key material handling must be reviewed.
+12. Lock/session lifecycle behavior must be tested.
+13. Vault container and storage approval must remain separate.
+14. Stale-record manifest/storage policy, atomicity, crash recovery, and rollback claims must be reviewed before persistence.
 
 Runtime randomness availability must be reviewed as a provider-selection and vault-creation gate, but it is not itself a provider KAT and must not be used to bypass provider KAT requirements.
 
@@ -221,7 +306,9 @@ The Android connected run executed the expanded instrumented suite on Pixel 10 P
 
 `EncryptedVaultReadinessPolicy` records `ProviderKatContractModeled` as candidate-reviewed only and records the test-only provider harness as non-production capability. `ProviderBoundaryKnownAnswerVectorsPassed` remains absent, `ProviderKnownAnswerVectorsMissing` remains a blocker, production persistence remains disabled, and mainnet remains disabled.
 
-`VaultCryptoDependencyProbeCatalog` records `ProviderKatContractModeled` and `TestOnlyProviderKatHarnessPresent` for the Tink plus Bouncy Castle candidate, but it also records `ProviderLevelKatExecutionMissing` for the production provider path. The candidate remains dependency-reviewed, provider-contract-modeled, and test-harness-validated only; it is not production-approved.
+`EncryptedVaultReadinessPolicy` also records `ProviderLevelKatStrategyContractModeled`, `RandomizedAeadBehavioralKatPolicyModeled`, `IntegratedVerificationOrderKatPolicyModeled`, and `StaleRecordManifestPolicyModeled` as candidate-reviewed/model-only evidence. It records `ProviderLevelKatStrategyContractOnly`, `RandomizedAeadBehavioralKatExecutionMissing`, `IntegratedVerificationOrderKatExecutionMissing`, `StaleRecordManifestPolicyImplementationMissing`, and `ManifestStorageAtomicityReviewMissing` as blockers.
+
+`VaultCryptoDependencyProbeCatalog` records `ProviderKatContractModeled`, `ProviderLevelKatStrategyContractModeled`, `RandomizedAeadBehavioralKatPolicyModeled`, `IntegratedVerificationOrderKatPolicyModeled`, `StaleRecordManifestPolicyModeled`, and `TestOnlyProviderKatHarnessPresent` for the Tink plus Bouncy Castle candidate, but it also records `ProviderLevelKatExecutionMissing`, randomized AEAD behavioral KAT execution missing, integrated verification-order KAT execution missing, stale-record manifest policy implementation missing, and manifest/storage atomicity review missing for the production provider path. The candidate remains dependency-reviewed, provider-contract-modeled, and test-harness-validated only; it is not production-approved.
 
 `VaultCryptoProviderSelectionRegistry` records Tink plus Bouncy Castle as a blocked future candidate. Dependency-level KAT evidence and test-provider KAT evidence are retained as evidence fields but do not satisfy production provider selection.
 

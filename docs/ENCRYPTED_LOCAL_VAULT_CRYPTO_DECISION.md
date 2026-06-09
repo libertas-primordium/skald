@@ -391,7 +391,11 @@ Associated data must not contain secret payloads, wallet labels, transaction not
 
 If future implementation needs to authenticate sensitive metadata, that metadata must be encrypted as part of the record payload or encrypted catalog.
 
-AAD mismatch must fail closed for copied ciphertext between vaults, copied ciphertext between record IDs, copied ciphertext between record types, wrong header commitment context, wrong policy version, and stale-record replay where the future version/counter policy rejects stale data. Strict AAD serialization and Tink record AEAD behavior are now still-disabled building blocks. Full stale-record/rollback enforcement remains deferred to a future trusted manifest, vault index, storage layer, or sync conflict policy.
+AAD mismatch must fail closed for copied ciphertext between vaults, copied ciphertext between record IDs, copied ciphertext between record types, wrong header commitment context, wrong policy version, and stale-record replay where the future version/counter policy rejects stale data. Strict AAD serialization and Tink record AEAD behavior are now still-disabled building blocks.
+
+The v1 provider-level KAT strategy treats record AEAD ciphertext as randomized because Tink chooses XChaCha20-Poly1305 nonces internally. Provider-level KATs must therefore require deterministic passphrase/Argon2id/canonical-header/HKDF/HMAC/strict-AAD vectors and behavioral AEAD checks, not fixed ciphertext hex. Future provider-order KATs must prove header commitment verification before record decrypt and reject record decrypt when header commitment fails.
+
+Full stale-record/rollback enforcement remains deferred to a future trusted manifest, vault index, storage layer, or sync conflict policy. The future manifest must track latest trusted record version/counter per record id, bind vault id, provider suite id, header commitment context, manifest policy id/version, and record namespace, be integrity-protected, update atomically with records or define crash-safe recovery, and reject or quarantine stale/lower-counter records and conflicting duplicate record ids. Skald must not claim full rollback resistance against a rolled-back local storage directory without an external anchor, trusted monotonic counter, append-only log, remote checkpoint, or equivalent anti-rollback anchor.
 
 ## Nonce Strategy Decision
 

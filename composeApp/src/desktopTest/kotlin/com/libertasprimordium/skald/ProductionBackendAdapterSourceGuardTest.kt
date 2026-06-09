@@ -829,6 +829,53 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun providerKatAndStaleRecordContractsDoNotAddProviderManifestOrStorageWriters() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security"),
+            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security"),
+            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""\bProductionVaultCryptoProvider\b"""),
+            Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
+            Regex("""\bVaultManifest(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bManifest(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bStorageIndex(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bVaultContainer(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bcreateVault\("""),
+            Regex("""\bopenVault\("""),
+            Regex("""\bpersistVault\("""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteRecord\("""),
+            Regex("""\breadRecord\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""import\s+android\.content\.SharedPreferences"""),
+            Regex("""import\s+androidx\.datastore"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bopenFileOutput\("""),
+        )
+        val offenders = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Provider KAT/stale-record contracts must not add provider, manifest, container, or storage writers: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),

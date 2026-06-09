@@ -12,15 +12,20 @@ import com.libertasprimordium.skald.security.ProductionProviderAcceptanceGate
 import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderCanonicalHeaderEncodingRule
 import com.libertasprimordium.skald.security.ProductionProviderConstructionContractStatus
+import com.libertasprimordium.skald.security.ProductionProviderDeterministicKatVector
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentField
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentPrimitive
+import com.libertasprimordium.skald.security.ProductionProviderIntegratedVerificationOrderKatStep
 import com.libertasprimordium.skald.security.ProductionProviderKeyExpansionPrimitive
 import com.libertasprimordium.skald.security.ProductionProviderKeySeparationLabel
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
+import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
+import com.libertasprimordium.skald.security.ProductionProviderStaleRecordManifestBinding
+import com.libertasprimordium.skald.security.ProductionProviderStaleRecordManifestRequirement
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
 import com.libertasprimordium.skald.security.ProductionProviderTestVectorContractStatus
@@ -1244,6 +1249,192 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.staleRecordEnforcementDeferredToManifestOrStorage)
         assertFalse(policy.productionProviderWired)
         assertFalse(policy.productionAeadExecutionImplemented)
+    }
+
+    @Test
+    fun providerLevelKatStrategyAndRandomizedAeadPolicyAreModeledOnly() {
+        val strategy = contract.providerLevelKatStrategyPolicy
+        val randomizedAead = contract.randomizedAeadBehavioralKatPolicy
+
+        assertEquals("skald-vault-v1-provider-level-kat-strategy-v1", strategy.policyId)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, strategy.contractStatus)
+        assertEquals(ProductionProviderDeterministicKatVector.entries.toSet(), strategy.deterministicVectorsRequired)
+        assertContains(
+            strategy.deterministicVectorsRequired,
+            ProductionProviderDeterministicKatVector.PassphrasePolicyNormalizationVector,
+        )
+        assertContains(
+            strategy.deterministicVectorsRequired,
+            ProductionProviderDeterministicKatVector.Argon2idRootMaterialFixture,
+        )
+        assertContains(
+            strategy.deterministicVectorsRequired,
+            ProductionProviderDeterministicKatVector.StrictAadByteVector,
+        )
+        assertEquals(
+            ProductionProviderRandomizedAeadBehavioralKatCheck.entries.toSet(),
+            strategy.randomizedAeadBehavioralChecksRequired,
+        )
+        assertFalse(strategy.fixedCiphertextHexRequiredForRandomizedAead)
+        assertTrue(strategy.deterministicAadHexRequired)
+        assertTrue(strategy.providerLevelKatsMustRunOnDesktopJvm)
+        assertTrue(strategy.providerLevelKatsMustRunOnAndroid)
+        assertFalse(strategy.providerKatCompletionImpliesStorageApproval)
+        assertFalse(strategy.productionProviderKatExecutionImplemented)
+
+        assertEquals("skald-vault-v1-randomized-aead-behavioral-kat-v1", randomizedAead.policyId)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, randomizedAead.contractStatus)
+        assertEquals(EncryptedVaultAeadAlgorithm.XChaCha20Poly1305, randomizedAead.primitive)
+        assertTrue(randomizedAead.tinkChoosesNonceInternally)
+        assertFalse(randomizedAead.fixedCiphertextHexRequired)
+        assertTrue(randomizedAead.deterministicAadHexRequired)
+        assertContains(
+            randomizedAead.behavioralChecksRequired,
+            ProductionProviderRandomizedAeadBehavioralKatCheck.EncryptDecryptRoundTrip,
+        )
+        assertContains(
+            randomizedAead.behavioralChecksRequired,
+            ProductionProviderRandomizedAeadBehavioralKatCheck.CiphertextNotTreatedAsDeterministic,
+        )
+        assertContains(
+            randomizedAead.behavioralChecksRequired,
+            ProductionProviderRandomizedAeadBehavioralKatCheck.WrongHeaderCommitmentContextFails,
+        )
+        assertFalse(randomizedAead.publicDeterministicNonceTestModeApproved)
+        assertFalse(randomizedAead.productionProviderBehavioralKatExecutionImplemented)
+    }
+
+    @Test
+    fun verificationOrderKatRequiresHeaderCommitmentBeforeRecordDecrypt() {
+        val policy = contract.integratedVerificationOrderKatPolicy
+
+        assertEquals("skald-vault-v1-integrated-verification-order-kat-v1", policy.policyId)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(
+            listOf(
+                ProductionProviderIntegratedVerificationOrderKatStep.ValidatePassphrasePolicy,
+                ProductionProviderIntegratedVerificationOrderKatStep.DeriveArgon2idRootMaterial,
+                ProductionProviderIntegratedVerificationOrderKatStep.DeriveHkdfSubkeys,
+                ProductionProviderIntegratedVerificationOrderKatStep.CanonicalizeHeaderBytes,
+                ProductionProviderIntegratedVerificationOrderKatStep.VerifyHmacHeaderCommitment,
+                ProductionProviderIntegratedVerificationOrderKatStep.ConstructRecordAeadAfterHeaderCommitment,
+                ProductionProviderIntegratedVerificationOrderKatStep.SerializeStrictAad,
+                ProductionProviderIntegratedVerificationOrderKatStep.DecryptRecord,
+                ProductionProviderIntegratedVerificationOrderKatStep.RejectRecordDecryptWhenHeaderCommitmentFails,
+            ),
+            policy.orderedSteps,
+        )
+        assertTrue(policy.headerCommitmentMustPrecedeRecordDecrypt)
+        assertTrue(policy.recordDecryptRejectedWhenHeaderCommitmentFails)
+        assertFalse(policy.fullProviderIntegrationImplemented)
+        assertFalse(policy.productionVerificationOrderKatsImplemented)
+        assertTrue(
+            policy.orderedSteps.indexOf(
+                ProductionProviderIntegratedVerificationOrderKatStep.VerifyHmacHeaderCommitment,
+            ) <
+                policy.orderedSteps.indexOf(
+                    ProductionProviderIntegratedVerificationOrderKatStep.ConstructRecordAeadAfterHeaderCommitment,
+                ),
+        )
+    }
+
+    @Test
+    fun staleRecordManifestPolicyIsModeledButNotImplemented() {
+        val policy = contract.staleRecordManifestPolicy
+
+        assertEquals("skald-vault-v1-stale-record-manifest-policy-v1", policy.policyId)
+        assertEquals("skald-vault-v1-local-manifest-storage-policy-v1", policy.manifestStoragePolicyId)
+        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertTrue(policy.recordVersionCounterBoundIntoAad)
+        assertEquals(ProductionProviderStaleRecordManifestBinding.entries.toSet(), policy.bindings)
+        assertContains(policy.bindings, ProductionProviderStaleRecordManifestBinding.VaultId)
+        assertContains(policy.bindings, ProductionProviderStaleRecordManifestBinding.ProviderSuiteId)
+        assertContains(policy.bindings, ProductionProviderStaleRecordManifestBinding.HeaderCommitmentContext)
+        assertContains(
+            policy.bindings,
+            ProductionProviderStaleRecordManifestBinding.LatestTrustedRecordVersionCounterByRecordId,
+        )
+        assertEquals(ProductionProviderStaleRecordManifestRequirement.entries.toSet(), policy.requirements)
+        assertContains(
+            policy.requirements,
+            ProductionProviderStaleRecordManifestRequirement.TracksLatestTrustedCounterPerRecordId,
+        )
+        assertContains(
+            policy.requirements,
+            ProductionProviderStaleRecordManifestRequirement.AtomicUpdateOrCrashSafeRecovery,
+        )
+        assertContains(
+            policy.requirements,
+            ProductionProviderStaleRecordManifestRequirement.NoGlobalRollbackClaimWithoutAnchor,
+        )
+        assertContains(
+            policy.requirements,
+            ProductionProviderStaleRecordManifestRequirement.NoManifestReadWriteInThisBranch,
+        )
+        assertFalse(policy.manifestReadWriteImplemented)
+        assertFalse(policy.storageIndexReadWriteImplemented)
+        assertFalse(policy.staleRecordEnforcementImplemented)
+        assertFalse(policy.fullLocalDirectoryRollbackResistanceClaimed)
+        assertFalse(policy.externalOrTrustedMonotonicAnchorDesigned)
+        assertTrue(policy.antiRollbackAnchorRequiredForGlobalRollbackResistance)
+        assertTrue(policy.providerSelectabilityBlockedUntilImplementedAndTested)
+    }
+
+    @Test
+    fun providerKatAndManifestEvidenceMustBeImplementedNotMerelyDocumented() {
+        val gates = setOf(
+            ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved,
+            ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved,
+            ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved,
+            ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved,
+        )
+        val states = listOf(
+            ProductionProviderAcceptanceEvidenceState.Missing to
+                ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+            ProductionProviderAcceptanceEvidenceState.Unknown to
+                ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+            ProductionProviderAcceptanceEvidenceState.Failed to
+                ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+            ProductionProviderAcceptanceEvidenceState.Unsupported to
+                ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly to
+                ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+
+        gates.forEach { gate ->
+            states.forEach { (state, blocker) ->
+                assertGateBlocks(gate = gate, state = state, blocker = blocker)
+            }
+        }
+    }
+
+    @Test
+    fun implementedRecordAeadEvidenceDoesNotBypassKatOrManifestGates() {
+        val evidence = ProductionProviderAcceptanceEvidence(
+            gateStates = ProductionProviderAcceptanceGate.entries.associateWith {
+                ProductionProviderAcceptanceEvidenceState.Satisfied
+            } + mapOf(
+                ProductionProviderAcceptanceGate.AeadAadPolicyApproved to
+                    ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
+                    ProductionProviderAcceptanceEvidenceState.Satisfied,
+                ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved to
+                    ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved to
+                    ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved to
+                    ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
+                    ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            ),
+        )
+
+        val assessment = contract.assess(evidence)
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
     }
 
     @Test

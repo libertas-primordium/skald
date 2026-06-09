@@ -151,6 +151,10 @@ enum class EncryptedVaultRequirement(val label: String) {
     DisabledProviderBoundaryModeled("disabled provider boundary modeled"),
     ProviderSelectionBoundaryModeled("provider selection boundary modeled"),
     ProviderKatContractModeled("provider-level KAT contract modeled"),
+    ProviderLevelKatStrategyContractModeled("provider-level KAT strategy contract modeled"),
+    RandomizedAeadBehavioralKatPolicyModeled("randomized AEAD behavioral KAT policy modeled"),
+    IntegratedVerificationOrderKatPolicyModeled("integrated verification-order KAT policy modeled"),
+    StaleRecordManifestPolicyModeled("stale-record and rollback manifest policy modeled"),
     KdfCalibrationPolicyModeled("KDF calibration policy modeled"),
     KdfCandidateParameterPolicyModeled("candidate KDF parameter policy modeled"),
     AndroidCompatibilityEntropyPolicyModeled("Android compatibility and entropy policy modeled"),
@@ -279,6 +283,11 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     KdfParametersUncalibrated("KDF parameters uncalibrated"),
     AeadDependencyUnverified("AEAD dependency unverified"),
     ProviderKnownAnswerVectorsMissing("provider known-answer vectors missing"),
+    ProviderLevelKatStrategyContractOnly("provider-level KAT strategy is contract/model evidence only"),
+    RandomizedAeadBehavioralKatExecutionMissing("randomized AEAD behavioral KAT execution missing"),
+    IntegratedVerificationOrderKatExecutionMissing("integrated verification-order KAT execution missing"),
+    StaleRecordManifestPolicyImplementationMissing("stale-record and rollback manifest policy unimplemented"),
+    ManifestStorageAtomicityReviewMissing("manifest/storage atomicity and crash-recovery review missing"),
     KnownAnswerVectorsMissing("known-answer vectors missing"),
     VaultContainerFormatAbsent("vault container format absent"),
     LockSessionLifecycleUntested("lock/session lifecycle untested"),
@@ -316,6 +325,19 @@ enum class EncryptedVaultCapability(
         enabledInProduction = true,
     ),
     ProviderKatContractModel("provider-level KAT contract model", enabledInProduction = true),
+    ProviderLevelKatStrategyContractModel("provider-level KAT strategy contract model", enabledInProduction = true),
+    RandomizedAeadBehavioralKatPolicyModel(
+        "randomized AEAD behavioral KAT policy model",
+        enabledInProduction = true,
+    ),
+    IntegratedVerificationOrderKatPolicyModel(
+        "integrated verification-order KAT policy model",
+        enabledInProduction = true,
+    ),
+    StaleRecordManifestPolicyModel(
+        "stale-record and rollback manifest policy model",
+        enabledInProduction = true,
+    ),
     ProviderSelectionBoundaryModel("provider selection boundary model", enabledInProduction = true),
     AndroidCompatibilityEntropyPolicyModel(
         "Android compatibility and entropy policy model",
@@ -535,6 +557,22 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.ProviderLevelKatStrategyContractModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.RandomizedAeadBehavioralKatPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.IntegratedVerificationOrderKatPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.StaleRecordManifestPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -697,6 +735,11 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.KdfParametersUncalibrated,
             EncryptedVaultBlockingIssue.AeadDependencyUnverified,
             EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing,
+            EncryptedVaultBlockingIssue.ProviderLevelKatStrategyContractOnly,
+            EncryptedVaultBlockingIssue.RandomizedAeadBehavioralKatExecutionMissing,
+            EncryptedVaultBlockingIssue.IntegratedVerificationOrderKatExecutionMissing,
+            EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing,
+            EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing,
             EncryptedVaultBlockingIssue.KnownAnswerVectorsMissing,
             EncryptedVaultBlockingIssue.VaultContainerFormatAbsent,
             EncryptedVaultBlockingIssue.LockSessionLifecycleUntested,
@@ -719,8 +762,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, a disabled provider boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD building blocks now exist and match fixed non-secret tests where applicable, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, vault storage, key generation, secure storage success path, metadata persistence, or provider-selectable record AEAD path is enabled.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, full key commitment/header authentication integration, manifest-backed stale-record policy, production container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, provider-level KAT strategy, randomized AEAD behavioral KAT policy, integrated verification-order KAT policy, stale-record manifest policy, a disabled provider boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD building blocks now exist and match fixed non-secret tests where applicable, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, manifest read/write, vault storage, key generation, secure storage success path, metadata persistence, or provider-selectable record AEAD path is enabled.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT strategy contract for deterministic vectors plus randomized AEAD behavioral checks, a verification-order KAT contract requiring header commitment before record decrypt, a stale-record manifest contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation on desktop and Android, full key commitment/header authentication integration, manifest-backed stale-record policy, production container format, manifest/storage atomicity and crash recovery, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 
