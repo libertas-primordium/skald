@@ -183,7 +183,7 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     ProductionProviderAcceptanceContractIncomplete("production provider acceptance contract incomplete"),
     VaultHeaderCommitmentUnimplemented("vault header commitment unimplemented"),
     PassphraseEncodingPolicyUnapproved("passphrase encoding policy unapproved"),
-    TinkRawKeyFeasibilityUnknown("Tink raw-key feasibility unknown"),
+    TinkRawKeyFeasibilityProbeOnly("Tink raw-key feasibility probe is test-scope evidence only"),
     Argon2idBoundedCalibrationUnapproved("bounded Argon2id calibration unapproved"),
     KdfParametersUncalibrated("KDF parameters uncalibrated"),
     AeadDependencyUnverified("AEAD dependency unverified"),
@@ -463,7 +463,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete,
             EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented,
             EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved,
-            EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityUnknown,
+            EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly,
             EncryptedVaultBlockingIssue.Argon2idBoundedCalibrationUnapproved,
             EncryptedVaultBlockingIssue.KdfParametersUncalibrated,
             EncryptedVaultBlockingIssue.AeadDependencyUnverified,
@@ -491,7 +491,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
         implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, and split-provider review evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, passphrase encoding policy, Tink raw-key feasibility policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, key commitment/header authentication, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, a test-scope Tink raw-key public API feasibility probe, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, passphrase encoding policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, key commitment/header authentication, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 

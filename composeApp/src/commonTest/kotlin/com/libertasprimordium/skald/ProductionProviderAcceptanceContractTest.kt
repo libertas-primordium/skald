@@ -169,6 +169,12 @@ class ProductionProviderAcceptanceContractTest {
 
     @Test
     fun tinkRawKeyFeasibilityEvidenceMustBeKnownAndSuccessful() {
+        val missing = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved,
+                ProductionProviderAcceptanceEvidenceState.Missing,
+            ),
+        )
         val unknown = contract.assess(
             evidenceWith(
                 ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved,
@@ -181,6 +187,16 @@ class ProductionProviderAcceptanceContractTest {
                 ProductionProviderAcceptanceEvidenceState.Failed,
             ),
         )
+        val inconclusive = contract.assess(
+            evidenceWith(
+                ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved,
+                ProductionProviderAcceptanceEvidenceState.Unsupported,
+            ),
+        )
+
+        assertFalse(missing.allRequiredGatesSatisfied)
+        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
+        assertFalse(missing.productionProviderSelectable)
 
         assertFalse(unknown.allRequiredGatesSatisfied)
         assertContains(unknown.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
@@ -189,6 +205,27 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(failed.allRequiredGatesSatisfied)
         assertContains(failed.blockers, ProductionProviderAcceptanceBlocker.FailedGateEvidence)
         assertFalse(failed.productionPersistenceAllowed)
+
+        assertFalse(inconclusive.allRequiredGatesSatisfied)
+        assertContains(inconclusive.blockers, ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence)
+        assertFalse(inconclusive.productionProviderSelectable)
+    }
+
+    @Test
+    fun feasibleTinkRawKeyEvidenceAloneDoesNotSelectProvider() {
+        val assessment = contract.assess(
+            ProductionProviderAcceptanceEvidence(
+                gateStates = mapOf(
+                    ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
+                        ProductionProviderAcceptanceEvidenceState.Satisfied,
+                ),
+            ),
+        )
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
     }
 
     @Test
@@ -427,8 +464,47 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.internalUnsupportedReflectiveApisAllowed)
         assertFalse(policy.fallbackEncryptedKeysetModelImplemented)
         assertFalse(policy.productionAeadExecutionImplemented)
-        assertEquals(ProductionProviderTinkRawKeyFeasibilityStatus.Unknown, policy.feasibilityStatus)
-        assertFalse(policy.feasibilityStatus.approvedForProductionProvider)
+        assertEquals(
+            ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
+            policy.feasibilityStatus,
+        )
+        assertTrue(policy.feasibilityStatus.satisfiesFeasibilityGate)
+        assertEquals(
+            "caller-supplied fixed bytes -> public Tink secret-byte wrapper -> " +
+                "public Tink XChaCha20-Poly1305 key object -> transient in-memory Tink keyset handle " +
+                "import -> public AEAD primitive lookup",
+            policy.testedPublicApiPath,
+        )
+        assertTrue(policy.transientInMemoryTinkKeysetHandleRequired)
+        assertFalse(policy.persistedTinkKeysetRequired)
+        assertFalse(policy.randomTinkGeneratedVaultKeyRequired)
+    }
+
+    @Test
+    fun tinkRawKeyFeasibilityOutcomesAreExactAndFailClosedExceptPublicApiSuccess() {
+        assertTrue(
+            ProductionProviderTinkRawKeyFeasibilityStatus
+                .FEASIBLE_PUBLIC_RAW_KEY_API
+                .satisfiesFeasibilityGate,
+        )
+        assertFalse(
+            ProductionProviderTinkRawKeyFeasibilityStatus
+                .NOT_FEASIBLE_WITH_CURRENT_TINK_API
+                .satisfiesFeasibilityGate,
+        )
+        assertFalse(
+            ProductionProviderTinkRawKeyFeasibilityStatus
+                .INCONCLUSIVE_REQUIRES_HUMAN_REVIEW
+                .satisfiesFeasibilityGate,
+        )
+        assertEquals(
+            setOf(
+                "FEASIBLE_PUBLIC_RAW_KEY_API",
+                "NOT_FEASIBLE_WITH_CURRENT_TINK_API",
+                "INCONCLUSIVE_REQUIRES_HUMAN_REVIEW",
+            ),
+            ProductionProviderTinkRawKeyFeasibilityStatus.entries.map { it.name }.toSet(),
+        )
     }
 
     @Test

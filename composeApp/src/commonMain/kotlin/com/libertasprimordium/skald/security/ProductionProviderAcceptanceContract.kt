@@ -178,12 +178,20 @@ data class ProductionProviderPassphraseEncodingPolicy(
 
 enum class ProductionProviderTinkRawKeyFeasibilityStatus(
     val label: String,
-    val approvedForProductionProvider: Boolean,
+    val satisfiesFeasibilityGate: Boolean,
 ) {
-    Unknown("unknown", approvedForProductionProvider = false),
-    FeasibleWithPublicSupportedApi("feasible with public supported API", approvedForProductionProvider = true),
-    FailedPublicApiUnavailable("failed; public supported raw-key API unavailable", approvedForProductionProvider = false),
-    RejectedInternalApiOnly("rejected; internal or unsupported API only", approvedForProductionProvider = false),
+    FEASIBLE_PUBLIC_RAW_KEY_API(
+        label = "public supported API constructs XChaCha20-Poly1305 from caller-supplied raw key bytes",
+        satisfiesFeasibilityGate = true,
+    ),
+    NOT_FEASIBLE_WITH_CURRENT_TINK_API(
+        label = "current Tink API does not provide a clean public raw-key construction path",
+        satisfiesFeasibilityGate = false,
+    ),
+    INCONCLUSIVE_REQUIRES_HUMAN_REVIEW(
+        label = "API path is ambiguous, deprecated, experimental, unstable, or poorly documented",
+        satisfiesFeasibilityGate = false,
+    ),
 }
 
 data class ProductionProviderTinkRawKeyHandlingPolicy(
@@ -198,6 +206,10 @@ data class ProductionProviderTinkRawKeyHandlingPolicy(
     val fallbackEncryptedKeysetModelImplemented: Boolean,
     val productionAeadExecutionImplemented: Boolean,
     val feasibilityStatus: ProductionProviderTinkRawKeyFeasibilityStatus,
+    val testedPublicApiPath: String,
+    val transientInMemoryTinkKeysetHandleRequired: Boolean,
+    val persistedTinkKeysetRequired: Boolean,
+    val randomTinkGeneratedVaultKeyRequired: Boolean,
 )
 
 data class ProductionProviderArgon2idAcceptancePolicy(
@@ -284,6 +296,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.ForbiddenRandomApisGuarded to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.AndroidOptionalWrappingSeparateFromPassphrase to
+                        ProductionProviderAcceptanceEvidenceState.Satisfied,
+                    ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.ReleaseReadinessExcludesDebugTestProviders to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
@@ -473,7 +487,14 @@ data class ProductionProviderAcceptanceContract(
                     internalUnsupportedReflectiveApisAllowed = false,
                     fallbackEncryptedKeysetModelImplemented = false,
                     productionAeadExecutionImplemented = false,
-                    feasibilityStatus = ProductionProviderTinkRawKeyFeasibilityStatus.Unknown,
+                    feasibilityStatus =
+                        ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
+                    testedPublicApiPath = "caller-supplied fixed bytes -> public Tink secret-byte wrapper -> " +
+                        "public Tink XChaCha20-Poly1305 key object -> transient in-memory Tink keyset handle " +
+                        "import -> public AEAD primitive lookup",
+                    transientInMemoryTinkKeysetHandleRequired = true,
+                    persistedTinkKeysetRequired = false,
+                    randomTinkGeneratedVaultKeyRequired = false,
                 ),
                 aeadPolicy = ProductionProviderAeadAcceptancePolicy(
                     primitive = EncryptedVaultAeadAlgorithm.XChaCha20Poly1305,
