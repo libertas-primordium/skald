@@ -1107,6 +1107,7 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.internalUnsupportedReflectiveApisAllowed)
         assertFalse(policy.fallbackEncryptedKeysetModelImplemented)
         assertFalse(policy.productionAeadExecutionImplemented)
+        assertTrue(policy.stillDisabledRecordAeadBuildingBlockImplemented)
         assertEquals(
             ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
             policy.desktopFeasibilityStatus,
@@ -1193,7 +1194,7 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(1, policy.aadPolicyVersion)
         assertEquals("skald-vault-v1-record-format-v1", policy.recordFormatPolicyId)
         assertEquals(1, policy.recordFormatPolicyVersion)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertTrue(policy.nonKeyCommitting)
         assertFalse(policy.successfulDecryptAloneProvesCorrectVaultKey)
         assertTrue(policy.vaultLevelKeyCommitmentRequiredBeforeRecordDecrypt)
@@ -1205,6 +1206,11 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.VaultId)
         assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordFormatPolicyId)
         assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.AadPolicyId)
+        assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.KeyExpansionPolicyId)
+        assertContains(
+            policy.strictAadBindingFields,
+            ProductionProviderAadBindingField.HeaderCommitmentPrimitivePolicyId,
+        )
         assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordType)
         assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordId)
         assertContains(policy.strictAadBindingFields, ProductionProviderAadBindingField.RecordVersionOrCounter)
@@ -1232,6 +1238,11 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(ProductionProviderTamperCoverage.entries.toSet(), policy.requiredTamperCoverage)
         assertFalse(policy.rawKeyFeasibilityBypassesHeaderCommitment)
         assertTrue(policy.wrongPassphraseResolvedByHeaderCommitmentBeforeRecordDecrypt)
+        assertTrue(policy.strictAadSerializationImplemented)
+        assertTrue(policy.recordAeadBuildingBlockImplemented)
+        assertTrue(policy.recordVersionCounterBoundIntoAad)
+        assertTrue(policy.staleRecordEnforcementDeferredToManifestOrStorage)
+        assertFalse(policy.productionProviderWired)
         assertFalse(policy.productionAeadExecutionImplemented)
     }
 

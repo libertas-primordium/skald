@@ -181,6 +181,12 @@ enum class EncryptedVaultRequirement(val label: String) {
         "HMAC-SHA-256 header commitment implemented and vector-tested",
     ),
     StrictAadContractModeled("strict AEAD associated-data contract modeled"),
+    StrictAadSerializationImplementedAndTested(
+        "strict AEAD associated-data serialization implemented and tested",
+    ),
+    TinkRecordAeadBuildingBlockImplementedAndTested(
+        "Tink XChaCha20-Poly1305 record AEAD building block implemented and tested",
+    ),
     TinkNonKeyCommitmentMitigationModeled("Tink non-key-commitment mitigation modeled"),
     PassphraseEncodingPolicyModeled("passphrase encoding policy modeled"),
     PassphrasePolicyValidationImplementedAndTested(
@@ -252,7 +258,15 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     KeySeparationLabelsProviderIntegrationMissing(
         "key-separation labels are not wired into a provider",
     ),
-    StrictAadContractUnimplemented("strict AEAD associated-data contract unimplemented"),
+    StrictAadProviderIntegrationMissing(
+        "strict AEAD associated-data building block is not wired into a provider",
+    ),
+    TinkRecordAeadProviderIntegrationMissing(
+        "Tink record AEAD building block is not wired into a provider",
+    ),
+    StaleRecordManifestIntegrationMissing(
+        "record version/counter binding is not backed by a trusted manifest or storage index",
+    ),
     PassphraseEncodingPolicyUnapproved("passphrase encoding policy unapproved"),
     PassphrasePolicyProviderIntegrationMissing(
         "passphrase policy validation is not wired into vault creation or unlock",
@@ -353,6 +367,14 @@ enum class EncryptedVaultCapability(
         enabledInProduction = false,
     ),
     StrictAadContractPolicyModel("strict AEAD associated-data contract policy model", enabledInProduction = true),
+    StrictAadSerializationBuildingBlock(
+        "still-disabled strict AEAD associated-data serialization building block",
+        enabledInProduction = false,
+    ),
+    TinkRecordAeadBuildingBlock(
+        "still-disabled Tink XChaCha20-Poly1305 record AEAD building block",
+        enabledInProduction = false,
+    ),
     TinkNonKeyCommitmentMitigationModel(
         "Tink non-key-commitment mitigation policy model",
         enabledInProduction = true,
@@ -601,6 +623,14 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.StrictAadSerializationImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
+            EncryptedVaultRequirement.TinkRecordAeadBuildingBlockImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
             EncryptedVaultRequirement.TinkNonKeyCommitmentMitigationModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -657,7 +687,9 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutProviderIntegrationMissing,
             EncryptedVaultBlockingIssue.CanonicalHeaderSerializerProviderIntegrationMissing,
             EncryptedVaultBlockingIssue.KeySeparationLabelsProviderIntegrationMissing,
-            EncryptedVaultBlockingIssue.StrictAadContractUnimplemented,
+            EncryptedVaultBlockingIssue.StrictAadProviderIntegrationMissing,
+            EncryptedVaultBlockingIssue.TinkRecordAeadProviderIntegrationMissing,
+            EncryptedVaultBlockingIssue.StaleRecordManifestIntegrationMissing,
             EncryptedVaultBlockingIssue.PassphrasePolicyProviderIntegrationMissing,
             EncryptedVaultBlockingIssue.Argon2idRootDerivationProviderIntegrationMissing,
             EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly,
@@ -687,8 +719,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, a disabled provider boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, and HMAC-SHA-256 header-commitment building blocks now exist and match fixed non-secret tests where applicable, but the vault is not implemented. Provider selection returns only the disabled provider. No Tink AEAD execution, vault creation, vault storage, key generation, secure storage success path, or metadata persistence is enabled.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, full key commitment/header authentication integration, production container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, a disabled provider boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD building blocks now exist and match fixed non-secret tests where applicable, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, vault storage, key generation, secure storage success path, metadata persistence, or provider-selectable record AEAD path is enabled.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, full key commitment/header authentication integration, manifest-backed stale-record policy, production container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 
