@@ -721,6 +721,10 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.Argon2idPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.Argon2idCalibrationAndMemoryFailureApproved to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented to

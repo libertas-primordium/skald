@@ -169,6 +169,18 @@ enum class EncryptedVaultRequirement(val label: String) {
     StaleRecordManifestPolicyModeled("stale-record and rollback manifest policy modeled"),
     KdfCalibrationPolicyModeled("KDF calibration policy modeled"),
     KdfCandidateParameterPolicyModeled("candidate KDF parameter policy modeled"),
+    Argon2idCalibrationPolicyImplementedAndTested(
+        "Argon2id calibration policy building block implemented and tested",
+    ),
+    Argon2idCandidateSelectionPolicyImplementedAndTested(
+        "Argon2id calibration candidate-selection policy implemented and tested",
+    ),
+    Argon2idMemoryFailureHandlingModeledAndTested(
+        "Argon2id calibration memory/execution failure handling modeled and tested",
+    ),
+    Argon2idStoredParameterNoDowngradeModeledAndTested(
+        "Argon2id stored-parameter no-downgrade behavior modeled and tested",
+    ),
     AndroidCompatibilityEntropyPolicyModeled("Android compatibility and entropy policy modeled"),
     RuntimeCryptoProviderChecksModeled("runtime crypto provider checks modeled"),
     RuntimeRandomnessProviderChecksModeled("runtime randomness provider checks modeled"),
@@ -335,6 +347,22 @@ enum class EncryptedVaultCapability(
     PlatformPolicyModel("platform policy model", enabledInProduction = true),
     Argon2idCalibrationPolicyModel("Argon2id calibration policy model", enabledInProduction = true),
     Argon2idCandidateParameterPolicyModel("Argon2id candidate parameter policy model", enabledInProduction = true),
+    Argon2idCalibrationPolicyBuildingBlock(
+        "still-disabled Argon2id calibration policy building block",
+        enabledInProduction = false,
+    ),
+    Argon2idCandidateSelectionPolicyBuildingBlock(
+        "still-disabled Argon2id candidate-selection policy building block",
+        enabledInProduction = false,
+    ),
+    Argon2idMemoryFailureHandlingModel(
+        "still-disabled Argon2id memory/execution failure model",
+        enabledInProduction = false,
+    ),
+    Argon2idStoredParameterNoDowngradeModel(
+        "still-disabled Argon2id stored-parameter no-downgrade model",
+        enabledInProduction = false,
+    ),
     AndroidArgon2idCalibrationEvidenceCaptureModel(
         "Android Argon2id calibration evidence capture model",
         enabledInProduction = true,
@@ -628,6 +656,22 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.Argon2idCalibrationPolicyImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
+            EncryptedVaultRequirement.Argon2idCandidateSelectionPolicyImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
+            EncryptedVaultRequirement.Argon2idMemoryFailureHandlingModeledAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
+            EncryptedVaultRequirement.Argon2idStoredParameterNoDowngradeModeledAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
             EncryptedVaultRequirement.AndroidCompatibilityEntropyPolicyModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -796,8 +840,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, provider-level KAT strategy, randomized AEAD behavioral KAT policy, integrated verification-order KAT policy, stale-record manifest policy, a disabled provider boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD building blocks now exist and match fixed non-secret tests where applicable. A still-disabled provider integration harness composes those building blocks and executes provider-level deterministic vectors plus randomized AEAD behavioral KATs in the required verification order, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, manifest read/write, vault storage, key generation, secure storage success path, metadata persistence, or provider-selectable record AEAD path is enabled.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, provider-level KAT strategy evidence for deterministic vectors plus randomized AEAD behavioral checks, a still-disabled verification-order KAT harness requiring header commitment before record decrypt, a stale-record manifest contract, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, selectable production provider implementation, production provider-boundary KAT validation on desktop and Android, manifest-backed stale-record policy, production container format, manifest/storage atomicity and crash recovery, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, provider-level KAT strategy, randomized AEAD behavioral KAT policy, integrated verification-order KAT policy, stale-record manifest policy, a disabled provider boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, Argon2id calibration floor/candidate-selection/memory-failure/no-downgrade policy, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, and Tink XChaCha20-Poly1305 record AEAD building blocks now exist and match fixed non-secret tests where applicable. A still-disabled provider integration harness composes those building blocks and executes provider-level deterministic vectors plus randomized AEAD behavioral KATs in the required verification order, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, manifest read/write, vault storage, key generation, secure storage success path, metadata persistence, or provider-selectable record AEAD path is enabled.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, provider-level KAT strategy evidence for deterministic vectors plus randomized AEAD behavioral checks, a still-disabled verification-order KAT harness requiring header commitment before record decrypt, a stale-record manifest contract, an implemented-still-disabled Argon2id calibration floor and candidate-selection policy, memory/execution fail-closed handling, no stored-parameter downgrade model, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, and a disabled provider-selection boundary. Production implementation remains blocked until final production KDF parameter approval, supported-platform runtime provider and randomness checks, selectable production provider implementation, production provider-boundary KAT validation on desktop and Android, manifest-backed stale-record policy, production container format, manifest/storage atomicity and crash recovery, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 

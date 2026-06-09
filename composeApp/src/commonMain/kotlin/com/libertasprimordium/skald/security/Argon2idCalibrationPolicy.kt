@@ -4,11 +4,25 @@ enum class Argon2idCalibrationImplementationStatus(
     val label: String,
     val calibrationComplete: Boolean,
     val productionKdfEnabled: Boolean,
+    val stillDisabledBuildingBlockImplemented: Boolean,
+    val candidateSelectionImplemented: Boolean,
+    val memoryFailureHandlingImplemented: Boolean,
 ) {
     PolicyPresentProbeOnly(
         label = "calibration policy present; probe only",
         calibrationComplete = false,
         productionKdfEnabled = false,
+        stillDisabledBuildingBlockImplemented = false,
+        candidateSelectionImplemented = false,
+        memoryFailureHandlingImplemented = false,
+    ),
+    StillDisabledBuildingBlockImplemented(
+        label = "calibration policy building block implemented and tested; still disabled",
+        calibrationComplete = false,
+        productionKdfEnabled = false,
+        stillDisabledBuildingBlockImplemented = true,
+        candidateSelectionImplemented = true,
+        memoryFailureHandlingImplemented = true,
     ),
 }
 
@@ -52,6 +66,11 @@ enum class Argon2idParameterPolicyStatus(
         finalProductionApproved = false,
         productionKdfEnabled = false,
     ),
+    SharedFloorPolicyImplementedStillDisabled(
+        label = "shared v1 floor policy implemented; production calibration approval blocked",
+        finalProductionApproved = false,
+        productionKdfEnabled = false,
+    ),
 }
 
 enum class Argon2idParameterTierKind(
@@ -70,7 +89,7 @@ enum class Argon2idParameterTierKind(
         universalAndroidPolicy = false,
     ),
     MobileFallbackProbeFloor(
-        label = "mobile fallback/probe floor tier",
+        label = "shared minimum floor tier",
         finalProductionApproved = false,
         universalAndroidPolicy = false,
     ),
@@ -113,6 +132,7 @@ enum class Argon2idParameterApprovalBlocker(val label: String) {
     MemoryPressureFailureBehaviorMissing("memory-pressure failure behavior missing"),
     ProviderBoundaryKnownAnswerVectorsMissing("provider-boundary known-answer vectors missing"),
     ProductionKdfImplementationMissing("production KDF implementation missing"),
+    FinalProductionCalibrationApprovalMissing("final production calibration approval missing"),
     SecureStorageStillDisabled("secure storage still disabled"),
     MainnetReleaseHardeningMissing("mainnet release-hardening review missing"),
 }
@@ -141,6 +161,19 @@ enum class Argon2idCalibrationRejectionReason(val label: String) {
     TooShortOutputLength("output length is too short"),
     UnsupportedKdfAlgorithm("unsupported KDF algorithm"),
     ProductionKdfDisabled("production KDF execution disabled"),
+    MemoryBelowV1Floor("memory below Skald Vault v1 floor"),
+    IterationsBelowV1Floor("iterations below Skald Vault v1 floor"),
+    UnsupportedParallelism("unsupported parallelism"),
+    SaltTooShort("salt too short"),
+    UnsupportedOutputLength("unsupported output length"),
+    UnsupportedArgon2Type("unsupported Argon2 type"),
+    UnsupportedArgon2Version("unsupported Argon2 version"),
+    InvalidElapsedMillis("invalid elapsed milliseconds"),
+    CalibrationFailedAtFloor("calibration failed at the required floor"),
+    CalibrationExecutionFailed("calibration execution failed"),
+    StoredParametersUnsupportedOnDevice("stored parameters unsupported on this device"),
+    DowngradeNotAllowed("silent parameter downgrade is not allowed"),
+    NoSuccessfulCandidateAtOrAboveFloor("no successful calibration candidate at or above the v1 floor"),
 }
 
 enum class Argon2idCalibrationWarning(val label: String) {
@@ -258,6 +291,324 @@ class Argon2idOutputLength private constructor(val bytes: Int) {
                 Argon2idCalibrationPolicyResult.Accepted(Argon2idOutputLength(value))
             }
     }
+}
+
+enum class SkaldVaultV1Argon2idCalibrationParameterStrength(val label: String) {
+    Floor("v1 shared minimum floor"),
+    StrongerThanFloor("stronger than the v1 shared floor"),
+}
+
+enum class SkaldVaultV1Argon2idCalibrationLatencyClass(val label: String) {
+    PreferredAtOrBelowOneSecond("preferred target at or below about 1 second"),
+    AcceptableAtOrBelowTwoSeconds("acceptable target at or below about 2 seconds"),
+    ExceedsAcceptableTarget("exceeds the acceptable target"),
+}
+
+sealed interface SkaldVaultV1Argon2idCalibrationResult<out T> {
+    data class Accepted<T>(
+        val value: T,
+    ) : SkaldVaultV1Argon2idCalibrationResult<T>
+
+    data class Rejected(
+        val reason: Argon2idCalibrationRejectionReason,
+        val safeMessage: String,
+    ) : SkaldVaultV1Argon2idCalibrationResult<Nothing>
+}
+
+data class SkaldVaultV1Argon2idValidatedParameters(
+    val parameters: SkaldVaultV1Argon2idParameters,
+    val saltLengthBytes: Int,
+    val strength: SkaldVaultV1Argon2idCalibrationParameterStrength,
+    val existingStoredParametersAuthoritative: Boolean,
+    val downgradeAllowed: Boolean,
+)
+
+data class SkaldVaultV1Argon2idCalibrationObservation(
+    val candidateId: String,
+    val parameters: SkaldVaultV1Argon2idParameters,
+    val saltLengthBytes: Int,
+    val elapsedMillis: Long,
+    val executionSucceeded: Boolean,
+)
+
+data class SkaldVaultV1Argon2idSelectedCalibrationCandidate(
+    val candidateId: String,
+    val parameters: SkaldVaultV1Argon2idParameters,
+    val saltLengthBytes: Int,
+    val elapsedMillis: Long,
+    val strength: SkaldVaultV1Argon2idCalibrationParameterStrength,
+    val latencyClass: SkaldVaultV1Argon2idCalibrationLatencyClass,
+    val selectedBelowFloor: Boolean,
+    val selectedToForceSubOneSecond: Boolean,
+    val productionKdfEnabled: Boolean,
+)
+
+data class SkaldVaultV1Argon2idStoredParameterAssessment(
+    val parameters: SkaldVaultV1Argon2idParameters,
+    val saltLengthBytes: Int,
+    val authoritative: Boolean,
+    val unlockAllowed: Boolean,
+    val downgradeAttempted: Boolean,
+    val safeUserMessage: String?,
+)
+
+data class SkaldVaultV1Argon2idCalibrationPolicyEvidence(
+    val implementationStatus: Argon2idCalibrationImplementationStatus,
+    val minimumMemoryMiB: Int,
+    val minimumIterations: Int,
+    val requiredParallelism: Int,
+    val minimumSaltBytes: Int,
+    val preferredNewVaultSaltBytes: Int,
+    val outputRootMaterialBytes: Int,
+    val preferredUnlockMillis: Int,
+    val acceptableUnlockMillis: Int,
+    val twoSecondsIsFailureCondition: Boolean,
+    val weakenToForceSubOneSecondAllowed: Boolean,
+    val existingStoredParametersAuthoritative: Boolean,
+    val silentDowngradeAllowed: Boolean,
+    val productionKdfEnabled: Boolean,
+)
+
+object SkaldVaultV1Argon2idCalibrationPolicy {
+    const val MINIMUM_MEMORY_MIB: Int = 64
+    const val MINIMUM_MEMORY_KIB: Int = MINIMUM_MEMORY_MIB * 1024
+    const val MINIMUM_ITERATIONS: Int = 3
+    const val REQUIRED_PARALLELISM: Int = 1
+    const val MINIMUM_SALT_BYTES: Int = 16
+    const val PREFERRED_NEW_VAULT_SALT_BYTES: Int = 32
+    const val OUTPUT_ROOT_MATERIAL_BYTES: Int = 64
+    const val PREFERRED_UNLOCK_MILLIS: Int = 1_000
+    const val ACCEPTABLE_UNLOCK_MILLIS: Int = 2_000
+
+    val evidence: SkaldVaultV1Argon2idCalibrationPolicyEvidence =
+        SkaldVaultV1Argon2idCalibrationPolicyEvidence(
+            implementationStatus = Argon2idCalibrationImplementationStatus.StillDisabledBuildingBlockImplemented,
+            minimumMemoryMiB = MINIMUM_MEMORY_MIB,
+            minimumIterations = MINIMUM_ITERATIONS,
+            requiredParallelism = REQUIRED_PARALLELISM,
+            minimumSaltBytes = MINIMUM_SALT_BYTES,
+            preferredNewVaultSaltBytes = PREFERRED_NEW_VAULT_SALT_BYTES,
+            outputRootMaterialBytes = OUTPUT_ROOT_MATERIAL_BYTES,
+            preferredUnlockMillis = PREFERRED_UNLOCK_MILLIS,
+            acceptableUnlockMillis = ACCEPTABLE_UNLOCK_MILLIS,
+            twoSecondsIsFailureCondition = false,
+            weakenToForceSubOneSecondAllowed = false,
+            existingStoredParametersAuthoritative = true,
+            silentDowngradeAllowed = false,
+            productionKdfEnabled = false,
+        )
+
+    fun validateCreationParameters(
+        parameters: SkaldVaultV1Argon2idParameters,
+        saltLengthBytes: Int,
+    ): SkaldVaultV1Argon2idCalibrationResult<SkaldVaultV1Argon2idValidatedParameters> =
+        validateParameters(parameters = parameters, saltLengthBytes = saltLengthBytes, stored = false)
+
+    fun validateStoredVaultParameters(
+        parameters: SkaldVaultV1Argon2idParameters,
+        saltLengthBytes: Int,
+    ): SkaldVaultV1Argon2idCalibrationResult<SkaldVaultV1Argon2idValidatedParameters> =
+        validateParameters(parameters = parameters, saltLengthBytes = saltLengthBytes, stored = true)
+
+    fun selectCandidate(
+        observations: List<SkaldVaultV1Argon2idCalibrationObservation>,
+    ): SkaldVaultV1Argon2idCalibrationResult<SkaldVaultV1Argon2idSelectedCalibrationCandidate> {
+        val validSuccessful = observations.mapNotNull { observation ->
+            val validated = when (
+                val result = validateCreationParameters(
+                    parameters = observation.parameters,
+                    saltLengthBytes = observation.saltLengthBytes,
+                )
+            ) {
+                is SkaldVaultV1Argon2idCalibrationResult.Accepted -> result.value
+                is SkaldVaultV1Argon2idCalibrationResult.Rejected -> return@mapNotNull null
+            }
+            if (!observation.executionSucceeded) return@mapNotNull null
+            if (observation.elapsedMillis <= 0) return@mapNotNull null
+            CandidateWithValidation(observation = observation, validated = validated)
+        }
+        if (validSuccessful.isEmpty()) {
+            val floorFailed = observations.any { observation ->
+                observation.isFloorCandidate() && !observation.executionSucceeded
+            }
+            return rejected(
+                reason = if (floorFailed) {
+                    Argon2idCalibrationRejectionReason.CalibrationFailedAtFloor
+                } else {
+                    Argon2idCalibrationRejectionReason.NoSuccessfulCandidateAtOrAboveFloor
+                },
+            )
+        }
+
+        val acceptable = validSuccessful.filter {
+            it.observation.elapsedMillis <= ACCEPTABLE_UNLOCK_MILLIS
+        }
+        val selected = (acceptable.ifEmpty { validSuccessful }).maxWith(
+            compareBy<CandidateWithValidation> { it.validated.parameters.memoryKiB }
+                .thenBy { it.validated.parameters.iterations }
+                .thenByDescending { it.observation.elapsedMillis },
+        )
+        return SkaldVaultV1Argon2idCalibrationResult.Accepted(
+            SkaldVaultV1Argon2idSelectedCalibrationCandidate(
+                candidateId = selected.observation.candidateId,
+                parameters = selected.validated.parameters,
+                saltLengthBytes = selected.validated.saltLengthBytes,
+                elapsedMillis = selected.observation.elapsedMillis,
+                strength = selected.validated.strength,
+                latencyClass = selected.observation.elapsedMillis.toLatencyClass(),
+                selectedBelowFloor = false,
+                selectedToForceSubOneSecond = false,
+                productionKdfEnabled = false,
+            ),
+        )
+    }
+
+    fun assessCreationExecution(
+        observation: SkaldVaultV1Argon2idCalibrationObservation,
+    ): SkaldVaultV1Argon2idCalibrationResult<SkaldVaultV1Argon2idSelectedCalibrationCandidate> {
+        val validated = when (
+            val result = validateCreationParameters(
+                parameters = observation.parameters,
+                saltLengthBytes = observation.saltLengthBytes,
+            )
+        ) {
+            is SkaldVaultV1Argon2idCalibrationResult.Accepted -> result.value
+            is SkaldVaultV1Argon2idCalibrationResult.Rejected -> return result
+        }
+        if (observation.elapsedMillis <= 0) {
+            return rejected(Argon2idCalibrationRejectionReason.InvalidElapsedMillis)
+        }
+        if (!observation.executionSucceeded) {
+            return rejected(
+                if (validated.strength == SkaldVaultV1Argon2idCalibrationParameterStrength.Floor) {
+                    Argon2idCalibrationRejectionReason.CalibrationFailedAtFloor
+                } else {
+                    Argon2idCalibrationRejectionReason.CalibrationExecutionFailed
+                },
+            )
+        }
+        return SkaldVaultV1Argon2idCalibrationResult.Accepted(
+            SkaldVaultV1Argon2idSelectedCalibrationCandidate(
+                candidateId = observation.candidateId,
+                parameters = validated.parameters,
+                saltLengthBytes = validated.saltLengthBytes,
+                elapsedMillis = observation.elapsedMillis,
+                strength = validated.strength,
+                latencyClass = observation.elapsedMillis.toLatencyClass(),
+                selectedBelowFloor = false,
+                selectedToForceSubOneSecond = false,
+                productionKdfEnabled = false,
+            ),
+        )
+    }
+
+    fun assessStoredVaultExecution(
+        parameters: SkaldVaultV1Argon2idParameters,
+        saltLengthBytes: Int,
+        executionSucceeded: Boolean,
+    ): SkaldVaultV1Argon2idCalibrationResult<SkaldVaultV1Argon2idStoredParameterAssessment> {
+        val validated = when (
+            val result = validateStoredVaultParameters(
+                parameters = parameters,
+                saltLengthBytes = saltLengthBytes,
+            )
+        ) {
+            is SkaldVaultV1Argon2idCalibrationResult.Accepted -> result.value
+            is SkaldVaultV1Argon2idCalibrationResult.Rejected -> return result
+        }
+        if (!executionSucceeded) {
+            return SkaldVaultV1Argon2idCalibrationResult.Rejected(
+                reason = Argon2idCalibrationRejectionReason.StoredParametersUnsupportedOnDevice,
+                safeMessage = "Stored Skald Vault v1 Argon2id parameters could not execute on this device; unlock must fail closed without downgrade.",
+            )
+        }
+        return SkaldVaultV1Argon2idCalibrationResult.Accepted(
+            SkaldVaultV1Argon2idStoredParameterAssessment(
+                parameters = validated.parameters,
+                saltLengthBytes = validated.saltLengthBytes,
+                authoritative = true,
+                unlockAllowed = true,
+                downgradeAttempted = false,
+                safeUserMessage = null,
+            ),
+        )
+    }
+
+    fun rejectDowngradeAttempt(): SkaldVaultV1Argon2idCalibrationResult<Nothing> =
+        rejected(Argon2idCalibrationRejectionReason.DowngradeNotAllowed)
+
+    private fun validateParameters(
+        parameters: SkaldVaultV1Argon2idParameters,
+        saltLengthBytes: Int,
+        stored: Boolean,
+    ): SkaldVaultV1Argon2idCalibrationResult<SkaldVaultV1Argon2idValidatedParameters> {
+        val reason = when {
+            parameters.type != SkaldVaultV1Argon2idType.Argon2id ->
+                Argon2idCalibrationRejectionReason.UnsupportedArgon2Type
+            parameters.version != SkaldVaultV1Argon2idRootDerivation.ARGON2_VERSION_19 ->
+                Argon2idCalibrationRejectionReason.UnsupportedArgon2Version
+            parameters.memoryKiB < MINIMUM_MEMORY_KIB ->
+                Argon2idCalibrationRejectionReason.MemoryBelowV1Floor
+            parameters.iterations < MINIMUM_ITERATIONS ->
+                Argon2idCalibrationRejectionReason.IterationsBelowV1Floor
+            parameters.parallelism != REQUIRED_PARALLELISM ->
+                Argon2idCalibrationRejectionReason.UnsupportedParallelism
+            saltLengthBytes < MINIMUM_SALT_BYTES ->
+                Argon2idCalibrationRejectionReason.SaltTooShort
+            parameters.outputBytes != OUTPUT_ROOT_MATERIAL_BYTES ->
+                Argon2idCalibrationRejectionReason.UnsupportedOutputLength
+            else -> null
+        }
+        if (reason != null) return rejected(reason)
+
+        val strength =
+            if (parameters.memoryKiB == MINIMUM_MEMORY_KIB && parameters.iterations == MINIMUM_ITERATIONS) {
+                SkaldVaultV1Argon2idCalibrationParameterStrength.Floor
+            } else {
+                SkaldVaultV1Argon2idCalibrationParameterStrength.StrongerThanFloor
+            }
+        return SkaldVaultV1Argon2idCalibrationResult.Accepted(
+            SkaldVaultV1Argon2idValidatedParameters(
+                parameters = parameters,
+                saltLengthBytes = saltLengthBytes,
+                strength = strength,
+                existingStoredParametersAuthoritative = stored,
+                downgradeAllowed = false,
+            ),
+        )
+    }
+
+    private fun SkaldVaultV1Argon2idCalibrationObservation.isFloorCandidate(): Boolean =
+        parameters.type == SkaldVaultV1Argon2idType.Argon2id &&
+            parameters.version == SkaldVaultV1Argon2idRootDerivation.ARGON2_VERSION_19 &&
+            parameters.memoryKiB == MINIMUM_MEMORY_KIB &&
+            parameters.iterations == MINIMUM_ITERATIONS &&
+            parameters.parallelism == REQUIRED_PARALLELISM &&
+            saltLengthBytes >= MINIMUM_SALT_BYTES &&
+            parameters.outputBytes == OUTPUT_ROOT_MATERIAL_BYTES
+
+    private fun Long.toLatencyClass(): SkaldVaultV1Argon2idCalibrationLatencyClass =
+        when {
+            this <= PREFERRED_UNLOCK_MILLIS ->
+                SkaldVaultV1Argon2idCalibrationLatencyClass.PreferredAtOrBelowOneSecond
+            this <= ACCEPTABLE_UNLOCK_MILLIS ->
+                SkaldVaultV1Argon2idCalibrationLatencyClass.AcceptableAtOrBelowTwoSeconds
+            else ->
+                SkaldVaultV1Argon2idCalibrationLatencyClass.ExceedsAcceptableTarget
+        }
+
+    private fun rejected(
+        reason: Argon2idCalibrationRejectionReason,
+    ): SkaldVaultV1Argon2idCalibrationResult.Rejected =
+        SkaldVaultV1Argon2idCalibrationResult.Rejected(
+            reason = reason,
+            safeMessage = "Skald Vault v1 Argon2id calibration rejected: ${reason.label}.",
+        )
+
+    private data class CandidateWithValidation(
+        val observation: SkaldVaultV1Argon2idCalibrationObservation,
+        val validated: SkaldVaultV1Argon2idValidatedParameters,
+    )
 }
 
 data class Argon2idParameterCandidate(
@@ -923,7 +1274,7 @@ data class Argon2idCalibrationPolicy(
         add(Argon2idCalibrationWarning.CandidateParameterPolicyNotFinal)
         add(Argon2idCalibrationWarning.TimingIsNotBenchmark)
         add(Argon2idCalibrationWarning.MemoryZeroizationUnresolved)
-        if (candidate.memoryCost.kib < 32 * 1024) {
+        if (candidate.memoryCost.kib < SkaldVaultV1Argon2idCalibrationPolicy.MINIMUM_MEMORY_KIB) {
             add(Argon2idCalibrationWarning.LowMemoryProbeCandidate)
             add(Argon2idCalibrationWarning.TooFastSettingWouldBeWeak)
         }
@@ -939,20 +1290,8 @@ data class Argon2idCalibrationPolicy(
         fun currentProbeOnly(): Argon2idCalibrationPolicy {
             val candidates = listOf(
                 candidate(
-                    id = "argon2id-probe-16mib-2p-1lane",
-                    memoryMiB = 16,
-                    passes = 2,
-                    lanes = 1,
-                    platformClasses = setOf(
-                        Argon2idCalibrationPlatformClass.LinuxDesktopJvm,
-                        Argon2idCalibrationPlatformClass.AndroidRuntime,
-                        Argon2idCalibrationPlatformClass.AndroidMemoryConstrained,
-                    ),
-                    targetLatencyBand = Argon2idTargetLatencyBand.SmokeProbeOnly,
-                ),
-                candidate(
-                    id = "argon2id-probe-32mib-3p-1lane",
-                    memoryMiB = 32,
+                    id = "argon2id-v1-floor-64mib-t3-p1-root64",
+                    memoryMiB = 64,
                     passes = 3,
                     lanes = 1,
                     platformClasses = setOf(
@@ -962,19 +1301,19 @@ data class Argon2idCalibrationPolicy(
                     targetLatencyBand = Argon2idTargetLatencyBand.InteractiveUnlockCandidate,
                 ),
                 candidate(
-                    id = "argon2id-probe-64mib-3p-1lane",
-                    memoryMiB = 64,
+                    id = "argon2id-v1-desktop-stronger-96mib-t3-p1-root64",
+                    memoryMiB = 96,
                     passes = 3,
                     lanes = 1,
                     platformClasses = setOf(
                         Argon2idCalibrationPlatformClass.LinuxDesktopJvm,
                         Argon2idCalibrationPlatformClass.DesktopExtendedProbe,
                     ),
-                    targetLatencyBand = Argon2idTargetLatencyBand.InteractiveUnlockCandidate,
+                    targetLatencyBand = Argon2idTargetLatencyBand.ExtendedDesktopProbe,
                 ),
             )
             return Argon2idCalibrationPolicy(
-                status = Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
+                status = Argon2idCalibrationImplementationStatus.StillDisabledBuildingBlockImplemented,
                 targetKdf = EncryptedVaultKdfAlgorithm.Argon2id,
                 version = Argon2idVersion.Version19,
                 fallbackKdf = EncryptedVaultKdfAlgorithm.Scrypt,
@@ -1009,7 +1348,7 @@ data class Argon2idCalibrationPolicy(
                 passes = Argon2idPassCount.of(passes).acceptedValue(),
                 lanes = Argon2idLaneCount.of(lanes).acceptedValue(),
                 outputLength = Argon2idOutputLength.ofBytes(
-                    Argon2idOutputLength.MINIMUM_VAULT_KDF_OUTPUT_BYTES,
+                    SkaldVaultV1Argon2idCalibrationPolicy.OUTPUT_ROOT_MATERIAL_BYTES,
                 ).acceptedValue(),
                 version = Argon2idVersion.Version19,
                 platformClasses = platformClasses,
@@ -1022,28 +1361,28 @@ data class Argon2idCalibrationPolicy(
         ): Argon2idCandidateParameterPolicy {
             val byId = candidates.associateBy { it.id }
             return Argon2idCandidateParameterPolicy(
-                status = Argon2idParameterPolicyStatus.CandidatePolicyPresentNotFinal,
+                status = Argon2idParameterPolicyStatus.SharedFloorPolicyImplementedStillDisabled,
                 tiers = listOf(
                     Argon2idParameterTier(
                         tier = Argon2idParameterTierKind.DesktopCandidate,
-                        candidate = byId.getValue("argon2id-probe-64mib-3p-1lane"),
+                        candidate = byId.getValue("argon2id-v1-desktop-stronger-96mib-t3-p1-root64"),
                         evidence = setOf(Argon2idDeviceClassEvidenceStatus.DesktopJvmProbeMeasured),
-                        note = "Candidate desktop tier from current desktop JVM probe evidence; not final.",
+                        note = "Desktop may target stronger parameters than the shared floor after bounded calibration; not final production approval.",
                     ),
                     Argon2idParameterTier(
                         tier = Argon2idParameterTierKind.HighEndAndroidCandidate,
-                        candidate = byId.getValue("argon2id-probe-32mib-3p-1lane"),
+                        candidate = byId.getValue("argon2id-v1-floor-64mib-t3-p1-root64"),
                         evidence = setOf(Argon2idDeviceClassEvidenceStatus.Pixel10ProXlAndroid16ProbeMeasured),
-                        note = "Candidate high-end Android tier from Pixel 10 Pro XL / Android 16 probe evidence; not universal Android policy.",
+                        note = "Android shares the 64 MiB / t=3 / p=1 v1 minimum floor; high-end timing evidence is not final approval.",
                     ),
                     Argon2idParameterTier(
                         tier = Argon2idParameterTierKind.MobileFallbackProbeFloor,
-                        candidate = byId.getValue("argon2id-probe-16mib-2p-1lane"),
+                        candidate = byId.getValue("argon2id-v1-floor-64mib-t3-p1-root64"),
                         evidence = setOf(
                             Argon2idDeviceClassEvidenceStatus.DesktopJvmProbeMeasured,
                             Argon2idDeviceClassEvidenceStatus.Pixel10ProXlAndroid16ProbeMeasured,
                         ),
-                        note = "Minimum fallback/probe floor only; not the preferred production default.",
+                        note = "Shared v1 minimum floor. Calibration may select stronger parameters, but it may not go below this floor.",
                     ),
                     Argon2idParameterTier(
                         tier = Argon2idParameterTierKind.AndroidSupportedCompatibilityPlanning,
@@ -1059,9 +1398,9 @@ data class Argon2idCalibrationPolicy(
                     Argon2idDeviceClassEvidenceStatus.Pixel10ProXlAndroid16ProbeMeasured,
                     Argon2idDeviceClassEvidenceStatus.AndroidSupportedCompatibilityPolicyModeled,
                 ),
-                minimumProbeFloorCandidateId = "argon2id-probe-16mib-2p-1lane",
+                minimumProbeFloorCandidateId = "argon2id-v1-floor-64mib-t3-p1-root64",
                 minimumOutputLength = Argon2idOutputLength.ofBytes(
-                    Argon2idOutputLength.MINIMUM_VAULT_KDF_OUTPUT_BYTES,
+                    SkaldVaultV1Argon2idCalibrationPolicy.OUTPUT_ROOT_MATERIAL_BYTES,
                 ).acceptedValue(),
                 finalApprovalBlockers = setOf(
                     Argon2idParameterApprovalBlocker.AndroidSupportedCompatibilityReviewMissing,
@@ -1071,9 +1410,8 @@ data class Argon2idCalibrationPolicy(
                     Argon2idParameterApprovalBlocker.UnlockUxMeasurementMissing,
                     Argon2idParameterApprovalBlocker.BackgroundForegroundBehaviorMissing,
                     Argon2idParameterApprovalBlocker.AccessibilityTimeoutReviewMissing,
-                    Argon2idParameterApprovalBlocker.MemoryPressureFailureBehaviorMissing,
                     Argon2idParameterApprovalBlocker.ProviderBoundaryKnownAnswerVectorsMissing,
-                    Argon2idParameterApprovalBlocker.ProductionKdfImplementationMissing,
+                    Argon2idParameterApprovalBlocker.FinalProductionCalibrationApprovalMissing,
                     Argon2idParameterApprovalBlocker.SecureStorageStillDisabled,
                     Argon2idParameterApprovalBlocker.MainnetReleaseHardeningMissing,
                 ),

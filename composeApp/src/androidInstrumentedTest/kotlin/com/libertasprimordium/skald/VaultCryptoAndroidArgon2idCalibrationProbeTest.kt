@@ -24,7 +24,7 @@ class VaultCryptoAndroidArgon2idCalibrationProbeTest {
         val policy = commonArgon2idCalibrationPolicy()
         val candidates = policy.androidRuntimeProbeCandidates
 
-        assertEquals(2, candidates.size)
+        assertEquals(1, candidates.size)
         assertFalse(policy.productionKdfEnabled)
 
         val summaries = candidates.map { candidate ->

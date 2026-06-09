@@ -611,34 +611,61 @@ class ProductionProviderAcceptanceContractTest {
 
     @Test
     fun boundedArgon2idCalibrationEvidenceMustBeKnownAndSuccessful() {
-        val missing = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
-                ProductionProviderAcceptanceEvidenceState.Missing,
-            ),
+        listOf(
+            ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
+            ProductionProviderAcceptanceGate.Argon2idCalibrationAndMemoryFailureApproved,
+        ).forEach { gate ->
+            assertGateBlocks(
+                gate = gate,
+                state = ProductionProviderAcceptanceEvidenceState.Missing,
+                blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+            )
+            assertGateBlocks(
+                gate = gate,
+                state = ProductionProviderAcceptanceEvidenceState.Unknown,
+                blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+            )
+            assertGateBlocks(
+                gate = gate,
+                state = ProductionProviderAcceptanceEvidenceState.Failed,
+                blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+            )
+            assertGateBlocks(
+                gate = gate,
+                state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+                blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+            )
+            assertGateBlocks(
+                gate = gate,
+                state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+            )
+        }
+    }
+
+    @Test
+    fun currentEvidenceRepresentsCalibrationBuildingBlockButStillDoesNotSelectProvider() {
+        val evidence = ProductionProviderAcceptanceEvidence.currentDesignOnly()
+
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved),
         )
-        val unknown = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
-                ProductionProviderAcceptanceEvidenceState.Unknown,
-            ),
-        )
-        val failed = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.Argon2idBoundedCalibrationApproved,
-                ProductionProviderAcceptanceEvidenceState.Failed,
-            ),
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.Argon2idCalibrationAndMemoryFailureApproved),
         )
 
-        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
-        assertContains(unknown.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
-        assertContains(failed.blockers, ProductionProviderAcceptanceBlocker.FailedGateEvidence)
-        assertFalse(missing.allRequiredGatesSatisfied)
-        assertFalse(unknown.allRequiredGatesSatisfied)
-        assertFalse(failed.allRequiredGatesSatisfied)
-        assertFalse(missing.productionProviderSelectable)
-        assertFalse(unknown.productionProviderSelectable)
-        assertFalse(failed.productionProviderSelectable)
+        val assessment = contract.assess(evidence)
+
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
+        assertContains(
+            assessment.blockers,
+            ProductionProviderAcceptanceBlocker.ProductionProviderSelectionStillDisabled,
+        )
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
     }
 
     @Test
