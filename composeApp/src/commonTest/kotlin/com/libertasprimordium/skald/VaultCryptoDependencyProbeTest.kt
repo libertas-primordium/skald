@@ -80,6 +80,11 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StrictAadContractPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.TinkNonKeyCommitmentMitigationModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PassphraseEncodingPolicyModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.PassphrasePolicyValidationImplemented)
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.Argon2idPassphraseRootDerivationVectorTested,
+        )
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.TinkRawKeyFeasibilityPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idBoundedCalibrationPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationProbeOnly)
@@ -128,7 +133,9 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.CanonicalHeaderSerializerProviderIntegrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.KeySeparationProviderIntegrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StrictAadContractImplementationMissing)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.PassphraseEncodingProductionValidationMissing)
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.PassphraseEncodingProductionValidationMissing))
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.PassphrasePolicyProviderIntegrationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.Argon2idRootDerivationProviderIntegrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.Argon2idBoundedCalibrationApprovalMissing)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkKeysetStorageHandlingReviewMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.SplitProviderBoundaryReviewMissing))

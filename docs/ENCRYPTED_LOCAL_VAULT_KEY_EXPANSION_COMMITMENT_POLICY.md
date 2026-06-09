@@ -131,7 +131,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryp
 
 Missing, unknown, failed, unsupported, documented/model-only, or unimplemented key-expansion primitive evidence blocks production provider selectability. The same is true for header-commitment primitive evidence and output-layout evidence.
 
-The current branch records deterministic non-secret vectors and matches them from still-disabled production-source building blocks. Vector-matching HKDF/HMAC/header-commitment evidence still does not make the provider selectable because production provider implementation, Argon2id passphrase derivation, Tink AEAD execution, strict AAD implementation, provider-level KATs, and storage review remain absent. Raw-key feasibility, header/AAD contract evidence, dependency-level KATs, test-provider KATs, and vector tests do not bypass these gates.
+The current branch records deterministic non-secret vectors and matches them from still-disabled production-source building blocks. Vector-matching HKDF/HMAC/header-commitment evidence and fixed passphrase/Argon2id fixture evidence still do not make the provider selectable because production provider implementation, provider-wired Argon2id passphrase derivation and calibration, Tink AEAD execution, strict AAD implementation, provider-level KATs, and storage review remain absent. Raw-key feasibility, header/AAD contract evidence, dependency-level KATs, test-provider KATs, and vector tests do not bypass these gates.
 
 ## Remaining Work
 
@@ -139,7 +139,7 @@ Before a still-disabled provider implementation can proceed, reviewers still nee
 
 - provider-level KAT execution through the future production provider,
 - integration of the canonical serializer, HKDF expansion, and HMAC verification into a still-disabled provider/format boundary,
-- production Argon2id passphrase-to-root-material derivation,
+- provider-wired Argon2id passphrase-to-root-material derivation or calibration,
 - production Tink AEAD execution with strict AAD,
 - final bounded Argon2id calibration approval,
 - lock/session lifecycle tests,

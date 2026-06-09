@@ -2,9 +2,9 @@
 
 ## Status
 
-Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, a manual Android calibration evidence-capture model, and bounded test/probe-only Bouncy Castle Argon2id measurement harnesses.
+Skald Vault now has a Skald-owned Argon2id calibration policy model, a non-final candidate parameter policy, a manual Android calibration evidence-capture model, bounded test/probe-only Bouncy Castle Argon2id measurement harnesses, and a still-disabled explicit-parameter Bouncy Castle Argon2id passphrase-to-root-material building block.
 
-This is calibration planning, manual evidence capture, and dependency probing only. It does not implement a production KDF, executable production `VaultCryptoProvider`, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Runtime randomness/provider availability checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
+This is calibration planning, manual evidence capture, dependency probing, and isolated building-block implementation only. It does not implement calibration, an executable production `VaultCryptoProvider`, provider-selectable KDF execution, AEAD record encryption, key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Runtime randomness/provider availability checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider-level KAT execution remains unavailable because no production provider exists, and provider selection returns only the disabled provider.
 
 Runtime behavior remains fail-closed:
 
@@ -40,7 +40,7 @@ composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2
 composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidArgon2idCalibrationProbeTest.kt
 ```
 
-The production policy file imports no Bouncy Castle, Tink, JCA/JCE, BDK, file, settings, network, or process APIs. Bouncy Castle Argon2id execution is confined to the desktop and Android test/probe files above, the existing public-vector KAT tests, and the test-only provider KAT harness.
+The calibration policy file imports no Bouncy Castle, Tink, JCA/JCE, BDK, file, settings, network, or process APIs. Bouncy Castle Argon2id execution is confined to the desktop and Android test/probe files above, the existing public-vector KAT tests, the test-only provider KAT harness, and the still-disabled platform actuals for explicit-parameter root derivation.
 
 ## Policy Model
 
@@ -62,7 +62,7 @@ The calibration policy models:
 - final-approval blockers,
 - future calibration requirements,
 - coarse calibration result summaries,
-- production KDF disabled status.
+- provider-selectable KDF disabled status.
 
 The model rejects:
 
@@ -72,7 +72,7 @@ The model rejects:
 - zero lane count,
 - output shorter than 32 bytes,
 - PBKDF2 as the default production vault KDF,
-- any claim that production KDF execution is available in this branch.
+- any claim that calibration or provider-selectable KDF execution is available in this branch.
 
 scrypt remains a reviewed compatibility fallback only. It is not selected for the current vault KDF policy.
 
@@ -100,7 +100,7 @@ Summary:
 - Android compatibility planning: based on supported Android OS baseline, runtime provider/primitive/randomness checks, and fail-closed vault creation gates rather than mandatory low-end/mid-range model testing.
 - Manual Android evidence capture: modeled for optional low-end, mid-range, high-end, release-like, and thermal/load records; current captured evidence remains high-end debug/instrumented only and does not prove all-device performance.
 
-No row is production-final, universal Android policy, enabled for production KDF execution, or sufficient for provider selection.
+No row is production-final, universal Android policy, enabled for provider-selectable KDF execution, or sufficient for provider selection.
 
 The v1 production-provider acceptance contract separately requires a shared minimum review floor of Argon2id version 19, 64 MiB, 3 passes, 1 lane, at least a 16-byte salt, preferred 32-byte salt for new vaults, and 64-byte derived root material. Bounded calibration may choose stronger desktop parameters, but it must not weaken parameters to force sub-1-second unlocks. Roughly 2 seconds is acceptable and not a failure condition.
 
@@ -168,7 +168,7 @@ Before Argon2id can be used for production vault unlock:
 
 ## Readiness Alignment
 
-`EncryptedVaultReadinessPolicy` now records that KDF calibration policy and candidate parameter policy are modeled at candidate level, while `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
+`EncryptedVaultReadinessPolicy` now records that KDF calibration policy and candidate parameter policy are modeled at candidate level, while the passphrase policy validation and explicit-parameter Argon2id root-derivation building blocks are implemented but still disabled. `KdfParametersCalibrated` remains unresolved and `KdfParametersUncalibrated` remains a blocker.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having Argon2id calibration policy and candidate parameter policy modeled. That does not approve production use. The stack remains candidate-only.
 
@@ -180,7 +180,7 @@ The production-provider acceptance contract also treats bounded calibration, mem
 
 This calibration branch does not enable:
 
-- production KDF execution,
+- calibration or provider-selectable KDF execution,
 - production `VaultCryptoProvider` execution,
 - AEAD execution beyond existing dependency KAT tests,
 - encrypted vault implementation,

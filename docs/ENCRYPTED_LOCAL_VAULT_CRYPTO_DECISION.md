@@ -66,10 +66,10 @@ Current calibration status:
 
 - Probe-only candidate rows and bounded desktop/Android measurement harnesses are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md).
 - Non-final candidate tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md): 64 MiB / 3 passes / 1 lane for desktop candidate evidence, 32 MiB / 3 passes / 1 lane for historical high-end Android timing evidence, and 16 MiB / 2 passes / 1 lane as a fallback/probe floor only. The v1 acceptance contract separately raises the shared review floor to 64 MiB / 3 passes / 1 lane with 64-byte derived root material.
-- Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records optional device-class evidence consistently, but cannot approve production KDF execution.
+- Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records optional device-class evidence consistently, but cannot approve calibration or provider-selectable KDF execution.
 - Android compatibility planning is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). It replaces mandatory low-end/mid-range model testing with supported OS baseline policy, runtime provider/primitive/randomness checks, and fail-closed vault creation behavior.
 - Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). They prove only test-scope availability of approved OS/reviewed-provider randomness paths, keep hardware-backed key protection separate, forbid language PRNG source classes, and cannot approve production random-byte generation.
-- They are not final production parameters and do not enable production KDF execution.
+- They are not final production parameters and do not enable calibration or provider-selectable KDF execution.
 - Exact starting parameters remain unresolved until timing evidence, memory pressure, UX tradeoffs, provider-level KATs, lock/session tests, and storage review are complete.
 
 #### scrypt
@@ -606,7 +606,7 @@ These remain unresolved and require focused provider-implementation, calibration
 
 - Whether the candidate-reviewed Tink plus Bouncy Castle split stack should become the implementation candidate after final KDF parameter approval, disabled-boundary-to-production-provider design, production provider-level KAT contract execution, vault container review, and storage review, or be replaced by a single reviewed stack such as libsodium/KMP.
 - Exact production Argon2id parameters remain unresolved; the current candidate tiers are planning evidence only and still need runtime provider/randomness check review, thermal/load, unlock UX, memory-pressure, and release-mode review. Low-end and mid-range Android model testing may still inform parameter choices, but it is not a hard compatibility blocker.
-- Provider integration for the vector-tested canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification remains unresolved. The building blocks exist, but production Argon2id passphrase derivation, Tink AEAD execution, strict AAD, vault containers, storage, and provider selectability remain absent.
+- Provider integration for the vector-tested passphrase policy, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification remains unresolved. The building blocks exist, but calibration, provider-wired KDF execution, Tink AEAD execution, strict AAD, vault containers, storage, and provider selectability remain absent.
 - Whether backup/export uses dependency streaming AEAD or a Skald chunked envelope.
 - Whether Linux should ever offer optional libsecret/KWallet wrapping after v1.
 - Whether Android should require hardware-backed wrapping for specific secret classes or only label risk.

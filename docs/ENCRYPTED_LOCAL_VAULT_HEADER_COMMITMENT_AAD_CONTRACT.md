@@ -4,7 +4,7 @@
 
 This document defines the Skald Vault v1 header commitment, canonical header encoding, key-separation label, and AEAD associated-data acceptance contract. The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented separately in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md).
 
-The canonical header serializer, HKDF-SHA-256 key expansion, and HMAC-SHA-256 header commitment computation/verification now exist as still-disabled production-source building blocks. This contract still does not implement production Argon2id passphrase derivation, AEAD encryption, AEAD decryption, strict record AAD construction, random-byte generation, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 key expansion, and HMAC-SHA-256 header commitment computation/verification now exist as still-disabled production-source building blocks. This contract still does not implement calibration, provider-wired KDF execution, AEAD encryption, AEAD decryption, strict record AAD construction, random-byte generation, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -145,7 +145,7 @@ skald-vault-v1-hkdf-sha256-key-expansion-v1
 
 Argon2id produces 64 bytes of root material. HKDF-SHA-256 expands that root material into a 32-byte header commitment key and a 32-byte record AEAD key. The record AEAD key feeds the previously probed public Tink XChaCha20-Poly1305 raw-key API path.
 
-This branch implements HKDF-SHA-256 only as a still-disabled expansion building block from caller-supplied 64-byte root material. It does not execute Argon2id, does not accept passphrases, does not generate root material, does not persist derived keys, and does not wire key expansion into a provider.
+HKDF-SHA-256 remains a still-disabled expansion building block from caller-supplied 64-byte root material. The separate explicit-parameter Argon2id building block can derive that root material from normalized passphrase bytes and a caller-supplied salt, but calibration, provider wiring, vault creation, unlock ordering, and persistence remain absent.
 
 Unknown or unsupported key-separation policy evidence blocks production provider selectability.
 
@@ -238,7 +238,7 @@ Source guards continue to prove that common production provider/selection/readin
 Before a still-disabled provider implementation can proceed, human review must still resolve:
 
 - integration of the vector-tested canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification into a still-disabled provider/format boundary,
-- production Argon2id passphrase-to-root-material derivation,
+- provider-wired Argon2id passphrase-to-root-material derivation or calibration,
 - production Tink AEAD implementation with strict AAD,
 - record version/counter and stale-record policy,
 - production provider-level KAT execution,

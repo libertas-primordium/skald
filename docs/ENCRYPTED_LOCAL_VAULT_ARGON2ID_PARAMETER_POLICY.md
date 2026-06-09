@@ -2,9 +2,9 @@
 
 ## Status
 
-Skald Vault now has a candidate Argon2id parameter policy and manual Android calibration evidence-capture model for the future app-controlled encrypted local vault unlock KDF.
+Skald Vault now has a candidate Argon2id parameter policy, manual Android calibration evidence-capture model, and a still-disabled explicit-parameter Bouncy Castle Argon2id passphrase-to-root-material building block for the future app-controlled encrypted local vault unlock KDF.
 
-This is design and policy only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is design, policy, and isolated building-block implementation only. It does not implement executable production `VaultCryptoProvider` behavior, provider-selectable KDF execution, calibration, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy, unknown runtime provider/randomness checks, incomplete production-provider acceptance, disabled storage, and missing production provider approval as production-selection blockers.
 
@@ -13,7 +13,7 @@ Runtime behavior remains fail-closed:
 - `DisabledVaultCryptoProvider` rejects every KDF, AEAD, key generation, keyset storage, KAT validation, and persistence operation.
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
-- `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated`.
+- `EncryptedVaultReadinessPolicy` reports the passphrase/KDF building blocks as implemented but still disabled, and still reports `KdfParametersUncalibrated`.
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider.
 - Production persistence remains disabled.
 - Production sync remains disabled.
@@ -50,9 +50,29 @@ The v1 production-provider acceptance contract records a shared minimum review f
 
 This means the older 32 MiB high-end Android probe remains useful timing evidence only. It no longer represents a sufficient v1 production floor. Android and desktop share the same 64 MiB / t=3 / p=1 review floor, while desktop may select stronger parameters after bounded calibration review.
 
-The policy is not sufficient for production provider selection because no tier is final, production KDF execution is absent, runtime provider/randomness checks are availability evidence only until reviewed with a production provider, storage is disabled, and no production provider exists.
+The policy is not sufficient for production provider selection because no calibrated tier is final, the Argon2id building block is not wired into a provider or vault creation path, runtime provider/randomness checks are availability evidence only until reviewed with a production provider, storage is disabled, and no production provider exists.
 
-The manual evidence model can compare optional future low-end, mid-range, and high-end Android runs using the same field set. It rejects ambiguous memory units, zero or negative elapsed timings, missing repeated-run summaries, and secret-like or personal-device fields. It cannot mark production KDF execution approved.
+The manual evidence model can compare optional future low-end, mid-range, and high-end Android runs using the same field set. It rejects ambiguous memory units, zero or negative elapsed timings, missing repeated-run summaries, and secret-like or personal-device fields. It cannot mark provider-wired KDF execution or production calibration approved.
+
+## Fixed Non-Secret Root-Derivation Fixture
+
+The explicit-parameter Argon2id root-derivation building block is tested with a Skald-owned deterministic fixture. This is not an external standards KAT and is not wallet material.
+
+| Field | Fixture value |
+| --- | --- |
+| Passphrase text | `Skald-Vault.Test_Fixture-01` |
+| Passphrase policy | `unicode-nfc-utf8-no-controls-no-whitespace-v1` |
+| Normalization/encoding | NFC then UTF-8 |
+| Salt hex | `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f` |
+| KDF | Bouncy Castle Argon2id |
+| Argon2 version | 19 / 1.3 |
+| Memory | 64 MiB / 65,536 KiB |
+| Iterations | 3 |
+| Parallelism | 1 |
+| Root output length | 64 bytes |
+| Expected root hex | `36686ff5939587fce8eafdc430767fa36427ecc80b7eca0ac050fc3813fe754a982187d6315ae1e779d6479f486e9a3ec99c059371477497464302dc9167cff7` |
+
+The fixture proves deterministic execution for this code path only. It does not prove calibration, memory-pressure behavior, side-channel resistance, wrong-passphrase UX, provider-level KAT coverage, vault unlock, or persistence.
 
 ## Rejection Rules
 
@@ -64,7 +84,7 @@ The current code-level policy rejects:
 - zero lane count,
 - output shorter than 32 bytes,
 - PBKDF2 as the default production vault KDF,
-- any production KDF execution claim in this branch.
+- any provider-selectable KDF execution or calibration claim in this branch.
 
 Memory units must be explicit: KiB or MiB. Argon2id version 19 is the only target version modeled.
 
@@ -86,12 +106,12 @@ Before any Argon2id parameter can become a production vault unlock policy, Skald
 10. Accessibility and timeout policy review.
 11. Memory-pressure failure behavior review.
 12. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
-13. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
+13. Provider-wired KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The current explicit-parameter root-derivation building block is not enough.
 14. Provider-selection gate review according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md).
 15. Secure storage and secure metadata storage review.
 16. Mainnet release-hardening review before any mainnet relevance.
 
-These blockers are represented in common policy models. They keep `KdfParametersCalibrated` unresolved and keep production KDF execution disabled.
+These blockers are represented in common policy models. They keep `KdfParametersCalibrated` unresolved and keep provider-selectable KDF execution disabled.
 
 ## Future Calibration Requirements
 
@@ -117,11 +137,11 @@ Probe timings do not prove side-channel resistance, memory zeroization, wrong-pa
 - mobile fallback/probe floor: `argon2id-probe-16mib-2p-1lane`,
 - Android supported-compatibility planning: modeled separately from production parameter approval.
 
-`EncryptedVaultReadinessPolicy` records the candidate parameter policy, Android calibration evidence-capture model, Android compatibility/entropy policy, and runtime randomness/provider check model as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
+`EncryptedVaultReadinessPolicy` records the candidate parameter policy, Android calibration evidence-capture model, Android compatibility/entropy policy, runtime randomness/provider check model, passphrase policy validation building block, and explicit-parameter Argon2id root-derivation building block. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, provider integration remains absent, and production persistence remains disabled.
 
 The production-provider acceptance contract adds a separate bounded-calibration gate for the shared v1 floor, 64-byte derived root material, fail-closed minimum-floor allocation behavior, stored-parameter authority, and no silent downgrade. That gate is modeled but not satisfied.
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled. That stack remains candidate-only and is not production-approved.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled plus fixed non-secret passphrase/root-derivation fixture evidence. That stack remains candidate-only and is not production-approved.
 
 `VaultCryptoProviderSelectionRegistry` records the candidate policy as evidence only. It keeps Tink plus Bouncy Castle blocked because parameters are not final, runtime compatibility/randomness checks are separate gates, storage is disabled, and no production provider exists.
 
@@ -129,7 +149,7 @@ The production-provider acceptance contract adds a separate bounded-calibration 
 
 This parameter-policy branch does not enable:
 
-- production KDF execution,
+- provider-selectable KDF execution or unlock flow,
 - production `VaultCryptoProvider` execution,
 - AEAD execution beyond existing dependency KAT tests,
 - encrypted vault implementation,

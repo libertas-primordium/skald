@@ -8,7 +8,7 @@ A test-only provider KAT harness now exists and is documented in [`ENCRYPTED_LOC
 
 Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The selection registry treats dependency-level KATs, test-only provider KATs, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
 
-This is contract and policy scaffolding only. It does not implement executable provider crypto, production KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is contract and policy scaffolding only. It does not implement executable provider crypto, provider-selectable KDF execution, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -165,7 +165,7 @@ Runtime randomness availability must be reviewed as a provider-selection and vau
 This contract does not enable:
 
 - executable provider crypto,
-- production KDF execution,
+- provider-selectable KDF execution,
 - production AEAD execution,
 - fake encryption,
 - key generation,

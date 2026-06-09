@@ -382,7 +382,7 @@ If keyring wrapping is unavailable, Skald must either use passphrase-only vault 
 
 ## Passphrase, PIN, And Biometric Policy
 
-Passphrase/PIN policy is not implemented yet.
+The v1 passphrase validation/normalization policy is implemented as a still-disabled building block. PIN policy, biometric unlock, passphrase/PIN UI, vault unlock, and provider wiring are not implemented.
 
 Design requirements:
 
