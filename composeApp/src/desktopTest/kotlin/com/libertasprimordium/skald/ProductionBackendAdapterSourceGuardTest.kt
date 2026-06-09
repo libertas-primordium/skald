@@ -386,6 +386,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2idCalibrationProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTinkRawKeyFeasibilityProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTestProviderKatHarnessTest.kt",
         )
         val cryptoImportPattern = Regex(
@@ -402,6 +403,87 @@ class ProductionBackendAdapterSourceGuardTest {
             .toList()
 
         assertTrue(offenders.isEmpty(), "Crypto imports must stay confined to dependency compile probes: $offenders")
+    }
+
+    @Test
+    fun tinkRawKeyProbeDoesNotUseForbiddenKeysetPersistenceGenerationOrInternalApis() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTinkRawKeyFeasibilityProbeTest.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""com\.google\.crypto\.tink\.aead\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bCleartextKeysetHandle\b"""),
+            Regex("""\bKeysetManager\b"""),
+            Regex("""\bJsonKeysetWriter\b"""),
+            Regex("""\bBinaryKeysetWriter\b"""),
+            Regex("""\bJsonKeysetReader\b"""),
+            Regex("""\bBinaryKeysetReader\b"""),
+            Regex("""\bTinkJsonProtoKeysetFormat\b"""),
+            Regex("""\bTinkProtoKeysetFormat\b"""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bgenerateEntryFromParameters\b"""),
+            Regex("""\bwithRandomId\("""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Tink raw-key probe must avoid keyset persistence, generation, internal APIs, and reflection: $offenders",
+        )
+    }
+
+    @Test
+    fun commonProductionSourceDoesNotUseTinkKeysetPersistenceGenerationInternalApisOrAeadExecution() {
+        val root = repositoryRoot()
+        val commonMain = File(root, "composeApp/src/commonMain")
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+com\.google\.crypto\.tink"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bAeadFactory\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bSecretBytes\b"""),
+            Regex("""\bInsecureSecretKeyAccess\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCleartextKeysetHandle\b"""),
+            Regex("""\bKeysetManager\b"""),
+            Regex("""\bJsonKeysetWriter\b"""),
+            Regex("""\bBinaryKeysetWriter\b"""),
+            Regex("""\bJsonKeysetReader\b"""),
+            Regex("""\bBinaryKeysetReader\b"""),
+            Regex("""\bTinkJsonProtoKeysetFormat\b"""),
+            Regex("""\bTinkProtoKeysetFormat\b"""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bgenerateEntryFromParameters\b"""),
+            Regex("""\bwithRandomId\("""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+        )
+        val offenders = commonMain
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .toList()
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Common production source must not use Tink keyset persistence/generation, internal APIs, or AEAD execution: $offenders",
+        )
     }
 
     @Test

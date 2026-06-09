@@ -220,7 +220,7 @@ Provider-boundary non-goals:
 
 ## Current Model Status
 
-`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, `ProviderKatContractModeled`, `Argon2idCandidateParameterPolicyModeled`, `AndroidArgon2idCalibrationEvidenceCaptureModeled`, and `AndroidCompatibilityEntropyPolicyModeled`.
+`VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as `DependencyLicenseAndKeysetReviewCompleteCandidate` with `DisabledProviderBoundaryModeled`, `ProviderSelectionBoundaryModeled`, `ProviderKatContractModeled`, `Argon2idCandidateParameterPolicyModeled`, `AndroidArgon2idCalibrationEvidenceCaptureModeled`, `AndroidCompatibilityEntropyPolicyModeled`, and a test-scope Tink raw-key public API feasibility probe result.
 
 That status means:
 
@@ -235,6 +235,7 @@ That status means:
 - a provider-level KAT contract now exists, and a test-only harness can execute it without production storage or provider approval.
 - a manual Android calibration evidence-capture model exists for high-end, optional low-end/mid-range, release-like, and thermal/load parameter evidence.
 - Android compatibility/entropy policy exists: low-end and mid-range model testing are no longer hard compatibility blockers, approved cryptographic randomness is required, hardware-backed key protection is separate and optional after review, and unsupported/unknown vault creation states fail closed.
+- the desktop/JVM Tink raw-key feasibility probe records `FEASIBLE_PUBLIC_RAW_KEY_API`: public Tink APIs can construct the pinned XChaCha20-Poly1305 primitive from caller-supplied fixed raw key bytes through a transient in-memory keyset handle, with no persisted Tink keyset, no random Tink-generated vault key, no key rotation, no multiple active keys, no internal APIs, and no reflection.
 
 That status does not mean:
 
@@ -244,7 +245,7 @@ That status does not mean:
 - supported Android and Linux runtime provider/primitive/randomness checks for vault creation,
 - executable provider-boundary approval,
 - production provider selection,
-- keyset storage approval,
+- production key handling or keyset storage approval,
 - encrypted vault implementation,
 - secret or metadata persistence,
 - production sync,
@@ -257,8 +258,8 @@ That status does not mean:
 - Final KDF parameter approval for Android and Linux desktop. Probe-only policy/harnesses and candidate tiers exist, but they are not production settings.
 - Provider-boundary KAT behavior through an executable production Skald-owned interface. Current dependency-level KATs and test-only provider harness evidence do not satisfy production provider approval.
 - Provider-selection approval. Current dependency-level KATs and test-only provider harness evidence are modeled as evidence only and do not satisfy provider selection.
-- Whether Tink keysets or raw AEAD key material will be used inside the vault.
-- Whether Tink's production APIs can satisfy Skald's random-nonce record envelope without relying on internal explicit-nonce APIs.
+- Production key handling around the feasible raw-key API path. The current probe proves only that pinned Tink public APIs can construct the primitive from caller-supplied fixed raw key bytes in desktop/JVM test scope; it does not approve production AEAD execution, Android runtime raw-key behavior, key lifecycle, zeroization, or storage.
+- Whether Tink's future production provider integration can satisfy Skald's record envelope, nonce lifecycle, strict AAD binding, and vault-level key commitment requirements without relying on internal explicit-nonce APIs.
 - Vault container parser/writer design.
 - Atomic write, fsync, migration, and corruption behavior.
 - Lock/session memory lifecycle behavior.

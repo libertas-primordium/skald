@@ -59,7 +59,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityUnknown)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.Argon2idBoundedCalibrationUnapproved)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)

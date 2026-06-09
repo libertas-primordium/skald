@@ -172,7 +172,26 @@ Required v1 policy:
 - do not add a fallback encrypted Tink keyset model in this branch,
 - do not implement production AEAD encryption or decryption in commonMain.
 
-No Tink raw-key feasibility probe is added in this branch. The feasibility evidence remains unknown by policy, so Tink raw-key handling remains unapproved and production provider selectability remains blocked. A future probe may use fixed non-secret test bytes in test/probe scope only and may answer only whether the pinned Tink XChaCha20-Poly1305 primitive can be constructed from caller-supplied derived key bytes using public supported APIs, without persisted Tink keysets and without internal APIs.
+The test-scope feasibility probe is documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). Its exact result is:
+
+```text
+FEASIBLE_PUBLIC_RAW_KEY_API
+```
+
+The tested public API path is:
+
+```text
+AeadConfig.register()
+SecretBytes.copyFrom(fixedNonSecretKeyBytes, InsecureSecretKeyAccess.get())
+XChaCha20Poly1305Key.create(XChaCha20Poly1305Parameters.Variant.NO_PREFIX, secretBytes, null)
+KeysetHandle.importKey(key).withFixedId(fixedNonSecretKeyId).setStatus(KeyStatus.ENABLED).makePrimary()
+KeysetHandle.newBuilder().addEntry(importedEntry).build()
+keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+```
+
+This path uses caller-supplied fixed non-secret key bytes, a fixed non-secret key id, and a transient in-memory Tink `KeysetHandle`. It does not persist a Tink keyset, does not use `CleartextKeysetHandle`, does not use keyset readers or writers, does not generate a Tink vault key, does not call Tink key rotation APIs, and does not use internal Tink APIs or reflection.
+
+This result satisfies only the raw-key feasibility gate. It does not implement production AEAD, does not approve production provider selection, does not approve vault persistence, and does not remove the vault-level key commitment/header authentication requirement.
 
 ## AAD And Tamper Requirements
 
