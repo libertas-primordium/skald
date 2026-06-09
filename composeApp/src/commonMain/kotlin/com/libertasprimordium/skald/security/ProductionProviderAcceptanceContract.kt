@@ -194,6 +194,24 @@ enum class ProductionProviderTinkRawKeyFeasibilityStatus(
     ),
 }
 
+enum class ProductionProviderAndroidTinkRawKeyFeasibilityStatus(
+    val label: String,
+    val satisfiesAndroidFeasibilityGate: Boolean,
+) {
+    ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API(
+        label = "Android public supported API constructs XChaCha20-Poly1305 from caller-supplied raw key bytes",
+        satisfiesAndroidFeasibilityGate = true,
+    ),
+    ANDROID_NOT_FEASIBLE_WITH_CURRENT_TINK_API(
+        label = "current Android Tink API does not provide a clean public raw-key construction path",
+        satisfiesAndroidFeasibilityGate = false,
+    ),
+    ANDROID_INCONCLUSIVE_REQUIRES_HUMAN_REVIEW(
+        label = "Android API path is ambiguous, deprecated, experimental, unstable, platform-fragile, or poorly documented",
+        satisfiesAndroidFeasibilityGate = false,
+    ),
+}
+
 data class ProductionProviderTinkRawKeyHandlingPolicy(
     val preferredCallerSuppliedDerivedRawKeyMaterial: Boolean,
     val persistedPlaintextTinkKeysetsAllowed: Boolean,
@@ -205,12 +223,19 @@ data class ProductionProviderTinkRawKeyHandlingPolicy(
     val internalUnsupportedReflectiveApisAllowed: Boolean,
     val fallbackEncryptedKeysetModelImplemented: Boolean,
     val productionAeadExecutionImplemented: Boolean,
-    val feasibilityStatus: ProductionProviderTinkRawKeyFeasibilityStatus,
-    val testedPublicApiPath: String,
+    val desktopFeasibilityStatus: ProductionProviderTinkRawKeyFeasibilityStatus,
+    val androidFeasibilityStatus: ProductionProviderAndroidTinkRawKeyFeasibilityStatus,
+    val desktopTestedPublicApiPath: String,
+    val androidTestedPublicApiPath: String,
+    val androidPathMatchesDesktopPath: Boolean,
     val transientInMemoryTinkKeysetHandleRequired: Boolean,
     val persistedTinkKeysetRequired: Boolean,
     val randomTinkGeneratedVaultKeyRequired: Boolean,
-)
+) {
+    val crossPlatformFeasibilitySatisfied: Boolean
+        get() = desktopFeasibilityStatus.satisfiesFeasibilityGate &&
+            androidFeasibilityStatus.satisfiesAndroidFeasibilityGate
+}
 
 data class ProductionProviderArgon2idAcceptancePolicy(
     val version: Argon2idVersion,
@@ -487,11 +512,18 @@ data class ProductionProviderAcceptanceContract(
                     internalUnsupportedReflectiveApisAllowed = false,
                     fallbackEncryptedKeysetModelImplemented = false,
                     productionAeadExecutionImplemented = false,
-                    feasibilityStatus =
+                    desktopFeasibilityStatus =
                         ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
-                    testedPublicApiPath = "caller-supplied fixed bytes -> public Tink secret-byte wrapper -> " +
+                    androidFeasibilityStatus =
+                        ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                            .ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API,
+                    desktopTestedPublicApiPath = "caller-supplied fixed bytes -> public Tink secret-byte wrapper -> " +
                         "public Tink XChaCha20-Poly1305 key object -> transient in-memory Tink keyset handle " +
                         "import -> public AEAD primitive lookup",
+                    androidTestedPublicApiPath = "caller-supplied fixed bytes -> public Tink secret-byte wrapper -> " +
+                        "public Tink XChaCha20-Poly1305 key object -> transient in-memory Tink keyset handle " +
+                        "import -> public AEAD primitive lookup",
+                    androidPathMatchesDesktopPath = true,
                     transientInMemoryTinkKeysetHandleRequired = true,
                     persistedTinkKeysetRequired = false,
                     randomTinkGeneratedVaultKeyRequired = false,

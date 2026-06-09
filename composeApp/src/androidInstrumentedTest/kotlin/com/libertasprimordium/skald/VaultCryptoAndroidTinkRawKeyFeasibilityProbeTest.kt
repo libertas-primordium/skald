@@ -1,5 +1,6 @@
 package com.libertasprimordium.skald
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.InsecureSecretKeyAccess
 import com.google.crypto.tink.KeyStatus
@@ -9,21 +10,24 @@ import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.XChaCha20Poly1305Key
 import com.google.crypto.tink.aead.XChaCha20Poly1305Parameters
 import com.google.crypto.tink.util.SecretBytes
-import com.libertasprimordium.skald.security.ProductionProviderTinkRawKeyFeasibilityStatus
+import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.commonProductionProviderAcceptanceContract
-import kotlin.test.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
 
-class VaultCryptoTinkRawKeyFeasibilityProbeTest {
+@RunWith(AndroidJUnit4::class)
+class VaultCryptoAndroidTinkRawKeyFeasibilityProbeTest {
     @Test
-    fun publicTinkApiCanConstructXChaChaPrimitiveFromCallerSuppliedRawKeyBytes() {
+    fun androidPublicTinkApiCanConstructXChaChaPrimitiveFromCallerSuppliedRawKeyBytes() {
         AeadConfig.register()
         val fixedNonSecretKeyBytes = fixedRawKeyBytes()
         val fixedNonSecretPlaintext = "skald fixed non-secret raw-key probe plaintext".encodeToByteArray()
         val fixedNonSecretAssociatedData = "skald fixed non-secret raw-key probe aad".encodeToByteArray()
+        val fixedNonSecretWrongAssociatedData = "skald fixed non-secret wrong probe aad".encodeToByteArray()
 
         val key = XChaCha20Poly1305Key.create(
             XChaCha20Poly1305Parameters.Variant.NO_PREFIX,
@@ -42,23 +46,27 @@ class VaultCryptoTinkRawKeyFeasibilityProbeTest {
 
         val ciphertext = aead.encrypt(fixedNonSecretPlaintext, fixedNonSecretAssociatedData)
         val decrypted = aead.decrypt(ciphertext, fixedNonSecretAssociatedData)
+        val wrongAadResult = runCatching {
+            aead.decrypt(ciphertext, fixedNonSecretWrongAssociatedData)
+        }
 
         assertEquals(1, keysetHandle.size())
-        assertContentEquals(fixedNonSecretPlaintext, decrypted)
+        assertArrayEquals(fixedNonSecretPlaintext, decrypted)
         assertFalse(ciphertext.contentEquals(fixedNonSecretPlaintext))
+        assertTrue(wrongAadResult.isFailure)
     }
 
     @Test
-    fun acceptanceContractRecordsFeasiblePublicRawKeyApiWithoutProductionEnablement() {
+    fun acceptanceContractRecordsAndroidPublicRawKeyApiWithoutProductionEnablement() {
         val policy = commonProductionProviderAcceptanceContract().tinkRawKeyHandlingPolicy
 
         assertEquals(
-            ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
-            policy.desktopFeasibilityStatus,
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus.ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API,
+            policy.androidFeasibilityStatus,
         )
-        assertTrue(policy.desktopFeasibilityStatus.satisfiesFeasibilityGate)
-        assertTrue(policy.crossPlatformFeasibilitySatisfied)
+        assertTrue(policy.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
         assertTrue(policy.androidPathMatchesDesktopPath)
+        assertTrue(policy.crossPlatformFeasibilitySatisfied)
         assertTrue(policy.transientInMemoryTinkKeysetHandleRequired)
         assertFalse(policy.persistedTinkKeysetRequired)
         assertFalse(policy.randomTinkGeneratedVaultKeyRequired)

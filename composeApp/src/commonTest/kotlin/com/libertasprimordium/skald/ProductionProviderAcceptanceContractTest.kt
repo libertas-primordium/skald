@@ -8,6 +8,7 @@ import com.libertasprimordium.skald.security.ProductionProviderAcceptanceBlocker
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidence
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidenceState
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceGate
+import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentField
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
@@ -226,6 +227,73 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.UnknownGateEvidence)
         assertFalse(assessment.productionProviderSelectable)
         assertFalse(assessment.productionPersistenceAllowed)
+    }
+
+    @Test
+    fun androidTinkRawKeyFeasibilityMustBeKnownAndSuccessfulForCrossPlatformReadiness() {
+        val policy = contract.tinkRawKeyHandlingPolicy
+
+        assertEquals(
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus.ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API,
+            policy.androidFeasibilityStatus,
+        )
+        assertTrue(policy.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
+        assertTrue(policy.crossPlatformFeasibilitySatisfied)
+
+        val feasible = policy.copy(
+            androidFeasibilityStatus =
+                ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                    .ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API,
+        )
+
+        val infeasible = policy.copy(
+            androidFeasibilityStatus =
+                ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                    .ANDROID_NOT_FEASIBLE_WITH_CURRENT_TINK_API,
+        )
+        val inconclusive = policy.copy(
+            androidFeasibilityStatus =
+                ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                    .ANDROID_INCONCLUSIVE_REQUIRES_HUMAN_REVIEW,
+        )
+
+        assertTrue(feasible.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
+        assertTrue(feasible.crossPlatformFeasibilitySatisfied)
+        assertFalse(infeasible.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
+        assertFalse(infeasible.crossPlatformFeasibilitySatisfied)
+        assertFalse(inconclusive.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
+        assertFalse(inconclusive.crossPlatformFeasibilitySatisfied)
+    }
+
+    @Test
+    fun androidFeasibleEvidenceAloneDoesNotSelectProvider() {
+        val assessment = contract.assess(
+            ProductionProviderAcceptanceEvidence(
+                gateStates = mapOf(
+                    ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
+                        ProductionProviderAcceptanceEvidenceState.Satisfied,
+                ),
+            ),
+        )
+        val result = VaultCryptoProviderSelectionRegistry.select(
+            request = VaultCryptoProviderSelectionRequest(
+                requestedCandidate = VaultCryptoProviderCandidateId.TinkBouncyCastleSplit,
+            ),
+            productionProviderAcceptanceAssessment = assessment,
+        )
+        val feasiblePolicy = contract.tinkRawKeyHandlingPolicy.copy(
+            androidFeasibilityStatus =
+                ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                    .ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API,
+        )
+
+        assertTrue(feasiblePolicy.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
+        assertTrue(feasiblePolicy.crossPlatformFeasibilitySatisfied)
+        assertFalse(assessment.allRequiredGatesSatisfied)
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
+        assertFalse(result.productionProviderSelectable)
+        assertFalse(result.requestedCandidate.productionSelectable)
     }
 
     @Test
@@ -466,15 +534,26 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.productionAeadExecutionImplemented)
         assertEquals(
             ProductionProviderTinkRawKeyFeasibilityStatus.FEASIBLE_PUBLIC_RAW_KEY_API,
-            policy.feasibilityStatus,
+            policy.desktopFeasibilityStatus,
         )
-        assertTrue(policy.feasibilityStatus.satisfiesFeasibilityGate)
+        assertEquals(
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus.ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API,
+            policy.androidFeasibilityStatus,
+        )
+        assertTrue(policy.desktopFeasibilityStatus.satisfiesFeasibilityGate)
+        assertTrue(policy.androidFeasibilityStatus.satisfiesAndroidFeasibilityGate)
+        assertTrue(policy.crossPlatformFeasibilitySatisfied)
         assertEquals(
             "caller-supplied fixed bytes -> public Tink secret-byte wrapper -> " +
                 "public Tink XChaCha20-Poly1305 key object -> transient in-memory Tink keyset handle " +
                 "import -> public AEAD primitive lookup",
-            policy.testedPublicApiPath,
+            policy.desktopTestedPublicApiPath,
         )
+        assertEquals(
+            policy.desktopTestedPublicApiPath,
+            policy.androidTestedPublicApiPath,
+        )
+        assertTrue(policy.androidPathMatchesDesktopPath)
         assertTrue(policy.transientInMemoryTinkKeysetHandleRequired)
         assertFalse(policy.persistedTinkKeysetRequired)
         assertFalse(policy.randomTinkGeneratedVaultKeyRequired)
@@ -504,6 +583,29 @@ class ProductionProviderAcceptanceContractTest {
                 "INCONCLUSIVE_REQUIRES_HUMAN_REVIEW",
             ),
             ProductionProviderTinkRawKeyFeasibilityStatus.entries.map { it.name }.toSet(),
+        )
+        assertTrue(
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                .ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API
+                .satisfiesAndroidFeasibilityGate,
+        )
+        assertFalse(
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                .ANDROID_NOT_FEASIBLE_WITH_CURRENT_TINK_API
+                .satisfiesAndroidFeasibilityGate,
+        )
+        assertFalse(
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus
+                .ANDROID_INCONCLUSIVE_REQUIRES_HUMAN_REVIEW
+                .satisfiesAndroidFeasibilityGate,
+        )
+        assertEquals(
+            setOf(
+                "ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API",
+                "ANDROID_NOT_FEASIBLE_WITH_CURRENT_TINK_API",
+                "ANDROID_INCONCLUSIVE_REQUIRES_HUMAN_REVIEW",
+            ),
+            ProductionProviderAndroidTinkRawKeyFeasibilityStatus.entries.map { it.name }.toSet(),
         )
     }
 

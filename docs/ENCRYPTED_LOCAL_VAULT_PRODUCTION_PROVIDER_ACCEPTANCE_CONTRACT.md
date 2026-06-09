@@ -172,13 +172,14 @@ Required v1 policy:
 - do not add a fallback encrypted Tink keyset model in this branch,
 - do not implement production AEAD encryption or decryption in commonMain.
 
-The test-scope feasibility probe is documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). Its exact result is:
+The test-scope feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). Their exact results are:
 
 ```text
 FEASIBLE_PUBLIC_RAW_KEY_API
+ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API
 ```
 
-The tested public API path is:
+The tested public API path is the same on desktop/JVM and Android:
 
 ```text
 AeadConfig.register()
@@ -189,9 +190,9 @@ KeysetHandle.newBuilder().addEntry(importedEntry).build()
 keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
 ```
 
-This path uses caller-supplied fixed non-secret key bytes, a fixed non-secret key id, and a transient in-memory Tink `KeysetHandle`. It does not persist a Tink keyset, does not use `CleartextKeysetHandle`, does not use keyset readers or writers, does not generate a Tink vault key, does not call Tink key rotation APIs, and does not use internal Tink APIs or reflection.
+This path uses caller-supplied fixed non-secret key bytes, a fixed non-secret key id, and a transient in-memory Tink `KeysetHandle`. It does not persist a Tink keyset, does not use `CleartextKeysetHandle`, does not use keyset readers or writers, does not generate a Tink vault key, does not call Tink key rotation APIs, and does not use internal Tink APIs or reflection. Android instrumented parity confirms wrong associated data fails through the same public `Aead` primitive.
 
-This result satisfies only the raw-key feasibility gate. It does not implement production AEAD, does not approve production provider selection, does not approve vault persistence, and does not remove the vault-level key commitment/header authentication requirement.
+These results satisfy only the cross-platform raw-key feasibility gate. They do not implement production AEAD, do not approve production provider selection, do not approve vault persistence, and do not remove the vault-level key commitment/header authentication requirement.
 
 ## AAD And Tamper Requirements
 

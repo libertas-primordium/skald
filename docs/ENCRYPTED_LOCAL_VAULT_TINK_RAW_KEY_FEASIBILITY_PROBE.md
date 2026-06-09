@@ -2,7 +2,7 @@
 
 ## Status
 
-This document records the Skald Vault v1 Tink raw-key feasibility probe.
+This document records the Skald Vault v1 Tink raw-key feasibility probes.
 
 This is test/probe evidence only. It does not implement a production provider, production AEAD execution, production key derivation, production randomness, key generation, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
@@ -14,9 +14,9 @@ Runtime behavior remains fail-closed:
 - Secure secret storage and secure metadata storage remain disabled.
 - Header commitment, passphrase validation, bounded Argon2id approval, provider implementation, production provider KATs, vault container/storage, and redaction/migration tests remain required.
 
-## Result
+## Results
 
-The exact probe outcome is:
+The desktop/JVM probe outcome is:
 
 ```text
 FEASIBLE_PUBLIC_RAW_KEY_API
@@ -31,9 +31,25 @@ Meaning:
 - no random Tink-generated vault key is required;
 - no key rotation or multiple active AEAD keys are required.
 
-This result satisfies only the raw-key feasibility question. It does not approve the production provider, does not approve vault persistence, does not prove key commitment, and does not solve the non-key-committing AEAD risk.
+The Android instrumented probe outcome is:
 
-## Tested API Path
+```text
+ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API
+```
+
+Meaning:
+
+- public Tink APIs available to the pinned `com.google.crypto.tink:tink-android:1.21.0` Android artifact can construct the pinned XChaCha20-Poly1305 AEAD primitive from caller-supplied raw key bytes;
+- the Android path matches the desktop/JVM public API path;
+- no internal Tink API is used;
+- no reflection is used;
+- no persisted Tink keyset is required;
+- no random Tink-generated vault key is required;
+- no key rotation or multiple active AEAD keys are required.
+
+Together these results satisfy only the cross-platform raw-key feasibility question. They do not approve the production provider, do not approve vault persistence, do not prove key commitment, and do not solve the non-key-committing AEAD risk.
+
+## Tested API Paths
 
 Desktop test source:
 
@@ -41,7 +57,13 @@ Desktop test source:
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTinkRawKeyFeasibilityProbeTest.kt
 ```
 
-The probe uses fixed non-secret test bytes only. The tested public API path is:
+Android instrumented test source:
+
+```text
+composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTinkRawKeyFeasibilityProbeTest.kt
+```
+
+Both probes use fixed non-secret test bytes only. The tested public API path is the same on desktop/JVM and Android:
 
 ```text
 AeadConfig.register()
@@ -52,13 +74,13 @@ KeysetHandle.newBuilder().addEntry(importedEntry).build()
 keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
 ```
 
-The probe then performs one round trip with fixed non-secret plaintext and fixed non-secret associated data. The public `Aead` API does not require a caller-supplied nonce; therefore the probe does not provide one. The resulting test ciphertext is not logged, persisted, written to files, treated as vault material, or used outside the assertion.
+Each probe then performs one round trip with fixed non-secret plaintext and fixed non-secret associated data. The Android probe also confirms wrong associated data fails. The public `Aead` API does not require a caller-supplied nonce; therefore the probes do not provide one. Resulting test ciphertext is not logged, persisted, written to files, treated as vault material, or used outside assertions.
 
 ## Keyset Handling
 
 The public Tink primitive lookup path requires a transient in-memory `KeysetHandle` wrapping the imported caller-supplied key. This is not persisted and is not a storage model.
 
-The probe does not use:
+The probes do not use:
 
 - `KeysetHandle.generateNew(...)`,
 - `KeysetHandle.generateEntryFromParameters(...)`,
@@ -75,29 +97,28 @@ The fixed test key id is non-secret metadata used only to satisfy the public bui
 
 ## Internal API And Reflection Boundary
 
-The raw-key feasibility probe does not import:
+The raw-key feasibility probes do not import:
 
 - `com.google.crypto.tink.aead.internal.*`,
 - `com.google.crypto.tink.internal.*`,
 - `com.google.crypto.tink.subtle.*`.
 
-It does not use reflection, `Class.forName`, declared-member access, or unsupported Tink internals.
+They do not use reflection, `Class.forName`, declared-member access, or unsupported Tink internals.
 
 The existing dependency-level XChaCha public-vector KATs still use Tink's explicit-nonce internal probe API because official KAT vectors require fixed nonces. That KAT-only internal API remains separate from this raw-key feasibility probe and is not approved for production provider code.
 
 ## What This Proves
 
-The probe proves that, in test scope on the current desktop/JVM target, pinned Tink `1.21.0` exposes a public API path to construct an XChaCha20-Poly1305 `Aead` primitive from caller-supplied fixed raw key bytes without persisted keysets or random Tink key generation.
+The probes prove that, in test scope on the current desktop/JVM and Android targets, pinned Tink `1.21.0` exposes a public API path to construct an XChaCha20-Poly1305 `Aead` primitive from caller-supplied fixed raw key bytes without persisted keysets or random Tink key generation.
 
-It also proves the Skald acceptance model can represent that result while keeping provider selectability disabled.
+They also prove the Skald acceptance model can represent platform-specific desktop/JVM and Android results while keeping provider selectability disabled.
 
 ## What This Does Not Prove
 
-The probe does not prove:
+The probes do not prove:
 
 - production AEAD security,
 - production provider correctness,
-- Android runtime raw-key behavior,
 - production KDF correctness,
 - entropy quality,
 - nonce uniqueness over a vault lifetime,
@@ -124,7 +145,8 @@ Source guards must continue to prove:
 - production source does not call Tink key generation APIs,
 - production source does not use Tink internal or subtle packages,
 - production source does not execute AEAD encrypt/decrypt,
-- this raw-key probe remains confined to desktop test/probe scope.
+- the desktop raw-key probe remains confined to desktop test/probe scope,
+- the Android raw-key probe remains confined to Android instrumented test/probe scope.
 
 ## Next Step
 
