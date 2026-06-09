@@ -4,7 +4,7 @@
 
 Skald Vault now has a disabled provider-selection and registry boundary for the future app-controlled encrypted local vault crypto provider.
 
-This is selection policy only. It does not implement executable provider crypto, provider-wired Argon2id passphrase derivation, calibration, provider-wired AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, manifest read/write, storage index read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 verification, strict AAD serialization, and Tink record AEAD construction exist only as still-disabled building blocks and are not provider-selectable.
+This is selection policy only. It does not implement provider selectability, calibration, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, manifest read/write, storage index read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 verification, strict AAD serialization, Tink record AEAD construction, and integrated provider KAT harness exist only as still-disabled building blocks/evidence and are not provider-selectable.
 
 Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The canonical header/HKDF/HMAC non-secret vector contract is documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy for randomized AEAD and the stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
 
@@ -89,7 +89,7 @@ Current Tink plus Bouncy Castle evidence:
 - Android APK and Linux `.deb` package probes passed in prior branches.
 - Candidate-level dependency/license/keyset/split-provider review is documented.
 
-This evidence does not select a provider for production because the production provider implementation is absent and production provider-level KATs have not passed.
+This evidence does not select a provider for production because the selectable production provider implementation is absent. Still-disabled integrated provider KAT execution is separate evidence and does not approve selection.
 
 ## Test-Provider Evidence Treatment
 
@@ -106,6 +106,10 @@ The test-only provider KAT harness proves that the Skald-owned `VaultCryptoProvi
 
 That evidence is test-scope only. It does not satisfy production provider selection because the harness is not a production provider, does not store keys, does not write vault records, and does not exercise production storage or lock/session lifecycle behavior.
 
+## Still-Disabled Integrated KAT Evidence
+
+`SkaldVaultV1StillDisabledProviderKatHarness` now composes the passphrase, Argon2id, HKDF, canonical header, HMAC header commitment, strict AAD, and Tink record AEAD building blocks with fixed non-secret fixtures. Its tests assert deterministic vector stages, randomized AEAD behavioral checks, and the required verification order: header commitment verification must complete before record AEAD use, and failed header commitment exits before record AEAD. This evidence is not selectable and exposes no vault creation, storage, manifest, secure-storage, wallet, or persistence API.
+
 ## Production Approval Gates
 
 A future executable provider cannot become selectable until every required gate is satisfied:
@@ -114,10 +118,10 @@ A future executable provider cannot become selectable until every required gate 
 | --- | --- |
 | Production provider acceptance contract satisfied | Blocked. The contract is modeled but incomplete for production implementation and persistence. |
 | Production provider implementation exists | Blocked. |
-| Production provider-level KATs passed | Blocked. |
-| Provider-level KAT strategy approved | Blocked. The strategy is documented/model-only and requires deterministic vectors plus randomized AEAD behavioral checks. |
-| Randomized AEAD behavioral KATs passed | Blocked. Tink ciphertext is randomized, so future KATs must use deterministic AAD plus round-trip and negative/tamper checks instead of fixed ciphertext hex. |
-| Integrated verification-order KATs passed | Blocked. Future KATs must prove header commitment verification happens before record decrypt. |
+| Still-disabled provider-level KATs passed | Evidence exists through the still-disabled integrated harness, but this is not selection approval. |
+| Provider-level KAT strategy approved | Still-disabled harness evidence exists for deterministic vectors plus randomized AEAD behavioral checks. |
+| Randomized AEAD behavioral KATs passed | Still-disabled harness evidence exists without fixed ciphertext hex. |
+| Integrated verification-order KATs passed | Still-disabled harness evidence proves header commitment verification happens before record AEAD use. |
 | Android and desktop runtime coverage exists | Candidate evidence exists for dependency/test-provider paths, but not a production provider. |
 | Runtime randomness/provider checks pass | Test-only Android/Linux availability probes are modeled; they do not prove entropy quality or approve production randomness. |
 | Argon2id parameters final for the platform | Blocked. Candidate tiers are non-final, and bounded calibration at the shared v1 floor is not approved. |
@@ -157,7 +161,7 @@ The Argon2id candidate policy is explicitly non-final:
 - Android supported-compatibility planning is modeled separately from final KDF parameter approval.
 - Manual Android capture protocol exists for optional device-class and runtime-environment evidence; low-end and mid-range model evidence is no longer a compatibility hard blocker.
 
-The provider-selection boundary treats non-final KDF parameters, missing bounded-calibration approval, missing production provider implementation, missing production provider-level KATs, missing randomized AEAD behavioral KATs, missing verification-order KATs, missing stale-record manifest/storage policy, disabled storage, and runtime provider/primitive/randomness checks as production gates. Unknown runtime provider or randomness state blocks provider planning. Satisfied compatibility planning still does not make a provider selectable. Test-only randomness probes generate only non-secret samples and are not entropy-quality proof. The desktop and Android raw-key feasibility probes and still-disabled record AEAD building block satisfy only the raw-key construction and isolated behavior questions for the pinned public Tink API path; they do not approve vault storage or provider selection.
+The provider-selection boundary treats non-final KDF parameters, missing bounded-calibration approval, missing selectable production provider implementation, still-disabled KAT harness evidence, missing stale-record manifest/storage policy, disabled storage, and runtime provider/primitive/randomness checks as production gates. Unknown runtime provider or randomness state blocks provider planning. Satisfied compatibility planning and still-disabled integrated KAT execution still do not make a provider selectable. Test-only randomness probes generate only non-secret samples and are not entropy-quality proof. The desktop and Android raw-key feasibility probes and still-disabled record AEAD building block satisfy only the raw-key construction and isolated behavior questions for the pinned public Tink API path; they do not approve vault storage or provider selection.
 
 ## Storage And Mainnet Gates
 

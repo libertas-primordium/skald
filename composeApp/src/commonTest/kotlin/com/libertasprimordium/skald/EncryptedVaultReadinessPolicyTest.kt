@@ -58,29 +58,16 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HkdfSha256KeyExpansionProviderIntegrationMissing)
-        assertContains(
-            decision.blockers,
-            EncryptedVaultBlockingIssue.HmacSha256HeaderCommitmentProviderIntegrationMissing,
-        )
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderSerializerProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeySeparationLabelsProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StrictAadProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRecordAeadProviderIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StillDisabledProviderIntegrationHarnessNotSelectable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderLevelKatStrategyContractOnly)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.RandomizedAeadBehavioralKatExecutionMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.IntegratedVerificationOrderKatExecutionMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved))
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphrasePolicyProviderIntegrationMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.Argon2idRootDerivationProviderIntegrationMissing)
+        assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.PassphrasePolicyProviderIntegrationMissing))
+        assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.Argon2idRootDerivationProviderIntegrationMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityProbeOnly)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.Argon2idBoundedCalibrationUnapproved)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing)
+        assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
         assertContains(decision.warnings, EncryptedVaultWarning.ReadinessOnlyNoEncryption)
@@ -92,6 +79,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderLevelKatStrategyContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RandomizedAeadBehavioralKatPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.IntegratedVerificationOrderKatPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledProviderIntegrationHarness)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledProviderLevelKatExecution)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledRandomizedAeadBehavioralKatExecution)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledIntegratedVerificationOrderKatExecution)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StaleRecordManifestPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
@@ -223,6 +214,10 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.ProviderLevelKatStrategyContractModeled,
             EncryptedVaultRequirement.RandomizedAeadBehavioralKatPolicyModeled,
             EncryptedVaultRequirement.IntegratedVerificationOrderKatPolicyModeled,
+            EncryptedVaultRequirement.StillDisabledProviderIntegrationHarnessImplementedAndTested,
+            EncryptedVaultRequirement.ProviderLevelKatsExecutedInStillDisabledHarness,
+            EncryptedVaultRequirement.RandomizedAeadBehavioralKatsExecutedInStillDisabledHarness,
+            EncryptedVaultRequirement.IntegratedVerificationOrderKatsExecutedInStillDisabledHarness,
             EncryptedVaultRequirement.StaleRecordManifestPolicyModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
