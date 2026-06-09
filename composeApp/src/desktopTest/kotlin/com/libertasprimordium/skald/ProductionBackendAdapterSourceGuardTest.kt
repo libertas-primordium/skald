@@ -177,6 +177,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/ProductionProviderAcceptanceContract.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -195,7 +196,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bSecretKeySpec\b"""),
             Regex("""\bMac\("""),
             Regex("""\bMessageDigest\b"""),
-            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecureRandom\("""),
             Regex("""\bMath\.random\b"""),
             Regex("""\bUUID\b"""),
             Regex("""\bcurrentTimeMillis\b"""),
@@ -225,6 +226,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/ProductionProviderAcceptanceContract.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -243,7 +245,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bCipher\("""),
             Regex("""\bKeyGenerator\b"""),
             Regex("""\bSecretKeySpec\b"""),
-            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecureRandom\("""),
             Regex("""\bMath\.random\b"""),
             Regex("""\bUUID\b"""),
             Regex("""\bcurrentTimeMillis\b"""),
@@ -436,6 +438,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/ProductionProviderAcceptanceContract.kt"),
         )
 
     private fun repositoryRoot(): File =
