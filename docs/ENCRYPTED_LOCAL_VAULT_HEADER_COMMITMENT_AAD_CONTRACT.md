@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the Skald Vault v1 header commitment, canonical header encoding, key-separation label, and AEAD associated-data acceptance contract.
+This document defines the Skald Vault v1 header commitment, canonical header encoding, key-separation label, and AEAD associated-data acceptance contract. The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented separately in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md).
 
 It is design, model, and acceptance-contract evidence only. It does not implement production header commitment computation, canonical serialization, key derivation, AEAD encryption, AEAD decryption, random-byte generation, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
@@ -29,7 +29,13 @@ The v1 header commitment policy id is:
 skald-vault-v1-header-commitment-v1
 ```
 
-Before any encrypted record decrypt, a future production vault must verify a vault-level header commitment over canonical header bytes. Verification failure must block vault unlock and record decrypt.
+The v1 header-commitment primitive policy id is:
+
+```text
+skald-vault-v1-hmac-sha256-header-commitment-v1
+```
+
+Before any encrypted record decrypt, a future production vault must verify a vault-level HMAC-SHA-256 header commitment over canonical header bytes using the derived 32-byte header commitment key. Verification failure must block vault unlock and record decrypt.
 
 The commitment must bind at least:
 
@@ -129,7 +135,15 @@ Policy labels are stable, versioned ASCII constants:
 
 The reserved labels are not implemented by this branch. The test/probe label is not a production label.
 
-The exact key-expansion primitive is still a human-review item for the future still-disabled provider implementation. This branch does not implement HKDF or any other production key derivation.
+The v1 key-expansion primitive is HKDF-SHA-256 under policy id:
+
+```text
+skald-vault-v1-hkdf-sha256-key-expansion-v1
+```
+
+Argon2id produces 64 bytes of root material. HKDF-SHA-256 expands that root material into a 32-byte header commitment key and a 32-byte record AEAD key. The record AEAD key feeds the previously probed public Tink XChaCha20-Poly1305 raw-key API path.
+
+This branch does not implement HKDF, HMAC, or any production key derivation.
 
 Unknown or unsupported key-separation policy evidence blocks production provider selectability.
 
@@ -188,10 +202,11 @@ The required order is:
 
 1. Parse and validate the plaintext unlock header structure.
 2. Reject unsupported suite, KDF, passphrase encoding, key-separation, header commitment, AAD, and record format policies.
-3. Derive root material according to the stored header parameters.
-4. Separate header commitment key material from record AEAD key material.
-5. Verify the header commitment over canonical header bytes.
-6. Only after successful verification, attempt record decrypt with strict AAD.
+3. Canonicalize or reconstruct canonical header bytes.
+4. Derive 64 bytes of Argon2id root material according to the stored header parameters.
+5. Expand subkeys using HKDF-SHA-256 and stable labels.
+6. Verify the HMAC-SHA-256 header commitment over canonical header bytes.
+7. Only after successful verification, attempt record decrypt with strict AAD.
 
 Raw-key feasibility evidence cannot bypass steps 1-5. Dependency-level KATs, test-provider KATs, and Tink raw-key probes are necessary evidence, but they do not satisfy header commitment, canonical encoding, key-separation, AAD, tamper-test, storage, or provider selectability gates.
 
@@ -214,15 +229,15 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoDepende
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
 
-Source guards continue to prove that common production source does not import Tink or Bouncy Castle provider APIs, does not execute production AEAD/KDF operations, does not persist keysets, does not generate random Tink vault keys, does not implement header commitment computation, and does not add vault storage.
+Source guards continue to prove that common production source does not import Tink or Bouncy Castle provider APIs, does not execute production AEAD/KDF/HKDF/HMAC operations, does not persist keysets, does not generate random Tink vault keys, does not implement header commitment computation, and does not add vault storage.
 
 ## Remaining Implementation Blockers
 
 Before a still-disabled provider implementation can proceed, human review must still resolve:
 
-- the exact key-expansion primitive and output layout,
+- production HKDF-SHA-256 key-expansion implementation and non-secret test vectors,
 - canonical header byte test vectors,
-- header commitment primitive and test vectors,
+- production HMAC-SHA-256 header-commitment implementation and non-secret test vectors,
 - record version/counter and stale-record policy,
 - production provider-level KAT execution,
 - final bounded Argon2id calibration,

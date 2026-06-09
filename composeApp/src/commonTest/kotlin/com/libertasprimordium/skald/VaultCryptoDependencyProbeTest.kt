@@ -59,6 +59,13 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.RuntimeRandomnessProviderChecksModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.ProductionProviderAcceptanceContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.VaultHeaderCommitmentPolicyModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.HkdfSha256KeyExpansionPolicyModeled)
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.HmacSha256HeaderCommitmentPrimitiveModeled,
+        )
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.KeyExpansionOutputLayoutModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.PrimitiveThreatModelRationaleModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.CanonicalHeaderEncodingPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.KeySeparationLabelsPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StrictAadContractPolicyModeled)
@@ -85,6 +92,9 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProviderLevelKatExecutionMissing)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkRawKeyFeasibilityApprovalMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultHeaderCommitmentImplementationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.HkdfSha256KeyExpansionImplementationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.HmacSha256HeaderCommitmentImplementationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.KeyExpansionOutputLayoutImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.CanonicalHeaderEncodingImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.KeySeparationImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StrictAadContractImplementationMissing)

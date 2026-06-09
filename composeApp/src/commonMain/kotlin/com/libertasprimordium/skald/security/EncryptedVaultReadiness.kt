@@ -102,6 +102,11 @@ enum class EncryptedVaultAssociatedDataRequirement(val label: String) {
 enum class EncryptedVaultKeyHierarchyRequirement(val label: String) {
     UserUnlockSecretRequired("user unlock secret required"),
     PassphraseDerivedRootMaterial("passphrase-derived root material"),
+    Argon2idRootMaterial64Bytes("Argon2id derives 64-byte root material for v1"),
+    HkdfSha256KeyExpansionSelected("HKDF-SHA-256 selected for v1 key expansion"),
+    HmacSha256HeaderCommitmentSelected("HMAC-SHA-256 selected for v1 header commitment"),
+    HeaderCommitmentKey32Bytes("header commitment key material is 32 bytes"),
+    RecordAeadKey32Bytes("record AEAD key material is 32 bytes"),
     VersionedKeySeparationLabelsRequired("versioned key-separation labels required"),
     HeaderCommitmentKeySeparated("header commitment key material separated from record AEAD key material"),
     RecordAeadKeyMaterialDerivedFromRoot("record AEAD key material derived from root material"),
@@ -155,6 +160,10 @@ enum class EncryptedVaultRequirement(val label: String) {
     VaultCreationFailClosedWarningModeled("vault-creation fail-closed warning modeled"),
     ProductionProviderAcceptanceContractModeled("production provider acceptance contract modeled"),
     VaultHeaderCommitmentPolicyModeled("vault header commitment policy modeled"),
+    HkdfSha256KeyExpansionPolicyModeled("HKDF-SHA-256 key-expansion policy modeled"),
+    HmacSha256HeaderCommitmentPrimitiveModeled("HMAC-SHA-256 header-commitment primitive modeled"),
+    KeyExpansionOutputLayoutModeled("key-expansion output layout modeled"),
+    PrimitiveThreatModelRationaleModeled("primitive threat model and rationale modeled"),
     CanonicalHeaderEncodingPolicyModeled("canonical header encoding policy modeled"),
     KeySeparationLabelsPolicyModeled("key-separation labels policy modeled"),
     StrictAadContractModeled("strict AEAD associated-data contract modeled"),
@@ -194,6 +203,9 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     ProviderSelectionProductionBlocked("provider selection production blocked"),
     ProductionProviderAcceptanceContractIncomplete("production provider acceptance contract incomplete"),
     VaultHeaderCommitmentUnimplemented("vault header commitment unimplemented"),
+    HkdfSha256KeyExpansionUnimplemented("HKDF-SHA-256 key expansion unimplemented"),
+    HmacSha256HeaderCommitmentUnimplemented("HMAC-SHA-256 header commitment unimplemented"),
+    KeyExpansionOutputLayoutUnimplemented("key-expansion output layout unimplemented"),
     CanonicalHeaderEncodingUnimplemented("canonical header encoding unimplemented"),
     KeySeparationLabelsUnimplemented("key-separation labels unimplemented"),
     StrictAadContractUnimplemented("strict AEAD associated-data contract unimplemented"),
@@ -254,6 +266,16 @@ enum class EncryptedVaultCapability(
         enabledInProduction = true,
     ),
     VaultHeaderCommitmentPolicyModel("vault header commitment policy model", enabledInProduction = true),
+    HkdfSha256KeyExpansionPolicyModel(
+        "HKDF-SHA-256 key-expansion policy model",
+        enabledInProduction = true,
+    ),
+    HmacSha256HeaderCommitmentPrimitivePolicyModel(
+        "HMAC-SHA-256 header-commitment primitive policy model",
+        enabledInProduction = true,
+    ),
+    KeyExpansionOutputLayoutPolicyModel("key-expansion output layout policy model", enabledInProduction = true),
+    PrimitiveThreatModelRationaleModel("primitive threat model and rationale model", enabledInProduction = true),
     CanonicalHeaderEncodingPolicyModel(
         "canonical header encoding policy model",
         enabledInProduction = true,
@@ -448,6 +470,22 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.HkdfSha256KeyExpansionPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.HmacSha256HeaderCommitmentPrimitiveModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.KeyExpansionOutputLayoutModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.PrimitiveThreatModelRationaleModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
             EncryptedVaultRequirement.CanonicalHeaderEncodingPolicyModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -503,6 +541,9 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked,
             EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete,
             EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented,
+            EncryptedVaultBlockingIssue.HkdfSha256KeyExpansionUnimplemented,
+            EncryptedVaultBlockingIssue.HmacSha256HeaderCommitmentUnimplemented,
+            EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutUnimplemented,
             EncryptedVaultBlockingIssue.CanonicalHeaderEncodingUnimplemented,
             EncryptedVaultBlockingIssue.KeySeparationLabelsUnimplemented,
             EncryptedVaultBlockingIssue.StrictAadContractUnimplemented,
@@ -534,8 +575,8 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, canonical header encoding, key-separation labels, strict AAD, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, canonical header encoding policy, key-separation labels policy, strict AAD policy, passphrase encoding policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, key commitment/header authentication, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header encoding, key-separation labels, strict AAD, a disabled provider boundary, and a provider-selection boundary are modeled, but the vault is not implemented. Provider selection returns only the disabled provider. No keys are generated, no crypto is performed, and no data is persisted.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a provider-level KAT contract, a test-only provider KAT harness model, a non-final Argon2id candidate parameter policy, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header encoding policy, key-separation labels policy, strict AAD policy, passphrase encoding policy, bounded Argon2id calibration policy, and a disabled provider-selection boundary. Production implementation remains blocked until all acceptance gates, final KDF calibration, supported-platform runtime provider and randomness checks, production provider implementation, production provider-boundary KAT validation, AEAD verification, key commitment/header authentication, container format, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 

@@ -59,6 +59,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HkdfSha256KeyExpansionUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.HmacSha256HeaderCommitmentUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeyExpansionOutputLayoutUnimplemented)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CanonicalHeaderEncodingUnimplemented)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.KeySeparationLabelsUnimplemented)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StrictAadContractUnimplemented)
@@ -81,6 +84,13 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.RuntimeRandomnessProviderCheckModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ProductionProviderAcceptanceContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.VaultHeaderCommitmentPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.HkdfSha256KeyExpansionPolicyModel)
+        assertContains(
+            readiness.capabilities,
+            EncryptedVaultCapability.HmacSha256HeaderCommitmentPrimitivePolicyModel,
+        )
+        assertContains(readiness.capabilities, EncryptedVaultCapability.KeyExpansionOutputLayoutPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PrimitiveThreatModelRationaleModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.CanonicalHeaderEncodingPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.KeySeparationLabelsPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StrictAadContractPolicyModel)
@@ -133,6 +143,26 @@ class EncryptedVaultReadinessPolicyTest {
         )
         assertContains(
             policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.Argon2idRootMaterial64Bytes,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.HkdfSha256KeyExpansionSelected,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.HmacSha256HeaderCommitmentSelected,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.HeaderCommitmentKey32Bytes,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.RecordAeadKey32Bytes,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
             EncryptedVaultKeyHierarchyRequirement.VersionedKeySeparationLabelsRequired,
         )
         assertContains(
@@ -170,6 +200,10 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
             EncryptedVaultRequirement.ProductionProviderAcceptanceContractModeled,
             EncryptedVaultRequirement.VaultHeaderCommitmentPolicyModeled,
+            EncryptedVaultRequirement.HkdfSha256KeyExpansionPolicyModeled,
+            EncryptedVaultRequirement.HmacSha256HeaderCommitmentPrimitiveModeled,
+            EncryptedVaultRequirement.KeyExpansionOutputLayoutModeled,
+            EncryptedVaultRequirement.PrimitiveThreatModelRationaleModeled,
             EncryptedVaultRequirement.CanonicalHeaderEncodingPolicyModeled,
             EncryptedVaultRequirement.KeySeparationLabelsPolicyModeled,
             EncryptedVaultRequirement.StrictAadContractModeled,
@@ -248,6 +282,24 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.VaultHeaderCommitmentPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.HkdfSha256KeyExpansionPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.HmacSha256HeaderCommitmentPrimitiveModeled
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.KeyExpansionOutputLayoutModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.PrimitiveThreatModelRationaleModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

@@ -42,6 +42,12 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     XChaCha20Poly1305PrimitivePinned("XChaCha20-Poly1305 primitive/template/version pinned"),
     AeadKatsPassed("AEAD known-answer tests pass"),
     HeaderCommitmentPolicyApproved("vault-level header commitment policy approved"),
+    HkdfSha256KeyExpansionPrimitiveApproved("HKDF-SHA-256 key-expansion primitive policy approved"),
+    HmacSha256HeaderCommitmentPrimitiveApproved(
+        "HMAC-SHA-256 header-commitment primitive policy approved",
+    ),
+    KeyExpansionOutputLayoutApproved("key-expansion output layout approved"),
+    PrimitiveThreatModelRationaleDocumented("primitive threat model and rationale documented"),
     CanonicalHeaderEncodingPolicyApproved("canonical vault header encoding policy approved"),
     KeySeparationLabelsPolicyApproved("key-separation labels policy approved"),
     PassphraseEncodingPolicyApproved("passphrase encoding policy approved"),
@@ -256,6 +262,56 @@ data class ProductionProviderKeySeparationPolicy(
     val unknownUnsupportedPolicyBlocksSelectability: Boolean,
 )
 
+enum class ProductionProviderKeyExpansionPrimitive(val label: String) {
+    HkdfSha256("HKDF-SHA-256"),
+}
+
+data class ProductionProviderKeyExpansionPrimitivePolicy(
+    val policyId: String,
+    val primitive: ProductionProviderKeyExpansionPrimitive,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val argon2idRemainsPasswordKdf: Boolean,
+    val usedOnlyAfterArgon2idRootMaterialExists: Boolean,
+    val usedDirectlyOnPassphraseAllowed: Boolean,
+    val domainSeparatedByStableAsciiLabels: Boolean,
+    val avoidsManualRootMaterialSlicing: Boolean,
+    val productionHkdfExecutionImplemented: Boolean,
+)
+
+enum class ProductionProviderHeaderCommitmentPrimitive(val label: String) {
+    HmacSha256("HMAC-SHA-256"),
+}
+
+data class ProductionProviderHeaderCommitmentPrimitivePolicy(
+    val policyId: String,
+    val primitive: ProductionProviderHeaderCommitmentPrimitive,
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val inputDescription: String,
+    val usesDerivedHeaderCommitmentKey: Boolean,
+    val verifiesBeforeRecordDecrypt: Boolean,
+    val successfulRecordDecryptAloneProvesCorrectVaultKey: Boolean,
+    val productionHmacExecutionImplemented: Boolean,
+    val productionHeaderCommitmentComputationImplemented: Boolean,
+)
+
+data class ProductionProviderKeyExpansionOutputLayoutPolicy(
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val argon2idRootMaterialBytes: Int,
+    val headerCommitmentKeyBytes: Int,
+    val recordAeadKeyBytes: Int,
+    val recordAeadKeyFeedsTinkRawKeyPath: Boolean,
+    val reservedFutureWrappingExportMigrationOutputsImplemented: Boolean,
+)
+
+data class ProductionProviderPrimitiveThreatModelPolicy(
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val offlineAttackBecomesPassphraseGuessing: Boolean,
+    val dependsOnPassphraseEntropyAndArgon2idParameters: Boolean,
+    val hkdfAndHmacExpectedNotWeakLinkWhenCorrectlyImplemented: Boolean,
+    val liveEndpointCompromiseCovered: Boolean,
+    val weakPassphraseCompensatedByHkdfOrHmac: Boolean,
+)
+
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
     EmptyPassphrase("empty passphrase"),
     UnicodeControlCharacters("Unicode control characters"),
@@ -453,6 +509,14 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.HmacSha256HeaderCommitmentPrimitiveApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.KeyExpansionOutputLayoutApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.PrimitiveThreatModelRationaleDocumented to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.CanonicalHeaderEncodingPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.KeySeparationLabelsPolicyApproved to
@@ -495,6 +559,10 @@ data class ProductionProviderAcceptanceContract(
     val requiredGates: Set<ProductionProviderAcceptanceGate>,
     val argon2idPolicy: ProductionProviderArgon2idAcceptancePolicy,
     val headerCommitmentPolicy: ProductionProviderHeaderCommitmentAcceptancePolicy,
+    val keyExpansionPrimitivePolicy: ProductionProviderKeyExpansionPrimitivePolicy,
+    val headerCommitmentPrimitivePolicy: ProductionProviderHeaderCommitmentPrimitivePolicy,
+    val keyExpansionOutputLayoutPolicy: ProductionProviderKeyExpansionOutputLayoutPolicy,
+    val primitiveThreatModelPolicy: ProductionProviderPrimitiveThreatModelPolicy,
     val canonicalHeaderEncodingPolicy: ProductionProviderCanonicalHeaderEncodingPolicy,
     val keySeparationPolicy: ProductionProviderKeySeparationPolicy,
     val passphraseEncodingPolicy: ProductionProviderPassphraseEncodingPolicy,
@@ -646,6 +714,44 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderHeaderCommitmentFailClosedCondition.entries.toSet(),
                     productionExecutionImplemented = false,
                 ),
+                keyExpansionPrimitivePolicy = ProductionProviderKeyExpansionPrimitivePolicy(
+                    policyId = "skald-vault-v1-hkdf-sha256-key-expansion-v1",
+                    primitive = ProductionProviderKeyExpansionPrimitive.HkdfSha256,
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    argon2idRemainsPasswordKdf = true,
+                    usedOnlyAfterArgon2idRootMaterialExists = true,
+                    usedDirectlyOnPassphraseAllowed = false,
+                    domainSeparatedByStableAsciiLabels = true,
+                    avoidsManualRootMaterialSlicing = true,
+                    productionHkdfExecutionImplemented = false,
+                ),
+                headerCommitmentPrimitivePolicy = ProductionProviderHeaderCommitmentPrimitivePolicy(
+                    policyId = "skald-vault-v1-hmac-sha256-header-commitment-v1",
+                    primitive = ProductionProviderHeaderCommitmentPrimitive.HmacSha256,
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    inputDescription = "canonical vault header bytes",
+                    usesDerivedHeaderCommitmentKey = true,
+                    verifiesBeforeRecordDecrypt = true,
+                    successfulRecordDecryptAloneProvesCorrectVaultKey = false,
+                    productionHmacExecutionImplemented = false,
+                    productionHeaderCommitmentComputationImplemented = false,
+                ),
+                keyExpansionOutputLayoutPolicy = ProductionProviderKeyExpansionOutputLayoutPolicy(
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    argon2idRootMaterialBytes = 64,
+                    headerCommitmentKeyBytes = 32,
+                    recordAeadKeyBytes = 32,
+                    recordAeadKeyFeedsTinkRawKeyPath = true,
+                    reservedFutureWrappingExportMigrationOutputsImplemented = false,
+                ),
+                primitiveThreatModelPolicy = ProductionProviderPrimitiveThreatModelPolicy(
+                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    offlineAttackBecomesPassphraseGuessing = true,
+                    dependsOnPassphraseEntropyAndArgon2idParameters = true,
+                    hkdfAndHmacExpectedNotWeakLinkWhenCorrectlyImplemented = true,
+                    liveEndpointCompromiseCovered = false,
+                    weakPassphraseCompensatedByHkdfOrHmac = false,
+                ),
                 canonicalHeaderEncodingPolicy = ProductionProviderCanonicalHeaderEncodingPolicy(
                     policyId = "skald-vault-v1-canonical-header-encoding-v1",
                     policyVersion = 1,
@@ -664,7 +770,7 @@ data class ProductionProviderAcceptanceContract(
                     rootMaterialUsedDirectlyForMultiplePurposes = false,
                     recordAeadAndHeaderCommitmentKeyMaterialSeparated = true,
                     reservedFutureLabelsNotImplemented = true,
-                    keyExpansionPrimitiveApproved = false,
+                    keyExpansionPrimitiveApproved = true,
                     productionKeyDerivationImplemented = false,
                     unknownUnsupportedPolicyBlocksSelectability = true,
                 ),
