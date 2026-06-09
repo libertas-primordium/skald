@@ -81,10 +81,6 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(assessment.blockers, ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence)
         assertContains(
             assessment.blockers,
-            ProductionProviderAcceptanceBlocker.TestScopeVectorEvidenceOnly,
-        )
-        assertContains(
-            assessment.blockers,
             ProductionProviderAcceptanceBlocker.ProductionProviderSelectionStillDisabled,
         )
         assertContains(
@@ -765,11 +761,11 @@ class ProductionProviderAcceptanceContractTest {
 
         assertEquals("skald-vault-v1-header-commitment-v1", policy.policyId)
         assertEquals(1, policy.policyVersion)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertTrue(policy.requiredBeforeRecordDecrypt)
         assertFalse(policy.recordDecryptAllowedBeforeVerification)
         assertTrue(policy.commitmentKeyMaterialSeparatedFromRecordAeadKeyMaterial)
-        assertFalse(policy.productionExecutionImplemented)
+        assertTrue(policy.productionExecutionImplemented)
         assertEquals(
             ProductionProviderHeaderCommitmentField.entries.toSet(),
             policy.canonicalHeaderFields,
@@ -839,40 +835,40 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
-    fun hkdfSha256KeyExpansionPolicyIsSelectedAndContractOnly() {
+    fun hkdfSha256KeyExpansionPolicyIsSelectedAndImplementedStillDisabled() {
         val policy = contract.keyExpansionPrimitivePolicy
 
         assertEquals("skald-vault-v1-hkdf-sha256-key-expansion-v1", policy.policyId)
         assertEquals(ProductionProviderKeyExpansionPrimitive.HkdfSha256, policy.primitive)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertTrue(policy.argon2idRemainsPasswordKdf)
         assertTrue(policy.usedOnlyAfterArgon2idRootMaterialExists)
         assertFalse(policy.usedDirectlyOnPassphraseAllowed)
         assertTrue(policy.domainSeparatedByStableAsciiLabels)
         assertTrue(policy.avoidsManualRootMaterialSlicing)
-        assertFalse(policy.productionHkdfExecutionImplemented)
+        assertTrue(policy.productionHkdfExecutionImplemented)
     }
 
     @Test
-    fun hmacSha256HeaderCommitmentPrimitivePolicyIsSelectedAndContractOnly() {
+    fun hmacSha256HeaderCommitmentPrimitivePolicyIsSelectedAndImplementedStillDisabled() {
         val policy = contract.headerCommitmentPrimitivePolicy
 
         assertEquals("skald-vault-v1-hmac-sha256-header-commitment-v1", policy.policyId)
         assertEquals(ProductionProviderHeaderCommitmentPrimitive.HmacSha256, policy.primitive)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertEquals("canonical vault header bytes", policy.inputDescription)
         assertTrue(policy.usesDerivedHeaderCommitmentKey)
         assertTrue(policy.verifiesBeforeRecordDecrypt)
         assertFalse(policy.successfulRecordDecryptAloneProvesCorrectVaultKey)
-        assertFalse(policy.productionHmacExecutionImplemented)
-        assertFalse(policy.productionHeaderCommitmentComputationImplemented)
+        assertTrue(policy.productionHmacExecutionImplemented)
+        assertTrue(policy.productionHeaderCommitmentComputationImplemented)
     }
 
     @Test
-    fun keyExpansionOutputLayoutIsFixedButNotExecuted() {
+    fun keyExpansionOutputLayoutIsFixedAndImplementedStillDisabled() {
         val policy = contract.keyExpansionOutputLayoutPolicy
 
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertEquals(64, policy.argon2idRootMaterialBytes)
         assertEquals(32, policy.headerCommitmentKeyBytes)
         assertEquals(32, policy.recordAeadKeyBytes)
@@ -893,13 +889,13 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
-    fun canonicalHeaderHkdfAndHmacVectorContractsAreTestScopeOnly() {
+    fun canonicalHeaderHkdfAndHmacVectorContractsAreProductionImplementedAndTested() {
         val canonical = contract.canonicalHeaderVectorContract
         val hkdf = contract.hkdfVectorContract
         val hmac = contract.hmacHeaderCommitmentVectorContract
 
         assertEquals(
-            ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope,
+            ProductionProviderTestVectorContractStatus.ProductionImplementedTested,
             canonical.status,
         )
         assertEquals(
@@ -911,9 +907,9 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(canonical.byteEncodingRulesDefined)
         assertTrue(canonical.finalCanonicalHeaderHexDocumented)
         assertTrue(canonical.testScopeEncoderExists)
-        assertFalse(canonical.productionSerializerImplemented)
+        assertTrue(canonical.productionSerializerImplemented)
 
-        assertEquals(ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope, hkdf.status)
+        assertEquals(ProductionProviderTestVectorContractStatus.ProductionImplementedTested, hkdf.status)
         assertEquals("SHA-256", hkdf.hash)
         assertEquals(64, hkdf.inputKeyingMaterialBytes)
         assertTrue(hkdf.saltDefined)
@@ -923,25 +919,25 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(32, hkdf.outputBytesPerPurpose)
         assertTrue(hkdf.expectedOutputsDocumented)
         assertTrue(hkdf.testScopeHkdfExecutionExists)
-        assertFalse(hkdf.productionHkdfExecutionImplemented)
+        assertTrue(hkdf.productionHkdfExecutionImplemented)
 
-        assertEquals(ProductionProviderTestVectorContractStatus.VectorsCompleteInTestScope, hmac.status)
+        assertEquals(ProductionProviderTestVectorContractStatus.ProductionImplementedTested, hmac.status)
         assertEquals("SHA-256", hmac.hash)
         assertEquals("HKDF header commitment key vector output", hmac.hmacKeySource)
         assertEquals("canonical header vector bytes", hmac.messageSource)
         assertTrue(hmac.expectedTagDocumented)
         assertTrue(hmac.testScopeHmacExecutionExists)
-        assertFalse(hmac.productionHmacExecutionImplemented)
-        assertFalse(hmac.productionHeaderCommitmentExecutionImplemented)
+        assertTrue(hmac.productionHmacExecutionImplemented)
+        assertTrue(hmac.productionHeaderCommitmentExecutionImplemented)
     }
 
     @Test
-    fun canonicalHeaderEncodingPolicyIsDeterministicAndContractOnly() {
+    fun canonicalHeaderEncodingPolicyIsDeterministicAndImplementedStillDisabled() {
         val policy = contract.canonicalHeaderEncodingPolicy
 
         assertEquals("skald-vault-v1-canonical-header-encoding-v1", policy.policyId)
         assertEquals(1, policy.policyVersion)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertEquals("big-endian", policy.byteOrder)
         assertEquals("UTF-8", policy.stringEncoding)
         assertEquals("SKALD-VAULT-V1", policy.domainMagic)
@@ -954,16 +950,16 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.NoPlatformNativeSerialization)
         assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.SingleEncodingPerLogicalHeader)
         assertContains(policy.rules, ProductionProviderCanonicalHeaderEncodingRule.TestVectorsRequiredBeforeSelectability)
-        assertFalse(policy.productionSerializerImplemented)
+        assertTrue(policy.productionSerializerImplemented)
     }
 
     @Test
-    fun keySeparationPolicyDefinesStableLabelsWithoutProductionDerivation() {
+    fun keySeparationPolicyDefinesStableLabelsForImplementedStillDisabledExpansion() {
         val policy = contract.keySeparationPolicy
 
         assertEquals("skald-vault-v1-key-separation-labels-v1", policy.policyId)
         assertEquals(1, policy.policyVersion)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertEquals(ProductionProviderKeySeparationLabel.entries.toSet(), policy.labels)
         assertEquals(
             "skald-vault/v1/root-domain",
@@ -993,7 +989,7 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.recordAeadAndHeaderCommitmentKeyMaterialSeparated)
         assertTrue(policy.reservedFutureLabelsNotImplemented)
         assertTrue(policy.keyExpansionPrimitiveApproved)
-        assertFalse(policy.productionKeyDerivationImplemented)
+        assertTrue(policy.productionKeyDerivationImplemented)
         assertTrue(policy.unknownUnsupportedPolicyBlocksSelectability)
     }
 

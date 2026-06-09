@@ -2,13 +2,13 @@
 
 ## Status
 
-This document defines deterministic Skald Vault v1 non-secret test-vector contracts for:
+This document defines deterministic Skald Vault v1 non-secret test-vector contracts and records the still-disabled production-source building blocks that match them for:
 
 - canonical vault header bytes,
 - HKDF-SHA-256 subkey expansion inputs and outputs,
 - HMAC-SHA-256 header commitment input and output.
 
-It is design, model, test-vector, and source-guard evidence only. It does not implement production Argon2id execution, production HKDF execution, production HMAC execution, production Tink AEAD execution, production randomness, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+The canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, and HMAC-SHA-256 header commitment computation/verification now exist as isolated production-source building blocks. They are not wired into vault creation, vault unlock, provider selectability, vault container read/write, secure storage, or metadata persistence. This document and those building blocks do not implement production Argon2id execution, passphrase-to-root derivation, production Tink AEAD execution, production randomness, key generation, vault container read/write, keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 All byte strings below are fixed non-secret fixtures. They are not passphrases, salts from a real vault, vault ids from a real vault, wallet seeds, private keys, wallet labels, transaction notes, Bitcoin addresses, txids, Nostr secrets, Cashu proofs, backend credentials, or device identifiers.
 
@@ -17,7 +17,7 @@ Runtime behavior remains fail-closed:
 - `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.
 - `ProductionProviderAcceptanceAssessment.productionProviderSelectable` remains `false`.
 - Production persistence remains disabled.
-- Complete test-scope vectors do not make a provider selectable.
+- Vector-matching building blocks do not make a provider selectable.
 
 ## Why Byte-Exact Vectors Are Required
 
@@ -94,11 +94,11 @@ The final canonical header byte sequence is 509 bytes:
 00150000000000160000
 ```
 
-The desktop test-scope encoder in `VaultCanonicalHeaderHkdfHmacVectorTest` asserts that this exact hex is produced. No production serializer is added.
+The production-source serializer in `SkaldVaultV1HeaderCommitment` and the desktop vector test `VaultCanonicalHeaderHkdfHmacVectorTest` assert that this exact hex is produced. No vault container parser, vault file serializer, or persistence path is added.
 
 ## HKDF-SHA-256 Vector
 
-HKDF-SHA-256 is used only as test-scope vector execution here. It is not production key expansion.
+HKDF-SHA-256 is implemented as a still-disabled production-source key-expansion building block from caller-supplied 64-byte root material. It is not passphrase handling, does not execute Argon2id, does not generate root material, and is not wired into vault creation or provider selectability.
 
 Input keying material is a fixed 64-byte non-secret Argon2id root-material fixture:
 
@@ -179,7 +179,7 @@ Expected 32-byte record AEAD key output:
 
 ## HMAC-SHA-256 Header Commitment Vector
 
-HMAC-SHA-256 is used only as test-scope vector execution here. It is not production header commitment computation.
+HMAC-SHA-256 is implemented as a still-disabled production-source header-commitment computation and verification building block. It is not wired into vault unlock, record decrypt, AEAD use, provider selectability, or vault persistence.
 
 HMAC key source:
 
@@ -205,7 +205,7 @@ Expected 32-byte HMAC-SHA-256 tag:
 1d09a657d8929444c1e955410b2dcb3bfc0df2d19b128154e17a5fbd751237d5
 ```
 
-The desktop test-scope vector test asserts the HKDF outputs and HMAC tag exactly. No production HKDF, HMAC, or header commitment execution is added.
+The desktop vector test asserts the production-source HKDF outputs and HMAC tag exactly.
 
 ## Readiness And Selectability Effect
 
@@ -227,17 +227,16 @@ Statuses distinguish:
 - failed or unsupported,
 - production implemented and tested.
 
-Missing, unknown, incomplete, pending, failed, unsupported, documented-only, and test-scope-only vector evidence all block production provider selectability. Completed test-scope vectors do not make the provider selectable because production provider implementation, production provider-level KATs, production header commitment, production HKDF/HMAC execution, vault storage, secure secret storage, secure metadata storage, and release review remain absent.
+Missing, unknown, incomplete, pending, failed, unsupported, documented-only, test-scope-only, or unintegrated vector/building-block evidence blocks production provider selectability. Completed vectors and vector-matching building blocks still do not make the provider selectable because production provider implementation, production provider-level KATs, Argon2id passphrase derivation, Tink AEAD execution, strict AAD implementation, vault storage, secure secret storage, secure metadata storage, and release review remain absent.
 
 ## Source-Guard Expectations
 
 Source guards must continue proving:
 
-- no production canonical header serializer was added,
-- no production HKDF execution was added,
-- no production HMAC execution was added,
-- no production header commitment computation was added,
-- no production key derivation was added,
+- canonical header serialization appears only in the approved still-disabled building-block file and tests,
+- HKDF execution appears only in the approved still-disabled building-block file and tests,
+- HMAC execution appears only in the approved still-disabled building-block files and tests,
+- header commitment computation appears only in the approved still-disabled building-block file and tests,
 - no production AEAD encrypt/decrypt path was added,
 - no production vault persistence was added,
 - no production key generation was added,
@@ -246,9 +245,12 @@ Source guards must continue proving:
 - no internal Tink API usage was added,
 - no Android Keystore, StrongBox, biometric, or wrapping implementation was added.
 
-The only approved vector execution file in this branch is:
+The approved implementation/vector files for this branch are:
 
 ```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1HeaderCommitment.kt
+composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt
+composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCanonicalHeaderHkdfHmacVectorTest.kt
 ```
 
@@ -256,10 +258,10 @@ composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCanonicalHea
 
 Before still-disabled provider implementation can proceed, reviewers still need:
 
-- production canonical header serializer design behind a disabled provider or format boundary,
-- production HKDF-SHA-256 implementation tests behind a disabled provider,
-- production HMAC-SHA-256 header-commitment implementation tests behind a disabled provider,
 - provider-level KATs through the future production provider,
+- integration of the vector-tested canonical serializer, HKDF expansion, and HMAC verification into a still-disabled provider/format boundary,
+- production Argon2id passphrase-to-root-material derivation,
+- production Tink AEAD implementation with strict AAD,
 - final bounded Argon2id calibration approval,
 - record version/counter and stale-record policy,
 - vault container/storage review,

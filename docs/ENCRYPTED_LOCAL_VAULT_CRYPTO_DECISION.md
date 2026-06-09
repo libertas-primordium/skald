@@ -606,7 +606,7 @@ These remain unresolved and require focused provider-implementation, calibration
 
 - Whether the candidate-reviewed Tink plus Bouncy Castle split stack should become the implementation candidate after final KDF parameter approval, disabled-boundary-to-production-provider design, production provider-level KAT contract execution, vault container review, and storage review, or be replaced by a single reviewed stack such as libsodium/KMP.
 - Exact production Argon2id parameters remain unresolved; the current candidate tiers are planning evidence only and still need runtime provider/randomness check review, thermal/load, unlock UX, memory-pressure, and release-mode review. Low-end and mid-range Android model testing may still inform parameter choices, but it is not a hard compatibility blocker.
-- Production HKDF-SHA-256/HMAC-SHA-256 implementation details; non-secret test-scope vectors now exist, but production execution remains absent.
+- Provider integration for the vector-tested canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification remains unresolved. The building blocks exist, but production Argon2id passphrase derivation, Tink AEAD execution, strict AAD, vault containers, storage, and provider selectability remain absent.
 - Whether backup/export uses dependency streaming AEAD or a Skald chunked envelope.
 - Whether Linux should ever offer optional libsecret/KWallet wrapping after v1.
 - Whether Android should require hardware-backed wrapping for specific secret classes or only label risk.

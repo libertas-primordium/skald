@@ -4,7 +4,7 @@
 
 This document records the finalized Skald Vault v1 key-expansion and header-commitment primitive decisions. The deterministic non-secret canonical header, HKDF, and HMAC vector contract is documented separately in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md).
 
-It is design, model, source-guard, and acceptance-contract evidence only. It does not implement production Argon2id execution, production HKDF execution, production HMAC execution, Tink AEAD execution, random-byte generation, key generation, header commitment computation, canonical header serialization, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+The canonical header serializer, HKDF-SHA-256 key-expansion building block, and HMAC-SHA-256 header-commitment computation/verification building block are now implemented in production source and vector-tested against the non-secret fixtures. They remain still-disabled building blocks. This branch does not implement production Argon2id execution, passphrase-to-root-material derivation, Tink AEAD execution, random-byte generation, key generation, vault creation, vault unlock, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -44,8 +44,8 @@ The v1 output layout is:
 | Output | Length | Status |
 | --- | ---: | --- |
 | Argon2id root material | 64 bytes | Selected policy; production KDF not implemented |
-| Header commitment key | 32 bytes | HKDF output; production HKDF not implemented |
-| Record AEAD key | 32 bytes | HKDF output feeding the probed Tink XChaCha20-Poly1305 raw-key path; production AEAD not implemented |
+| Header commitment key | 32 bytes | HKDF output; still-disabled production-source HKDF building block implemented and vector-tested |
+| Record AEAD key | 32 bytes | HKDF output feeding the probed Tink XChaCha20-Poly1305 raw-key path; still-disabled HKDF building block implemented, production AEAD not implemented |
 
 Reserved future wrapping, export, and migration outputs are not implemented in this branch.
 
@@ -56,7 +56,7 @@ The non-secret vector contract now fixes the test-scope output examples for this
 - 32-byte HKDF-SHA-256 record AEAD key output,
 - HMAC-SHA-256 tag over the canonical header vector bytes.
 
-Those vectors are not production key material and do not implement production HKDF, HMAC, header commitment, AEAD, vault unlock, or persistence.
+Those vectors are not production key material and do not implement Argon2id, passphrase handling, AEAD, vault unlock, or persistence.
 
 ## Verification Order
 
@@ -70,7 +70,7 @@ The future production unlock path must follow this order:
 6. Verify HMAC-SHA-256 header commitment over canonical header bytes.
 7. Only then construct or use the record AEAD and decrypt records.
 
-This branch does not implement that sequence. It records the sequence as a production-provider acceptance contract.
+This branch implements steps 3, 5, and 6 only as isolated building blocks. It does not implement the full unlock sequence.
 
 ## HKDF-SHA-256 Rationale
 
@@ -131,14 +131,16 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryp
 
 Missing, unknown, failed, unsupported, documented/model-only, or unimplemented key-expansion primitive evidence blocks production provider selectability. The same is true for header-commitment primitive evidence and output-layout evidence.
 
-The current vector branch records deterministic non-secret vectors as test-scope evidence only. Test-scope-complete vectors still block selectability because production HKDF execution, production HMAC execution, production header commitment computation, provider-level KATs, and storage review remain absent. Raw-key feasibility, header/AAD contract evidence, dependency-level KATs, test-provider KATs, and vector tests do not bypass these gates.
+The current branch records deterministic non-secret vectors and matches them from still-disabled production-source building blocks. Vector-matching HKDF/HMAC/header-commitment evidence still does not make the provider selectable because production provider implementation, Argon2id passphrase derivation, Tink AEAD execution, strict AAD implementation, provider-level KATs, and storage review remain absent. Raw-key feasibility, header/AAD contract evidence, dependency-level KATs, test-provider KATs, and vector tests do not bypass these gates.
 
 ## Remaining Work
 
 Before a still-disabled provider implementation can proceed, reviewers still need:
 
-- production-scope implementation tests that match the non-secret canonical header/HKDF/HMAC vectors,
 - provider-level KAT execution through the future production provider,
+- integration of the canonical serializer, HKDF expansion, and HMAC verification into a still-disabled provider/format boundary,
+- production Argon2id passphrase-to-root-material derivation,
+- production Tink AEAD execution with strict AAD,
 - final bounded Argon2id calibration approval,
 - lock/session lifecycle tests,
 - redaction and failure-mode tests,
