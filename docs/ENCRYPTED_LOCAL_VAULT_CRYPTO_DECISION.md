@@ -30,13 +30,13 @@ The architecture design is documented in [`ENCRYPTED_LOCAL_VAULT_DESIGN.md`](ENC
 | AES role | AES-GCM or AES-GCM-SIV may be used for platform wrapping or if dependency review rejects XChaCha, but not as the first-choice record envelope. |
 | Nonce strategy | Random 24-byte nonce per XChaCha record from OS cryptographic randomness or reviewed crypto-provider randomness; nonce stored in the record envelope; never reuse under the same key. |
 | Associated data | Bind ciphertext to non-secret format context only: container version, vault ID, record ID, record class, schema version, key version, and envelope flags. |
-| Key hierarchy | Passphrase/PIN-derived KEK unwraps a random vault root key; record-class keys are derived from the root key; metadata, secret payload, and backup/export keys are separated. |
+| Key hierarchy | Passphrase-derived root material separates vault header commitment material from record AEAD key material; no random Tink vault key or persisted Tink keyset is selected for v1. |
 | Android wrapping | Optional Android Keystore wrapping for vault key material; app-controlled passphrase/PIN vault remains primary. |
 | Linux wrapping | Passphrase vault is primary. libsecret/KWallet are excluded from v1 primary storage and may only become optional wrapping helpers after review. |
 | Container format | Versioned vault container with plaintext unlock header and encrypted catalog/records. |
 | Backup/export | Separate encrypted export format with separate backup/export keys and explicit user-selected destination. |
 | Migration/corruption | Fail closed, authenticate every encrypted section, preserve old records until migration succeeds, avoid automatic destructive repair. |
-| Implementation readiness | Not ready. Desktop public KATs pass and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16. Test-only provider KATs also pass through the Skald-owned provider interface on desktop and Android runtime. Dependency/license/package/keyset/split-provider review is complete at candidate level, a disabled Skald-owned provider boundary exists, a disabled provider-selection boundary selects only the disabled provider, a provider-level KAT contract is modeled, and Argon2id calibration policy/probes plus non-final candidate parameter tiers, manual Android evidence capture, Android compatibility/entropy policy, runtime randomness/provider check models, and a v1 production-provider acceptance contract exist. Current Android calibration evidence is high-end debug/instrumented only and does not prove all-device performance. Test-only randomness probes prove only availability and non-failing behavior for small non-secret samples; they are not entropy-quality proof and do not implement production randomness. The acceptance contract pins Bouncy Castle Argon2id, Tink XChaCha20-Poly1305, and OS SecureRandom as the v1 review direction, but production provider implementation, production provider selection, final KDF parameter approval, Android and Linux runtime provider/randomness checks, vault-level key commitment/header authentication, production provider-boundary KAT execution, vault container review, storage review, and lock/session tests are still required before implementation. |
+| Implementation readiness | Not ready. Desktop public KATs pass and Android instrumented runtime KATs passed on Pixel 10 Pro XL / Android 16. Test-only provider KATs also pass through the Skald-owned provider interface on desktop and Android runtime. Dependency/license/package/keyset/split-provider review is complete at candidate level, a disabled Skald-owned provider boundary exists, a disabled provider-selection boundary selects only the disabled provider, a provider-level KAT contract is modeled, and Argon2id calibration policy/probes plus non-final candidate parameter tiers, manual Android evidence capture, Android compatibility/entropy policy, runtime randomness/provider check models, and a v1 production-provider acceptance contract exist. Current Android calibration evidence is high-end debug/instrumented only and does not prove all-device performance. Test-only randomness probes prove only availability and non-failing behavior for small non-secret samples; they are not entropy-quality proof and do not implement production randomness. The acceptance contract pins Bouncy Castle Argon2id, Tink XChaCha20-Poly1305, and OS SecureRandom as the v1 review direction, adds the NFC UTF-8 no-whitespace passphrase encoding policy, prefers passphrase-derived raw AEAD key material if public Tink APIs support it, and requires separate vault header commitment before record decrypt. Production provider implementation, production provider selection, final bounded KDF parameter approval, Tink raw-key feasibility approval, Android and Linux runtime provider/randomness checks, vault-level key commitment/header authentication, production provider-boundary KAT execution, vault container review, storage review, and lock/session tests are still required before implementation. |
 
 ## Candidate Evaluation
 
@@ -65,7 +65,7 @@ Implementation policy:
 Current calibration status:
 
 - Probe-only candidate rows and bounded desktop/Android measurement harnesses are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_CALIBRATION.md).
-- Non-final candidate tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md): 64 MiB / 3 passes / 1 lane for desktop candidate evidence, 32 MiB / 3 passes / 1 lane for high-end Android candidate evidence, and 16 MiB / 2 passes / 1 lane as a fallback/probe floor only.
+- Non-final candidate tiers are documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md): 64 MiB / 3 passes / 1 lane for desktop candidate evidence, 32 MiB / 3 passes / 1 lane for historical high-end Android timing evidence, and 16 MiB / 2 passes / 1 lane as a fallback/probe floor only. The v1 acceptance contract separately raises the shared review floor to 64 MiB / 3 passes / 1 lane with 64-byte derived root material.
 - Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). It records optional device-class evidence consistently, but cannot approve production KDF execution.
 - Android compatibility planning is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). It replaces mandatory low-end/mid-range model testing with supported OS baseline policy, runtime provider/primitive/randomness checks, and fail-closed vault creation behavior.
 - Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). They prove only test-scope availability of approved OS/reviewed-provider randomness paths, keep hardware-backed key protection separate, forbid language PRNG source classes, and cannot approve production random-byte generation.
@@ -286,7 +286,7 @@ Algorithm recommendation:
 Passphrase KDF: Argon2id
 Record AEAD: XChaCha20-Poly1305
 Record nonce: random 24-byte nonce per record from OS cryptographic randomness or reviewed crypto-provider randomness
-Key separation: root key -> derived metadata/secret/backup keys
+Key separation: passphrase-derived root material -> separated header-commitment and record-class keys
 Platform wrapping: optional; never primary storage
 ```
 
@@ -301,18 +301,18 @@ Rejected default outcome: platform-only PBKDF2 plus AES-GCM for the wallet vault
 
 ## Key Hierarchy Decision
 
-The vault key hierarchy is:
+The v1 construction direction is passphrase-derived root material, separated by domain and purpose:
 
 ```text
 User unlock secret
         ↓
 Argon2id
         ↓
-Vault key-encryption key
+Passphrase-derived root material
         ↓
-Encrypted random vault root key
-        ↓
-Record-class key derivation
+Domain-separated key derivation
+        ├── vault header commitment key material
+        ├── record AEAD key material
         ├── metadata encryption key
         ├── secret payload encryption key
         ├── backup/export encryption key
@@ -321,17 +321,22 @@ Record-class key derivation
 
 Rules:
 
-- The passphrase-derived key encrypts or wraps the random vault root key.
-- The vault root key is generated from platform CSPRNG during vault creation.
-- The vault root key is not used directly for record AEAD.
+- The v1 preferred design derives AEAD key material from passphrase-derived root material.
+- The header commitment key material must be separated from record AEAD key material.
+- Successful Tink AEAD record decrypt alone must not prove that the passphrase-derived key is the intended vault key.
+- The vault header commitment must authenticate canonical header fields before any record decrypt.
+- Do not generate random Tink vault keys for v1 production vaults.
+- Do not persist plaintext or encrypted Tink keysets in v1 unless raw-key construction is rejected by explicit human review.
+- Do not add Tink key rotation or multiple active AEAD keys in v1.
 - Record-class keys are derived with domain-separated context labels.
 - Metadata and secret payload keys are separate.
 - Backup/export keys are separate from routine local record keys.
-- Platform wrapping may wrap the vault root key or a wrapping key, but it does not replace the user unlock secret.
+- Platform wrapping may protect unlock convenience material after review, but it does not replace the passphrase as recovery authority.
 
 Open implementation detail:
 
-- The exact key-expansion primitive is deferred to dependency selection. HKDF-SHA-256 or a dependency-provided keyed derivation primitive are acceptable candidates if domain separation is explicit and tests cover cross-platform output.
+- The exact key-expansion primitive is deferred to provider implementation review. HKDF-SHA-256 or a dependency-provided keyed derivation primitive are acceptable candidates if domain separation is explicit and tests cover cross-platform output.
+- The Tink raw-key feasibility question remains unresolved: the future provider must prove that public supported Tink APIs can construct the pinned XChaCha20-Poly1305 primitive from caller-supplied derived key bytes without internal APIs or persisted keysets. If not, the provider stays blocked until a human-approved alternate key-handling design exists.
 
 ## Record Envelope Decision
 
@@ -395,11 +400,12 @@ For streaming backup/export chunks:
 The vault container should contain:
 
 - plaintext unlock header,
-- encrypted vault root key wrapping entries,
 - encrypted record catalog,
 - encrypted records,
 - optional migration journal,
 - integrity/authentication data for every encrypted section.
+
+The v1 acceptance contract does not approve a random Tink vault key, persisted Tink keyset, or encrypted Tink keyset. Any future optional wrapping entry must be separately reviewed and must not replace passphrase recovery.
 
 Plaintext unlock header may include:
 
@@ -410,7 +416,7 @@ Plaintext unlock header may include:
 - KDF parameter profile,
 - salt,
 - wrapping method metadata,
-- encrypted root key envelope metadata,
+- optional wrapping envelope metadata if later reviewed,
 - non-secret feature flags required to attempt unlock.
 
 Plaintext unlock header must not include:
@@ -511,8 +517,8 @@ Implementation target:
 
 Policy:
 
-- Vault root keys, record keys, salts, nonces, backup keys, and unlock-related secret material must come from OS cryptographic randomness or reviewed crypto-provider randomness.
-- Kotlin, Java, or general-purpose random APIs must not be used for vault secrets, salts, nonces, keys, or unlock material. Forbidden sources include `kotlin.random.Random`, `java.util.Random`, `Math.random`, timestamps, UUID-derived values, and ad hoc PRNGs.
+- Vault salts, nonces, and any future explicitly random vault material must come from OS cryptographic randomness or reviewed crypto-provider randomness. In the v1 acceptance contract, record AEAD key material is preferred to be derived from passphrase-derived root material rather than generated as a random Tink vault key.
+- Kotlin, Java, or general-purpose random APIs must not be used for salts, nonces, future reviewed random vault material, or any other vault secret randomness. Forbidden sources include `kotlin.random.Random`, `java.util.Random`, `Math.random`, timestamps, UUID-derived values, and ad hoc PRNGs.
 - Linux compatibility planning requires kernel/OS CSPRNG-backed randomness such as `getrandom`/`urandom` through a reviewed provider or library path.
 - Android compatibility planning may use Android OS cryptographic randomness such as `SecureRandom` or a reviewed provider path, but this record does not claim Android random bytes are always hardware-backed.
 - Hardware-backed key protection is separate from random-byte generation. Android Keystore/StrongBox and any future Linux hardware-backed wrapping are optional key-protection mechanisms after review, not required entropy sources for basic vault compatibility.
@@ -522,7 +528,7 @@ Policy:
 
 Policy:
 
-- Keep decrypted vault root key and record-class keys in scoped session memory only.
+- Keep derived root material and record-class keys in scoped session memory only.
 - Clear unlocked session state on explicit lock, app close, inactivity timeout, app backgrounding where feasible, and high-risk device state.
 - Avoid `String` for secret bytes.
 - Minimize copies of passphrase and key material.

@@ -46,7 +46,9 @@ No tier is production-final.
 
 The policy treats memory hardness as a security requirement. Unlock latency is a usability constraint that can reject unusable settings, but it must not silently downgrade memory cost without explicit degraded-strength review.
 
-The v1 production-provider acceptance contract records a minimum review floor of Argon2id version 19, 64 MiB memory, 3 passes, and 1 lane. The preferred unlock target is roughly 1 second, but roughly 2 seconds is acceptable and is not a failure condition. Parameters must not be weakened merely to force sub-1-second unlocks. Existing vault parameters are authoritative and must never be silently downgraded; a weaker device that cannot satisfy stored parameters must fail closed with a clear user-facing message.
+The v1 production-provider acceptance contract records a shared minimum review floor of Argon2id version 19, 64 MiB memory, 3 passes, 1 lane, at least a 16-byte salt, 32-byte preferred salt for new vault creation, and 64-byte derived root material. The preferred unlock target is roughly 1 second, but roughly 2 seconds is acceptable and is not a failure condition. Parameters must not be weakened merely to force sub-1-second unlocks. Existing vault parameters are authoritative and must never be silently downgraded; a weaker device that cannot satisfy stored parameters must fail closed with a clear user-facing message.
+
+This means the older 32 MiB high-end Android probe remains useful timing evidence only. It no longer represents a sufficient v1 production floor. Android and desktop share the same 64 MiB / t=3 / p=1 review floor, while desktop may select stronger parameters after bounded calibration review.
 
 The policy is not sufficient for production provider selection because no tier is final, production KDF execution is absent, runtime provider/randomness checks are availability evidence only until reviewed with a production provider, storage is disabled, and no production provider exists.
 
@@ -76,15 +78,18 @@ Before any Argon2id parameter can become a production vault unlock policy, Skald
 2. Runtime crypto-provider and primitive checks on supported Android and Linux paths.
 3. Runtime cryptographic-randomness path checks that accept only OS or reviewed provider randomness and do not treat tiny non-secret samples as entropy-quality proof.
 4. Vault-creation fail-closed warning review.
-5. Lock-screen/unlock UX measurement.
-6. Background/foreground behavior checks.
-7. Accessibility and timeout policy review.
-8. Memory-pressure failure behavior review.
-9. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
-10. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
-11. Provider-selection gate review according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md).
-12. Secure storage and secure metadata storage review.
-13. Mainnet release-hardening review before any mainnet relevance.
+5. Bounded per-platform calibration review at the shared 64 MiB / t=3 / p=1 floor.
+6. Memory-allocation failure behavior proving vault creation fails closed if the floor cannot allocate or complete.
+7. Existing-vault unlock failure behavior proving stored parameters are authoritative and never silently downgraded.
+8. Lock-screen/unlock UX measurement.
+9. Background/foreground behavior checks.
+10. Accessibility and timeout policy review.
+11. Memory-pressure failure behavior review.
+12. Production provider-boundary known-answer vectors. The current test-only provider KAT harness is interface evidence only.
+13. Production KDF implementation review behind the Skald-owned provider boundary, including the provider-level KAT contract in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md).
+14. Provider-selection gate review according to [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md).
+15. Secure storage and secure metadata storage review.
+16. Mainnet release-hardening review before any mainnet relevance.
 
 These blockers are represented in common policy models. They keep `KdfParametersCalibrated` unresolved and keep production KDF execution disabled.
 
@@ -113,6 +118,8 @@ Probe timings do not prove side-channel resistance, memory zeroization, wrong-pa
 - Android supported-compatibility planning: modeled separately from production parameter approval.
 
 `EncryptedVaultReadinessPolicy` records the candidate parameter policy, Android calibration evidence-capture model, Android compatibility/entropy policy, and runtime randomness/provider check model as reviewed-only policy capabilities. `KdfParametersCalibrated` remains unresolved, `KdfParametersUncalibrated` remains a blocker, and production persistence remains disabled.
+
+The production-provider acceptance contract adds a separate bounded-calibration gate for the shared v1 floor, 64-byte derived root material, fail-closed minimum-floor allocation behavior, stored-parameter authority, and no silent downgrade. That gate is modeled but not satisfied.
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle split stack as having candidate Argon2id parameter policy modeled. That stack remains candidate-only and is not production-approved.
 

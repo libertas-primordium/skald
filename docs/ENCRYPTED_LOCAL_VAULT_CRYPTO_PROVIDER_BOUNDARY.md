@@ -137,7 +137,7 @@ Manual Android Argon2id calibration capture is documented separately in [`ENCRYP
 
 Runtime randomness/provider checks are documented separately in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). They prove only test-scope availability of approved randomness paths with small non-secret samples; they do not prove entropy quality, generate production vault material, run provider-level KATs, or make any provider selectable.
 
-The production-provider acceptance contract pins the v1 review direction to Bouncy Castle Argon2id, Tink XChaCha20-Poly1305, and OS SecureRandom. It also documents the non-key-committing AEAD risk and requires future vault-level key commitment, header authentication, and strict AAD binding before any production provider can be selectable.
+The production-provider acceptance contract pins the v1 review direction to Bouncy Castle Argon2id, Tink XChaCha20-Poly1305, and OS SecureRandom. It also documents the non-key-committing AEAD risk and requires future vault-level header commitment over canonical header fields, header authentication, separated commitment key material, strict AAD binding, the `unicode-nfc-utf8-no-controls-no-whitespace-v1` passphrase encoding policy, Tink raw-key feasibility review, and bounded Argon2id calibration before any production provider can be selectable.
 
 ## Provider Type Confinement
 
@@ -175,7 +175,7 @@ The readiness model still blocks on:
 
 `VaultCryptoDependencyProbeCatalog` records the Tink plus Bouncy Castle stack as a candidate with the disabled provider boundary, provider-level KAT contract, and test-only provider KAT harness modeled. It remains candidate-only and not production-approved because production provider-level KAT execution is still missing.
 
-`VaultCryptoProviderSelectionRegistry` records the same evidence but treats dependency-level KATs, test-only provider KATs, and test-only runtime randomness probes as insufficient for production selection. It blocks Tink plus Bouncy Castle on missing production provider implementation, missing production provider-level KATs, non-final Argon2id parameters, missing runtime compatibility/randomness checks when evidence is unknown, unapproved Tink keyset/raw-key handling, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, missing redaction/failure-mode tests, missing migration/corruption tests, and mainnet disablement.
+`VaultCryptoProviderSelectionRegistry` records the same evidence but treats dependency-level KATs, test-only provider KATs, and test-only runtime randomness probes as insufficient for production selection. It blocks Tink plus Bouncy Castle on missing production provider implementation, missing production provider-level KATs, non-final Argon2id parameters, missing bounded-calibration approval, missing runtime compatibility/randomness checks when evidence is unknown, unimplemented header commitment, unwired passphrase encoding validation, unapproved Tink raw-key handling, disabled secure storage, disabled secure metadata persistence, missing vault container/storage review, missing redaction/failure-mode tests, missing migration/corruption tests, and mainnet disablement.
 
 ## Explicit Non-Capabilities
 
@@ -211,11 +211,13 @@ Before any future branch implements provider crypto:
 1. Argon2id calibration policy/probe evidence and candidate parameter tiers must be reviewed, and final KDF parameter policy must be approved for Android and Linux desktop. Android compatibility planning must use the supported OS baseline, runtime provider/primitive checks, approved cryptographic randomness checks, and fail-closed vault creation behavior documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md) and [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md); low-end and mid-range model testing are no longer hard blockers.
 2. The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) must be satisfied.
 3. Provider-level public KATs must be defined through the Skald-owned interface.
-4. Tink keyset versus raw AEAD key material handling must be finalized.
-5. Split-provider invariants must be reviewed again at implementation level.
-6. Redacted error behavior must be tested against failure modes.
-7. No provider-specific types may escape the boundary.
-8. No vault container or storage success path may be added unless that branch is explicitly scoped and approved.
+4. Canonical vault header commitment and separated commitment key material must be finalized and tested.
+5. The `unicode-nfc-utf8-no-controls-no-whitespace-v1` passphrase encoding policy must be implemented and tested without adding vault creation in the same step.
+6. Tink raw AEAD key material handling must be approved through public supported APIs, or a separate human-approved alternative must be documented.
+7. Split-provider invariants must be reviewed again at implementation level.
+8. Redacted error behavior must be tested against failure modes.
+9. No provider-specific types may escape the boundary.
+10. No vault container or storage success path may be added unless that branch is explicitly scoped and approved.
 
 ## Next Step
 

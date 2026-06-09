@@ -46,30 +46,39 @@ Accepted tradeoffs remain:
 
 - parameter calibration is not final,
 - memory-pressure and allocation failure behavior still needs explicit fail-closed review,
-- password/passphrase encoding policy must be specified before production use,
+- passphrase encoding policy must be specified before production use,
 - provider-level KATs must run through the future production provider, not only through dependency probes or test-only providers,
 - Android and desktop performance can vary by CPU, RAM pressure, scheduler, build type, and thermal state.
 
-Before Bouncy Castle Argon2id can be selectable, Skald must approve explicit parameter floors, bounded calibration behavior, fail-closed memory behavior, provider/version pinning, password encoding rules, and provider-level KAT coverage.
+Before Bouncy Castle Argon2id can be selectable, Skald must approve explicit parameter floors, bounded calibration behavior, fail-closed memory behavior, provider/version pinning, passphrase encoding rules, and provider-level KAT coverage.
 
 ## Argon2id Parameter And Unlock Policy
 
-The v1 minimum review floor is:
+The v1 minimum review floor is shared across Android and Linux desktop:
 
 ```text
-Argon2id version 19, 64 MiB memory, t=3, p=1
+Argon2id version 19, 64 MiB memory, t=3, p=1, 64-byte derived root material
 ```
 
+New vault creation must use a salt of at least 16 bytes. A 32-byte salt is preferred for new vaults. The production provider must bind the salt into the vault header commitment before any record decrypt.
+
+Skald uses bounded per-platform calibration rather than fixed minimum-only parameters. The 64 MiB / t=3 / p=1 floor is the minimum acceptable review floor on every supported platform, but desktop may select stronger parameters than Android when bounded calibration and UX evidence justify it. The same floor across platforms avoids silently creating weaker vaults merely because a user created or opened a vault on Android first.
+
 Skald targets roughly a 1 second unlock where feasible, but an unlock/decrypting duration up to roughly 2 seconds is acceptable. Two seconds is not a failure condition, and parameters must not be weakened merely to force sub-1-second unlocks.
+
+If a device cannot allocate or complete the minimum floor during new vault creation, creation must fail closed. If an existing vault's stored parameters cannot allocate or complete on a weaker device, unlock must fail closed with a clear user-facing message. Skald must not silently reduce memory, time cost, parallelism, salt length, output length, or policy version to make the unlock complete.
 
 Existing vault parameters are authoritative:
 
 - stored vault parameters must never be silently downgraded,
 - a weaker device that cannot satisfy stored vault parameters must fail closed,
 - the failure must have a clear user-facing message,
-- parameter upgrades require explicit vault-format migration review.
+- parameter upgrades require explicit vault-format migration review,
+- any future downgrade or migration must require successful passphrase unlock and explicit user action.
 
-This contract does not make current candidate parameters production final. It records the future approval rule.
+The earlier 16 MiB and 32 MiB calibration probes remain useful timing evidence only. They do not satisfy the v1 production floor, do not approve a weaker Android default, and do not enable production KDF execution.
+
+This contract does not make current candidate parameters production final. It records the future approval rule and keeps bounded calibration evidence missing until it is explicitly reviewed.
 
 ## Why Tink XChaCha20-Poly1305
 
@@ -88,15 +97,82 @@ Accepted tradeoffs remain:
 
 Tink XChaCha20-Poly1305 must be treated as non-key-committing. Successful AEAD decryption alone must not be treated as proof that the passphrase-derived vault key is the intended vault key for the vault.
 
-Before production selectability, the vault format must implement and test:
+Before production selectability, the vault format must implement and test a separate vault-level header commitment over canonical vault header data. Record decrypt is allowed only after header commitment verification succeeds. The commitment must use key material separated from record AEAD key material.
 
-- vault-level key commitment,
-- header authentication before record decrypt,
+The committed canonical header data must include:
+
+- vault format version,
+- provider suite id,
+- KDF algorithm,
+- KDF version,
+- KDF memory parameter,
+- KDF iteration/time parameter,
+- KDF parallelism parameter,
+- salt,
+- vault id,
+- passphrase encoding policy id,
+- AAD policy version,
+- key-commitment policy version,
+- future integrity-critical header metadata that is already modeled by the vault format.
+
+The commitment must fail closed if the header is modified, incomplete, non-canonical, has an unknown suite id, has unsupported KDF parameters, has an unknown policy version, or if commitment verification is unavailable. Unknown, missing, failed, unsupported, or unimplemented key-commitment evidence blocks production provider selectability.
+
+This branch does not implement the commitment construction, canonical encoder, key separation, or verification. It documents and models the requirement only.
+
+Before production selectability, the broader vault format must also implement and test:
+
 - strict binding between the provider suite id and vault header,
 - rejection of mismatched suite metadata before record decrypt,
 - fail-closed behavior for wrong passphrase, wrong key, wrong suite, and tampered header cases.
 
-The future key-commitment design must be a vault-format requirement. It is not implemented by this branch.
+The future key-commitment design is a vault-format requirement. It is not implemented by this branch.
+
+## Passphrase Encoding Policy
+
+The v1 passphrase encoding policy id is:
+
+```text
+unicode-nfc-utf8-no-controls-no-whitespace-v1
+```
+
+The future provider must:
+
+- normalize the passphrase to Unicode NFC,
+- encode the normalized result as UTF-8,
+- reject empty passphrases,
+- reject all Unicode control characters,
+- reject all Unicode whitespace characters,
+- reject all Unicode separator characters,
+- reject invisible format characters,
+- avoid trimming leading or trailing characters,
+- avoid lowercasing,
+- avoid uppercasing,
+- avoid collapsing repeated characters,
+- avoid locale-sensitive transforms,
+- avoid silently removing characters.
+
+The policy allows visible Unicode letters, visible Unicode combining marks when valid after NFC normalization and not rejected by the forbidden-character rules, visible Unicode numbers, visible Unicode punctuation, visible Unicode symbols, and emoji only when represented without rejected control, whitespace, separator, or invisible format characters. It does not add special-case emoji exceptions.
+
+Spaces are intentionally rejected to reduce recovery ambiguity from leading spaces, trailing spaces, non-breaking spaces, zero-width spaces, copied whitespace, mobile keyboard alterations, and platform differences. Users who want visible separation can use visible punctuation such as hyphens, periods, or underscores.
+
+This branch does not wire passphrase validation into vault creation because vault creation does not exist. Missing, unknown, unsupported, or failed passphrase-encoding evidence remains a production-selectability blocker.
+
+## Tink Raw-Key Handling Policy
+
+The v1 preferred design is passphrase-derived raw AEAD key material with no persisted Tink keyset, but only if public supported Tink APIs cleanly support constructing the pinned XChaCha20-Poly1305 primitive from caller-supplied derived key bytes.
+
+Required v1 policy:
+
+- do not persist plaintext Tink keysets,
+- do not persist encrypted Tink keysets unless raw-key construction is rejected by explicit human review,
+- do not generate random Tink vault keys,
+- do not add Tink key rotation,
+- do not add multiple active AEAD keys,
+- do not use internal, unsupported, reflective, or unstable Tink APIs,
+- do not add a fallback encrypted Tink keyset model in this branch,
+- do not implement production AEAD encryption or decryption in commonMain.
+
+No Tink raw-key feasibility probe is added in this branch. The feasibility evidence remains unknown by policy, so Tink raw-key handling remains unapproved and production provider selectability remains blocked. A future probe may use fixed non-secret test bytes in test/probe scope only and may answer only whether the pinned Tink XChaCha20-Poly1305 primitive can be constructed from caller-supplied derived key bytes using public supported APIs, without persisted Tink keysets and without internal APIs.
 
 ## AAD And Tamper Requirements
 
@@ -137,7 +213,7 @@ Tiny non-secret test samples are availability evidence only. They do not prove e
 
 ## Forbidden Randomness
 
-Vault secrets, salts, nonces, keys, unlock material, and vault records must not use language-level or ad hoc randomness.
+Vault salts, nonces, future reviewed random vault material, unlock-related randomness, and vault records must not use language-level or ad hoc randomness.
 
 Forbidden source classes include:
 
@@ -194,23 +270,27 @@ A production provider cannot become selectable until every gate below is satisfi
 
 1. Exact provider suite id and dependency versions are pinned.
 2. Argon2id algorithm, version, and parameter policy are approved.
-3. Argon2id KATs pass through the production provider.
-4. Argon2id calibration bounds and memory-failure behavior are approved.
-5. XChaCha20-Poly1305 primitive/template/version is pinned.
-6. AEAD KATs pass through the production provider.
-7. Vault-level key commitment and header authentication are implemented and tested.
-8. AEAD AAD policy binds vault header/version, provider suite id, record type, record id, record version/counter, and integrity-critical metadata.
-9. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
-10. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-11. Unknown randomness/provider state blocks vault creation.
-12. Forbidden random APIs remain guarded.
-13. Secure secret storage is reviewed and approved.
-14. Secure metadata storage is reviewed and approved.
-15. Crash, corruption, and partial-write behavior are reviewed.
-16. Redaction, logging, and crash-report leakage checks pass.
-17. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-18. A production provider implementation exists behind Skald-owned interfaces.
-19. Release readiness excludes debug and test-only providers from selection.
+3. Bounded Argon2id calibration policy is approved.
+4. Argon2id KATs pass through the production provider.
+5. Argon2id calibration bounds and memory-failure behavior are approved.
+6. XChaCha20-Poly1305 primitive/template/version is pinned.
+7. AEAD KATs pass through the production provider.
+8. Vault-level header commitment policy is approved.
+9. Passphrase encoding policy is approved.
+10. Tink raw-key feasibility is approved through public supported APIs.
+11. Vault-level key commitment and header authentication are implemented and tested.
+12. AEAD AAD policy binds vault header/version, provider suite id, record type, record id, record version/counter, and integrity-critical metadata.
+13. Tamper tests cover header, ciphertext, nonce, tag, AAD, record metadata, and provider-suite metadata.
+14. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+15. Unknown randomness/provider state blocks vault creation.
+16. Forbidden random APIs remain guarded.
+17. Secure secret storage is reviewed and approved.
+18. Secure metadata storage is reviewed and approved.
+19. Crash, corruption, and partial-write behavior are reviewed.
+20. Redaction, logging, and crash-report leakage checks pass.
+21. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+22. A production provider implementation exists behind Skald-owned interfaces.
+23. Release readiness excludes debug and test-only providers from selection.
 
 Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, or a design-only acceptance assessment must not bypass these gates.
 
@@ -225,6 +305,9 @@ This contract does not allow:
 - production random-byte generation,
 - key generation,
 - Tink keyset creation or storage,
+- Tink key rotation,
+- multiple active Tink AEAD keys,
+- internal or unsupported Tink APIs,
 - raw key persistence,
 - vault container read/write,
 - file/settings/SharedPreferences storage in the provider boundary,

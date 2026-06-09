@@ -20,6 +20,7 @@ import com.libertasprimordium.skald.security.EncryptedVaultBlockingIssue
 import com.libertasprimordium.skald.security.EncryptedVaultCapability
 import com.libertasprimordium.skald.security.EncryptedVaultDecisionRole
 import com.libertasprimordium.skald.security.EncryptedVaultImplementationStatus
+import com.libertasprimordium.skald.security.EncryptedVaultKeyHierarchyRequirement
 import com.libertasprimordium.skald.security.EncryptedVaultKdfAlgorithm
 import com.libertasprimordium.skald.security.EncryptedVaultPlatform
 import com.libertasprimordium.skald.security.EncryptedVaultReadinessPolicy
@@ -56,6 +57,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultHeaderCommitmentUnimplemented)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.TinkRawKeyFeasibilityUnknown)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.Argon2idBoundedCalibrationUnapproved)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderKnownAnswerVectorsMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionPersistenceDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MainnetDisabled)
@@ -71,6 +76,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidCompatibilityEntropyPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RuntimeRandomnessProviderCheckModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ProductionProviderAcceptanceContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.VaultHeaderCommitmentPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseEncodingPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.TinkRawKeyFeasibilityPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idBoundedCalibrationPolicyModel)
         assertEquals(
             Argon2idCalibrationImplementationStatus.PolicyPresentProbeOnly,
             readiness.argon2idCalibrationPolicy.status,
@@ -98,6 +107,26 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(24, policy.noncePolicy.byteLength)
         assertTrue(policy.noncePolicy.randomPerRecord)
         assertTrue(policy.noncePolicy.designOnly)
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.PassphraseDerivedRootMaterial,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.HeaderCommitmentKeySeparated,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.RecordAeadKeyMaterialDerivedFromRoot,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.NoRandomTinkVaultKeyInV1,
+        )
+        assertContains(
+            policy.keyHierarchyRequirements,
+            EncryptedVaultKeyHierarchyRequirement.NoPersistedTinkKeysetInV1,
+        )
     }
 
     @Test
@@ -116,6 +145,10 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.RuntimeEntropyChecksModeled,
             EncryptedVaultRequirement.VaultCreationFailClosedWarningModeled,
             EncryptedVaultRequirement.ProductionProviderAcceptanceContractModeled,
+            EncryptedVaultRequirement.VaultHeaderCommitmentPolicyModeled,
+            EncryptedVaultRequirement.PassphraseEncodingPolicyModeled,
+            EncryptedVaultRequirement.TinkRawKeyFeasibilityPolicyModeled,
+            EncryptedVaultRequirement.Argon2idBoundedCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfParametersCalibrated,
             EncryptedVaultRequirement.AeadImplementationVerified,
             EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed,
@@ -183,6 +216,22 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.ProductionProviderAcceptanceContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.VaultHeaderCommitmentPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.PassphraseEncodingPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.TinkRawKeyFeasibilityPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.Argon2idBoundedCalibrationPolicyModeled],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.Unresolved,
