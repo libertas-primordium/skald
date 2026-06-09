@@ -27,6 +27,8 @@ import com.libertasprimordium.skald.security.ProductionProviderTestVectorContrac
 import com.libertasprimordium.skald.security.ProductionProviderTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderWeakDeviceFailureMode
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
+import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationState
 import com.libertasprimordium.skald.security.VaultCryptoProviderProductionApprovalGate
@@ -375,29 +377,61 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
-    fun passphraseEncodingEvidenceMustBePresentAndSupported() {
-        val missing = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
-                ProductionProviderAcceptanceEvidenceState.Missing,
-            ),
+    fun passphraseEncodingEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
         )
-        val unsupported = contract.assess(
-            evidenceWith(
-                ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
-                ProductionProviderAcceptanceEvidenceState.Unsupported,
-            ),
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
         )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+    }
 
-        assertFalse(missing.allRequiredGatesSatisfied)
-        assertContains(missing.blockers, ProductionProviderAcceptanceBlocker.MissingGateEvidence)
-        assertFalse(missing.productionProviderSelectable)
-        assertFalse(missing.productionPersistenceAllowed)
-
-        assertFalse(unsupported.allRequiredGatesSatisfied)
-        assertContains(unsupported.blockers, ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence)
-        assertFalse(unsupported.productionProviderSelectable)
-        assertFalse(unsupported.productionPersistenceAllowed)
+    @Test
+    fun argon2idRootDerivationEvidenceMustBeKnownImplementedAndSatisfied() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
     }
 
     @Test
@@ -998,6 +1032,7 @@ class ProductionProviderAcceptanceContractTest {
         val policy = contract.passphraseEncodingPolicy
 
         assertEquals("unicode-nfc-utf8-no-controls-no-whitespace-v1", policy.policyId)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertEquals("NFC", policy.normalizationForm)
         assertEquals("UTF-8", policy.encodedForm)
         assertContains(policy.forbiddenClasses, ProductionProviderPassphraseForbiddenClass.EmptyPassphrase)
@@ -1033,6 +1068,28 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(policy.visibleSeparatorsSuggestedAsAlternativesToSpaces, "-")
         assertContains(policy.visibleSeparatorsSuggestedAsAlternativesToSpaces, ".")
         assertContains(policy.visibleSeparatorsSuggestedAsAlternativesToSpaces, "_")
+        assertTrue(policy.productionValidationImplemented)
+        assertFalse(policy.productionVaultCreationWired)
+    }
+
+    @Test
+    fun argon2idRootDerivationPolicyCapturesExplicitParameterBuildingBlock() {
+        val policy = contract.argon2idRootDerivationPolicy
+
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
+        assertEquals("Bouncy Castle Argon2id explicit-parameter root derivation", policy.implementation)
+        assertEquals(SkaldVaultV1Argon2idType.Argon2id, policy.type)
+        assertEquals(Argon2idVersion.Version19, policy.version)
+        assertEquals(64, policy.minimumMemoryMiB)
+        assertEquals(3, policy.minimumIterations)
+        assertEquals(1, policy.parallelism)
+        assertEquals(16, policy.minimumSaltBytes)
+        assertEquals(32, policy.preferredNewVaultSaltBytes)
+        assertEquals(SkaldVaultV1Argon2idRootDerivation.ROOT_MATERIAL_BYTES, policy.outputRootMaterialBytes)
+        assertTrue(policy.explicitCallerSuppliedParametersRequired)
+        assertFalse(policy.automaticCalibrationImplemented)
+        assertFalse(policy.parameterDowngradeImplemented)
+        assertTrue(policy.productionRootDerivationImplemented)
         assertFalse(policy.productionVaultCreationWired)
     }
 

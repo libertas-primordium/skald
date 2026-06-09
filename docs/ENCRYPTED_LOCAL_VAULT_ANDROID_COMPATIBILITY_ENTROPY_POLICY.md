@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned Android compatibility and entropy policy model for future encrypted local vault creation.
 
-This is policy/model/test evidence only. It does not implement entropy collection, random byte generation, platform key wrapping, production KDF execution, executable provider crypto, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is policy/model/test evidence only. It does not implement entropy collection, random byte generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -119,7 +119,7 @@ Current fail-closed reasons include:
 - hardware-backed key protection mistaken for randomness,
 - missing production provider implementation,
 - disabled-only provider selection,
-- disabled production KDF execution,
+- disabled calibration and provider-selectable KDF execution,
 - disabled secure secret storage,
 - disabled secure metadata storage,
 - missing vault container/storage review.
@@ -132,7 +132,7 @@ Current Android Argon2id timing evidence remains high-end debug/instrumented evi
 
 Low-end and mid-range model testing may still be useful optional evidence for UX and parameter tuning. It is no longer a hard blocker for Android compatibility planning.
 
-Final Argon2id parameters remain unapproved because production KDF execution, runtime provider checks, runtime randomness checks, unlock UX, memory-pressure behavior, provider-level KAT execution, storage review, lock/session lifecycle, and redaction/migration/corruption tests are still unresolved.
+Final Argon2id parameters remain unapproved because calibration, provider-selectable KDF execution, runtime provider checks, runtime randomness checks, unlock UX, memory-pressure behavior, provider-level KAT execution, storage review, lock/session lifecycle, and redaction/migration/corruption tests are still unresolved.
 
 ## Relationship To Provider Selection
 
@@ -160,7 +160,7 @@ This policy does not enable:
 - entropy collection,
 - random byte generation,
 - hardware-backed wrapping,
-- production KDF execution,
+- calibration or provider-selectable KDF execution,
 - executable production provider behavior,
 - production AEAD execution,
 - key generation,
@@ -182,4 +182,4 @@ This policy does not enable:
 
 ## Next Step
 
-The next focused pass should remain design/probe-only unless explicitly narrowed by the user. Recommended next decision point: review runtime provider/primitive/randomness check evidence together and decide whether a still-disabled production-provider skeleton is warranted. Do not implement vault creation, production KDF execution, key generation, or storage in that branch.
+The next focused pass should remain design/probe-only unless explicitly narrowed by the user. Recommended next decision point: review runtime provider/primitive/randomness check evidence together and decide whether a still-disabled production-provider skeleton is warranted. Do not implement vault creation, provider-selectable KDF execution, key generation, or storage in that branch.

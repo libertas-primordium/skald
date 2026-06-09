@@ -4,7 +4,7 @@
 
 Skald Vault now has a disabled provider-selection and registry boundary for the future app-controlled encrypted local vault crypto provider.
 
-This is selection policy only. It does not implement executable provider crypto, production Argon2id passphrase derivation, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification exist only as still-disabled building blocks and are not provider-selectable.
+This is selection policy only. It does not implement executable provider crypto, provider-wired Argon2id passphrase derivation, calibration, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The passphrase policy validator, explicit-parameter Argon2id root derivation, canonical header serializer, HKDF-SHA-256 expansion, and HMAC-SHA-256 verification exist only as still-disabled building blocks and are not provider-selectable.
 
 Manual Android calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The canonical header/HKDF/HMAC non-secret vector contract is documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). Current Pixel 10 Pro XL / Android 16 evidence remains high-end debug/instrumented timing evidence only and does not prove all-device performance. Low-end and mid-range model testing are no longer hard blockers for compatibility planning; supported Android baseline, runtime provider/primitive/randomness checks, and fail-closed vault-creation behavior are the compatibility gate.
 
@@ -127,7 +127,8 @@ A future executable provider cannot become selectable until every required gate 
 | Canonical header encoding policy approved and implemented | Blocked for selection. Deterministic header bytes are implemented by the building block, but no vault container parser/writer or provider integration exists. |
 | Key-separation labels policy approved and implemented | Blocked for selection. Stable labels are used by the still-disabled HKDF building block, but no provider/unlock path is wired. |
 | Strict AAD contract approved and implemented | Blocked. Required AAD bindings are modeled, but no production AEAD path exists. |
-| Passphrase encoding policy approved | Blocked. `unicode-nfc-utf8-no-controls-no-whitespace-v1` is modeled, but production validation is not wired. |
+| Passphrase encoding policy approved | Building block implemented and tested. Still blocked because it is not wired into vault creation, unlock, or provider selection. |
+| Argon2id passphrase-to-root derivation implemented | Building block implemented and tested with fixed non-secret fixture input. Still blocked because calibration, provider wiring, provider-level KATs, AEAD, vault creation, and storage remain absent. |
 | Keyset or raw-key handling approved | Partially evidenced. The desktop/JVM test-scope result is `FEASIBLE_PUBLIC_RAW_KEY_API` and the Android instrumented test-scope result is `ANDROID_FEASIBLE_PUBLIC_RAW_KEY_API`, but no production provider implementation, production provider KATs, header commitment implementation, or storage review is approved. No keyset persistence is approved. |
 | Secure secret storage approved | Blocked. |
 | Secure metadata storage approved | Blocked. |
@@ -178,7 +179,7 @@ BDK imports remain confined to approved platform probes and desktop-test validat
 This boundary does not enable:
 
 - executable production provider crypto,
-- production Argon2id passphrase derivation,
+- provider-wired Argon2id passphrase derivation or calibration,
 - production AEAD execution,
 - fake encryption,
 - key generation,

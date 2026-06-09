@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned runtime randomness/provider check model plus test-only Android and Linux/JVM availability probes.
 
-This is design/model/test evidence only. It does not implement production entropy collection, production random-byte generation for vault records, key generation, platform key wrapping, production KDF execution, executable provider crypto, AEAD execution, vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is design/model/test evidence only. It does not implement production entropy collection, production random-byte generation for vault records, key generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) uses this runtime randomness policy as a prerequisite gate. It pins the review direction to OS SecureRandom, requires provider/algorithm evidence, rejects provider-wrapped or hybrid randomness for v1 unless separately reviewed, and keeps unknown or unavailable randomness state fail-closed.
 
@@ -154,7 +154,7 @@ Even if a platform passes the test-only runtime randomness probe, production pro
 - the v1 production-provider acceptance contract is not complete for production selectability,
 - no executable production provider exists,
 - production provider-level KATs have not passed,
-- production KDF execution is disabled,
+- calibration and provider-selectable KDF execution are disabled,
 - production AEAD execution is disabled,
 - final Argon2id parameters are not approved,
 - Tink keyset/raw-key handling is not approved for storage,
@@ -171,7 +171,7 @@ This boundary does not enable:
 - production entropy collection,
 - production random-byte generation,
 - key generation,
-- production KDF execution,
+- calibration or provider-selectable KDF execution,
 - executable production provider behavior,
 - production AEAD execution,
 - Tink keyset creation or storage,
@@ -193,4 +193,4 @@ This boundary does not enable:
 
 ## Next Step
 
-The next focused pass should remain design/probe-only unless the user explicitly approves implementation scope. Recommended decision point: review the runtime provider, primitive, and randomness gate data together and decide the supported Android/Linux baseline for a future still-disabled production-provider skeleton. Do not add vault containers, production KDF execution, key generation, persistence, or unlock UI in that branch.
+The next focused pass should remain design/probe-only unless the user explicitly approves implementation scope. Recommended decision point: review the runtime provider, primitive, and randomness gate data together and decide the supported Android/Linux baseline for a future still-disabled production-provider skeleton. Do not add vault containers, provider-selectable KDF execution, key generation, persistence, or unlock UI in that branch.

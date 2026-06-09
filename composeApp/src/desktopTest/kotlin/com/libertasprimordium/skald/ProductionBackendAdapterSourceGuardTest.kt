@@ -392,12 +392,14 @@ class ProductionBackendAdapterSourceGuardTest {
         val sourceRoot = File(root, "composeApp/src")
         val allowedFiles = setOf(
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt",
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidArgon2idCalibrationProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidKatValidationTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTinkRawKeyFeasibilityProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2idCalibrationProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCanonicalHeaderHkdfHmacVectorTest.kt",
@@ -546,6 +548,131 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "HKDF/HMAC/header-commitment execution must stay in approved building blocks/tests: $offenders",
+        )
+    }
+
+    @Test
+    fun argon2idExecutionStaysInApprovedBuildingBlocksAndTests() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val allowedFiles = setOf(
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1Argon2idRootDerivation.kt",
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt",
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""\bArgon2BytesGenerator\("""),
+            Regex("""\bArgon2Parameters\.Builder\("""),
+            Regex("""\bARGON2_id\b"""),
+            Regex("""\bARGON2_VERSION_13\b"""),
+            Regex("""\bwithMemoryAsKB\("""),
+            Regex("""\bgenerateBytes\("""),
+            Regex("""\bskaldVaultV1Argon2idRootMaterial\("""),
+            Regex("""\bderiveRootMaterial\("""),
+        )
+        val offenders = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative !in allowedFiles &&
+                            forbiddenPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Argon2id execution must stay in approved building blocks/tests: $offenders",
+        )
+    }
+
+    @Test
+    fun passphraseNormalizationValidationStaysInApprovedBuildingBlocksAndTests() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val allowedFiles = setOf(
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicy.kt",
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1PassphrasePolicy.kt",
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1PassphrasePolicy.kt",
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.text\.Normalizer"""),
+            Regex("""\bNormalizer\.normalize\("""),
+            Regex("""\bskaldVaultV1NormalizeNfc\("""),
+            Regex("""\bnormalizeAndEncode\("""),
+            Regex("""\bSkaldVaultV1PassphrasePolicy\b"""),
+        )
+        val offenders = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative !in allowedFiles &&
+                            forbiddenPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Passphrase normalization/validation must stay in approved building blocks/tests: $offenders",
+        )
+    }
+
+    @Test
+    fun passphraseAndArgon2idBuildingBlocksDoNotLogPersistGenerateRandomnessOrUseAead() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicy.kt"),
+            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1PassphrasePolicy.kt"),
+            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1PassphrasePolicy.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1Argon2idRootDerivation.kt"),
+            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt"),
+            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt"),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""import\s+com\.google\.crypto\.tink"""),
+            Regex("""\bAead\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCleartextKeysetHandle\b"""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Passphrase/Argon2id building blocks must not log, persist, generate randomness, or use AEAD: $offenders",
         )
     }
 

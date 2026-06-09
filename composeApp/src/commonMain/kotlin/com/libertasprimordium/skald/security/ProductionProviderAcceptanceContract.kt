@@ -56,6 +56,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     CanonicalHeaderEncodingPolicyApproved("canonical vault header encoding policy approved"),
     KeySeparationLabelsPolicyApproved("key-separation labels policy approved"),
     PassphraseEncodingPolicyApproved("passphrase encoding policy approved"),
+    Argon2idPassphraseRootDerivationImplemented(
+        "Argon2id passphrase-to-root-material derivation implemented",
+    ),
     TinkRawKeyFeasibilityApproved("Tink raw-key feasibility approved through public supported APIs"),
     VaultKeyCommitmentHeaderAuthenticationImplemented("vault-level key commitment and header authentication implemented"),
     AeadAadPolicyApproved("AEAD AAD policy approved"),
@@ -402,6 +405,7 @@ enum class ProductionProviderPassphraseAllowedClass(val label: String) {
 
 data class ProductionProviderPassphraseEncodingPolicy(
     val policyId: String,
+    val contractStatus: ProductionProviderConstructionContractStatus,
     val normalizationForm: String,
     val encodedForm: String,
     val forbiddenClasses: Set<ProductionProviderPassphraseForbiddenClass>,
@@ -409,6 +413,25 @@ data class ProductionProviderPassphraseEncodingPolicy(
     val allowedClasses: Set<ProductionProviderPassphraseAllowedClass>,
     val composedAndDecomposedFormsMustCanonicalizeToSameNfcBytes: Boolean,
     val visibleSeparatorsSuggestedAsAlternativesToSpaces: Set<String>,
+    val productionValidationImplemented: Boolean,
+    val productionVaultCreationWired: Boolean,
+)
+
+data class ProductionProviderArgon2idRootDerivationPolicy(
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val implementation: String,
+    val type: SkaldVaultV1Argon2idType,
+    val version: Argon2idVersion,
+    val minimumMemoryMiB: Int,
+    val minimumIterations: Int,
+    val parallelism: Int,
+    val minimumSaltBytes: Int,
+    val preferredNewVaultSaltBytes: Int,
+    val outputRootMaterialBytes: Int,
+    val explicitCallerSuppliedParametersRequired: Boolean,
+    val automaticCalibrationImplemented: Boolean,
+    val parameterDowngradeImplemented: Boolean,
+    val productionRootDerivationImplemented: Boolean,
     val productionVaultCreationWired: Boolean,
 )
 
@@ -569,6 +592,12 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                     ProductionProviderAcceptanceGate.TinkRawKeyFeasibilityApproved to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
+                    ProductionProviderAcceptanceGate.Argon2idPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.PassphraseEncodingPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.Argon2idPassphraseRootDerivationImplemented to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.HeaderCommitmentPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.HkdfSha256KeyExpansionPrimitiveApproved to
@@ -637,6 +666,7 @@ data class ProductionProviderAcceptanceContract(
     val canonicalHeaderEncodingPolicy: ProductionProviderCanonicalHeaderEncodingPolicy,
     val keySeparationPolicy: ProductionProviderKeySeparationPolicy,
     val passphraseEncodingPolicy: ProductionProviderPassphraseEncodingPolicy,
+    val argon2idRootDerivationPolicy: ProductionProviderArgon2idRootDerivationPolicy,
     val tinkRawKeyHandlingPolicy: ProductionProviderTinkRawKeyHandlingPolicy,
     val aeadPolicy: ProductionProviderAeadAcceptancePolicy,
     val runtimeRandomnessPolicy: ProductionProviderRuntimeRandomnessAcceptancePolicy,
@@ -906,6 +936,7 @@ data class ProductionProviderAcceptanceContract(
                 ),
                 passphraseEncodingPolicy = ProductionProviderPassphraseEncodingPolicy(
                     policyId = "unicode-nfc-utf8-no-controls-no-whitespace-v1",
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     normalizationForm = "NFC",
                     encodedForm = "UTF-8",
                     forbiddenClasses = ProductionProviderPassphraseForbiddenClass.entries.toSet(),
@@ -913,6 +944,24 @@ data class ProductionProviderAcceptanceContract(
                     allowedClasses = ProductionProviderPassphraseAllowedClass.entries.toSet(),
                     composedAndDecomposedFormsMustCanonicalizeToSameNfcBytes = true,
                     visibleSeparatorsSuggestedAsAlternativesToSpaces = setOf("-", ".", "_"),
+                    productionValidationImplemented = true,
+                    productionVaultCreationWired = false,
+                ),
+                argon2idRootDerivationPolicy = ProductionProviderArgon2idRootDerivationPolicy(
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
+                    implementation = "Bouncy Castle Argon2id explicit-parameter root derivation",
+                    type = SkaldVaultV1Argon2idType.Argon2id,
+                    version = Argon2idVersion.Version19,
+                    minimumMemoryMiB = 64,
+                    minimumIterations = 3,
+                    parallelism = 1,
+                    minimumSaltBytes = 16,
+                    preferredNewVaultSaltBytes = 32,
+                    outputRootMaterialBytes = 64,
+                    explicitCallerSuppliedParametersRequired = true,
+                    automaticCalibrationImplemented = false,
+                    parameterDowngradeImplemented = false,
+                    productionRootDerivationImplemented = true,
                     productionVaultCreationWired = false,
                 ),
                 tinkRawKeyHandlingPolicy = ProductionProviderTinkRawKeyHandlingPolicy(

@@ -98,7 +98,7 @@ The production-source serializer in `SkaldVaultV1HeaderCommitment` and the deskt
 
 ## HKDF-SHA-256 Vector
 
-HKDF-SHA-256 is implemented as a still-disabled production-source key-expansion building block from caller-supplied 64-byte root material. It is not passphrase handling, does not execute Argon2id, does not generate root material, and is not wired into vault creation or provider selectability.
+HKDF-SHA-256 is implemented as a still-disabled production-source key-expansion building block from caller-supplied 64-byte root material. The separate explicit-parameter Argon2id building block now produces root material from fixed non-secret passphrase fixtures for tests, but HKDF itself is not passphrase handling, and neither building block is wired into vault creation, unlock, persistence, or provider selectability.
 
 Input keying material is a fixed 64-byte non-secret Argon2id root-material fixture:
 
@@ -227,7 +227,7 @@ Statuses distinguish:
 - failed or unsupported,
 - production implemented and tested.
 
-Missing, unknown, incomplete, pending, failed, unsupported, documented-only, test-scope-only, or unintegrated vector/building-block evidence blocks production provider selectability. Completed vectors and vector-matching building blocks still do not make the provider selectable because production provider implementation, production provider-level KATs, Argon2id passphrase derivation, Tink AEAD execution, strict AAD implementation, vault storage, secure secret storage, secure metadata storage, and release review remain absent.
+Missing, unknown, incomplete, pending, failed, unsupported, documented-only, test-scope-only, or unintegrated vector/building-block evidence blocks production provider selectability. Completed vectors and vector-matching building blocks still do not make the provider selectable because production provider implementation, production provider-level KATs, provider-wired Argon2id passphrase derivation and calibration, Tink AEAD execution, strict AAD implementation, vault storage, secure secret storage, secure metadata storage, and release review remain absent.
 
 ## Source-Guard Expectations
 
@@ -260,7 +260,7 @@ Before still-disabled provider implementation can proceed, reviewers still need:
 
 - provider-level KATs through the future production provider,
 - integration of the vector-tested canonical serializer, HKDF expansion, and HMAC verification into a still-disabled provider/format boundary,
-- production Argon2id passphrase-to-root-material derivation,
+- provider-wired Argon2id passphrase-to-root-material derivation or calibration,
 - production Tink AEAD implementation with strict AAD,
 - final bounded Argon2id calibration approval,
 - record version/counter and stale-record policy,

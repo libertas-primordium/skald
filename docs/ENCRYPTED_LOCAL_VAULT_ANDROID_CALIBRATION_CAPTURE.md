@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned manual Android Argon2id calibration evidence-capture model and protocol.
 
-This is evidence modeling and manual capture guidance only. It does not implement production KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is evidence modeling and manual capture guidance only. It does not implement calibration, provider-selectable KDF execution, executable production `VaultCryptoProvider` behavior, AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 The current Pixel 10 Pro XL / Android 16 calibration evidence remains high-end Android debug/instrumented evidence only. It does not prove performance across all supported Android devices, release-like runtime behavior, thermal/load repeatability, final parameter approval, provider selection, storage readiness, or production KDF approval.
 
@@ -200,7 +200,7 @@ Manual Android evidence feeds the future Argon2id parameter policy as device-cla
 
 It does not approve:
 
-- production KDF execution,
+- calibration or provider-selectable KDF execution,
 - production provider implementation,
 - provider selection beyond the disabled provider,
 - final Android parameters,
