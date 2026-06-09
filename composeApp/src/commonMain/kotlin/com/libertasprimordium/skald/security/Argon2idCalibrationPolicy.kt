@@ -370,6 +370,7 @@ data class SkaldVaultV1Argon2idCalibrationPolicyEvidence(
 )
 
 object SkaldVaultV1Argon2idCalibrationPolicy {
+    const val POLICY_ID: String = "skald-vault-v1-argon2id-calibration-policy-v1"
     const val MINIMUM_MEMORY_MIB: Int = 64
     const val MINIMUM_MEMORY_KIB: Int = MINIMUM_MEMORY_MIB * 1024
     const val MINIMUM_ITERATIONS: Int = 3

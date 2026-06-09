@@ -4,6 +4,12 @@
 
 Skald Vault now has a Skald-owned Argon2id calibration policy building block, deterministic candidate-selection policy, memory/execution failure modeling, stored-parameter no-downgrade modeling, a manual Android calibration evidence-capture model, bounded test/probe-only Bouncy Castle Argon2id measurement harnesses, and a still-disabled explicit-parameter Bouncy Castle Argon2id passphrase-to-root-material building block.
 
+The v1 calibration policy id exposed by the still-disabled provider facade is:
+
+```text
+skald-vault-v1-argon2id-calibration-policy-v1
+```
+
 This is calibration policy, manual evidence capture, dependency probing, and isolated building-block implementation only. It does not implement vault creation, unlock UI, storage, an executable selectable production `VaultCryptoProvider`, provider-selectable KDF execution, production AEAD record encryption, production key generation, vault container parsing or writing, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet. The manual Android capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Runtime randomness/provider availability checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The provider-level KAT contract is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md), the test-only harness that exercises it is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md`](ENCRYPTED_LOCAL_VAULT_TEST_PROVIDER_KAT_HARNESS.md), and the disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Production provider selectability remains unavailable because no selectable production provider exists, and provider selection returns only the disabled provider.
 
 Runtime behavior remains fail-closed:
@@ -14,6 +20,7 @@ Runtime behavior remains fail-closed:
 - `EncryptedVaultReadinessPolicy` reports Argon2id calibration policy, candidate selection, memory-failure handling, and stored-parameter no-downgrade modeling as implemented but still disabled.
 - `EncryptedVaultReadinessPolicy` still reports `KdfParametersUncalibrated` and final bounded calibration approval blockers.
 - `VaultCryptoProviderSelectionRegistry` blocks production selection on non-final parameters, missing production-provider evidence, disabled storage, and runtime provider/primitive/randomness gates when they are unknown.
+- `SkaldVaultV1StillDisabledProviderFacade` reports calibration evidence as disabled metadata only; calibration evidence does not make the facade or any provider selectable.
 - The shared 64 MiB / t=3 / p=1 floor policy is implemented as a still-disabled building block, but final production calibration approval remains blocked.
 - Production persistence remains disabled.
 - Production sync remains disabled.

@@ -76,6 +76,7 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     CrashCorruptionPartialWriteReviewed("crash, corruption, and partial-write behavior reviewed"),
     RedactionLeakageChecksPassed("redaction, logging, and crash-report leakage checks pass"),
     AndroidOptionalWrappingSeparateFromPassphrase("Android optional wrapping remains separate from passphrase recovery"),
+    StillDisabledProviderFacadeApproved("still-disabled provider facade approved as metadata-only"),
     ProductionProviderImplementationExists("production provider implementation exists"),
     ReleaseReadinessExcludesDebugTestProviders("release readiness excludes debug and test-only providers"),
 }
@@ -682,6 +683,23 @@ data class ProductionProviderAndroidWrappingAcceptancePolicy(
     val roughlyWeeklyPassphrasePromptAfterBiometricUnlockRequired: Boolean,
 )
 
+data class ProductionProviderStillDisabledFacadePolicy(
+    val contractStatus: ProductionProviderConstructionContractStatus,
+    val facadeImplemented: Boolean,
+    val metadataOnly: Boolean,
+    val operationsDisabled: Boolean,
+    val selectableThroughProviderRegistry: Boolean,
+    val debugOrTestFlagCanSelect: Boolean,
+    val vaultCreationEnabled: Boolean,
+    val vaultUnlockEnabled: Boolean,
+    val vaultPersistenceEnabled: Boolean,
+    val manifestStorageImplemented: Boolean,
+    val secureStorageEnabled: Boolean,
+    val katHarnessSuccessImpliesSelectability: Boolean,
+    val calibrationEvidenceImpliesSelectability: Boolean,
+    val releaseApprovalPresent: Boolean,
+)
+
 data class ProductionProviderAcceptanceGateState(
     val gate: ProductionProviderAcceptanceGate,
     val state: ProductionProviderAcceptanceEvidenceState,
@@ -761,6 +779,8 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.ReleaseReadinessExcludesDebugTestProviders to
                         ProductionProviderAcceptanceEvidenceState.Satisfied,
                 ),
@@ -814,6 +834,7 @@ data class ProductionProviderAcceptanceContract(
     val aeadPolicy: ProductionProviderAeadAcceptancePolicy,
     val runtimeRandomnessPolicy: ProductionProviderRuntimeRandomnessAcceptancePolicy,
     val androidWrappingPolicy: ProductionProviderAndroidWrappingAcceptancePolicy,
+    val stillDisabledProviderFacadePolicy: ProductionProviderStillDisabledFacadePolicy,
 ) {
     fun assess(
         evidence: ProductionProviderAcceptanceEvidence = ProductionProviderAcceptanceEvidence.currentDesignOnly(),
@@ -1239,6 +1260,22 @@ data class ProductionProviderAcceptanceContract(
                     passwordOnlyModeFirstClass = true,
                     biometricUnlockReplacesPassphrase = false,
                     roughlyWeeklyPassphrasePromptAfterBiometricUnlockRequired = true,
+                ),
+                stillDisabledProviderFacadePolicy = ProductionProviderStillDisabledFacadePolicy(
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
+                    facadeImplemented = true,
+                    metadataOnly = true,
+                    operationsDisabled = true,
+                    selectableThroughProviderRegistry = false,
+                    debugOrTestFlagCanSelect = false,
+                    vaultCreationEnabled = false,
+                    vaultUnlockEnabled = false,
+                    vaultPersistenceEnabled = false,
+                    manifestStorageImplemented = false,
+                    secureStorageEnabled = false,
+                    katHarnessSuccessImpliesSelectability = false,
+                    calibrationEvidenceImpliesSelectability = false,
+                    releaseApprovalPresent = false,
                 ),
             )
     }

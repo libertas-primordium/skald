@@ -1475,6 +1475,65 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
+    fun stillDisabledProviderFacadePolicyIsMetadataOnlyAndNonSelectable() {
+        val policy = contract.stillDisabledProviderFacadePolicy
+
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
+        assertTrue(policy.facadeImplemented)
+        assertTrue(policy.metadataOnly)
+        assertTrue(policy.operationsDisabled)
+        assertFalse(policy.selectableThroughProviderRegistry)
+        assertFalse(policy.debugOrTestFlagCanSelect)
+        assertFalse(policy.vaultCreationEnabled)
+        assertFalse(policy.vaultUnlockEnabled)
+        assertFalse(policy.vaultPersistenceEnabled)
+        assertFalse(policy.manifestStorageImplemented)
+        assertFalse(policy.secureStorageEnabled)
+        assertFalse(policy.katHarnessSuccessImpliesSelectability)
+        assertFalse(policy.calibrationEvidenceImpliesSelectability)
+        assertFalse(policy.releaseApprovalPresent)
+    }
+
+    @Test
+    fun stillDisabledProviderFacadeEvidenceMustBeKnownAndImplemented() {
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Missing,
+            blocker = ProductionProviderAcceptanceBlocker.MissingGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unknown,
+            blocker = ProductionProviderAcceptanceBlocker.UnknownGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Failed,
+            blocker = ProductionProviderAcceptanceBlocker.FailedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved,
+            state = ProductionProviderAcceptanceEvidenceState.Unsupported,
+            blocker = ProductionProviderAcceptanceBlocker.UnsupportedGateEvidence,
+        )
+        assertGateBlocks(
+            gate = ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved,
+            state = ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            blocker = ProductionProviderAcceptanceBlocker.ModelOnlyGateEvidence,
+        )
+
+        val assessment = contract.assess(ProductionProviderAcceptanceEvidence.currentDesignOnly())
+
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            ProductionProviderAcceptanceEvidence.currentDesignOnly()
+                .stateFor(ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved),
+        )
+        assertFalse(assessment.productionProviderSelectable)
+        assertFalse(assessment.productionPersistenceAllowed)
+    }
+
+    @Test
     fun implementedRecordAeadEvidenceDoesNotBypassKatOrManifestGates() {
         val evidence = ProductionProviderAcceptanceEvidence(
             gateStates = ProductionProviderAcceptanceGate.entries.associateWith {

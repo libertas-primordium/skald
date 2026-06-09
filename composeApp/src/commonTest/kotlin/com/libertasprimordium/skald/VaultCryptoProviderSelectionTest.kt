@@ -30,6 +30,8 @@ class VaultCryptoProviderSelectionTest {
         assertEquals(VaultCryptoProviderSelectionDecision.DisabledProviderSelected, result.decision)
         assertFalse(result.productionProviderSelectable)
         assertTrue(result.candidates.none { it.productionSelectable })
+        assertTrue(result.candidates.none { it.id.name.contains("Facade") })
+        assertTrue(VaultCryptoProviderCandidateId.entries.none { it.name.contains("Facade") })
         assertContains(result.blockers, VaultCryptoProviderSelectionBlocker.ProviderDisabledByPolicy)
         assertContains(result.blockers, VaultCryptoProviderSelectionBlocker.ProductionProviderImplementationMissing)
         assertFalse(result.selectedProvider.statusReport.canDeriveKeys)

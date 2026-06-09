@@ -59,6 +59,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderAcceptanceContractIncomplete)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StillDisabledProviderIntegrationHarnessNotSelectable)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StillDisabledProviderFacadeNotSelectable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestIntegrationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing)
@@ -83,6 +84,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledProviderLevelKatExecution)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledRandomizedAeadBehavioralKatExecution)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledIntegratedVerificationOrderKatExecution)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledProviderFacadeBoundary)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StaleRecordManifestPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
@@ -225,6 +227,9 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.ProviderLevelKatsExecutedInStillDisabledHarness,
             EncryptedVaultRequirement.RandomizedAeadBehavioralKatsExecutedInStillDisabledHarness,
             EncryptedVaultRequirement.IntegratedVerificationOrderKatsExecutedInStillDisabledHarness,
+            EncryptedVaultRequirement.StillDisabledProviderFacadeImplementedAndTested,
+            EncryptedVaultRequirement.StillDisabledProviderFacadeMetadataOnly,
+            EncryptedVaultRequirement.StillDisabledProviderFacadeOperationsDisabled,
             EncryptedVaultRequirement.StaleRecordManifestPolicyModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
@@ -307,6 +312,22 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.IntegratedVerificationOrderKatPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.StillDisabledProviderFacadeImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[EncryptedVaultRequirement.StillDisabledProviderFacadeMetadataOnly],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.StillDisabledProviderFacadeOperationsDisabled
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
