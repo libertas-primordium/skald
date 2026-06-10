@@ -17,6 +17,15 @@ enum class SkaldVaultV1PlatformRootSettingsDecision(val label: String) {
     LinuxRootResolutionDoesNotResolveFilesystem("Linux root-resolution evidence does not resolve the filesystem"),
     LinuxRootResolutionDoesNotConstructPaths("Linux root-resolution evidence does not construct platform paths"),
     LinuxRootResolutionDoesNotEnablePersistence("Linux root-resolution evidence does not enable persistence"),
+    PlatformRootResolverBoundaryModeled("platform root resolver boundary is modeled"),
+    AndroidAppPrivateRootEvidenceModeled("Android app-private internal root evidence is modeled"),
+    LinuxDefaultRootResolverEvidenceModeled("Linux default root resolver evidence is modeled"),
+    PlatformRootResolverStillDisabled("platform root resolver evidence remains still disabled"),
+    PlatformRootResolverDoesNotEnablePersistence("platform root resolver evidence does not enable persistence"),
+    PlatformRootResolverDoesNotProveDurability("platform root resolver evidence does not prove durability"),
+    PlatformRootResolverDoesNotEnableProviderSelection(
+        "platform root resolver evidence does not enable provider selection",
+    ),
     LinuxCustomRootUnimplemented("Linux custom vault directory support is not implemented"),
     LinuxCustomRootUnreviewed("Linux custom vault directory review is incomplete"),
     UserConfiguredRootRequiresValidation("user-configured roots require validation before use"),
@@ -50,6 +59,12 @@ enum class SkaldVaultV1PlatformRootSettingsFailureReason(val label: String) {
     LinuxRootResolutionDoesNotResolveFilesystem("Linux root-resolution evidence does not resolve filesystem state"),
     LinuxRootResolutionDoesNotConstructPaths("Linux root-resolution evidence does not construct paths"),
     LinuxRootResolutionDoesNotEnablePersistence("Linux root-resolution evidence does not enable persistence"),
+    PlatformRootResolverStillDisabled("platform root resolver evidence still disabled"),
+    PlatformRootResolverDoesNotEnablePersistence("platform root resolver evidence does not enable persistence"),
+    PlatformRootResolverDoesNotProveDurability("platform root resolver evidence does not prove durability"),
+    PlatformRootResolverDoesNotEnableProviderSelection(
+        "platform root resolver evidence does not enable provider selection",
+    ),
     LinuxCustomRootUnimplemented("Linux custom root unimplemented"),
     LinuxCustomRootUnreviewed("Linux custom root unreviewed"),
     UserConfiguredRootRequiresValidation("user-configured root requires validation"),
@@ -75,6 +90,7 @@ data class SkaldVaultV1PlatformRootSettingsContract(
     val linuxRootSettingsPolicyId: String,
     val linuxCustomRootValidationPolicyId: String,
     val linuxRootResolutionPolicyId: String,
+    val platformRootResolverPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -91,6 +107,13 @@ data class SkaldVaultV1PlatformRootSettingsContract(
     val linuxRootResolutionDoesNotResolveFilesystem: Boolean,
     val linuxRootResolutionDoesNotConstructPaths: Boolean,
     val linuxRootResolutionDoesNotEnablePersistence: Boolean,
+    val platformRootResolverBoundaryModeled: Boolean,
+    val androidAppPrivateRootEvidenceModeled: Boolean,
+    val linuxDefaultRootResolverEvidenceModeled: Boolean,
+    val platformRootResolverStillDisabled: Boolean,
+    val platformRootResolverDoesNotEnablePersistence: Boolean,
+    val platformRootResolverDoesNotProveDurability: Boolean,
+    val platformRootResolverDoesNotEnableProviderSelection: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val actualPathConstructionImplemented: Boolean,
@@ -112,6 +135,8 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
         SkaldVaultV1LinuxCustomRootValidationPolicy.POLICY_ID
     const val LINUX_ROOT_RESOLUTION_POLICY_ID =
         SkaldVaultV1LinuxRootResolutionPolicy.POLICY_ID
+    const val PLATFORM_ROOT_RESOLVER_POLICY_ID =
+        SkaldVaultV1PlatformRootResolverPolicy.POLICY_ID
     const val OS_KEYRING_PASSPHRASE_POLICY_ID = "skald-vault-v1-os-keyring-passphrase-policy-v1"
     const val PASSWORD_MANAGER_PASSPHRASE_POLICY_ID = "skald-vault-v1-password-manager-passphrase-policy-v1"
     const val PASSPHRASE_FIRST_POLICY_ID = "skald-vault-v1-passphrase-first-vault-authority-policy-v1"
@@ -124,6 +149,7 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
             linuxRootSettingsPolicyId = LINUX_ROOT_SETTINGS_POLICY_ID,
             linuxCustomRootValidationPolicyId = LINUX_CUSTOM_ROOT_VALIDATION_POLICY_ID,
             linuxRootResolutionPolicyId = LINUX_ROOT_RESOLUTION_POLICY_ID,
+            platformRootResolverPolicyId = PLATFORM_ROOT_RESOLVER_POLICY_ID,
             osKeyringPassphrasePolicyId = OS_KEYRING_PASSPHRASE_POLICY_ID,
             passwordManagerPassphrasePolicyId = PASSWORD_MANAGER_PASSPHRASE_POLICY_ID,
             passphraseFirstPolicyId = PASSPHRASE_FIRST_POLICY_ID,
@@ -140,6 +166,13 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
             linuxRootResolutionDoesNotResolveFilesystem = true,
             linuxRootResolutionDoesNotConstructPaths = true,
             linuxRootResolutionDoesNotEnablePersistence = true,
+            platformRootResolverBoundaryModeled = true,
+            androidAppPrivateRootEvidenceModeled = true,
+            linuxDefaultRootResolverEvidenceModeled = true,
+            platformRootResolverStillDisabled = true,
+            platformRootResolverDoesNotEnablePersistence = true,
+            platformRootResolverDoesNotProveDurability = true,
+            platformRootResolverDoesNotEnableProviderSelection = true,
             settingsUiImplemented = false,
             settingsPersistenceImplemented = false,
             actualPathConstructionImplemented = false,

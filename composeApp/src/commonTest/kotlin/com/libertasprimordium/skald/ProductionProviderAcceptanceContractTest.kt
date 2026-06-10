@@ -29,6 +29,7 @@ import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbidd
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPathContainmentPlannerRule
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootSettingsRule
+import com.libertasprimordium.skald.security.ProductionProviderPlatformRootResolverRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
 import com.libertasprimordium.skald.security.ProductionProviderAtomicWritePhase
@@ -58,6 +59,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationState
@@ -1485,6 +1487,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.linuxRootResolutionPolicyId,
         )
         assertEquals(
+            SkaldVaultV1PlatformRootResolverPolicy.POLICY_ID,
+            policy.platformRootResolverPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1581,6 +1587,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.linuxRootResolutionPolicyStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.platformRootResolverBoundaryStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1954,6 +1964,26 @@ class ProductionProviderAcceptanceContractTest {
             policy.linuxRootResolutionRules,
             ProductionProviderLinuxRootResolutionRule.DoesNotEnablePersistenceOrProviderSelection,
         )
+        assertEquals(
+            ProductionProviderPlatformRootResolverRule.entries.toSet(),
+            policy.platformRootResolverRules,
+        )
+        assertContains(
+            policy.platformRootResolverRules,
+            ProductionProviderPlatformRootResolverRule.EvidenceOnly,
+        )
+        assertContains(
+            policy.platformRootResolverRules,
+            ProductionProviderPlatformRootResolverRule.AndroidAppPrivateInternalEvidenceOnly,
+        )
+        assertContains(
+            policy.platformRootResolverRules,
+            ProductionProviderPlatformRootResolverRule.LinuxCustomRootValidationIntegrated,
+        )
+        assertContains(
+            policy.platformRootResolverRules,
+            ProductionProviderPlatformRootResolverRule.DoesNotEnablePersistenceOrProviderSelection,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -2048,6 +2078,13 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.linuxRootResolutionDoesNotResolveFilesystem)
         assertTrue(policy.linuxRootResolutionDoesNotConstructPaths)
         assertTrue(policy.linuxRootResolutionDoesNotEnablePersistence)
+        assertTrue(policy.platformRootResolverBoundaryModeled)
+        assertTrue(policy.androidAppPrivateRootEvidenceModeled)
+        assertTrue(policy.linuxDefaultRootResolverEvidenceModeled)
+        assertTrue(policy.platformRootResolverStillDisabled)
+        assertTrue(policy.platformRootResolverDoesNotEnablePersistence)
+        assertTrue(policy.platformRootResolverDoesNotProveDurability)
+        assertTrue(policy.platformRootResolverDoesNotEnableProviderSelection)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2107,6 +2144,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved,
             ProductionProviderAcceptanceGate.LinuxCustomRootValidationPolicyImplementedAndTested,
             ProductionProviderAcceptanceGate.LinuxRootResolutionPolicyImplementedAndTested,
+            ProductionProviderAcceptanceGate.PlatformRootResolverBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2223,6 +2261,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.LinuxRootResolutionPolicyImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PlatformRootResolverBoundaryImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
