@@ -60,9 +60,17 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It records Android app-private internal storage as the only v1 Android root policy, rejects Android external/shared storage and Android arbitrary user-selected roots, records Linux default user-data root policy with a `~/.local/share/` fallback convention, records future Linux custom-root configuration through Settings as planned but unimplemented, rejects OS keyring and password-manager integration for Skald-managed vault passphrase storage, and keeps passphrase-first as the default vault authority. It does not read environment variables, read `HOME`, resolve roots, construct paths, create directories, add Settings UI, persist settings, integrate libsecret/KWallet/GNOME Keyring, integrate Android Credential Manager/Autofill/Google Password Manager, store passphrases, or approve persistence.
 
+A still-disabled Linux custom-root validation policy building block now exists:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxCustomRootValidationPolicy.kt
+```
+
+It performs pure static validation of candidate Linux custom vault-root strings. It can accept a candidate only as policy evidence and returns typed rejection reasons for relative paths, tilde paths, root/temp/system/runtime/removable-media roots, traversal, empty segments, control or invisible characters, whitespace, unsupported characters, URI-like prefixes, Windows drive prefixes, user-label sources, secret-looking material, and excessive length. Accepted candidates remain untrusted strings: they are not resolved, not expanded, not checked for existence, not checked for containment, not checked for symlinks, not checked for permissions, not checked for durability, not persisted as settings, and not usable for storage. The policy does not read `XDG_DATA_HOME`, read `HOME`, expand `~`, construct paths, create directories, call filesystem APIs, add Settings UI, persist settings, or approve persistence.
+
 This branch also records the v1 durability fail-closed decision and warning-only rejection policy for encrypted vault writes. Unsupported, unknown, unreviewed, insufficient, unsafe, or failed durability blocks encrypted vault persistence. Warning-only encrypted vault persistence is not approved for v1, and user consent cannot override a required durability failure.
 
-The platform storage-root, platform root settings, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
+The platform storage-root, platform root settings, Linux custom-root validation, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
 
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
@@ -91,6 +99,7 @@ Required policy ids:
 - Platform root settings policy id: `skald-vault-v1-platform-root-settings-policy-v1`
 - Android root policy id: `skald-vault-v1-android-app-private-internal-root-policy-v1`
 - Linux root settings policy id: `skald-vault-v1-linux-root-settings-policy-v1`
+- Linux custom-root validation policy id: `skald-vault-v1-linux-custom-root-validation-policy-v1`
 - OS keyring passphrase policy id: `skald-vault-v1-os-keyring-passphrase-policy-v1`
 - Password-manager passphrase policy id: `skald-vault-v1-password-manager-passphrase-policy-v1`
 - Passphrase-first vault authority policy id: `skald-vault-v1-passphrase-first-vault-authority-policy-v1`
@@ -161,7 +170,8 @@ Linux desktop v1 future root policy:
 - Vault storage defaults under the user's data directory, conventionally under `~/.local/share/` when no explicit user-data override is configured.
 - If Skald later models XDG-style user-data resolution, it may use an `XDG_DATA_HOME`-style location with fallback to `~/.local/share/`, but this branch does not read environment variables or `HOME`.
 - Linux users may later configure a custom vault storage directory through Skald Settings.
-- A future custom root must be validated before use and must pass containment, symlink, permission, and durability review before persistence.
+- A still-disabled static validation policy exists for future Linux custom-root candidate strings, but accepted candidates do not prove existence, containment, symlink safety, permissions, durability, or persistence readiness.
+- A future custom root must still be configured through Settings, persisted through reviewed settings storage, resolved by platform-specific code, and must pass containment, symlink, permission, and durability review before persistence.
 - A future custom root must not weaken encryption, storage atomicity, durability fail-closed behavior, or passphrase-first policy.
 - OS keyrings such as libsecret, KWallet, and GNOME Keyring must not be treated as primary encrypted vault storage.
 - OS keyrings must not be used or encouraged for Skald-managed vault passphrase storage.
@@ -204,7 +214,9 @@ Linux root/settings decisions:
 - `skald-vault-v1-linux-root-settings-policy-v1` records the future default as an app-controlled user-data location, conventionally under `~/.local/share/`.
 - XDG-style user-data resolution is future-only and must not read environment variables in this branch.
 - Linux custom vault roots are planned only as a future Settings-configurable option.
-- Custom roots are not usable until Settings UI, settings persistence, validation, containment review, symlink review, permission review, durability review, and storage implementation exist.
+- `skald-vault-v1-linux-custom-root-validation-policy-v1` validates static custom-root candidate strings only.
+- Accepted custom-root candidates are not resolved paths and do not prove path existence, filesystem safety, containment, symlink state, permissions, durability, Settings readiness, storage readiness, or persistence readiness.
+- Custom roots are not usable until Settings UI, settings persistence, root resolution, containment review, symlink review, permission review, durability review, and storage implementation exist.
 - Custom roots must not contain secrets, wallet labels, account labels, note text, or unsafe user-controlled path content.
 
 OS keyring, password-manager, and passphrase decisions:
@@ -217,6 +229,33 @@ OS keyring, password-manager, and passphrase decisions:
 - Optional Android biometric or hardware wrapping remains future convenience only and does not replace passphrase recovery.
 
 The policy is represented as typed model evidence only. Missing, unknown, failed, unreviewed, documented-only, or unimplemented root/settings evidence blocks persistence and provider selectability. The policy does not implement platform roots, actual paths, Settings UI, settings persistence, file/database storage, OS keyring integration, password-manager integration, secure storage success, or Android wrapping.
+
+## Linux Custom Root Static Validation Policy
+
+The Linux custom-root validation policy id is:
+
+```text
+skald-vault-v1-linux-custom-root-validation-policy-v1
+```
+
+The policy accepts only candidate strings that pass conservative static checks. Accepted means only that the untrusted string is policy-valid for later review. It does not mean the path exists, it does not mean the path is safe on the current filesystem, it does not mean the candidate is contained under a reviewed root, it does not mean permissions or symlinks are safe, it does not mean durability is sufficient, and it does not enable persistence.
+
+The policy rejects:
+
+- empty strings;
+- relative paths;
+- tilde paths such as `~/vaults`;
+- `/`, `/tmp`, `/var/tmp`, `/dev`, `/proc`, `/sys`, `/run`, `/mnt`, and `/media` roots or descendants;
+- traversal such as `..` or percent-encoded traversal markers;
+- empty path segments;
+- control characters, whitespace, whitespace-only segments, invisible format characters, non-ASCII characters, and unsupported punctuation;
+- URI-like prefixes such as `file:`;
+- Windows drive prefixes;
+- user-label or display-text sources;
+- secret-looking material;
+- too-long candidates.
+
+This policy never reads `XDG_DATA_HOME`, never reads `HOME`, never expands `~`, never resolves roots, never constructs an operating-system path, never checks existence, never checks permissions, never checks symlinks, never probes durability, never creates directories, never persists settings, never integrates OS keyrings or password managers, and never enables storage.
 
 ## Safe Path-Construction Contract
 
@@ -774,7 +813,7 @@ Before vault persistence:
 - logical layout and path-containment planner review remain necessary but not sufficient; platform path construction from that layout is still absent;
 - platform root resolution implementation and review;
 - Android app-private internal root implementation/review and Linux default user-data root implementation/review;
-- Settings UI, settings persistence, and custom-root validation/review before any Linux custom root is usable;
+- Settings UI, settings persistence, custom-root root resolution, and containment/symlink/permission/durability review before any Linux custom root is usable;
 - OS keyring and password-manager integration must remain absent for Skald-managed vault passphrase storage unless a future explicit design review changes the policy;
 - actual path construction, real path containment checks, and directory creation review;
 - symlink/traversal behavior review and checks;

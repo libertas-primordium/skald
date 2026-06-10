@@ -179,6 +179,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/ProductionProviderAcceptanceContract.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootSettingsPolicy.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxCustomRootValidationPolicy.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -1110,6 +1111,10 @@ class ProductionBackendAdapterSourceGuardTest {
                 root,
                 "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootSettingsPolicy.kt",
             ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxCustomRootValidationPolicy.kt",
+            ),
         )
         val forbiddenPatterns = listOf(
             Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
@@ -1881,6 +1886,10 @@ class ProductionBackendAdapterSourceGuardTest {
                 root,
                 "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootSettingsPolicy.kt",
             ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxCustomRootValidationPolicy.kt",
+            ),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io\.File"""),
@@ -2048,6 +2057,121 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Platform root settings policy must not resolve roots, construct paths, persist settings, use storage, use keyrings/password managers, log, or add wrapping APIs: $offenders",
+        )
+    }
+
+    @Test
+    fun linuxCustomRootValidationPolicyStaysInApprovedFileAndDoesNotResolveRootsPersistSettingsOrUseStorage() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val approvedPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxCustomRootValidationPolicy.kt"
+        val policyDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1LinuxCustomRoot"""),
+        )
+        val misplacedDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedPolicyFile &&
+                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Linux custom-root validation definitions must stay in the exact approved file: $misplacedDefinitions",
+        )
+
+        val source = File(root, approvedPolicyFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""import\s+android\.content\.Context"""),
+            Regex("""import\s+android\.net\.Uri"""),
+            Regex("""import\s+androidx\.datastore"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\.Path\b"""),
+            Regex("""\bandroid\.net\.Uri\b"""),
+            Regex("""\bandroid\.content\.Context\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPaths\."""),
+            Regex("""\bPath\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.normalize\("""),
+            Regex("""\.toPath\("""),
+            Regex("""\babsolutePath\b"""),
+            Regex("""\bcanonicalPath\b"""),
+            Regex("""\babsoluteFile\b"""),
+            Regex("""\bcanonicalFile\b"""),
+            Regex("""\bmkdir\("""),
+            Regex("""\bmkdirs\("""),
+            Regex("""\bcreateDirectory\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bfilesDir\b"""),
+            Regex("""\bnoBackupFilesDir\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bSystem\.getenv\("""),
+            Regex("""\bgetenv\("""),
+            Regex("""\buser\.home\b"""),
+            Regex("""\bXDG_DATA_HOME\b"""),
+            Regex("""\bHOME\b"""),
+            Regex("""\bexpandTilde\b"""),
+            Regex("""replaceFirst\(\s*["']~"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadSymbolicLink\b"""),
+            Regex("""\bgetPosixFilePermissions\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bFileChannel\b"""),
+            Regex("""\.force\("""),
+            Regex("""\bfsync\("""),
+            Regex("""\bAtomicFile\b"""),
+            Regex("""\bFiles\.move\b"""),
+            Regex("""\bStandardCopyOption\b"""),
+            Regex("""\.renameTo\("""),
+            Regex("""\bSecretService\b"""),
+            Regex("""\bKWalletClient\b"""),
+            Regex("""\bCredentialManager\("""),
+            Regex("""\bAutofillManager\b"""),
+            Regex("""\bGooglePasswordManager\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Linux custom-root validation policy must not resolve roots, construct paths, persist settings, use storage, use keyrings/password managers, log, or add wrapping APIs: $offenders",
         )
     }
 

@@ -21,6 +21,7 @@ import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentP
 import com.libertasprimordium.skald.security.ProductionProviderIntegratedVerificationOrderKatStep
 import com.libertasprimordium.skald.security.ProductionProviderKeyExpansionPrimitive
 import com.libertasprimordium.skald.security.ProductionProviderKeySeparationLabel
+import com.libertasprimordium.skald.security.ProductionProviderLinuxCustomRootValidationRule
 import com.libertasprimordium.skald.security.ProductionProviderManifestField
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
@@ -54,6 +55,7 @@ import com.libertasprimordium.skald.security.ProductionProviderWarningOnlyDurabi
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
+import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationState
@@ -1473,6 +1475,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(SkaldVaultV1PlatformRootSettingsPolicy.ANDROID_ROOT_POLICY_ID, policy.androidRootPolicyId)
         assertEquals(SkaldVaultV1PlatformRootSettingsPolicy.LINUX_ROOT_SETTINGS_POLICY_ID, policy.linuxRootSettingsPolicyId)
         assertEquals(
+            SkaldVaultV1LinuxCustomRootValidationPolicy.POLICY_ID,
+            policy.linuxCustomRootValidationPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1561,6 +1567,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
             policy.platformRootSettingsPolicyStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.linuxCustomRootValidationPolicyStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1884,6 +1894,10 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertContains(
             policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.LinuxCustomRootValidationPolicyImplemented,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
             ProductionProviderPlatformRootSettingsRule.OsKeyringPassphraseStorageRejected,
         )
         assertContains(
@@ -1893,6 +1907,22 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.platformRootSettingsRules,
             ProductionProviderPlatformRootSettingsRule.SettingsPersistenceUnimplemented,
+        )
+        assertEquals(
+            ProductionProviderLinuxCustomRootValidationRule.entries.toSet(),
+            policy.linuxCustomRootValidationRules,
+        )
+        assertContains(
+            policy.linuxCustomRootValidationRules,
+            ProductionProviderLinuxCustomRootValidationRule.StaticStringValidationOnly,
+        )
+        assertContains(
+            policy.linuxCustomRootValidationRules,
+            ProductionProviderLinuxCustomRootValidationRule.AcceptedCandidateDoesNotResolvePath,
+        )
+        assertContains(
+            policy.linuxCustomRootValidationRules,
+            ProductionProviderLinuxCustomRootValidationRule.ContainmentSymlinkPermissionDurabilityReviewStillRequired,
         )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
@@ -1982,7 +2012,7 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.linuxLocalShareFallbackModeled)
         assertTrue(policy.linuxCustomRootSettingsContractModeled)
         assertFalse(policy.linuxCustomRootUsable)
-        assertFalse(policy.linuxCustomRootValidationImplemented)
+        assertTrue(policy.linuxCustomRootValidationImplemented)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2040,6 +2070,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.PathContainmentPlannerImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved,
             ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved,
+            ProductionProviderAcceptanceGate.LinuxCustomRootValidationPolicyImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2148,6 +2179,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
             evidence.stateFor(ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.LinuxCustomRootValidationPolicyImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

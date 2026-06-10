@@ -83,6 +83,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     PathContainmentPlannerImplementedAndTested("path-containment planner implemented and tested"),
     PlatformStorageRootContractApproved("platform storage root contract approved"),
     PlatformRootSettingsPolicyApproved("platform root settings policy approved"),
+    LinuxCustomRootValidationPolicyImplementedAndTested(
+        "Linux custom root validation policy implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -853,6 +856,7 @@ enum class ProductionProviderPlatformRootSettingsRule(val label: String) {
     LinuxLocalShareFallbackPolicy("Linux default convention falls back to ~/.local/share/"),
     LinuxXdgStyleUserDataLocationFutureOnly("Linux XDG-style user-data resolution is future-only"),
     LinuxCustomRootSettingsPlanned("Linux custom root is a planned Settings option"),
+    LinuxCustomRootValidationPolicyImplemented("Linux custom root static validation policy is implemented"),
     LinuxCustomRootUnimplemented("Linux custom root is unimplemented"),
     LinuxCustomRootUnreviewed("Linux custom root is unreviewed"),
     UserConfiguredRootRequiresValidation("user-configured roots require validation before use"),
@@ -870,6 +874,28 @@ enum class ProductionProviderPlatformRootSettingsRule(val label: String) {
     SettingsPersistenceUnimplemented("settings persistence is unimplemented"),
     PlatformRootResolutionAbsent("platform root resolution is absent"),
     PlatformPathConstructionAbsent("platform path construction is absent"),
+    NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
+}
+
+enum class ProductionProviderLinuxCustomRootValidationRule(val label: String) {
+    StaticStringValidationOnly("accepted candidates are static string validation evidence only"),
+    AbsoluteLinuxCandidateRequired("candidate strings must be intended absolute Linux paths"),
+    RelativePathsRejected("relative custom root strings are rejected"),
+    TildeExpansionRejected("tilde custom root strings are rejected"),
+    SharedSystemRuntimeAndTempRootsRejected(
+        "shared, system, runtime, removable-media, and temporary roots are rejected",
+    ),
+    PathTraversalRejected("path traversal is rejected"),
+    EmptySegmentsRejected("empty path segments are rejected"),
+    AmbiguousCharactersRejected("ambiguous shell and unsupported characters are rejected"),
+    SecretMaterialAndLabelsRejected("secret-looking material and user labels are rejected"),
+    UriAndWindowsPrefixesRejected("URI-like and Windows drive prefixes are rejected"),
+    AcceptedCandidateDoesNotResolvePath("accepted candidate does not resolve a platform root"),
+    AcceptedCandidateDoesNotProveFilesystemState("accepted candidate does not prove existence or safety"),
+    SettingsUiAndPersistenceStillRequired("Settings UI and settings persistence are still required"),
+    ContainmentSymlinkPermissionDurabilityReviewStillRequired(
+        "containment, symlink, permission, and durability review are still required",
+    ),
     NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
 }
 
@@ -1019,6 +1045,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformRootSettingsPolicyId: String,
     val androidRootPolicyId: String,
     val linuxRootSettingsPolicyId: String,
+    val linuxCustomRootValidationPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1046,6 +1073,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val pathContainmentPlannerStatus: ProductionProviderConstructionContractStatus,
     val platformStorageRootContractStatus: ProductionProviderConstructionContractStatus,
     val platformRootSettingsPolicyStatus: ProductionProviderConstructionContractStatus,
+    val linuxCustomRootValidationPolicyStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1073,6 +1101,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val pathContainmentPlannerRules: Set<ProductionProviderPathContainmentPlannerRule>,
     val platformStorageRootRules: Set<ProductionProviderPlatformStorageRootRule>,
     val platformRootSettingsRules: Set<ProductionProviderPlatformRootSettingsRule>,
+    val linuxCustomRootValidationRules: Set<ProductionProviderLinuxCustomRootValidationRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1465,6 +1494,8 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.LinuxCustomRootValidationPolicyImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved to
@@ -1874,6 +1905,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1PlatformRootSettingsPolicy.ANDROID_ROOT_POLICY_ID,
                     linuxRootSettingsPolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.LINUX_ROOT_SETTINGS_POLICY_ID,
+                    linuxCustomRootValidationPolicyId =
+                        SkaldVaultV1LinuxCustomRootValidationPolicy.POLICY_ID,
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
@@ -1924,6 +1957,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     platformRootSettingsPolicyStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    linuxCustomRootValidationPolicyStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     symlinkTraversalContractStatus =
@@ -1968,6 +2003,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderPlatformStorageRootRule.entries.toSet(),
                     platformRootSettingsRules =
                         ProductionProviderPlatformRootSettingsRule.entries.toSet(),
+                    linuxCustomRootValidationRules =
+                        ProductionProviderLinuxCustomRootValidationRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -2020,7 +2057,7 @@ data class ProductionProviderAcceptanceContract(
                     linuxLocalShareFallbackModeled = true,
                     linuxCustomRootSettingsContractModeled = true,
                     linuxCustomRootUsable = false,
-                    linuxCustomRootValidationImplemented = false,
+                    linuxCustomRootValidationImplemented = true,
                     settingsUiImplemented = false,
                     settingsPersistenceImplemented = false,
                     osKeyringPrimaryStorageRejected = true,
