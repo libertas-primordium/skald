@@ -1581,6 +1581,133 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun storageLayoutPlanStaysInApprovedFileAndDoesNotConstructPlatformPathsOrUseStorage() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val approvedLayoutFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageLayoutPlan.kt"
+        val layoutDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1StorageLayout"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1LogicalStorageLocation\b"""),
+        )
+        val misplacedLayoutDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedLayoutFile &&
+                            layoutDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedLayoutDefinitions.isEmpty(),
+            "Storage layout plan definitions must stay in the exact approved file: $misplacedLayoutDefinitions",
+        )
+
+        val source = File(root, approvedLayoutFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""import\s+android\.net\.Uri"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\.Path\b"""),
+            Regex("""\bandroid\.net\.Uri\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPaths\."""),
+            Regex("""\bPath\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.toPath\("""),
+            Regex("""\babsolutePath\b"""),
+            Regex("""\bcanonicalPath\b"""),
+            Regex("""\babsoluteFile\b"""),
+            Regex("""\bcanonicalFile\b"""),
+            Regex("""\.joinToString\("""),
+            Regex("""\bmkdir\("""),
+            Regex("""\bmkdirs\("""),
+            Regex("""\bcreateDirectory\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadSymbolicLink\b"""),
+            Regex("""\bgetPosixFilePermissions\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bFileChannel\b"""),
+            Regex("""\bFiles\.move\b"""),
+            Regex("""\bFiles\.createTempFile\b"""),
+            Regex("""\bStandardCopyOption\b"""),
+            Regex("""\.renameTo\("""),
+            Regex("""\.force\("""),
+            Regex("""\bfsync\("""),
+            Regex("""\bAtomicFile\b"""),
+            Regex("""\bjava\.nio\.file\.Files\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
+            Regex("""\bfilesDir\b"""),
+            Regex("""\bnoBackupFilesDir\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Storage layout plan must not add platform roots, path construction, storage, persistence, crypto execution, randomness, logging, or wrapping APIs: $offenders",
+        )
+    }
+
+    @Test
     fun platformStorageRootContractDoesNotAddRootPathSymlinkPermissionOrDurabilityImplementations() {
         val root = repositoryRoot()
         val files = listOf(
@@ -1607,6 +1734,10 @@ class ProductionBackendAdapterSourceGuardTest {
             File(
                 root,
                 "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageNamespacePathPolicy.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageLayoutPlan.kt",
             ),
         )
         val forbiddenPatterns = listOf(

@@ -39,6 +39,7 @@ import com.libertasprimordium.skald.security.ProductionProviderStorageBoundaryFo
 import com.libertasprimordium.skald.security.ProductionProviderStorageBoundaryRequirement
 import com.libertasprimordium.skald.security.ProductionProviderStorageAtomicityRequirement
 import com.libertasprimordium.skald.security.ProductionProviderStorageFailureCategory
+import com.libertasprimordium.skald.security.ProductionProviderStorageLayoutPlanRule
 import com.libertasprimordium.skald.security.ProductionProviderStorageNamespacePathRule
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
@@ -1462,6 +1463,7 @@ class ProductionProviderAcceptanceContractTest {
             "skald-vault-v1-storage-namespace-path-policy-v1",
             policy.storageNamespacePathPolicyId,
         )
+        assertEquals("skald-vault-v1-storage-layout-plan-v1", policy.storageLayoutPlanPolicyId)
         assertEquals("skald-vault-v1-platform-storage-root-policy-v1", policy.platformStorageRootPolicyId)
         assertEquals("skald-vault-v1-safe-path-construction-policy-v1", policy.safePathConstructionPolicyId)
         assertEquals("skald-vault-v1-symlink-traversal-policy-v1", policy.symlinkTraversalPolicyId)
@@ -1527,6 +1529,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.storageNamespacePathHygieneStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.storageLayoutPlanStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1782,6 +1788,31 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageNamespacePathRules,
             ProductionProviderStorageNamespacePathRule.NoPathConstructionInThisBranch,
         )
+        assertEquals(ProductionProviderStorageLayoutPlanRule.entries.toSet(), policy.storageLayoutPlanRules)
+        assertContains(
+            policy.storageLayoutPlanRules,
+            ProductionProviderStorageLayoutPlanRule.RootlessRelativeSegmentLists,
+        )
+        assertContains(
+            policy.storageLayoutPlanRules,
+            ProductionProviderStorageLayoutPlanRule.NoPlatformRootInLayout,
+        )
+        assertContains(
+            policy.storageLayoutPlanRules,
+            ProductionProviderStorageLayoutPlanRule.NoFilesystemObjectInLayout,
+        )
+        assertContains(
+            policy.storageLayoutPlanRules,
+            ProductionProviderStorageLayoutPlanRule.IncludesCurrentContainer,
+        )
+        assertContains(
+            policy.storageLayoutPlanRules,
+            ProductionProviderStorageLayoutPlanRule.IncludesRecordArtifacts,
+        )
+        assertContains(
+            policy.storageLayoutPlanRules,
+            ProductionProviderStorageLayoutPlanRule.FuturePathConstructionRequiresReviewedRoot,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -1874,6 +1905,9 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.desktopDurabilityReviewed)
         assertTrue(policy.storageNamespacePathPolicyImplemented)
         assertTrue(policy.storagePathSegmentEncodingImplemented)
+        assertTrue(policy.storageLayoutPlanImplemented)
+        assertTrue(policy.storageLayoutLocationsRootless)
+        assertTrue(policy.storageLayoutUsesSafeSegmentsOnly)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested)
@@ -1899,6 +1933,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.StorageAtomicityCrashSimulatorExecuted,
             ProductionProviderAcceptanceGate.StorageFailureModelContractApproved,
             ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved,
+            ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
@@ -1992,6 +2027,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

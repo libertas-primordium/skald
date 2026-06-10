@@ -89,6 +89,7 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageFailureModelContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageNamespacePathHygieneContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageNamespacePathPolicyImplementedTested)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageLayoutPlanImplementedTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.DurabilityFailClosedPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.WarningOnlyDurabilityRejectionModeled)
         assertContains(

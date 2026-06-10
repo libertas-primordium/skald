@@ -79,6 +79,7 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     StorageAtomicityCrashSimulatorExecuted("in-memory storage atomicity/crash simulator executed"),
     StorageFailureModelContractApproved("storage failure model contract approved"),
     StorageNamespacePathHygieneContractApproved("storage namespace and path hygiene contract approved"),
+    StorageLayoutPlanImplementedAndTested("rootless logical storage layout plan implemented and tested"),
     PlatformStorageRootContractApproved("platform storage root contract approved"),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
@@ -755,6 +756,32 @@ enum class ProductionProviderStorageNamespacePathRule(val label: String) {
     NoPathConstructionInThisBranch("no path construction is implemented in this branch"),
 }
 
+enum class ProductionProviderStorageLayoutPlanRule(val label: String) {
+    RootlessRelativeSegmentLists("layout locations are rootless relative segment lists"),
+    NoPlatformRootInLayout("layout does not include a platform root"),
+    NoAbsolutePathInLayout("layout does not include absolute paths"),
+    NoFilesystemObjectInLayout("layout does not return File, Path, Uri, or platform filesystem objects"),
+    UsesValidatedNamespacePolicy("layout validates the storage namespace/path policy constants"),
+    UsesEncodedVaultSegments("layout uses encoded vault storage segments"),
+    UsesEncodedRecordSegments("layout uses encoded record storage segments"),
+    UsesEncodedManifestSegment("layout uses the encoded manifest storage segment"),
+    StableArtifactSegmentsPassSafeValidation("stable artifact segments pass safe-segment validation"),
+    IncludesCurrentContainer("layout includes current container location"),
+    IncludesCurrentManifest("layout includes current manifest location"),
+    IncludesCurrentStorageIndex("layout includes current storage index location"),
+    IncludesRecordArtifacts("layout includes record artifact locations by encoded record id"),
+    IncludesTemporaryArtifacts("layout includes temporary container, manifest, and storage-index locations"),
+    IncludesQuarantineAndRecoveryArtifacts("layout includes quarantine and recovery metadata locations"),
+    LayoutOutputIsNotPlatformPath("layout output is not a platform path"),
+    FuturePathConstructionRequiresReviewedRoot(
+        "future path construction must join layout segments under a reviewed platform root",
+    ),
+    FuturePathConstructionRequiresContainmentCheck(
+        "future path construction must prove containment under the reviewed root",
+    ),
+    NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
+}
+
 enum class ProductionProviderPlatformStorageRootRule(val label: String) {
     AndroidAppPrivateInternalStorageRequired("Android vault storage uses app-private internal storage"),
     AndroidExternalSharedStorageRejected("Android external or shared storage is not approved for v1"),
@@ -932,6 +959,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestPolicyId: String,
     val storageFailureModelPolicyId: String,
     val storageNamespacePathPolicyId: String,
+    val storageLayoutPlanPolicyId: String,
     val platformStorageRootPolicyId: String,
     val safePathConstructionPolicyId: String,
     val symlinkTraversalPolicyId: String,
@@ -953,6 +981,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestContractStatus: ProductionProviderConstructionContractStatus,
     val storageFailureModelStatus: ProductionProviderConstructionContractStatus,
     val storageNamespacePathHygieneStatus: ProductionProviderConstructionContractStatus,
+    val storageLayoutPlanStatus: ProductionProviderConstructionContractStatus,
     val platformStorageRootContractStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
@@ -977,6 +1006,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val crashRecoveryFailClosedStates: Set<ProductionProviderCrashRecoveryFailClosedState>,
     val storageFailureCategories: Set<ProductionProviderStorageFailureCategory>,
     val storageNamespacePathRules: Set<ProductionProviderStorageNamespacePathRule>,
+    val storageLayoutPlanRules: Set<ProductionProviderStorageLayoutPlanRule>,
     val platformStorageRootRules: Set<ProductionProviderPlatformStorageRootRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
@@ -1027,6 +1057,9 @@ data class ProductionProviderContainerManifestStorageContract(
     val desktopDurabilityReviewed: Boolean,
     val storageNamespacePathPolicyImplemented: Boolean,
     val storagePathSegmentEncodingImplemented: Boolean,
+    val storageLayoutPlanImplemented: Boolean,
+    val storageLayoutLocationsRootless: Boolean,
+    val storageLayoutUsesSafeSegmentsOnly: Boolean,
     val inMemoryAtomicityCrashSimulatorImplemented: Boolean,
     val inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted: Boolean,
     val inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested: Boolean,
@@ -1336,6 +1369,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.StorageFailureModelContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -1736,6 +1771,8 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureModelPolicyId = "skald-vault-v1-storage-failure-model-policy-v1",
                     storageNamespacePathPolicyId =
                         SkaldVaultV1StorageNamespacePathPolicy.POLICY_ID,
+                    storageLayoutPlanPolicyId =
+                        SkaldVaultV1StorageLayoutPlanPolicy.POLICY_ID,
                     platformStorageRootPolicyId =
                         "skald-vault-v1-platform-storage-root-policy-v1",
                     safePathConstructionPolicyId =
@@ -1773,6 +1810,8 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureModelStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storageNamespacePathHygieneStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
+                    storageLayoutPlanStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     platformStorageRootContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1812,6 +1851,8 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureCategories = ProductionProviderStorageFailureCategory.entries.toSet(),
                     storageNamespacePathRules =
                         ProductionProviderStorageNamespacePathRule.entries.toSet(),
+                    storageLayoutPlanRules =
+                        ProductionProviderStorageLayoutPlanRule.entries.toSet(),
                     platformStorageRootRules =
                         ProductionProviderPlatformStorageRootRule.entries.toSet(),
                     safePathConstructionRules =
@@ -1870,6 +1911,9 @@ data class ProductionProviderAcceptanceContract(
                     desktopDurabilityReviewed = false,
                     storageNamespacePathPolicyImplemented = true,
                     storagePathSegmentEncodingImplemented = true,
+                    storageLayoutPlanImplemented = true,
+                    storageLayoutLocationsRootless = true,
+                    storageLayoutUsesSafeSegmentsOnly = true,
                     inMemoryAtomicityCrashSimulatorImplemented = true,
                     inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted = true,
                     inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested = true,
