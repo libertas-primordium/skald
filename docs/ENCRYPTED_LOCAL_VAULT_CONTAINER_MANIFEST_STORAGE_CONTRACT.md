@@ -44,6 +44,14 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It composes validated namespace/path policy constants plus encoded fixed non-secret vault and record segments into deterministic rootless relative segment lists for current container, current manifest, current storage index, record artifacts, temporary artifacts, quarantine, and recovery metadata. Its output is a platform-neutral logical plan, not an operating-system path. It does not select a platform root, join path strings, construct absolute paths, return `File`/`Path`/`Uri` objects, create directories, read files, write files, access storage, persist bytes, or approve persistence.
 
+A still-disabled path-containment planner building block now exists:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PathContainmentPlanner.kt
+```
+
+It combines a reviewed root token with rootless logical layout segment lists to produce typed planned artifact locations. A planned location carries the root token, storage layout policy id, artifact kind, safe relative segments, and a segment-level containment proof flag. It is not an operating-system path, does not resolve Android or desktop roots, does not join path strings, does not construct absolute paths, does not return `File`/`Path`/`Uri` objects, does not check real filesystem containment, does not check symlinks, does not inspect permissions, does not probe durability, does not read or write files, and does not approve persistence.
+
 This branch also records the v1 durability fail-closed decision and warning-only rejection policy for encrypted vault writes. Unsupported, unknown, unreviewed, insufficient, unsafe, or failed durability blocks encrypted vault persistence. Warning-only encrypted vault persistence is not approved for v1, and user consent cannot override a required durability failure.
 
 The platform storage-root, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, or approve persistence.
@@ -69,6 +77,8 @@ Required policy ids:
 - Storage interruption-test policy id: `skald-vault-v1-storage-interruption-test-policy-v1`
 - Storage failure model policy id: `skald-vault-v1-storage-failure-model-policy-v1`
 - Storage namespace/path policy id: `skald-vault-v1-storage-namespace-path-policy-v1`
+- Storage layout plan policy id: `skald-vault-v1-storage-layout-plan-v1`
+- Path-containment planner policy id: `skald-vault-v1-path-containment-planner-v1`
 - Platform storage root policy id: `skald-vault-v1-platform-storage-root-policy-v1`
 - Safe path-construction policy id: `skald-vault-v1-safe-path-construction-policy-v1`
 - Symlink/traversal policy id: `skald-vault-v1-symlink-traversal-policy-v1`
@@ -77,7 +87,6 @@ Required policy ids:
 - Durability fail-closed policy id: `skald-vault-v1-durability-fail-closed-policy-v1`
 - Warning-only durability rejection policy id: `skald-vault-v1-warning-only-durability-rejection-policy-v1`
 - In-memory storage atomicity simulator policy id: `skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1`
-- Storage layout plan policy id: `skald-vault-v1-storage-layout-plan-v1`
 - Secure-storage boundary policy id: `skald-vault-v1-secure-storage-boundary-policy-v1`
 - Anti-rollback anchor policy id: `skald-vault-v1-anti-rollback-anchor-policy-v1`
 
@@ -175,7 +184,7 @@ Future path construction must:
 - normalize and check final path containment under the reviewed root in a future implementation;
 - fail closed if containment cannot be proven.
 
-The still-disabled logical storage layout plan may prepare rootless relative segment lists for future path construction, but those segment lists are not paths and cannot be used without a later reviewed platform root and containment check.
+The still-disabled logical storage layout plan may prepare rootless relative segment lists for future path construction, and the still-disabled path-containment planner may bind those lists to reviewed root tokens at the model level. Those planned locations are not paths and cannot be used without later root resolution, path joining, and a real containment check under a reviewed platform root.
 
 This branch does not implement path joining, containment checks against real filesystem paths, absolute path construction, or directory creation.
 
@@ -606,6 +615,38 @@ Layout output is not a filesystem path. Future platform path construction must j
 
 This branch implements only pure logical layout planning. It does not implement path joins, path containment, absolute paths, platform root selection, directory creation, symlink checks, permission checks, durability probes, file reads, file writes, database storage, DataStore, SharedPreferences, manifest file/storage read/write, storage index read/write, secure-storage success paths, or persistence.
 
+## Path-Containment Planner
+
+The path-containment planner policy id is:
+
+```text
+skald-vault-v1-path-containment-planner-v1
+```
+
+`SkaldVaultV1PathContainmentPlanner` accepts only reviewed root tokens and safe relative layout segments. The allowed root-token classes are:
+
+- Android app-private internal storage root token;
+- desktop app-controlled user-data root token;
+- test-only reviewed root token.
+
+The planner rejects external/shared roots, user-selected path roots, unknown roots, unreviewed roots, unsafe roots, and missing root tokens with typed failures. Root tokens are identifiers for future reviewed root classes only. They do not contain filesystem path strings, absolute paths, user-selected paths, Android `Context` references, storage handles, or platform root resolution logic.
+
+A planned artifact location contains:
+
+- reviewed root token;
+- storage layout policy id;
+- artifact kind;
+- list of safe relative segments from the logical storage layout plan;
+- a segment-level containment proof status.
+
+Required planned artifact kinds are current container, current manifest, current storage index, record artifact, temporary container, temporary manifest, temporary storage index, quarantine root, and recovery metadata.
+
+The planner revalidates segment lists using the same safe-segment policy used by the namespace/path and layout building blocks. It rejects empty segment lists, absolute-looking segments, dot and parent segments, slash or backslash inside segments, path traversal, control characters, whitespace, invisible format characters, non-ASCII text, unsupported punctuation, too-long segments, user-label/text inputs, and secret-looking inputs. Accepted output is root-token-bound and relative-only.
+
+Planner output is not a platform path. Future platform path construction must join the planned segments only under a resolved and reviewed platform root, prove real containment under that root, and separately satisfy symlink, permission, ownership, durability, atomicity, recovery, and secure-storage review. Planner evidence does not imply platform root resolution, actual path construction, real containment checks, platform storage implementation, vault persistence, provider selectability, or production storage safety.
+
+This branch implements only pure path-containment planning. It does not implement root resolution, path joins, absolute paths, path normalization, real containment checks, platform root selection, directory creation, symlink checks, permission checks, durability probes, file reads, file writes, database storage, DataStore, SharedPreferences, manifest file/storage read/write, storage index read/write, secure-storage success paths, or persistence.
+
 ## Secure Storage Boundary
 
 Encrypted vault container storage is separate from secure secret storage.
@@ -630,6 +671,7 @@ The readiness and acceptance models must distinguish:
 - implemented/tested still-disabled in-memory storage atomicity/crash simulator;
 - implemented/tested still-disabled storage namespace/path policy;
 - implemented/tested still-disabled logical storage layout plan;
+- implemented/tested still-disabled path-containment planner;
 - documented/model-only platform storage boundary;
 - documented/model-only atomic write strategy;
 - documented/model-only crash-recovery contract;
@@ -644,12 +686,12 @@ The readiness and acceptance models must distinguish:
 - documented/model-only durability fail-closed policy;
 - documented/model-only warning-only durability rejection policy;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent actual path construction, path joining, containment checks, directory creation, platform root selection, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, storage, manifest file/storage read/write, storage index read/write, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
+- absent actual path construction, path joining, real containment checks, directory creation, platform root selection, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, storage, manifest file/storage read/write, storage index read/write, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
-Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, logical layout, platform-root, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
+Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, logical layout, path-containment planner, platform-root, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
 
-Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed logical storage layout tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
+Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed logical storage layout tests, completed path-containment planner tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
 ## Remaining Gates
 
@@ -671,9 +713,9 @@ Before vault persistence:
 - crash-recovery implementation;
 - interruption/corruption tests;
 - storage failure runtime mapping;
-- logical layout review remains necessary but not sufficient; platform path construction from that layout is still absent;
+- logical layout and path-containment planner review remain necessary but not sufficient; platform path construction from that layout is still absent;
 - platform root resolution implementation and review;
-- actual path construction, path containment, and directory creation review;
+- actual path construction, real path containment checks, and directory creation review;
 - symlink/traversal behavior review and checks;
 - permission/ownership checks;
 - durability capability probes and platform-specific durability review proving required behavior or an explicitly reviewed equivalent safe strategy;

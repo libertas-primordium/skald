@@ -80,6 +80,7 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     StorageFailureModelContractApproved("storage failure model contract approved"),
     StorageNamespacePathHygieneContractApproved("storage namespace and path hygiene contract approved"),
     StorageLayoutPlanImplementedAndTested("rootless logical storage layout plan implemented and tested"),
+    PathContainmentPlannerImplementedAndTested("path-containment planner implemented and tested"),
     PlatformStorageRootContractApproved("platform storage root contract approved"),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
@@ -782,6 +783,27 @@ enum class ProductionProviderStorageLayoutPlanRule(val label: String) {
     NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
 }
 
+enum class ProductionProviderPathContainmentPlannerRule(val label: String) {
+    ReviewedRootTokensOnly("planner accepts reviewed root tokens only"),
+    AndroidAppPrivateInternalRootTokenModeled("Android app-private internal root token is modeled"),
+    DesktopAppControlledUserDataRootTokenModeled("desktop app-controlled user-data root token is modeled"),
+    TestOnlyReviewedRootTokenModeled("test-only reviewed root token is modeled"),
+    ExternalSharedRootsRejected("external or shared roots are rejected"),
+    UserPathRootsRejected("user-selected path roots are rejected"),
+    UnknownUnreviewedUnsafeRootsRejected("unknown, unreviewed, or unsafe root tokens are rejected"),
+    PlannedLocationsRootTokenBound("planned locations are bound to the reviewed root token"),
+    PlannedLocationsUseLayoutPolicyId("planned locations carry the storage layout policy id"),
+    PlannedLocationsUseArtifactKind("planned locations carry a typed artifact kind"),
+    PlannedLocationsUseSafeRelativeSegments("planned locations use validated safe relative segments"),
+    PlannedLocationsAreNotPlatformPaths("planned locations are not platform paths"),
+    SegmentLevelContainmentOnly("planner proves segment-level containment only"),
+    ActualRootResolutionAbsent("actual platform root resolution is absent"),
+    ActualPathConstructionAbsent("actual path construction is absent"),
+    RealContainmentChecksAbsent("real platform path containment checks are absent"),
+    SymlinkPermissionDurabilityChecksAbsent("symlink, permission, and durability checks are absent"),
+    NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
+}
+
 enum class ProductionProviderPlatformStorageRootRule(val label: String) {
     AndroidAppPrivateInternalStorageRequired("Android vault storage uses app-private internal storage"),
     AndroidExternalSharedStorageRejected("Android external or shared storage is not approved for v1"),
@@ -960,6 +982,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageFailureModelPolicyId: String,
     val storageNamespacePathPolicyId: String,
     val storageLayoutPlanPolicyId: String,
+    val pathContainmentPlannerPolicyId: String,
     val platformStorageRootPolicyId: String,
     val safePathConstructionPolicyId: String,
     val symlinkTraversalPolicyId: String,
@@ -982,6 +1005,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageFailureModelStatus: ProductionProviderConstructionContractStatus,
     val storageNamespacePathHygieneStatus: ProductionProviderConstructionContractStatus,
     val storageLayoutPlanStatus: ProductionProviderConstructionContractStatus,
+    val pathContainmentPlannerStatus: ProductionProviderConstructionContractStatus,
     val platformStorageRootContractStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
@@ -1007,6 +1031,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageFailureCategories: Set<ProductionProviderStorageFailureCategory>,
     val storageNamespacePathRules: Set<ProductionProviderStorageNamespacePathRule>,
     val storageLayoutPlanRules: Set<ProductionProviderStorageLayoutPlanRule>,
+    val pathContainmentPlannerRules: Set<ProductionProviderPathContainmentPlannerRule>,
     val platformStorageRootRules: Set<ProductionProviderPlatformStorageRootRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
@@ -1060,6 +1085,11 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageLayoutPlanImplemented: Boolean,
     val storageLayoutLocationsRootless: Boolean,
     val storageLayoutUsesSafeSegmentsOnly: Boolean,
+    val reviewedRootTokenPolicyImplemented: Boolean,
+    val pathContainmentPlannerImplemented: Boolean,
+    val plannedLocationsRootTokenBound: Boolean,
+    val plannedLocationsArePlatformPaths: Boolean,
+    val plannedLocationsUseSafeSegmentsOnly: Boolean,
     val inMemoryAtomicityCrashSimulatorImplemented: Boolean,
     val inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted: Boolean,
     val inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested: Boolean,
@@ -1371,6 +1401,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.PathContainmentPlannerImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -1773,6 +1805,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1StorageNamespacePathPolicy.POLICY_ID,
                     storageLayoutPlanPolicyId =
                         SkaldVaultV1StorageLayoutPlanPolicy.POLICY_ID,
+                    pathContainmentPlannerPolicyId =
+                        SkaldVaultV1PathContainmentPlanner.POLICY_ID,
                     platformStorageRootPolicyId =
                         "skald-vault-v1-platform-storage-root-policy-v1",
                     safePathConstructionPolicyId =
@@ -1812,6 +1846,8 @@ data class ProductionProviderAcceptanceContract(
                     storageNamespacePathHygieneStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     storageLayoutPlanStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
+                    pathContainmentPlannerStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     platformStorageRootContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1853,6 +1889,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderStorageNamespacePathRule.entries.toSet(),
                     storageLayoutPlanRules =
                         ProductionProviderStorageLayoutPlanRule.entries.toSet(),
+                    pathContainmentPlannerRules =
+                        ProductionProviderPathContainmentPlannerRule.entries.toSet(),
                     platformStorageRootRules =
                         ProductionProviderPlatformStorageRootRule.entries.toSet(),
                     safePathConstructionRules =
@@ -1914,6 +1952,11 @@ data class ProductionProviderAcceptanceContract(
                     storageLayoutPlanImplemented = true,
                     storageLayoutLocationsRootless = true,
                     storageLayoutUsesSafeSegmentsOnly = true,
+                    reviewedRootTokenPolicyImplemented = true,
+                    pathContainmentPlannerImplemented = true,
+                    plannedLocationsRootTokenBound = true,
+                    plannedLocationsArePlatformPaths = false,
+                    plannedLocationsUseSafeSegmentsOnly = true,
                     inMemoryAtomicityCrashSimulatorImplemented = true,
                     inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted = true,
                     inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested = true,
