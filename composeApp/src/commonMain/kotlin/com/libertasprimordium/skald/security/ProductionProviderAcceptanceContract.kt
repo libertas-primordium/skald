@@ -71,7 +71,13 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     ManifestContractApproved("manifest contract approved"),
     StaleRecordManifestPolicyApproved("stale-record and rollback manifest policy approved"),
     StoragePolicyContractApproved("storage policy contract approved"),
+    PlatformStorageBoundaryContractApproved("platform storage boundary contract approved"),
     AtomicityCrashRecoveryContractApproved("atomicity and crash-recovery contract approved"),
+    AtomicWriteStrategyContractApproved("atomic write strategy contract approved"),
+    CrashRecoveryContractApproved("crash-recovery contract approved"),
+    StorageInterruptionTestContractApproved("storage interruption-test contract approved"),
+    StorageFailureModelContractApproved("storage failure model contract approved"),
+    StorageNamespacePathHygieneContractApproved("storage namespace and path hygiene contract approved"),
     SecureStorageBoundaryContractApproved("secure storage boundary contract approved"),
     RollbackLimitationAndAntiRollbackAnchorReviewed(
         "rollback limitation and anti-rollback anchor status reviewed",
@@ -586,6 +592,144 @@ enum class ProductionProviderStorageAtomicityRequirement(val label: String) {
     NoWriteRecoveryImplementationInThisBranch("no atomic write or recovery implementation exists in this branch"),
 }
 
+enum class ProductionProviderStorageBoundaryAllowedBytes(val label: String) {
+    EncryptedContainerBytes("encrypted container bytes"),
+    ManifestBytes("manifest bytes"),
+    StorageIndexMetadata("storage index metadata"),
+    CrashRecoveryTemporaryState("crash-recovery temporary state"),
+    NonSecretStorageMetadata("non-secret storage metadata"),
+}
+
+enum class ProductionProviderStorageBoundaryForbiddenMaterial(val label: String) {
+    Passphrases("passphrases"),
+    NormalizedPassphraseBytes("normalized passphrase bytes"),
+    Argon2idRootMaterial("Argon2id root material"),
+    HkdfSubkeys("HKDF subkeys"),
+    PlaintextRecordBodies("plaintext record bodies"),
+    TinkKeysets("Tink keysets"),
+    WalletSeedMaterial("wallet seed material"),
+    PrivateKeys("private keys"),
+    NostrSecrets("Nostr secrets"),
+    CashuProofs("Cashu proofs"),
+    BackendCredentials("backend credentials"),
+}
+
+enum class ProductionProviderStorageBoundaryRequirement(val label: String) {
+    AlreadyEncryptedOrNonSecretBytesOnly("storage accepts only already-encrypted or non-secret bytes"),
+    StorageLayerNotEncryptionBoundary("storage layer is not responsible for encryption"),
+    StorageLayerNotPassphraseBoundary("storage layer is not responsible for passphrase handling"),
+    DoNotLogStoredBytesOrSecretIdentifyingPaths("storage must not log stored bytes or secret-identifying paths"),
+    TypedFailuresForExpectedIoRecoveryConditions("storage must return typed failures for expected I/O and recovery conditions"),
+    FailClosedOnUnknownState("storage must fail closed on unknown state"),
+    NoStorageImplementationInThisBranch("no platform storage implementation exists in this branch"),
+}
+
+enum class ProductionProviderAtomicWritePhase(val label: String) {
+    BeforeTempContainerWrite("before temporary container write"),
+    DuringTempContainerWrite("during temporary container write"),
+    AfterTempContainerWriteBeforeValidation("after temporary container write before validation"),
+    AfterTempContainerValidationBeforeTempManifestWrite(
+        "after temporary container validation before temporary manifest write",
+    ),
+    DuringTempManifestWrite("during temporary manifest write"),
+    AfterTempManifestWriteBeforeCommit("after temporary manifest write before commit"),
+    AfterCommittingContainerBeforeManifest("after committing container before committing manifest"),
+    AfterCommittingManifestBeforeCleanup("after committing manifest before cleanup"),
+    DuringCleanupOldOrTempState("during cleanup of old or temporary state"),
+    StartupRecovery("during startup recovery"),
+}
+
+enum class ProductionProviderAtomicWriteRequirement(val label: String) {
+    WriteContainerBytesToTemporaryLocation("write new record/container bytes to a temporary location"),
+    WriteManifestIndexBytesToTemporaryLocation("write new manifest/index bytes to a temporary location"),
+    ValidateWrittenBytesBeforeCommit("validate written bytes before commit"),
+    DurableCommitInSafeOrder("durably commit container/record and manifest/index bytes in a safe order"),
+    AtomicReplaceWhereAvailable("use atomic replace semantics where available"),
+    SyncParentDirectoryWhereSupported("sync parent directory or equivalent durability primitive where supported"),
+    RetainPreviousKnownGoodUntilCommitComplete("retain previous known-good state until the new state is fully committed"),
+    RemoveOrQuarantineIncompleteTemporaryState("remove or quarantine incomplete temporary state after recovery"),
+    NeverAcceptNewerRecordWithoutManifestAuthority("never accept a newer record without manifest authority"),
+    NeverAcceptManifestPointingToMissingMalformedData("never accept a manifest pointing to missing or malformed data"),
+    NeverSilentlyResurrectRecords("never silently resurrect records after a crash"),
+    NeverSilentlyOrphanRecords("never silently orphan records after a crash"),
+    TypedRecoveryDecisions("return typed recovery decisions"),
+    DesktopFilesystemStrategyRequiresReview("desktop filesystem strategy requires review before persistence approval"),
+    AndroidAppPrivateFilesystemStrategyRequiresReview(
+        "Android app-private filesystem strategy requires review before persistence approval",
+    ),
+    DatabaseStrategyRequiresSeparateReview("future database-backed strategy requires separate review"),
+    UnsupportedPlatformFailsClosed("unsupported platform storage behavior fails closed"),
+    NoAtomicWriteImplementationInThisBranch("no atomic write implementation exists in this branch"),
+}
+
+enum class ProductionProviderCrashRecoveryCheck(val label: String) {
+    InspectStableCommittedState("inspect stable committed state"),
+    InspectTemporaryInProgressState("inspect temporary or in-progress state"),
+    ValidateContainerParserOutput("validate container parser output"),
+    ValidateManifestParserOutput("validate manifest parser output"),
+    ValidateManifestReferencesAgainstAvailableData("validate manifest references against available records/container data"),
+    ApplyStaleRecordPolicyAgainstManifestState("apply stale-record policy against manifest state"),
+    ChooseSafePreviousStateForIncompleteNewerState("choose safe previous state for incomplete newer state"),
+    QuarantineInconsistentState("quarantine inconsistent state that cannot be safely accepted"),
+    UserFacingUnrecoverableCorruptionModelRequired("require user-facing model for unrecoverable corruption"),
+    TypedFailuresNoUncontrolledExceptions("avoid uncontrolled exceptions for expected corruption/interruption cases"),
+}
+
+enum class ProductionProviderCrashRecoveryFailClosedState(val label: String) {
+    MissingManifestWhenRequired("missing manifest when manifest is required"),
+    ManifestReferencesMissingRecordOrContainerData("manifest references missing record/container data"),
+    RecordOrContainerDataWithoutManifestAuthority("record/container data exists without manifest authority"),
+    MalformedManifest("malformed manifest"),
+    MalformedContainer("malformed container"),
+    ManifestContainerVaultIdMismatch("manifest/container vault id mismatch"),
+    ProviderSuiteMismatch("provider suite mismatch"),
+    HeaderCommitmentContextMismatch("header commitment context mismatch"),
+    StorageNamespaceMismatch("storage namespace mismatch"),
+    DuplicateLatestRecords("duplicate latest records"),
+    ConflictingCounters("conflicting counters"),
+    TruncatedTemporaryState("truncated temporary state"),
+    UnknownRecoveryState("unknown recovery state"),
+}
+
+enum class ProductionProviderStorageFailureCategory(val label: String) {
+    StorageUnavailable("storage unavailable"),
+    PermissionDenied("permission denied"),
+    ReadFailed("read failed"),
+    WriteFailed("write failed"),
+    DurabilitySyncUnsupported("durability sync unsupported"),
+    DurabilitySyncFailed("durability sync failed"),
+    AtomicReplaceUnsupported("atomic replace unsupported"),
+    AtomicReplaceFailed("atomic replace failed"),
+    TempStateIncomplete("temporary state incomplete"),
+    ManifestMissing("manifest missing"),
+    ManifestMalformed("manifest malformed"),
+    ContainerMalformed("container malformed"),
+    ManifestContainerMismatch("manifest/container mismatch"),
+    RecordMissing("record missing"),
+    RecordMalformed("record malformed"),
+    StaleRecordDetected("stale record detected"),
+    DuplicateRecordConflict("duplicate record conflict"),
+    ConflictingCounter("conflicting counter"),
+    RecoveryQuarantineRequired("recovery quarantine required"),
+    RecoveryUserActionRequired("recovery user action required"),
+    UnknownStorageState("unknown storage state"),
+}
+
+enum class ProductionProviderStorageNamespacePathRule(val label: String) {
+    StableAsciiNamespaceIds("storage namespace ids are stable ASCII constants or validated safe identifiers"),
+    VaultIdsEncodedBeforePathUse("vault ids are encoded before any future path use"),
+    UserControlledStringsNeverBecomePaths("user-controlled strings never become filesystem paths"),
+    NoPathTraversal("path traversal is forbidden"),
+    NoAbsoluteUserSuppliedPaths("absolute user-supplied paths are forbidden"),
+    SymlinkBehaviorRequiresReview("symlink behavior requires review before implementation"),
+    NoSecretValuesInPathNames("secret values must not appear in path names"),
+    NoWalletLabelsOrNotesInPathNames("wallet labels and note text must not appear in path names"),
+    FutureImplementationSelectsReviewedAppPrivateRoot(
+        "future implementation selects a reviewed platform-specific app-private root",
+    ),
+    NoPathConstructionInThisBranch("no path construction is implemented in this branch"),
+}
+
 enum class ProductionProviderSecureStorageBoundaryRequirement(val label: String) {
     EncryptedContainerStorageSeparateFromSecureSecretStorage(
         "encrypted vault container storage is separate from secure secret storage",
@@ -603,22 +747,43 @@ data class ProductionProviderContainerManifestStorageContract(
     val vaultContainerPolicyId: String,
     val manifestPolicyId: String,
     val storagePolicyId: String,
+    val platformStorageBoundaryPolicyId: String,
     val staleRecordPolicyId: String,
     val atomicityCrashRecoveryPolicyId: String,
+    val atomicWritePolicyId: String,
+    val crashRecoveryPolicyId: String,
+    val interruptionTestPolicyId: String,
+    val storageFailureModelPolicyId: String,
+    val storageNamespacePathPolicyId: String,
     val secureStorageBoundaryPolicyId: String,
     val antiRollbackAnchorPolicyId: String,
     val vaultContainerContractStatus: ProductionProviderConstructionContractStatus,
     val manifestContractStatus: ProductionProviderConstructionContractStatus,
     val storagePolicyContractStatus: ProductionProviderConstructionContractStatus,
+    val platformStorageBoundaryContractStatus: ProductionProviderConstructionContractStatus,
     val staleRecordPolicyStatus: ProductionProviderConstructionContractStatus,
     val atomicityCrashRecoveryContractStatus: ProductionProviderConstructionContractStatus,
+    val atomicWriteContractStatus: ProductionProviderConstructionContractStatus,
+    val crashRecoveryContractStatus: ProductionProviderConstructionContractStatus,
+    val interruptionTestContractStatus: ProductionProviderConstructionContractStatus,
+    val storageFailureModelStatus: ProductionProviderConstructionContractStatus,
+    val storageNamespacePathHygieneStatus: ProductionProviderConstructionContractStatus,
     val secureStorageBoundaryStatus: ProductionProviderConstructionContractStatus,
     val containerFields: Set<ProductionProviderVaultContainerField>,
     val containerRequirements: Set<ProductionProviderVaultContainerRequirement>,
     val manifestFields: Set<ProductionProviderManifestField>,
     val manifestBindings: Set<ProductionProviderStaleRecordManifestBinding>,
     val manifestRequirements: Set<ProductionProviderStaleRecordManifestRequirement>,
+    val storageBoundaryAllowedBytes: Set<ProductionProviderStorageBoundaryAllowedBytes>,
+    val storageBoundaryForbiddenMaterial: Set<ProductionProviderStorageBoundaryForbiddenMaterial>,
+    val storageBoundaryRequirements: Set<ProductionProviderStorageBoundaryRequirement>,
     val atomicityRequirements: Set<ProductionProviderStorageAtomicityRequirement>,
+    val atomicWritePhases: Set<ProductionProviderAtomicWritePhase>,
+    val atomicWriteRequirements: Set<ProductionProviderAtomicWriteRequirement>,
+    val crashRecoveryChecks: Set<ProductionProviderCrashRecoveryCheck>,
+    val crashRecoveryFailClosedStates: Set<ProductionProviderCrashRecoveryFailClosedState>,
+    val storageFailureCategories: Set<ProductionProviderStorageFailureCategory>,
+    val storageNamespacePathRules: Set<ProductionProviderStorageNamespacePathRule>,
     val secureStorageBoundaryRequirements: Set<ProductionProviderSecureStorageBoundaryRequirement>,
     val strictAadSubstitutionProtectionModeled: Boolean,
     val strictAadFreshnessProofClaimed: Boolean,
@@ -633,10 +798,19 @@ data class ProductionProviderContainerManifestStorageContract(
     val vaultPersistenceImplemented: Boolean,
     val manifestReadWriteImplemented: Boolean,
     val storageIndexReadWriteImplemented: Boolean,
+    val platformStorageImplementationAdded: Boolean,
     val filesystemVaultStorageImplemented: Boolean,
     val databaseVaultStorageImplemented: Boolean,
     val dataStoreVaultStorageImplemented: Boolean,
     val sharedPreferencesVaultStorageImplemented: Boolean,
+    val tempFileImplementationAdded: Boolean,
+    val journalImplementationAdded: Boolean,
+    val atomicReplaceImplementationAdded: Boolean,
+    val durabilitySyncImplementationAdded: Boolean,
+    val crashRecoveryImplementationAdded: Boolean,
+    val interruptionTestRuntimeHooksAdded: Boolean,
+    val storageFailureRuntimeMappingImplemented: Boolean,
+    val storagePathConstructionImplemented: Boolean,
     val secureSecretStorageSuccessPathImplemented: Boolean,
     val secureMetadataStorageSuccessPathImplemented: Boolean,
     val atomicWriteRecoveryImplementationAdded: Boolean,
@@ -928,7 +1102,19 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StoragePolicyContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.PlatformStorageBoundaryContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.AtomicWriteStrategyContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.CrashRecoveryContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StorageFailureModelContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -1305,8 +1491,16 @@ data class ProductionProviderAcceptanceContract(
                     vaultContainerPolicyId = "skald-vault-v1-container-contract-v1",
                     manifestPolicyId = "skald-vault-v1-manifest-contract-v1",
                     storagePolicyId = "skald-vault-v1-local-manifest-storage-policy-v1",
+                    platformStorageBoundaryPolicyId =
+                        "skald-vault-v1-platform-storage-boundary-policy-v1",
                     staleRecordPolicyId = "skald-vault-v1-stale-record-manifest-policy-v1",
                     atomicityCrashRecoveryPolicyId = "skald-vault-v1-atomicity-crash-recovery-policy-v1",
+                    atomicWritePolicyId = "skald-vault-v1-atomic-write-strategy-policy-v1",
+                    crashRecoveryPolicyId = "skald-vault-v1-crash-recovery-policy-v1",
+                    interruptionTestPolicyId = "skald-vault-v1-storage-interruption-test-policy-v1",
+                    storageFailureModelPolicyId = "skald-vault-v1-storage-failure-model-policy-v1",
+                    storageNamespacePathPolicyId =
+                        "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
                     secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
                     antiRollbackAnchorPolicyId = "skald-vault-v1-anti-rollback-anchor-policy-v1",
                     vaultContainerContractStatus =
@@ -1314,8 +1508,20 @@ data class ProductionProviderAcceptanceContract(
                     manifestContractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     storagePolicyContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    platformStorageBoundaryContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     staleRecordPolicyStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     atomicityCrashRecoveryContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    atomicWriteContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    crashRecoveryContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    interruptionTestContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    storageFailureModelStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    storageNamespacePathHygieneStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     secureStorageBoundaryStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1324,7 +1530,21 @@ data class ProductionProviderAcceptanceContract(
                     manifestFields = ProductionProviderManifestField.entries.toSet(),
                     manifestBindings = ProductionProviderStaleRecordManifestBinding.entries.toSet(),
                     manifestRequirements = ProductionProviderStaleRecordManifestRequirement.entries.toSet(),
+                    storageBoundaryAllowedBytes =
+                        ProductionProviderStorageBoundaryAllowedBytes.entries.toSet(),
+                    storageBoundaryForbiddenMaterial =
+                        ProductionProviderStorageBoundaryForbiddenMaterial.entries.toSet(),
+                    storageBoundaryRequirements =
+                        ProductionProviderStorageBoundaryRequirement.entries.toSet(),
                     atomicityRequirements = ProductionProviderStorageAtomicityRequirement.entries.toSet(),
+                    atomicWritePhases = ProductionProviderAtomicWritePhase.entries.toSet(),
+                    atomicWriteRequirements = ProductionProviderAtomicWriteRequirement.entries.toSet(),
+                    crashRecoveryChecks = ProductionProviderCrashRecoveryCheck.entries.toSet(),
+                    crashRecoveryFailClosedStates =
+                        ProductionProviderCrashRecoveryFailClosedState.entries.toSet(),
+                    storageFailureCategories = ProductionProviderStorageFailureCategory.entries.toSet(),
+                    storageNamespacePathRules =
+                        ProductionProviderStorageNamespacePathRule.entries.toSet(),
                     secureStorageBoundaryRequirements =
                         ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
                     strictAadSubstitutionProtectionModeled = true,
@@ -1340,10 +1560,19 @@ data class ProductionProviderAcceptanceContract(
                     vaultPersistenceImplemented = false,
                     manifestReadWriteImplemented = false,
                     storageIndexReadWriteImplemented = false,
+                    platformStorageImplementationAdded = false,
                     filesystemVaultStorageImplemented = false,
                     databaseVaultStorageImplemented = false,
                     dataStoreVaultStorageImplemented = false,
                     sharedPreferencesVaultStorageImplemented = false,
+                    tempFileImplementationAdded = false,
+                    journalImplementationAdded = false,
+                    atomicReplaceImplementationAdded = false,
+                    durabilitySyncImplementationAdded = false,
+                    crashRecoveryImplementationAdded = false,
+                    interruptionTestRuntimeHooksAdded = false,
+                    storageFailureRuntimeMappingImplemented = false,
+                    storagePathConstructionImplemented = false,
                     secureSecretStorageSuccessPathImplemented = false,
                     secureMetadataStorageSuccessPathImplemented = false,
                     atomicWriteRecoveryImplementationAdded = false,

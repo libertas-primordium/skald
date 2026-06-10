@@ -397,6 +397,8 @@ The v1 provider-level KAT strategy treats record AEAD ciphertext as randomized b
 
 Full stale-record/rollback enforcement remains deferred to a future trusted manifest, vault index, storage layer, or sync conflict policy. The future manifest must track latest trusted record version/counter per record id, bind vault id, provider suite id, header commitment context, manifest policy id/version, and record namespace, be integrity-protected, update atomically with records or define crash-safe recovery, and reject or quarantine stale/lower-counter records and conflicting duplicate record ids. Skald must not claim full rollback resistance against a rolled-back local storage directory without an external anchor, trusted monotonic counter, append-only log, remote checkpoint, or equivalent anti-rollback anchor.
 
+The storage boundary, atomic write strategy, crash-recovery behavior, interruption-test points, storage failure categories, and namespace/path hygiene rules are now documented and modeled in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). They remain contract evidence only. No filesystem, database, DataStore, SharedPreferences, manifest file read/write, storage index, temp-file, journal, rename, fsync, recovery routine, or path-construction implementation exists.
+
 ## Nonce Strategy Decision
 
 For XChaCha20-Poly1305 records:
@@ -592,9 +594,14 @@ Before using the pinned probe dependencies for executable vault code:
 
 Before enabling any real persistence:
 
-- vault container parser and writer implemented behind disabled feature gate,
+- vault container and manifest parser/writer evidence reviewed as in-memory building blocks only,
 - passphrase KDF calibration tested,
 - record AEAD tested,
+- platform storage boundary implemented and reviewed,
+- atomic write strategy implemented and interruption-tested,
+- crash recovery implemented and corruption-tested,
+- typed storage failure mapping implemented,
+- namespace/path hygiene implemented and reviewed,
 - Android wrapping tested if used,
 - Linux file permissions tested,
 - backup exclusion tested,

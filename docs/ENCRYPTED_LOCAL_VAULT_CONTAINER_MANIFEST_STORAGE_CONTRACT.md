@@ -33,10 +33,54 @@ Required policy ids:
 - Vault container policy id: `skald-vault-v1-container-contract-v1`
 - Manifest policy id: `skald-vault-v1-manifest-contract-v1`
 - Storage policy id: `skald-vault-v1-local-manifest-storage-policy-v1`
+- Platform storage boundary policy id: `skald-vault-v1-platform-storage-boundary-policy-v1`
 - Stale-record policy id: `skald-vault-v1-stale-record-manifest-policy-v1`
 - Atomicity/crash-recovery policy id: `skald-vault-v1-atomicity-crash-recovery-policy-v1`
+- Atomic write strategy policy id: `skald-vault-v1-atomic-write-strategy-policy-v1`
+- Crash-recovery policy id: `skald-vault-v1-crash-recovery-policy-v1`
+- Storage interruption-test policy id: `skald-vault-v1-storage-interruption-test-policy-v1`
+- Storage failure model policy id: `skald-vault-v1-storage-failure-model-policy-v1`
+- Storage namespace/path hygiene policy id: `skald-vault-v1-storage-namespace-path-hygiene-policy-v1`
 - Secure-storage boundary policy id: `skald-vault-v1-secure-storage-boundary-policy-v1`
 - Anti-rollback anchor policy id: `skald-vault-v1-anti-rollback-anchor-policy-v1`
+
+## Platform Storage Boundary Contract
+
+The future Skald Vault storage abstraction is a boundary around byte arrays, not a boundary around secrets.
+
+Future storage may eventually handle only:
+
+- encrypted container bytes;
+- manifest bytes;
+- storage index metadata;
+- crash-recovery temporary state;
+- non-secret storage metadata.
+
+Future storage must never handle:
+
+- passphrases;
+- normalized passphrase bytes;
+- Argon2id root material;
+- HKDF subkeys;
+- plaintext record bodies;
+- Tink keysets;
+- wallet seed material;
+- private keys;
+- Nostr secrets;
+- Cashu proofs;
+- backend credentials.
+
+Storage boundary requirements:
+
+- The storage layer accepts only already-encrypted or non-secret bytes.
+- The storage layer is not responsible for encryption.
+- The storage layer is not responsible for passphrase handling.
+- The storage layer must not log stored bytes.
+- The storage layer must not log file paths containing secret-identifying material.
+- The storage layer must return typed failures for expected I/O and recovery conditions.
+- The storage layer must fail closed on unknown state.
+
+This branch does not implement the storage layer, platform storage roots, path construction, file reads, file writes, database reads, database writes, DataStore, SharedPreferences, manifest file read/write, storage index read/write, secure storage success paths, or persistence.
 
 ## Vault Container Contract
 
@@ -198,7 +242,18 @@ Full rollback resistance against complete local directory rollback requires an e
 
 Future persistence must define atomicity at the vault-container/manifest consistency boundary before storage can be approved.
 
-Required future behavior:
+Required future atomic write phases:
+
+- write new record/container bytes to a temporary location;
+- write new manifest/index bytes to a temporary location;
+- validate written bytes before commit;
+- durably commit record/container bytes and manifest/index bytes in a safe order;
+- use atomic rename or equivalent platform-specific replacement semantics where available;
+- sync parent directory or use an equivalent durability primitive where supported;
+- retain previous known-good state until the new state is fully committed;
+- remove or quarantine incomplete temporary state after recovery.
+
+Required future atomicity behavior:
 
 - Writes must be atomic at the vault-container/manifest consistency boundary.
 - Partial writes must not be treated as valid vault state.
@@ -209,7 +264,117 @@ Required future behavior:
 - Future implementation must define a temp-file, journal, rename, fsync, or equivalent platform strategy before persistence is approved.
 - Future implementation must test interruption at each write phase.
 
+The implementation strategy must distinguish:
+
+- desktop filesystem behavior;
+- Android app-private filesystem behavior;
+- future database-backed behavior if a database is ever chosen;
+- unsupported platform behavior that must fail closed.
+
 This branch does not implement an atomic write strategy, journal, recovery routine, temp-file workflow, rename/fsync sequence, or interruption tests.
+
+## Crash-Recovery Contract
+
+Future startup recovery must:
+
+- inspect stable committed state;
+- inspect temporary or in-progress state;
+- validate container parser output;
+- validate manifest parser output;
+- validate manifest references against available record/container data;
+- apply stale-record policy against manifest state;
+- choose a safe previous state when a newer state is incomplete;
+- quarantine inconsistent state when it cannot be safely accepted;
+- require an explicit user-facing recovery model for unrecoverable corruption;
+- avoid uncontrolled exceptions for expected corruption or interruption cases.
+
+Recovery must fail closed for:
+
+- missing manifest when manifest is required;
+- manifest references missing record/container data;
+- record/container data without manifest authority;
+- malformed manifest;
+- malformed container;
+- manifest/container vault id mismatch;
+- provider suite mismatch;
+- header commitment context mismatch;
+- storage namespace mismatch;
+- duplicate latest records;
+- conflicting counters;
+- truncated temporary state;
+- unknown recovery state.
+
+This branch does not implement recovery.
+
+## Interruption-Test Contract
+
+Future persistence approval requires interruption tests at these points:
+
+- before temporary container write;
+- during temporary container write;
+- after temporary container write before validation;
+- after temporary container validation before temporary manifest write;
+- during temporary manifest write;
+- after temporary manifest write before commit;
+- after committing container but before committing manifest;
+- after committing manifest but before cleanup;
+- during cleanup of old or temporary state;
+- during startup recovery.
+
+Future tests must prove:
+
+- no partial write is treated as valid;
+- previous known-good state remains usable or inconsistent state is quarantined;
+- newer records are not accepted without manifest authority;
+- manifest does not point to missing records;
+- stale records are rejected or quarantined according to policy;
+- typed recovery decisions are returned.
+
+This branch documents and models those tests only. It does not add interruption-test runtime hooks.
+
+## Storage Failure Model
+
+Future storage must return typed failures for expected storage and recovery conditions. The modeled categories are:
+
+- `StorageUnavailable`
+- `PermissionDenied`
+- `ReadFailed`
+- `WriteFailed`
+- `DurabilitySyncUnsupported`
+- `DurabilitySyncFailed`
+- `AtomicReplaceUnsupported`
+- `AtomicReplaceFailed`
+- `TempStateIncomplete`
+- `ManifestMissing`
+- `ManifestMalformed`
+- `ContainerMalformed`
+- `ManifestContainerMismatch`
+- `RecordMissing`
+- `RecordMalformed`
+- `StaleRecordDetected`
+- `DuplicateRecordConflict`
+- `ConflictingCounter`
+- `RecoveryQuarantineRequired`
+- `RecoveryUserActionRequired`
+- `UnknownStorageState`
+
+This branch models the categories only. It does not map real platform exceptions or I/O return values.
+
+## Storage Namespace And Path Hygiene
+
+Future storage namespace and path rules:
+
+- storage namespace ids must be stable ASCII constants or validated safe identifiers;
+- vault ids must not be used directly as raw filesystem paths without encoding;
+- user-controlled strings must not become filesystem paths;
+- path traversal is forbidden;
+- absolute user-supplied paths are forbidden;
+- symlink-following behavior requires review before implementation;
+- secret values must not appear in path names;
+- wallet labels and note text must not appear in path names;
+- future implementation must choose a reviewed platform-specific app-private root.
+
+This branch does not implement namespace validation beyond the existing in-memory manifest fixture rules, path construction, platform root selection, symlink behavior, or storage access.
 
 ## Secure Storage Boundary
 
@@ -232,8 +397,12 @@ The readiness and acceptance models must distinguish:
 - implemented/tested still-disabled in-memory container parser/writer;
 - implemented/tested still-disabled in-memory manifest parser/writer;
 - implemented/tested still-disabled local manifest-relative stale-record decision policy;
-- documented/model-only storage policy;
-- documented/model-only atomicity/crash-recovery contract;
+- documented/model-only platform storage boundary;
+- documented/model-only atomic write strategy;
+- documented/model-only crash-recovery contract;
+- documented/model-only interruption-test contract;
+- documented/model-only storage failure model;
+- documented/model-only storage namespace/path hygiene contract;
 - documented/model-only secure-storage boundary;
 - absent anti-rollback anchor and no full rollback-resistance claim;
 - absent storage, manifest file/storage read/write, storage index, atomic write/recovery, and secure-storage implementation;
@@ -258,7 +427,11 @@ Before vault persistence:
 
 - manifest file/storage read/write implementation and tests;
 - manifest-backed storage integration for stale-record enforcement;
-- storage atomicity and crash-recovery implementation;
+- platform storage implementation for the selected supported platforms;
+- atomic write implementation;
+- crash-recovery implementation;
 - interruption/corruption tests;
+- storage failure runtime mapping;
+- storage namespace/path implementation and review;
 - secure secret storage and secure metadata storage boundary implementation;
 - explicit review of rollback limitations and any anti-rollback anchor decision.
