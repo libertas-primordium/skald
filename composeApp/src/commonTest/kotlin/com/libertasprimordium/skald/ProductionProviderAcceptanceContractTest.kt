@@ -13,6 +13,8 @@ import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKey
 import com.libertasprimordium.skald.security.ProductionProviderCanonicalHeaderEncodingRule
 import com.libertasprimordium.skald.security.ProductionProviderConstructionContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderDeterministicKatVector
+import com.libertasprimordium.skald.security.ProductionProviderDurabilityCapabilityRule
+import com.libertasprimordium.skald.security.ProductionProviderDurabilityFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentFailClosedCondition
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentField
 import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentPrimitive
@@ -45,6 +47,7 @@ import com.libertasprimordium.skald.security.ProductionProviderTinkRawKeyFeasibi
 import com.libertasprimordium.skald.security.ProductionProviderVaultContainerField
 import com.libertasprimordium.skald.security.ProductionProviderVaultContainerRequirement
 import com.libertasprimordium.skald.security.ProductionProviderWeakDeviceFailureMode
+import com.libertasprimordium.skald.security.ProductionProviderWarningOnlyDurabilityRule
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
@@ -1459,6 +1462,19 @@ class ProductionProviderAcceptanceContractTest {
             "skald-vault-v1-storage-namespace-path-policy-v1",
             policy.storageNamespacePathPolicyId,
         )
+        assertEquals("skald-vault-v1-platform-storage-root-policy-v1", policy.platformStorageRootPolicyId)
+        assertEquals("skald-vault-v1-safe-path-construction-policy-v1", policy.safePathConstructionPolicyId)
+        assertEquals("skald-vault-v1-symlink-traversal-policy-v1", policy.symlinkTraversalPolicyId)
+        assertEquals(
+            "skald-vault-v1-storage-permission-ownership-policy-v1",
+            policy.storagePermissionOwnershipPolicyId,
+        )
+        assertEquals("skald-vault-v1-durability-capability-policy-v1", policy.durabilityCapabilityPolicyId)
+        assertEquals("skald-vault-v1-durability-fail-closed-policy-v1", policy.durabilityFailClosedPolicyId)
+        assertEquals(
+            "skald-vault-v1-warning-only-durability-rejection-policy-v1",
+            policy.warningOnlyDurabilityRejectionPolicyId,
+        )
         assertEquals(
             "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
             policy.storageAtomicitySimulatorPolicyId,
@@ -1511,6 +1527,34 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.storageNamespacePathHygieneStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.platformStorageRootContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.safePathConstructionContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.symlinkTraversalContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.storagePermissionOwnershipContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.durabilityCapabilityContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.durabilityFailClosedPolicyStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.warningOnlyDurabilityRejectionStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
@@ -1705,6 +1749,18 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageFailureCategories,
             ProductionProviderStorageFailureCategory.UnknownStorageState,
         )
+        assertContains(
+            policy.storageFailureCategories,
+            ProductionProviderStorageFailureCategory.WarningOnlyDurabilityRejected,
+        )
+        assertContains(
+            policy.storageFailureCategories,
+            ProductionProviderStorageFailureCategory.UserConsentDurabilityOverrideRejected,
+        )
+        assertContains(
+            policy.storageFailureCategories,
+            ProductionProviderStorageFailureCategory.EquivalentSafeStrategyUnreviewed,
+        )
         assertEquals(ProductionProviderStorageNamespacePathRule.entries.toSet(), policy.storageNamespacePathRules)
         assertContains(
             policy.storageNamespacePathRules,
@@ -1725,6 +1781,39 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.storageNamespacePathRules,
             ProductionProviderStorageNamespacePathRule.NoPathConstructionInThisBranch,
+        )
+        assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
+        assertContains(
+            policy.durabilityCapabilityRules,
+            ProductionProviderDurabilityCapabilityRule.RequiredDurabilityFailuresBlockEncryptedVaultPersistence,
+        )
+        assertContains(
+            policy.durabilityCapabilityRules,
+            ProductionProviderDurabilityCapabilityRule.WarningOnlyEncryptedVaultPersistenceRejected,
+        )
+        assertEquals(
+            ProductionProviderDurabilityFailClosedCondition.entries.toSet(),
+            policy.durabilityFailClosedConditions,
+        )
+        assertContains(
+            policy.durabilityFailClosedConditions,
+            ProductionProviderDurabilityFailClosedCondition.DurabilityCapabilityUnknown,
+        )
+        assertContains(
+            policy.durabilityFailClosedConditions,
+            ProductionProviderDurabilityFailClosedCondition.DurabilitySyncUnsupported,
+        )
+        assertContains(
+            policy.durabilityFailClosedConditions,
+            ProductionProviderDurabilityFailClosedCondition.AtomicReplaceUnsupported,
+        )
+        assertEquals(
+            ProductionProviderWarningOnlyDurabilityRule.entries.toSet(),
+            policy.warningOnlyDurabilityRules,
+        )
+        assertContains(
+            policy.warningOnlyDurabilityRules,
+            ProductionProviderWarningOnlyDurabilityRule.UserConsentCannotOverrideDurabilityFailure,
         )
         assertEquals(
             ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
@@ -1769,6 +1858,20 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.interruptionTestRuntimeHooksAdded)
         assertFalse(policy.storageFailureRuntimeMappingImplemented)
         assertFalse(policy.storagePathConstructionImplemented)
+        assertFalse(policy.platformRootResolutionImplemented)
+        assertFalse(policy.platformRootSelectionImplemented)
+        assertFalse(policy.actualPathConstructionImplemented)
+        assertFalse(policy.pathJoinImplementationAdded)
+        assertFalse(policy.pathContainmentCheckImplementationAdded)
+        assertFalse(policy.directoryCreationImplementationAdded)
+        assertFalse(policy.symlinkCheckImplementationAdded)
+        assertFalse(policy.permissionCheckImplementationAdded)
+        assertFalse(policy.durabilityProbeImplementationAdded)
+        assertFalse(policy.warningOnlyEncryptedVaultPersistenceAllowed)
+        assertFalse(policy.userConsentDurabilityOverrideAllowed)
+        assertFalse(policy.equivalentSafeDurabilityStrategyApproved)
+        assertFalse(policy.androidDurabilityReviewed)
+        assertFalse(policy.desktopDurabilityReviewed)
         assertTrue(policy.storageNamespacePathPolicyImplemented)
         assertTrue(policy.storagePathSegmentEncodingImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
@@ -1796,6 +1899,13 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.StorageAtomicityCrashSimulatorExecuted,
             ProductionProviderAcceptanceGate.StorageFailureModelContractApproved,
             ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved,
+            ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved,
+            ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
+            ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
+            ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
+            ProductionProviderAcceptanceGate.DurabilityCapabilityContractApproved,
+            ProductionProviderAcceptanceGate.DurabilityFailClosedPolicyApproved,
+            ProductionProviderAcceptanceGate.WarningOnlyDurabilityPersistenceRejected,
             ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved,
             ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed,
         )
@@ -1882,6 +1992,34 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.SafePathConstructionContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.DurabilityCapabilityContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.DurabilityFailClosedPolicyApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.WarningOnlyDurabilityPersistenceRejected),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

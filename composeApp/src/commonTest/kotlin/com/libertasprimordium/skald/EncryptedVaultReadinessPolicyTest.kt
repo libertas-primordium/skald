@@ -71,6 +71,8 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageFailureRuntimeMappingMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StorageNamespacePathImplementationMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StoragePathConstructionImplementationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.DurabilityFailClosedRuntimeEvidenceMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.WarningOnlyDurabilityPersistenceRejected)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.AntiRollbackAnchorAbsentNoFullRollbackClaim)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing)
@@ -115,6 +117,8 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageFailureModelContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathHygieneContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathPolicyBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.DurabilityFailClosedPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.WarningOnlyDurabilityRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.SecureStorageBoundaryContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
@@ -274,6 +278,13 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.StorageFailureModelModeled,
             EncryptedVaultRequirement.StorageNamespacePathHygieneModeled,
             EncryptedVaultRequirement.StorageNamespacePathPolicyImplementedAndTested,
+            EncryptedVaultRequirement.PlatformStorageRootContractModeled,
+            EncryptedVaultRequirement.SafePathConstructionContractModeled,
+            EncryptedVaultRequirement.SymlinkTraversalContractModeled,
+            EncryptedVaultRequirement.StoragePermissionOwnershipContractModeled,
+            EncryptedVaultRequirement.DurabilityCapabilityContractModeled,
+            EncryptedVaultRequirement.DurabilityFailClosedPolicyModeled,
+            EncryptedVaultRequirement.WarningOnlyDurabilityPersistenceRejected,
             EncryptedVaultRequirement.SecureStorageBoundaryContractModeled,
             EncryptedVaultRequirement.RollbackLimitationAndAntiRollbackAnchorModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
@@ -433,6 +444,34 @@ class EncryptedVaultReadinessPolicyTest {
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.StorageNamespacePathPolicyImplementedAndTested
             ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.PlatformStorageRootContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.SafePathConstructionContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.SymlinkTraversalContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.StoragePermissionOwnershipContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.DurabilityCapabilityContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.DurabilityFailClosedPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.WarningOnlyDurabilityPersistenceRejected],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

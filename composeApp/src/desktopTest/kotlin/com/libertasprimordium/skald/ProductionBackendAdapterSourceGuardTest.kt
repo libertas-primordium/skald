@@ -1648,6 +1648,12 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bRoomDatabase\b"""),
             Regex("""\bSQLiteDatabase\b"""),
             Regex("""\b(?:class|object|interface)\s+\w*(?:PlatformStorageRootResolver|StorageRootResolver|PathBuilder|PathConstructor|SymlinkChecker|PermissionChecker|DurabilityProbe)\b"""),
+            Regex("""\b(?:class|object|interface)\s+\w*(?:WarningOnlyVaultPersistence|DurabilityWarningOverride|UserConsentDurabilityOverride|DurabilityOverride)\b"""),
+            Regex("""\ballowWarningOnlyEncryptedVaultPersistence\("""),
+            Regex("""\ballowPersistenceDespiteDurabilityFailure\("""),
+            Regex("""\bcontinueWithDurabilityWarning\("""),
+            Regex("""\boverrideDurabilityFailure\("""),
+            Regex("""\buserConsentOverridesDurabilityFailure\("""),
         )
         val offenders = files
             .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }

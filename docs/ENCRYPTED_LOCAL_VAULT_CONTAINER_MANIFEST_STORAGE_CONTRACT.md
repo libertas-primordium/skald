@@ -36,7 +36,9 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It validates stable namespace/policy identifiers and deterministically encodes fixed non-secret vault and record ID bytes into relative safe path segments. It does not construct absolute paths, choose platform storage roots, create directories, read files, write files, access storage, persist bytes, or approve persistence.
 
-This branch adds model-only platform storage-root, safe path-construction, symlink/traversal, permission/ownership, and durability-capability contracts. They are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, or approve persistence.
+This branch also records the v1 durability fail-closed decision and warning-only rejection policy for encrypted vault writes. Unsupported, unknown, unreviewed, insufficient, unsafe, or failed durability blocks encrypted vault persistence. Warning-only encrypted vault persistence is not approved for v1, and user consent cannot override a required durability failure.
+
+The platform storage-root, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, or approve persistence.
 
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
@@ -64,6 +66,8 @@ Required policy ids:
 - Symlink/traversal policy id: `skald-vault-v1-symlink-traversal-policy-v1`
 - Storage permission/ownership policy id: `skald-vault-v1-storage-permission-ownership-policy-v1`
 - Durability capability policy id: `skald-vault-v1-durability-capability-policy-v1`
+- Durability fail-closed policy id: `skald-vault-v1-durability-fail-closed-policy-v1`
+- Warning-only durability rejection policy id: `skald-vault-v1-warning-only-durability-rejection-policy-v1`
 - In-memory storage atomicity simulator policy id: `skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1`
 - Secure-storage boundary policy id: `skald-vault-v1-secure-storage-boundary-policy-v1`
 - Anti-rollback anchor policy id: `skald-vault-v1-anti-rollback-anchor-policy-v1`
@@ -192,7 +196,7 @@ Future implementation must:
 
 This branch does not implement permission checks, ownership checks, or platform storage selection.
 
-## Durability Capability Contract
+## Durability Capability And Fail-Closed Contract
 
 Future implementation must document and test:
 
@@ -200,9 +204,28 @@ Future implementation must document and test:
 - whether durable sync or equivalent is supported;
 - whether parent directory sync or equivalent is supported;
 - whether platform APIs can guarantee expected write ordering;
-- what fallback behavior exists if durability primitives are unsupported;
-- whether unsupported durability blocks persistence or is allowed only with an explicit warning;
+- what reviewed equivalent safe strategy exists if durability primitives are unsupported;
 - how Android and desktop behavior differ.
+
+For Skald Vault v1 encrypted vault persistence, the following conditions fail closed and block persistence:
+
+- `DurabilityCapabilityUnknown`
+- `DurabilityCapabilityInsufficient`
+- `DurabilitySyncUnsupported`
+- `DurabilitySyncFailed`
+- `AtomicReplaceUnsupported`
+- `AtomicReplaceFailed`
+- `PlatformRootUnreviewed`
+- `PlatformRootUnsafe`
+- `PermissionStateUnknown`
+- `UnsafePermissions`
+- `UnknownStorageState`
+
+Unsupported durable sync or atomic replace can be accepted only if a future platform storage implementation explicitly selects an equivalent safe strategy and that strategy receives human review. No such strategy is approved here.
+
+Warning-only encrypted vault persistence is not approved for v1. The app must not allow users to continue with encrypted vault writes when required durability capability is missing, unknown, unsupported, insufficient, unsafe, unreviewed, or failed. User consent cannot override required durability failure. Future warning-only behavior may be considered only for non-secret diagnostics or explicitly reviewed non-critical artifacts, not encrypted vault writes.
+
+Android app-private storage durability and desktop filesystem durability both still require implementation proof and review before persistence. Unsupported or unknown platform durability blocks persistence.
 
 This branch does not implement durability probes, fsync/sync calls, temp files, journals, rename, atomic replace, or platform crash-recovery behavior.
 
@@ -497,6 +520,9 @@ Future storage must return typed failures for expected storage and recovery cond
 - `UnsafePermissions`
 - `DurabilityCapabilityUnknown`
 - `DurabilityCapabilityInsufficient`
+- `WarningOnlyDurabilityRejected`
+- `UserConsentDurabilityOverrideRejected`
+- `EquivalentSafeStrategyUnreviewed`
 - `ExternalStorageRejected`
 - `UserPathRejected`
 
@@ -575,11 +601,13 @@ The readiness and acceptance models must distinguish:
 - documented/model-only symlink/traversal contract;
 - documented/model-only storage permission/ownership contract;
 - documented/model-only durability capability contract;
+- documented/model-only durability fail-closed policy;
+- documented/model-only warning-only durability rejection policy;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent actual path construction, path joining, containment checks, directory creation, platform root selection, symlink checks, permission checks, durability probes, storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
+- absent actual path construction, path joining, containment checks, directory creation, platform root selection, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
-Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, namespace/path, platform-root, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence.
+Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, platform-root, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
 
 Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
@@ -607,6 +635,7 @@ Before vault persistence:
 - actual path construction, path containment, and directory creation review;
 - symlink/traversal behavior review and checks;
 - permission/ownership checks;
-- durability capability probes and platform-specific durability review;
+- durability capability probes and platform-specific durability review proving required behavior or an explicitly reviewed equivalent safe strategy;
+- durability fail-closed runtime evidence, with no warning-only or user-consent override path for encrypted vault writes;
 - secure secret storage and secure metadata storage boundary implementation;
 - explicit review of rollback limitations and any anti-rollback anchor decision.
