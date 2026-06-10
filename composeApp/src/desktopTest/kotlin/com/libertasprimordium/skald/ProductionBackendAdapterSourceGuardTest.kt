@@ -1580,6 +1580,85 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun platformStorageRootContractDoesNotAddRootPathSymlinkPermissionOrDurabilityImplementations() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/ProductionProviderAcceptanceContract.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageNamespacePathPolicy.kt",
+            ),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.io\.File"""),
+            Regex("""import\s+java\.nio\.file"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPaths\."""),
+            Regex("""\bPath\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.toPath\("""),
+            Regex("""\babsolutePath\b"""),
+            Regex("""\bcanonicalPath\b"""),
+            Regex("""\babsoluteFile\b"""),
+            Regex("""\bcanonicalFile\b"""),
+            Regex("""\bmkdir\("""),
+            Regex("""\bmkdirs\("""),
+            Regex("""\bcreateDirectory\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadSymbolicLink\b"""),
+            Regex("""\bgetPosixFilePermissions\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bFileChannel\b"""),
+            Regex("""\.force\("""),
+            Regex("""\bfsync\("""),
+            Regex("""\bAtomicFile\b"""),
+            Regex("""\bFiles\.move\b"""),
+            Regex("""\bStandardCopyOption\b"""),
+            Regex("""\.renameTo\("""),
+            Regex("""\bfilesDir\b"""),
+            Regex("""\bnoBackupFilesDir\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\b(?:class|object|interface)\s+\w*(?:PlatformStorageRootResolver|StorageRootResolver|PathBuilder|PathConstructor|SymlinkChecker|PermissionChecker|DurabilityProbe)\b"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Platform storage-root contract must not add root resolution, path construction, symlink, permission, durability, or storage APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),

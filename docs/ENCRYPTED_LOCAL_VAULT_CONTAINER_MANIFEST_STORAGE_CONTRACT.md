@@ -36,6 +36,8 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It validates stable namespace/policy identifiers and deterministically encodes fixed non-secret vault and record ID bytes into relative safe path segments. It does not construct absolute paths, choose platform storage roots, create directories, read files, write files, access storage, persist bytes, or approve persistence.
 
+This branch adds model-only platform storage-root, safe path-construction, symlink/traversal, permission/ownership, and durability-capability contracts. They are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, or approve persistence.
+
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
 Related evidence is modeled in:
@@ -57,6 +59,11 @@ Required policy ids:
 - Storage interruption-test policy id: `skald-vault-v1-storage-interruption-test-policy-v1`
 - Storage failure model policy id: `skald-vault-v1-storage-failure-model-policy-v1`
 - Storage namespace/path policy id: `skald-vault-v1-storage-namespace-path-policy-v1`
+- Platform storage root policy id: `skald-vault-v1-platform-storage-root-policy-v1`
+- Safe path-construction policy id: `skald-vault-v1-safe-path-construction-policy-v1`
+- Symlink/traversal policy id: `skald-vault-v1-symlink-traversal-policy-v1`
+- Storage permission/ownership policy id: `skald-vault-v1-storage-permission-ownership-policy-v1`
+- Durability capability policy id: `skald-vault-v1-durability-capability-policy-v1`
 - In-memory storage atomicity simulator policy id: `skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1`
 - Secure-storage boundary policy id: `skald-vault-v1-secure-storage-boundary-policy-v1`
 - Anti-rollback anchor policy id: `skald-vault-v1-anti-rollback-anchor-policy-v1`
@@ -98,6 +105,106 @@ Storage boundary requirements:
 - The storage layer must fail closed on unknown state.
 
 This branch does not implement the storage layer, platform storage roots, path construction, file reads, file writes, database reads, database writes, DataStore, SharedPreferences, manifest file read/write, storage index read/write, secure storage success paths, or persistence.
+
+## Platform Storage Root Contract
+
+Future platform storage-root resolution must be reviewed before any persistence branch may use it.
+
+Android future root policy:
+
+- Vault storage must use app-private internal storage unless a later explicit human review approves another root.
+- External or shared storage is not approved for v1 vault persistence.
+- User-selected arbitrary paths are not approved for v1 vault persistence.
+- Root resolution must be platform-owned and not controlled by user-supplied strings.
+- Backup and restore behavior must be documented before persistence approval.
+- OS uninstall behavior and user data deletion implications must be documented before persistence approval.
+
+Desktop future root policy:
+
+- Vault storage must use an app-controlled user-data location.
+- OS keyrings such as libsecret or KWallet must not be treated as primary encrypted vault storage.
+- User-selected arbitrary paths are not approved unless a later branch explicitly reviews that behavior.
+- Root resolution must avoid embedding user labels, wallet labels, note text, or secrets in paths.
+- The platform-specific root choice must be reviewed for permissions, backup expectations, and filesystem durability semantics.
+
+Shared root policy:
+
+- No secret values in root paths or child segments.
+- No raw user-controlled strings in root paths or child segments.
+- No raw vault id text or record id text without safe encoding.
+- No wallet, account, or note labels in path names.
+- No absolute user-supplied path input.
+- No path traversal.
+- No symlink-following assumptions before review.
+
+This branch does not implement root resolution, platform root selection, Android `Context` file APIs, desktop filesystem root lookup, directory creation, or storage.
+
+## Safe Path-Construction Contract
+
+Future path construction may only combine:
+
+- a reviewed platform root;
+- a validated storage namespace segment;
+- an encoded vault segment from `SkaldVaultV1StorageNamespacePathPolicy`;
+- an encoded manifest segment from `SkaldVaultV1StorageNamespacePathPolicy`;
+- encoded record segments from `SkaldVaultV1StorageNamespacePathPolicy`;
+- stable internal filenames or segment constants that pass safe-segment validation.
+
+Future path construction must:
+
+- join only validated relative segments;
+- reject absolute segments;
+- reject `.`, `..`, and empty segments;
+- reject `/` or `\` inside segments;
+- reject non-ASCII, invisible, unsupported, or too-long segments;
+- reject segments derived from user labels or note text;
+- reject secret-looking inputs;
+- normalize and check final path containment under the reviewed root in a future implementation;
+- fail closed if containment cannot be proven.
+
+This branch does not implement path joining, containment checks against real filesystem paths, absolute path construction, or directory creation.
+
+## Symlink And Filesystem Traversal Contract
+
+Future implementation must:
+
+- not rely on symlink behavior without platform review;
+- reject or avoid symlink traversal where possible;
+- verify that any resolved target remains under the app-controlled root where APIs support this;
+- fail closed when symlink or containment state is unknown;
+- not follow attacker-controlled symlinks for vault files;
+- not accept external hard-linked or alias paths without review;
+- document platform-specific symlink and traversal behavior before persistence approval.
+
+This branch does not implement symlink checks, link resolution, alias checks, or containment enforcement.
+
+## Permissions And Ownership Contract
+
+Future implementation must:
+
+- prefer app-private storage with OS-enforced per-user or per-app isolation;
+- reject roots with obviously unsafe permissions when detectable;
+- document desktop Linux permission expectations;
+- document Android app-private behavior;
+- fail closed if root permission or ownership state is unknown or unsafe where meaningful checks exist;
+- never store vault data in world-readable or shared directories;
+- not rely on OS keyrings as primary vault encryption or primary vault storage.
+
+This branch does not implement permission checks, ownership checks, or platform storage selection.
+
+## Durability Capability Contract
+
+Future implementation must document and test:
+
+- whether atomic replace is supported;
+- whether durable sync or equivalent is supported;
+- whether parent directory sync or equivalent is supported;
+- whether platform APIs can guarantee expected write ordering;
+- what fallback behavior exists if durability primitives are unsupported;
+- whether unsupported durability blocks persistence or is allowed only with an explicit warning;
+- how Android and desktop behavior differ.
+
+This branch does not implement durability probes, fsync/sync calls, temp files, journals, rename, atomic replace, or platform crash-recovery behavior.
 
 ## Vault Container Contract
 
@@ -378,6 +485,20 @@ Future storage must return typed failures for expected storage and recovery cond
 - `RecoveryQuarantineRequired`
 - `RecoveryUserActionRequired`
 - `UnknownStorageState`
+- `PlatformRootUnavailable`
+- `PlatformRootUnsafe`
+- `PlatformRootUnreviewed`
+- `PathConstructionUnsupported`
+- `PathContainmentFailed`
+- `PathSegmentRejected`
+- `SymlinkStateUnknown`
+- `SymlinkRejected`
+- `PermissionStateUnknown`
+- `UnsafePermissions`
+- `DurabilityCapabilityUnknown`
+- `DurabilityCapabilityInsufficient`
+- `ExternalStorageRejected`
+- `UserPathRejected`
 
 This branch models the categories only. It does not map real platform exceptions or I/O return values.
 
@@ -449,11 +570,16 @@ The readiness and acceptance models must distinguish:
 - documented/model-only interruption-test contract;
 - documented/model-only storage failure model;
 - documented/model-only secure-storage boundary;
+- documented/model-only platform storage-root contract;
+- documented/model-only safe path-construction contract;
+- documented/model-only symlink/traversal contract;
+- documented/model-only storage permission/ownership contract;
+- documented/model-only durability capability contract;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent actual path construction, platform root selection, storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
+- absent actual path construction, path joining, containment checks, directory creation, platform root selection, symlink checks, permission checks, durability probes, storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
-Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, namespace/path, atomicity, or secure-storage evidence must block provider selectability and persistence.
+Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, namespace/path, platform-root, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence.
 
 Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
@@ -477,6 +603,10 @@ Before vault persistence:
 - crash-recovery implementation;
 - interruption/corruption tests;
 - storage failure runtime mapping;
-- actual path construction and platform root review;
+- platform root resolution implementation and review;
+- actual path construction, path containment, and directory creation review;
+- symlink/traversal behavior review and checks;
+- permission/ownership checks;
+- durability capability probes and platform-specific durability review;
 - secure secret storage and secure metadata storage boundary implementation;
 - explicit review of rollback limitations and any anti-rollback anchor decision.

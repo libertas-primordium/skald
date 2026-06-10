@@ -418,19 +418,24 @@ A production provider cannot become selectable until every gate below is satisfi
 31. Crash-recovery contract is approved for committed state, temporary state, container/manifest validation, manifest reference validation, stale-record policy, safe previous state, quarantine, and user-facing unrecoverable corruption.
 32. Interruption-test contract is approved for every write/recovery phase before persistence approval.
 33. In-memory storage atomicity/crash simulator evidence executes every documented interruption point and typed recovery decision with fixed non-secret byte arrays, without platform storage or persistence.
-34. Storage failure model is approved with typed categories for unavailable storage, permissions, read/write failures, durability sync, atomic replace, malformed/missing manifest/container/record data, stale/conflicting records, quarantine, user action, and unknown state.
-35. Storage namespace/path policy is approved: stable ASCII namespaces, deterministic encoded vault/record segments, no raw vault ids as path text, no user-controlled paths, no path traversal, no absolute paths, no URI or Windows-drive prefixes, no secrets or labels in path names, and reviewed future app-private roots before persistence.
-36. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-37. Unknown randomness/provider state blocks vault creation.
-38. Forbidden random APIs remain guarded.
-39. Secure secret storage is reviewed and approved.
-40. Secure metadata storage is reviewed and approved.
-41. Crash, corruption, and partial-write behavior are reviewed.
-42. Redaction, logging, and crash-report leakage checks pass.
-43. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-44. The still-disabled provider facade is approved as metadata/status only and remains non-selectable.
-45. A production provider implementation exists behind Skald-owned interfaces.
-46. Release readiness excludes debug and test-only providers from selection.
+34. Storage failure model is approved with typed categories for unavailable storage, permissions, read/write failures, durability sync, atomic replace, malformed/missing manifest/container/record data, stale/conflicting records, quarantine, user action, unknown state, platform-root failures, path-construction failures, symlink state, permission state, durability capability, external storage rejection, and user path rejection.
+35. Storage namespace/path policy is approved: stable ASCII namespaces, deterministic encoded vault/record segments, no raw vault ids as path text, no user-controlled paths, no path traversal, no absolute paths, no URI or Windows-drive prefixes, and no secrets or labels in path names.
+36. Platform storage-root contract is approved: Android app-private internal storage, desktop app-controlled user-data roots, no user-selected arbitrary roots, no external/shared Android storage, no OS keyring as primary vault storage, reviewed backup/uninstall/permission/durability behavior, and no root resolution in this branch.
+37. Safe path-construction contract is approved: future paths combine only a reviewed root and validated/encoded relative segments, reject absolute/dot/traversal/unsafe/secret-looking/user-label segments, prove containment under the reviewed root, and fail closed if containment cannot be proven.
+38. Symlink/traversal contract is approved: future implementation avoids or rejects symlink traversal where possible, verifies resolved targets under the root where supported, fails closed on unknown symlink or containment state, and does not follow attacker-controlled links.
+39. Storage permission/ownership contract is approved: future implementation prefers app-private OS isolation, rejects obviously unsafe permissions where detectable, documents Android and Linux expectations, and does not store vault data in world-readable or shared directories.
+40. Durability capability contract is approved: future implementation documents and tests atomic replace, durable sync, parent-directory sync or equivalents, write ordering, unsupported-primitive fallback, and Android/desktop differences before persistence.
+41. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+42. Unknown randomness/provider state blocks vault creation.
+43. Forbidden random APIs remain guarded.
+44. Secure secret storage is reviewed and approved.
+45. Secure metadata storage is reviewed and approved.
+46. Crash, corruption, and partial-write behavior are reviewed.
+47. Redaction, logging, and crash-report leakage checks pass.
+48. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+49. The still-disabled provider facade is approved as metadata/status only and remains non-selectable.
+50. A production provider implementation exists behind Skald-owned interfaces.
+51. Release readiness excludes debug and test-only providers from selection.
 
 Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, strict AAD/record-AEAD building-block tests, still-disabled integrated provider harness KATs, still-disabled provider facade checks, documented stale-record manifest policy, or a design-only acceptance assessment must not bypass the remaining gates.
 
@@ -456,6 +461,12 @@ This contract does not allow:
 - file/settings/SharedPreferences storage in the provider boundary,
 - manifest file read/write,
 - storage index read/write,
+- platform root resolver,
+- actual path construction,
+- path join or containment implementation,
+- symlink check implementation,
+- permission check implementation,
+- durability probe implementation,
 - temp-file, journal, rename, fsync, or recovery implementation,
 - platform interruption-test runtime hooks,
 - secure secret storage success,
@@ -479,4 +490,4 @@ productionPersistenceAllowed = false
 
 ## Next Step
 
-The next focused step should remain implementation-safe only if it is a still-disabled provider skeleton or additional design/source-guard work. Provider selectability, calibrated production KDF execution, file-backed vault container read/write, persistence, biometric wrapping, and unlock UI must remain out of scope until the acceptance gates above are reviewed and intentionally moved into an implementation branch.
+The next focused step should remain implementation-safe only if it is additional still-disabled design/model/source-guard work. Provider selectability, calibrated production KDF execution, file-backed vault container read/write, platform root resolution, actual path construction, persistence, biometric wrapping, and unlock UI must remain out of scope until the acceptance gates above are reviewed and intentionally moved into an implementation branch.

@@ -79,6 +79,11 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     StorageAtomicityCrashSimulatorExecuted("in-memory storage atomicity/crash simulator executed"),
     StorageFailureModelContractApproved("storage failure model contract approved"),
     StorageNamespacePathHygieneContractApproved("storage namespace and path hygiene contract approved"),
+    PlatformStorageRootContractApproved("platform storage root contract approved"),
+    SafePathConstructionContractApproved("safe path-construction contract approved"),
+    SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
+    StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
+    DurabilityCapabilityContractApproved("durability capability contract approved"),
     SecureStorageBoundaryContractApproved("secure storage boundary contract approved"),
     RollbackLimitationAndAntiRollbackAnchorReviewed(
         "rollback limitation and anti-rollback anchor status reviewed",
@@ -714,6 +719,20 @@ enum class ProductionProviderStorageFailureCategory(val label: String) {
     RecoveryQuarantineRequired("recovery quarantine required"),
     RecoveryUserActionRequired("recovery user action required"),
     UnknownStorageState("unknown storage state"),
+    PlatformRootUnavailable("platform root unavailable"),
+    PlatformRootUnsafe("platform root unsafe"),
+    PlatformRootUnreviewed("platform root unreviewed"),
+    PathConstructionUnsupported("path construction unsupported"),
+    PathContainmentFailed("path containment failed"),
+    PathSegmentRejected("path segment rejected"),
+    SymlinkStateUnknown("symlink state unknown"),
+    SymlinkRejected("symlink rejected"),
+    PermissionStateUnknown("permission state unknown"),
+    UnsafePermissions("unsafe permissions"),
+    DurabilityCapabilityUnknown("durability capability unknown"),
+    DurabilityCapabilityInsufficient("durability capability insufficient"),
+    ExternalStorageRejected("external storage rejected"),
+    UserPathRejected("user path rejected"),
 }
 
 enum class ProductionProviderStorageNamespacePathRule(val label: String) {
@@ -729,6 +748,114 @@ enum class ProductionProviderStorageNamespacePathRule(val label: String) {
         "future implementation selects a reviewed platform-specific app-private root",
     ),
     NoPathConstructionInThisBranch("no path construction is implemented in this branch"),
+}
+
+enum class ProductionProviderPlatformStorageRootRule(val label: String) {
+    AndroidAppPrivateInternalStorageRequired("Android vault storage uses app-private internal storage"),
+    AndroidExternalSharedStorageRejected("Android external or shared storage is not approved for v1"),
+    AndroidUserSelectedArbitraryPathsRejected("Android user-selected arbitrary paths are not approved for v1"),
+    AndroidRootResolutionPlatformOwned("Android root resolution is platform-owned and not user-string-controlled"),
+    AndroidBackupRestoreBehaviorMustBeDocumented(
+        "Android backup and restore behavior must be documented before persistence approval",
+    ),
+    AndroidUninstallDataDeletionMustBeDocumented(
+        "Android uninstall and user data deletion behavior must be documented before persistence approval",
+    ),
+    DesktopAppControlledUserDataLocationRequired(
+        "desktop vault storage uses an app-controlled user-data location",
+    ),
+    DesktopOsKeyringsNotPrimaryVaultStorage(
+        "desktop OS keyrings are not primary encrypted vault storage",
+    ),
+    DesktopUserSelectedArbitraryPathsRequireReview(
+        "desktop user-selected arbitrary paths require later explicit review",
+    ),
+    DesktopRootAvoidsLabelsTextAndSecrets(
+        "desktop root selection must avoid user labels, note text, and secrets in paths",
+    ),
+    DesktopPermissionsBackupDurabilityReviewRequired(
+        "desktop root choice requires permissions, backup, and durability review",
+    ),
+    SharedNoSecretValuesInRootOrChildSegments("no secret values appear in root paths or child segments"),
+    SharedNoRawUserControlledStrings("no raw user-controlled strings appear in root paths or child segments"),
+    SharedNoRawVaultIdText("raw vault id text is not used without safe encoding"),
+    SharedNoRawRecordIdText("raw record id text is not used without safe encoding"),
+    SharedNoWalletLabelsOrNoteText("wallet labels, account labels, and note text are not used in paths"),
+    SharedNoAbsoluteUserSuppliedPath("absolute user-supplied paths are rejected"),
+    SharedNoPathTraversal("path traversal is rejected"),
+    SharedNoSymlinkAssumptionsBeforeReview("symlink-following assumptions require review"),
+    NoPlatformRootResolutionInThisBranch("no platform root resolution is implemented in this branch"),
+}
+
+enum class ProductionProviderSafePathConstructionRule(val label: String) {
+    ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
+    ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
+    EncodedVaultSegment("future path construction uses an encoded vault segment"),
+    EncodedManifestSegment("future path construction uses an encoded manifest segment"),
+    EncodedRecordSegment("future path construction uses encoded record segments"),
+    StableInternalFilenamesPassSafeSegmentValidation(
+        "stable internal filenames or segments must pass safe-segment validation",
+    ),
+    JoinOnlyValidatedRelativeSegments("future joining uses only validated relative segments"),
+    RejectAbsoluteSegments("absolute segments are rejected"),
+    RejectDotParentAndEmptySegments("dot, parent, and empty segments are rejected"),
+    RejectSlashBackslashInsideSegments("slash and backslash inside segments are rejected"),
+    RejectNonAsciiInvisibleUnsupportedOrTooLongSegments(
+        "non-ASCII, invisible, unsupported, or too-long segments are rejected",
+    ),
+    RejectUserLabelsTextAndSecretLookingInputs("user labels, note text, and secret-looking inputs are rejected"),
+    FutureContainmentCheckUnderReviewedRootRequired(
+        "future implementation must prove final path containment under the reviewed root",
+    ),
+    FailClosedIfContainmentCannotBeProven("future path construction fails closed if containment cannot be proven"),
+    NoActualPathConstructionInThisBranch("no actual path construction is implemented in this branch"),
+}
+
+enum class ProductionProviderSymlinkTraversalRule(val label: String) {
+    NoSymlinkBehaviorAssumptionsWithoutReview("symlink behavior is not assumed without platform review"),
+    RejectOrAvoidSymlinkTraversal("future implementation rejects or avoids symlink traversal where possible"),
+    VerifyResolvedTargetUnderRootWhereSupported(
+        "future implementation verifies resolved targets stay under the app-controlled root where supported",
+    ),
+    FailClosedIfSymlinkOrContainmentUnknown("future implementation fails closed if symlink or containment state is unknown"),
+    DoNotFollowAttackerControlledSymlinks("future implementation does not follow attacker-controlled symlinks"),
+    ExternalHardLinksAliasesRequireReview("external hard-linked or alias paths require review"),
+    PlatformBehaviorDocumentedBeforeApproval(
+        "platform-specific symlink and traversal behavior is documented before persistence approval",
+    ),
+    NoSymlinkCheckImplementationInThisBranch("no symlink check implementation exists in this branch"),
+}
+
+enum class ProductionProviderStoragePermissionOwnershipRule(val label: String) {
+    AppPrivateOsIsolationPreferred("app-private storage with OS-enforced per-user/app isolation is preferred"),
+    RejectObviouslyUnsafePermissionsWhenDetectable(
+        "future implementation rejects obviously unsafe root permissions when detectable",
+    ),
+    DesktopLinuxPermissionExpectationsDocumented("desktop Linux permission expectations are documented"),
+    AndroidAppPrivateBehaviorDocumented("Android app-private storage behavior is documented"),
+    FailClosedIfPermissionOwnershipUnknownOrUnsafe(
+        "future implementation fails closed if root permission/ownership state is unknown or unsafe",
+    ),
+    NoWorldReadableOrSharedDirectories("vault data is not stored in world-readable or shared directories"),
+    OsKeyringNotPrimaryVaultEncryption("OS keyrings are not primary vault encryption or primary vault storage"),
+    NoPermissionCheckImplementationInThisBranch("no permission or ownership check implementation exists in this branch"),
+}
+
+enum class ProductionProviderDurabilityCapabilityRule(val label: String) {
+    AtomicReplaceCapabilityDocumented("future implementation documents whether atomic replace is supported"),
+    DurableSyncCapabilityDocumented("future implementation documents whether durable sync is supported"),
+    ParentDirectorySyncCapabilityDocumented(
+        "future implementation documents whether parent directory sync or equivalent is supported",
+    ),
+    OrderingGuaranteesDocumented("future implementation documents whether platform APIs guarantee expected ordering"),
+    UnsupportedPrimitiveFallbackDefined(
+        "future implementation defines behavior when durability primitives are unsupported",
+    ),
+    UnsupportedDurabilityBlocksOrWarnsExplicitly(
+        "future implementation decides whether unsupported durability blocks persistence or needs explicit warning",
+    ),
+    AndroidDesktopDifferencesDocumented("Android and desktop durability differences are documented"),
+    NoDurabilityProbeImplementationInThisBranch("no durability probe implementation exists in this branch"),
 }
 
 enum class ProductionProviderSecureStorageBoundaryRequirement(val label: String) {
@@ -756,6 +883,11 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestPolicyId: String,
     val storageFailureModelPolicyId: String,
     val storageNamespacePathPolicyId: String,
+    val platformStorageRootPolicyId: String,
+    val safePathConstructionPolicyId: String,
+    val symlinkTraversalPolicyId: String,
+    val storagePermissionOwnershipPolicyId: String,
+    val durabilityCapabilityPolicyId: String,
     val storageAtomicitySimulatorPolicyId: String,
     val secureStorageBoundaryPolicyId: String,
     val antiRollbackAnchorPolicyId: String,
@@ -770,6 +902,11 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestContractStatus: ProductionProviderConstructionContractStatus,
     val storageFailureModelStatus: ProductionProviderConstructionContractStatus,
     val storageNamespacePathHygieneStatus: ProductionProviderConstructionContractStatus,
+    val platformStorageRootContractStatus: ProductionProviderConstructionContractStatus,
+    val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
+    val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
+    val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
+    val durabilityCapabilityContractStatus: ProductionProviderConstructionContractStatus,
     val storageAtomicitySimulatorStatus: ProductionProviderConstructionContractStatus,
     val secureStorageBoundaryStatus: ProductionProviderConstructionContractStatus,
     val containerFields: Set<ProductionProviderVaultContainerField>,
@@ -787,6 +924,11 @@ data class ProductionProviderContainerManifestStorageContract(
     val crashRecoveryFailClosedStates: Set<ProductionProviderCrashRecoveryFailClosedState>,
     val storageFailureCategories: Set<ProductionProviderStorageFailureCategory>,
     val storageNamespacePathRules: Set<ProductionProviderStorageNamespacePathRule>,
+    val platformStorageRootRules: Set<ProductionProviderPlatformStorageRootRule>,
+    val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
+    val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
+    val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
+    val durabilityCapabilityRules: Set<ProductionProviderDurabilityCapabilityRule>,
     val secureStorageBoundaryRequirements: Set<ProductionProviderSecureStorageBoundaryRequirement>,
     val strictAadSubstitutionProtectionModeled: Boolean,
     val strictAadFreshnessProofClaimed: Boolean,
@@ -814,6 +956,15 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestRuntimeHooksAdded: Boolean,
     val storageFailureRuntimeMappingImplemented: Boolean,
     val storagePathConstructionImplemented: Boolean,
+    val platformRootResolutionImplemented: Boolean,
+    val platformRootSelectionImplemented: Boolean,
+    val actualPathConstructionImplemented: Boolean,
+    val pathJoinImplementationAdded: Boolean,
+    val pathContainmentCheckImplementationAdded: Boolean,
+    val directoryCreationImplementationAdded: Boolean,
+    val symlinkCheckImplementationAdded: Boolean,
+    val permissionCheckImplementationAdded: Boolean,
+    val durabilityProbeImplementationAdded: Boolean,
     val storageNamespacePathPolicyImplemented: Boolean,
     val storagePathSegmentEncodingImplemented: Boolean,
     val inMemoryAtomicityCrashSimulatorImplemented: Boolean,
@@ -1126,6 +1277,16 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.DurabilityCapabilityContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed to
@@ -1511,6 +1672,16 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureModelPolicyId = "skald-vault-v1-storage-failure-model-policy-v1",
                     storageNamespacePathPolicyId =
                         SkaldVaultV1StorageNamespacePathPolicy.POLICY_ID,
+                    platformStorageRootPolicyId =
+                        "skald-vault-v1-platform-storage-root-policy-v1",
+                    safePathConstructionPolicyId =
+                        "skald-vault-v1-safe-path-construction-policy-v1",
+                    symlinkTraversalPolicyId =
+                        "skald-vault-v1-symlink-traversal-policy-v1",
+                    storagePermissionOwnershipPolicyId =
+                        "skald-vault-v1-storage-permission-ownership-policy-v1",
+                    durabilityCapabilityPolicyId =
+                        "skald-vault-v1-durability-capability-policy-v1",
                     storageAtomicitySimulatorPolicyId =
                         "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
                     secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
@@ -1535,6 +1706,16 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storageNamespacePathHygieneStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
+                    platformStorageRootContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    safePathConstructionContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    symlinkTraversalContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    storagePermissionOwnershipContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    durabilityCapabilityContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storageAtomicitySimulatorStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     secureStorageBoundaryStatus =
@@ -1559,6 +1740,16 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureCategories = ProductionProviderStorageFailureCategory.entries.toSet(),
                     storageNamespacePathRules =
                         ProductionProviderStorageNamespacePathRule.entries.toSet(),
+                    platformStorageRootRules =
+                        ProductionProviderPlatformStorageRootRule.entries.toSet(),
+                    safePathConstructionRules =
+                        ProductionProviderSafePathConstructionRule.entries.toSet(),
+                    symlinkTraversalRules =
+                        ProductionProviderSymlinkTraversalRule.entries.toSet(),
+                    storagePermissionOwnershipRules =
+                        ProductionProviderStoragePermissionOwnershipRule.entries.toSet(),
+                    durabilityCapabilityRules =
+                        ProductionProviderDurabilityCapabilityRule.entries.toSet(),
                     secureStorageBoundaryRequirements =
                         ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
                     strictAadSubstitutionProtectionModeled = true,
@@ -1587,6 +1778,15 @@ data class ProductionProviderAcceptanceContract(
                     interruptionTestRuntimeHooksAdded = false,
                     storageFailureRuntimeMappingImplemented = false,
                     storagePathConstructionImplemented = false,
+                    platformRootResolutionImplemented = false,
+                    platformRootSelectionImplemented = false,
+                    actualPathConstructionImplemented = false,
+                    pathJoinImplementationAdded = false,
+                    pathContainmentCheckImplementationAdded = false,
+                    directoryCreationImplementationAdded = false,
+                    symlinkCheckImplementationAdded = false,
+                    permissionCheckImplementationAdded = false,
+                    durabilityProbeImplementationAdded = false,
                     storageNamespacePathPolicyImplemented = true,
                     storagePathSegmentEncodingImplemented = true,
                     inMemoryAtomicityCrashSimulatorImplemented = true,

@@ -397,7 +397,7 @@ The v1 provider-level KAT strategy treats record AEAD ciphertext as randomized b
 
 Full stale-record/rollback enforcement remains deferred to a future trusted manifest, vault index, storage layer, or sync conflict policy. The future manifest must track latest trusted record version/counter per record id, bind vault id, provider suite id, header commitment context, manifest policy id/version, and record namespace, be integrity-protected, update atomically with records or define crash-safe recovery, and reject or quarantine stale/lower-counter records and conflicting duplicate record ids. Skald must not claim full rollback resistance against a rolled-back local storage directory without an external anchor, trusted monotonic counter, append-only log, remote checkpoint, or equivalent anti-rollback anchor.
 
-The storage boundary, atomic write strategy, crash-recovery behavior, interruption-test points, and storage failure categories are now documented and modeled in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). A still-disabled namespace/path policy now validates stable identifiers and deterministic relative safe segments only. No filesystem, database, DataStore, SharedPreferences, manifest file read/write, storage index, temp-file, journal, rename, fsync, recovery routine, actual path-construction implementation, platform root selection, or persistence implementation exists.
+The storage boundary, platform storage-root contract, safe path-construction contract, symlink/traversal contract, permission/ownership contract, durability-capability contract, atomic write strategy, crash-recovery behavior, interruption-test points, and storage failure categories are now documented and modeled in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). A still-disabled namespace/path policy now validates stable identifiers and deterministic relative safe segments only. No filesystem, database, DataStore, SharedPreferences, manifest file read/write, storage index, temp-file, journal, rename, fsync, recovery routine, actual path-construction implementation, path joining, directory creation, platform root selection, symlink checks, permission checks, durability probes, or persistence implementation exists.
 
 ## Nonce Strategy Decision
 
@@ -598,10 +598,15 @@ Before enabling any real persistence:
 - passphrase KDF calibration tested,
 - record AEAD tested,
 - platform storage boundary implemented and reviewed,
+- platform storage root resolution implemented and reviewed,
+- safe path construction, path containment, and directory creation implemented and reviewed,
+- symlink/traversal behavior reviewed and checked,
+- permission/ownership checks implemented and reviewed,
+- durability capability probes implemented and reviewed,
 - atomic write strategy implemented and interruption-tested,
 - crash recovery implemented and corruption-tested,
 - typed storage failure mapping implemented,
-- namespace/path policy implemented and reviewed, plus actual path construction and platform root review,
+- namespace/path policy implemented and reviewed,
 - Android wrapping tested if used,
 - Linux file permissions tested,
 - backup exclusion tested,
