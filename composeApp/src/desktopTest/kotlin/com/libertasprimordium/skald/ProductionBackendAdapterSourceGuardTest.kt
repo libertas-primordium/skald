@@ -183,6 +183,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxRootResolutionPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootResolver.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageSafetyPreflightBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LockSessionLifecycleBoundary.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -1137,6 +1138,14 @@ class ProductionBackendAdapterSourceGuardTest {
             File(
                 root,
                 "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1DisabledStorageServiceFacade.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PersistenceReadinessGate.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LockSessionLifecycleBoundary.kt",
             ),
         )
         val forbiddenPatterns = listOf(
@@ -2953,6 +2962,165 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun lockSessionLifecycleBoundaryStaysInApprovedFileAndDoesNotUseSecretsStorageOrPlatformApis() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val approvedPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LockSessionLifecycleBoundary.kt"
+        val policyDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1LockSessionLifecycleBoundary\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1LockSessionLifecyclePolicy\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1VaultLockSession"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1VaultSession"""),
+        )
+        val misplacedDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedPolicyFile &&
+                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Lock/session lifecycle boundary definitions must stay in the exact approved file: $misplacedDefinitions",
+        )
+
+        val source = File(root, approvedPolicyFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""System\.getenv"""),
+            Regex("""System\.getProperty"""),
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""import\s+android\.content"""),
+            Regex("""import\s+android\.net\.Uri"""),
+            Regex("""import\s+androidx\.datastore"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\bandroid\.net\.Uri\b"""),
+            Regex("""\bandroid\.content\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\.separator\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\.of\b"""),
+            Regex("""\bPaths\.get\b"""),
+            Regex("""\bPaths\."""),
+            Regex("""\bFiles\."""),
+            Regex("""\.toPath\("""),
+            Regex("""\.toFile\("""),
+            Regex("""\.absolute"""),
+            Regex("""\.canonical"""),
+            Regex("""\.normalize\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.relativize\("""),
+            Regex("""\bexists\("""),
+            Regex("""\bisDirectory\b"""),
+            Regex("""\bisRegularFile\b"""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadAttributes\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bdelete\("""),
+            Regex("""\brename\("""),
+            Regex("""\bcopy\("""),
+            Regex("""\bmove\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\binputStream\b"""),
+            Regex("""\boutputStream\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bEnvironment\.getExternalStorageDirectory\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bStorageManager\b"""),
+            Regex("""\bDocumentsContract\b"""),
+            Regex("""\bACTION_OPEN_DOCUMENT_TREE\b"""),
+            Regex("""\bMANAGE_EXTERNAL_STORAGE\b"""),
+            Regex("""\bLifecycleObserver\b"""),
+            Regex("""\bDefaultLifecycleObserver\b"""),
+            Regex("""\bProcessLifecycleOwner\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bCredentialManager\b"""),
+            Regex("""\bKeyStore\b"""),
+            Regex("""\bPasswordManager\b"""),
+            Regex("""\bAutofillManager\b"""),
+            Regex("""\bGooglePasswordManager\b"""),
+            Regex("""\blibsecret\b"""),
+            Regex("""\bSecretService\b"""),
+            Regex("""\bKWallet\b"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bSecretKey\b"""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\.derive\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bByteArray\("""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bRpcClient\b"""),
+            Regex("""\bURL\("""),
+            Regex("""\bURI\("""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bLogger\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\("""),
+            Regex("""unlockAvailable\s*=\s*true"""),
+            Regex("""activeSessionAvailable\s*=\s*true"""),
+            Regex("""decryptedKeyMaterialPresent\s*=\s*true"""),
+            Regex("""passphraseAccepted\s*=\s*true"""),
+            Regex("""passphraseStored\s*=\s*true"""),
+            Regex("""providerSelectable\s*=\s*true"""),
+            Regex("""productionProviderSelected\s*=\s*true"""),
+            Regex("""providerCryptoAvailable\s*=\s*true"""),
+            Regex("""vaultUnlockAvailable\s*=\s*true"""),
+            Regex("""vaultPersistenceAvailable\s*=\s*true"""),
+            Regex("""manifestReadWriteAvailable\s*=\s*true"""),
+            Regex("""storageIndexReadWriteAvailable\s*=\s*true"""),
+            Regex("""recordReadWriteAvailable\s*=\s*true"""),
+            Regex("""mainnetAvailable\s*=\s*true"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Lock/session lifecycle boundary must not use passphrase, key, platform lifecycle, biometric, keyring/password-manager, platform path, storage, settings, crypto, BDK, network/process, logging, or success APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),
@@ -2967,6 +3135,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1DisabledStorageServiceFacade.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PersistenceReadinessGate.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LockSessionLifecycleBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),

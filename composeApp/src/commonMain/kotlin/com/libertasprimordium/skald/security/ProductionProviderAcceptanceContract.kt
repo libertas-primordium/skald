@@ -104,6 +104,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     PersistenceReadinessGateImplementedAndTested(
         "vault persistence readiness gate implemented and tested",
     ),
+    LockSessionLifecycleBoundaryImplementedAndTested(
+        "vault lock/session lifecycle boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1048,6 +1051,29 @@ enum class ProductionProviderPersistenceReadinessGateRule(val label: String) {
     ),
 }
 
+enum class ProductionProviderLockSessionLifecycleRule(val label: String) {
+    EvidenceOnly("lock/session lifecycle boundary returns evidence only"),
+    DefaultDecisionBlocked("current unlock/session decision remains blocked"),
+    StateVocabularyModeled("boundary models future lock and session states"),
+    EventVocabularyModeled("boundary models lifecycle event kinds"),
+    RequiredGateVocabularyModeled("boundary models required future unlock gates"),
+    WarningOnlyCannotEnableUnlock("warning-only evidence cannot enable unlock"),
+    UserConsentCannotOverrideHardGates("user consent cannot override missing hard gates"),
+    DoesNotAcceptPassphrasesOrPins("boundary does not accept passphrases or PINs"),
+    DoesNotHoldOrGenerateKeyMaterial("boundary does not hold or generate key material"),
+    DoesNotUseBiometricKeystoreKeyringPasswordManagerApis(
+        "boundary does not use biometric, Keystore, keyring, or password-manager APIs",
+    ),
+    DoesNotUseFilePathOrFilesystemApis("boundary does not use File, Path, or filesystem APIs"),
+    DoesNotPersistSessionState("boundary does not persist lock or session state"),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsPassphraseKeyRootPathRecordPayloadProviderEvidence(
+        "boundary redacts passphrase, key, root, path, record, payload, and provider evidence",
+    ),
+}
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1201,6 +1227,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageSafetyPreflightBoundaryPolicyId: String,
     val disabledStorageServiceFacadePolicyId: String,
     val persistenceReadinessGatePolicyId: String,
+    val lockSessionLifecycleBoundaryPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1235,6 +1262,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageSafetyPreflightBoundaryStatus: ProductionProviderConstructionContractStatus,
     val disabledStorageServiceFacadeStatus: ProductionProviderConstructionContractStatus,
     val persistenceReadinessGateStatus: ProductionProviderConstructionContractStatus,
+    val lockSessionLifecycleBoundaryStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1269,6 +1297,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageSafetyPreflightRules: Set<ProductionProviderStorageSafetyPreflightRule>,
     val disabledStorageServiceFacadeRules: Set<ProductionProviderDisabledStorageServiceFacadeRule>,
     val persistenceReadinessGateRules: Set<ProductionProviderPersistenceReadinessGateRule>,
+    val lockSessionLifecycleRules: Set<ProductionProviderLockSessionLifecycleRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1354,6 +1383,15 @@ data class ProductionProviderContainerManifestStorageContract(
     val persistenceReadinessGateDoesNotEnablePersistence: Boolean,
     val persistenceReadinessGateDoesNotEnableProviderSelection: Boolean,
     val persistenceReadinessFailureVocabularyModeled: Boolean,
+    val lockSessionLifecycleBoundaryModeled: Boolean,
+    val lockSessionLifecycleStillDisabled: Boolean,
+    val unlockDecisionStillBlocked: Boolean,
+    val activeSessionUnavailable: Boolean,
+    val lockSessionBoundaryDoesNotAcceptPassphrases: Boolean,
+    val lockSessionBoundaryDoesNotHoldKeys: Boolean,
+    val lockSessionBoundaryDoesNotEnablePersistence: Boolean,
+    val lockSessionBoundaryDoesNotEnableProviderSelection: Boolean,
+    val lockSessionFailureVocabularyModeled: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val osKeyringPrimaryStorageRejected: Boolean,
@@ -1713,6 +1751,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.DisabledStorageServiceFacadeImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PersistenceReadinessGateImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2137,6 +2177,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1DisabledStorageServiceFacade.POLICY_ID,
                     persistenceReadinessGatePolicyId =
                         SkaldVaultV1PersistenceReadinessGate.POLICY_ID,
+                    lockSessionLifecycleBoundaryPolicyId =
+                        SkaldVaultV1LockSessionLifecyclePolicy.POLICY_ID,
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
@@ -2201,6 +2243,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     persistenceReadinessGateStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
+                    lockSessionLifecycleBoundaryStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     symlinkTraversalContractStatus =
@@ -2259,6 +2303,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderDisabledStorageServiceFacadeRule.entries.toSet(),
                     persistenceReadinessGateRules =
                         ProductionProviderPersistenceReadinessGateRule.entries.toSet(),
+                    lockSessionLifecycleRules =
+                        ProductionProviderLockSessionLifecycleRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -2351,6 +2397,15 @@ data class ProductionProviderAcceptanceContract(
                     persistenceReadinessGateDoesNotEnablePersistence = true,
                     persistenceReadinessGateDoesNotEnableProviderSelection = true,
                     persistenceReadinessFailureVocabularyModeled = true,
+                    lockSessionLifecycleBoundaryModeled = true,
+                    lockSessionLifecycleStillDisabled = true,
+                    unlockDecisionStillBlocked = true,
+                    activeSessionUnavailable = true,
+                    lockSessionBoundaryDoesNotAcceptPassphrases = true,
+                    lockSessionBoundaryDoesNotHoldKeys = true,
+                    lockSessionBoundaryDoesNotEnablePersistence = true,
+                    lockSessionBoundaryDoesNotEnableProviderSelection = true,
+                    lockSessionFailureVocabularyModeled = true,
                     settingsUiImplemented = false,
                     settingsPersistenceImplemented = false,
                     osKeyringPrimaryStorageRejected = true,

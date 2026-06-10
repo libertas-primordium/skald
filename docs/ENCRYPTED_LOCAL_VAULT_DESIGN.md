@@ -17,10 +17,13 @@ Current runtime behavior remains fail-closed:
 - `EncryptedVaultReadinessPolicy` reports the vault implementation unavailable, dependency selection reviewed only at candidate level, KDF/AEAD verification incomplete, secure storage disabled, secure metadata disabled, production persistence disabled, and mainnet disabled.
 - `DisabledVaultCryptoProvider` reports the provider boundary and provider-level KAT contract modeled but rejects KDF, AEAD, key generation, keyset storage, provider KAT, and persistence operations.
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider and blocks all future provider candidates from production selection.
+- `SkaldVaultV1LockSessionLifecyclePolicy` models future locked, unlock-requested, unlock-blocked, session-expired, lock-required, and forced-locked evidence, but the current unlock decision remains blocked and active sessions remain unavailable.
 
 The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping implementation disabled.
 
 The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). They encode this design as typed disabled/fail-closed status only; they do not implement encryption, storage, unlock UI, or persistence.
+
+The still-disabled lock/session lifecycle boundary is model-only evidence for future session state, timeout policy, background lock, close/shutdown lock, error lock, provider-change lock, storage-readiness-change lock, platform-security-change lock, mainnet request lock/block, redaction, and clear/wipe review gates. It does not accept or store passphrases or PINs, derive keys, hold decrypted keys, generate key material, implement memory wipe/zeroization, implement biometrics, implement Android Keystore, implement OS keyrings, implement password managers, add unlock UI, persist session state, run filesystem checks, construct real paths, read or write files, persist settings, enable vault unlock, enable vault persistence, approve production provider use, or approve mainnet.
 
 ## Design Principles
 
@@ -67,6 +70,9 @@ This design does not enable:
 
 - encrypted vault implementation,
 - crypto dependency use beyond explicit disabled probe scope,
+- vault unlock or usable active sessions,
+- passphrase/PIN/biometric capture or storage,
+- decrypted key material, key generation, or memory-zeroization implementation,
 - production secret persistence,
 - production sensitive metadata persistence,
 - production BDK persistence,
