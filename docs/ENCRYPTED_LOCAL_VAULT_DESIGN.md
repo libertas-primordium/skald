@@ -18,12 +18,15 @@ Current runtime behavior remains fail-closed:
 - `DisabledVaultCryptoProvider` reports the provider boundary and provider-level KAT contract modeled but rejects KDF, AEAD, key generation, keyset storage, provider KAT, and persistence operations.
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider and blocks all future provider candidates from production selection.
 - `SkaldVaultV1LockSessionLifecyclePolicy` models future locked, unlock-requested, unlock-blocked, session-expired, lock-required, and forced-locked evidence, but the current unlock decision remains blocked and active sessions remain unavailable.
+- `SkaldVaultV1RedactionLeakagePolicy` models future value-kind, output-target, leakage-classification, forbidden-class, allowed-evidence-class, and source-guard material decisions, but it accepts only typed model requests and never accepts raw secrets, passphrases, key material, byte arrays, raw paths, payloads, labels, notes, credentials, or backend handles.
 
 The crypto and key-lifecycle decision record is [`ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CRYPTO_DECISION.md). It selects the target algorithm policy at the design level while keeping implementation disabled.
 
 The code-level readiness policy models are documented in [`ENCRYPTED_VAULT_READINESS_POLICY.md`](ENCRYPTED_VAULT_READINESS_POLICY.md). They encode this design as typed disabled/fail-closed status only; they do not implement encryption, storage, unlock UI, or persistence.
 
 The still-disabled lock/session lifecycle boundary is model-only evidence for future session state, timeout policy, background lock, close/shutdown lock, error lock, provider-change lock, storage-readiness-change lock, platform-security-change lock, mainnet request lock/block, redaction, and clear/wipe review gates. It does not accept or store passphrases or PINs, derive keys, hold decrypted keys, generate key material, implement memory wipe/zeroization, implement biometrics, implement Android Keystore, implement OS keyrings, implement password managers, add unlock UI, persist session state, run filesystem checks, construct real paths, read or write files, persist settings, enable vault unlock, enable vault persistence, approve production provider use, or approve mainnet.
+
+The still-disabled redaction/leakage boundary is model-only evidence for future safe-output decisions. It classifies future vault/provider/session/storage/persistence/recovery/source-guard values into forbidden, redacted, summarized, public policy evidence, public non-wallet vector evidence, enum/capability, and count/statistic outcomes across default `toString()`, UI status text, operation results, error summaries, build history, source-guard diagnostics, test assertion messages, future structured logs, future crash reports, future support exports, future backup/export manifests, and future debug panels. It does not accept raw secrets, passphrases, PINs, mnemonics, seeds, private keys, xprv/tprv/WIF/nsec strings, provider keys, vault keys, decrypted records, encrypted record bytes, wallet database bytes, credentials, raw platform paths, endpoints with credentials, stack traces, or byte arrays. It does not hash, fingerprint, encode, partially reveal, log, crash-report, analyze, export, display, persist, or route diagnostic values at runtime. Public non-wallet cryptographic vectors remain allowed only in scoped docs, tests, KAT, and source-guard contexts; wallet, UTXO, sync, source, and production paths still reject hardcoded address, txid, secret, and wallet-material fixtures.
 
 ## Design Principles
 
@@ -72,6 +75,7 @@ This design does not enable:
 - crypto dependency use beyond explicit disabled probe scope,
 - vault unlock or usable active sessions,
 - passphrase/PIN/biometric capture or storage,
+- runtime logging, crash reporting, analytics, support export, secret hashing, or secret fingerprinting,
 - decrypted key material, key generation, or memory-zeroization implementation,
 - production secret persistence,
 - production sensitive metadata persistence,

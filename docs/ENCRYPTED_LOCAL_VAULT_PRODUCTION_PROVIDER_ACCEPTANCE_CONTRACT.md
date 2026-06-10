@@ -8,6 +8,8 @@ It is design and acceptance-contract material with isolated still-disabled build
 
 The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy, still-disabled integrated KAT harness, randomized Tink AEAD behavioral checks, verification-order checks, and stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The detailed v1 vault container, manifest, storage, stale-record, rollback, atomicity, crash-recovery, and secure-storage boundary contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). These documents are part of this acceptance contract; the vector-matched building blocks, integrated harness, and contract models remain non-selectable.
 
+The still-disabled redaction/leakage boundary is now part of this acceptance evidence as model-only safe-output policy. It classifies future provider, unlock/session, storage, persistence, recovery, source-guard, and failure-reporting value kinds; output targets; redaction decisions; forbidden value classes; allowed public evidence classes; and source-guard material classes. It accepts typed value-kind evidence only and does not accept raw secrets, passphrases, key material, byte arrays, raw paths, decrypted records, encrypted record bytes, wallet databases, credentials, labels, notes, stack traces, provider handles, storage handles, or backend handles. It does not hash or fingerprint secrets, log, add crash reporting, add analytics, add support export, add runtime diagnostics, persist diagnostic output, display secrets, implement unlock UI, implement provider execution, implement storage, enable vault unlock, enable vault persistence, enable provider selection, approve production provider use, or approve mainnet. Public non-wallet cryptographic vectors are allowed only in scoped docs/tests/KAT/source-guard contexts; wallet, UTXO, sync, and production source paths still reject hardcoded address, txid, secret, and wallet-material fixtures.
+
 Runtime behavior remains fail-closed:
 
 - `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.
@@ -16,6 +18,7 @@ Runtime behavior remains fail-closed:
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
 - The lock/session lifecycle boundary remains disabled and accepts no passphrases, PINs, biometric results, key material, or session persistence.
+- The redaction/leakage boundary remains model-only and adds no logger, crash reporting, analytics, support export, runtime diagnostics, secret hashing, secret fingerprinting, secret display, unlock, storage, persistence, provider execution, provider selection, or mainnet approval.
 - Vault creation and production persistence remain disabled.
 - Mainnet remains disabled.
 
@@ -49,6 +52,7 @@ skald-vault-v1-storage-safety-preflight-boundary-v1
 skald-vault-v1-disabled-storage-service-facade-v1
 skald-vault-v1-persistence-readiness-gate-v1
 skald-vault-v1-lock-session-lifecycle-boundary-v1
+skald-vault-v1-redaction-leakage-boundary-v1
 skald-vault-v1-os-keyring-passphrase-policy-v1
 skald-vault-v1-password-manager-passphrase-policy-v1
 skald-vault-v1-passphrase-first-vault-authority-policy-v1

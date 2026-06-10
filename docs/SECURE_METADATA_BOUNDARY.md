@@ -66,6 +66,8 @@ The future container/manifest/storage contract is defined in [`ENCRYPTED_LOCAL_V
 
 A still-disabled lock/session lifecycle boundary now models future lock/unlock/session states, timeout policy, background/close/error lock requirements, clear/wipe review evidence, provider-change and storage-readiness-change lock requirements, platform-security-change lock requirements, and mainnet request lock/block behavior. It produces model-only blocked/fail-closed evidence and does not accept passphrases or PINs, store passphrases, derive keys, hold decrypted keys, generate key material, implement wipe/zeroization, implement biometrics, implement Android Keystore, implement OS keyrings, implement password managers, add unlock UI, persist session state, persist metadata, run filesystem checks, construct paths, create/read/write files, read/write manifests, read/write storage indexes, read/write records, enable vault unlock, enable vault persistence, approve provider use, approve mainnet, or make a provider selectable.
 
+A still-disabled redaction/leakage boundary now models safe-output policy for future secure metadata, provider, unlock/session, storage, persistence, recovery, source-guard, and failure-reporting paths. It classifies typed value kinds, output targets, scopes, redaction decisions, forbidden classes, allowed public evidence classes, and source-guard material classes only. It does not accept raw secrets, passphrases, key material, decrypted records, encrypted record bytes, wallet database bytes, credentials, raw platform paths, endpoints with credentials, stack traces, byte arrays, payloads, wallet labels, UTXO labels, transaction notes, provider handles, storage handles, or backend handles. It does not hash or fingerprint secrets, log, add crash reporting, add analytics, add support export, add runtime diagnostics, persist diagnostic output, display secrets, implement unlock UI, implement provider execution, implement storage, enable vault unlock, enable vault persistence, enable provider selection, or approve mainnet. Public non-wallet cryptographic vectors remain scoped to docs/tests/KAT/source-guard evidence only; wallet, UTXO, sync, and production paths continue to reject hardcoded address, txid, secret, and wallet-material fixtures.
+
 The disabled capability reports:
 
 - encrypted vault unavailable,
@@ -135,6 +137,7 @@ This boundary does not enable:
 - secure secret storage,
 - lock/session state persistence,
 - vault unlock or usable active sessions,
+- runtime logging, crash reporting, analytics, support export, runtime diagnostics, diagnostic persistence, secret hashing, or secret fingerprinting,
 - signing,
 - broadcasting,
 - Nostr, Lightning, Cashu, or Payjoin behavior,

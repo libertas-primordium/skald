@@ -35,6 +35,7 @@ import com.libertasprimordium.skald.security.ProductionProviderPlatformRootSetti
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootResolverRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
+import com.libertasprimordium.skald.security.ProductionProviderRedactionLeakageRule
 import com.libertasprimordium.skald.security.ProductionProviderAtomicWritePhase
 import com.libertasprimordium.skald.security.ProductionProviderAtomicWriteRequirement
 import com.libertasprimordium.skald.security.ProductionProviderCrashRecoveryCheck
@@ -68,6 +69,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1LockSessionLifecyclePol
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1RedactionLeakagePolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1StorageSafetyPreflightPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationState
@@ -1515,6 +1517,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.lockSessionLifecycleBoundaryPolicyId,
         )
         assertEquals(
+            SkaldVaultV1RedactionLeakagePolicy.POLICY_ID,
+            policy.redactionLeakageBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1635,6 +1641,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.lockSessionLifecycleBoundaryStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.redactionLeakageBoundaryStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -2104,6 +2114,10 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderLockSessionLifecycleRule.entries.toSet(),
             policy.lockSessionLifecycleRules,
         )
+        assertEquals(
+            ProductionProviderRedactionLeakageRule.entries.toSet(),
+            policy.redactionLeakageRules,
+        )
         assertContains(
             policy.lockSessionLifecycleRules,
             ProductionProviderLockSessionLifecycleRule.DefaultDecisionBlocked,
@@ -2119,6 +2133,22 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.lockSessionLifecycleRules,
             ProductionProviderLockSessionLifecycleRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
+        )
+        assertContains(
+            policy.redactionLeakageRules,
+            ProductionProviderRedactionLeakageRule.DoesNotAcceptRawSecrets,
+        )
+        assertContains(
+            policy.redactionLeakageRules,
+            ProductionProviderRedactionLeakageRule.DoesNotHashOrFingerprintSecrets,
+        )
+        assertContains(
+            policy.redactionLeakageRules,
+            ProductionProviderRedactionLeakageRule.DoesNotImplementLoggingCrashAnalyticsOrSupportExport,
+        )
+        assertContains(
+            policy.redactionLeakageRules,
+            ProductionProviderRedactionLeakageRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
         )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
@@ -2257,6 +2287,15 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.lockSessionBoundaryDoesNotEnablePersistence)
         assertTrue(policy.lockSessionBoundaryDoesNotEnableProviderSelection)
         assertTrue(policy.lockSessionFailureVocabularyModeled)
+        assertTrue(policy.redactionLeakageBoundaryModeled)
+        assertTrue(policy.redactionLeakageBoundaryStillDisabled)
+        assertTrue(policy.redactionLeakageClassifiesSensitiveValueKinds)
+        assertTrue(policy.redactionLeakageDoesNotAcceptRawSecrets)
+        assertTrue(policy.redactionLeakageDoesNotHashSecrets)
+        assertTrue(policy.redactionLeakageDoesNotLog)
+        assertTrue(policy.redactionLeakageDoesNotEnablePersistence)
+        assertTrue(policy.redactionLeakageDoesNotEnableProviderSelection)
+        assertTrue(policy.redactionLeakageFailureVocabularyModeled)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2322,6 +2361,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.DisabledStorageServiceFacadeImplementedAndTested,
             ProductionProviderAcceptanceGate.PersistenceReadinessGateImplementedAndTested,
             ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested,
+            ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2462,6 +2502,14 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
