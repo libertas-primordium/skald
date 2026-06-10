@@ -101,6 +101,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     DisabledStorageServiceFacadeImplementedAndTested(
         "disabled storage service facade implemented and tested",
     ),
+    PersistenceReadinessGateImplementedAndTested(
+        "vault persistence readiness gate implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1021,6 +1024,30 @@ enum class ProductionProviderDisabledStorageServiceFacadeRule(val label: String)
     RedactsRecordRootLocationPayloadEvidence("facade redacts record, root, location, and payload evidence"),
 }
 
+enum class ProductionProviderPersistenceReadinessGateRule(val label: String) {
+    EvidenceOnly("vault persistence readiness gate returns evidence only"),
+    ComposesProviderRootPathStorageSecureEvidence(
+        "gate composes provider, root, path, storage safety, storage service, secure storage, and metadata evidence",
+    ),
+    DefaultDecisionBlocked("current readiness decision remains blocked"),
+    RequiredGateVocabularyModeled("gate models the required production persistence gates"),
+    WarningOnlyCannotEnablePersistence("warning-only evidence cannot enable persistence"),
+    UserConsentCannotOverrideHardGates("user consent cannot override missing hard gates"),
+    DoesNotUseFilePathOrFilesystemApis("gate does not use File, Path, or filesystem APIs"),
+    DoesNotCreateReadWriteListDeleteQuarantineRecoverActualRecords(
+        "gate does not create, read, write, list, delete, quarantine, or recover actual records",
+    ),
+    DoesNotReadWriteManifestStorageIndexRecords(
+        "gate does not read or write manifests, storage indexes, or records",
+    ),
+    DoesNotApproveProductionProviderUse("gate does not approve production provider use"),
+    DoesNotApproveMainnet("gate does not approve mainnet"),
+    DoesNotEnablePersistenceOrProviderSelection("gate does not enable persistence or provider selection"),
+    RedactsRootPathRecordPayloadProviderPassphraseEvidence(
+        "gate redacts root, path, record, payload, provider, and passphrase evidence",
+    ),
+}
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1173,6 +1200,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformPathConstructionBoundaryPolicyId: String,
     val storageSafetyPreflightBoundaryPolicyId: String,
     val disabledStorageServiceFacadePolicyId: String,
+    val persistenceReadinessGatePolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1206,6 +1234,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformPathConstructionBoundaryStatus: ProductionProviderConstructionContractStatus,
     val storageSafetyPreflightBoundaryStatus: ProductionProviderConstructionContractStatus,
     val disabledStorageServiceFacadeStatus: ProductionProviderConstructionContractStatus,
+    val persistenceReadinessGateStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1239,6 +1268,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformPathConstructionRules: Set<ProductionProviderPlatformPathConstructionRule>,
     val storageSafetyPreflightRules: Set<ProductionProviderStorageSafetyPreflightRule>,
     val disabledStorageServiceFacadeRules: Set<ProductionProviderDisabledStorageServiceFacadeRule>,
+    val persistenceReadinessGateRules: Set<ProductionProviderPersistenceReadinessGateRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1317,6 +1347,13 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageServiceDoesNotEnableProviderSelection: Boolean,
     val storageOperationFailureVocabularyModeled: Boolean,
     val storageServiceOperationSuccessPathImplemented: Boolean,
+    val persistenceReadinessGateModeled: Boolean,
+    val persistenceReadinessGateStillBlocked: Boolean,
+    val persistenceReadinessGateComposesStorageEvidence: Boolean,
+    val persistenceReadinessGateDoesNotUseFilesystem: Boolean,
+    val persistenceReadinessGateDoesNotEnablePersistence: Boolean,
+    val persistenceReadinessGateDoesNotEnableProviderSelection: Boolean,
+    val persistenceReadinessFailureVocabularyModeled: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val osKeyringPrimaryStorageRejected: Boolean,
@@ -1674,6 +1711,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.StorageSafetyPreflightBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.DisabledStorageServiceFacadeImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.PersistenceReadinessGateImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2096,6 +2135,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1StorageSafetyPreflightPolicy.POLICY_ID,
                     disabledStorageServiceFacadePolicyId =
                         SkaldVaultV1DisabledStorageServiceFacade.POLICY_ID,
+                    persistenceReadinessGatePolicyId =
+                        SkaldVaultV1PersistenceReadinessGate.POLICY_ID,
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
@@ -2158,6 +2199,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     disabledStorageServiceFacadeStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
+                    persistenceReadinessGateStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     symlinkTraversalContractStatus =
@@ -2214,6 +2257,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderStorageSafetyPreflightRule.entries.toSet(),
                     disabledStorageServiceFacadeRules =
                         ProductionProviderDisabledStorageServiceFacadeRule.entries.toSet(),
+                    persistenceReadinessGateRules =
+                        ProductionProviderPersistenceReadinessGateRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -2299,6 +2344,13 @@ data class ProductionProviderAcceptanceContract(
                     storageServiceDoesNotEnableProviderSelection = true,
                     storageOperationFailureVocabularyModeled = true,
                     storageServiceOperationSuccessPathImplemented = false,
+                    persistenceReadinessGateModeled = true,
+                    persistenceReadinessGateStillBlocked = true,
+                    persistenceReadinessGateComposesStorageEvidence = true,
+                    persistenceReadinessGateDoesNotUseFilesystem = true,
+                    persistenceReadinessGateDoesNotEnablePersistence = true,
+                    persistenceReadinessGateDoesNotEnableProviderSelection = true,
+                    persistenceReadinessFailureVocabularyModeled = true,
                     settingsUiImplemented = false,
                     settingsPersistenceImplemented = false,
                     osKeyringPrimaryStorageRejected = true,
