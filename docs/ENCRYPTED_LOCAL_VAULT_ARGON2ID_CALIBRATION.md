@@ -215,7 +215,7 @@ This calibration branch does not enable:
 - key generation,
 - Tink keyset creation or storage,
 - raw key material persistence,
-- vault container read/write,
+- file-backed vault container read/write,
 - passphrase, PIN, biometric, or unlock UI,
 - secure secret storage success,
 - secure metadata persistence success,

@@ -196,7 +196,8 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bCipher\("""),
             Regex("""\bKeyGenerator\b"""),
             Regex("""\bSecretKeySpec\b"""),
-            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bKeysetHandle\."""),
+            Regex("""\bKeysetHandle\("""),
             Regex("""\bCleartextKeysetHandle\b"""),
             Regex("""\bKeysetManager\b"""),
             Regex("""\bJsonKeysetWriter\b"""),
@@ -1092,9 +1093,9 @@ class ProductionBackendAdapterSourceGuardTest {
         val forbiddenPatterns = listOf(
             Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
             Regex("""\bProductionVaultCryptoProvider\b"""),
-            Regex("""\bVaultContainerParser\b"""),
-            Regex("""\bVaultContainerReader\b"""),
-            Regex("""\bVaultContainerWriter\b"""),
+            Regex("""\b(class|object|interface)\s+VaultContainerParser\b"""),
+            Regex("""\b(class|object|interface)\s+VaultContainerReader\b"""),
+            Regex("""\b(class|object|interface)\s+VaultContainerWriter\b"""),
             Regex("""\bVaultContainerRepository\b"""),
             Regex("""\bManifestReader\b"""),
             Regex("""\bManifestWriter\b"""),
@@ -1145,7 +1146,105 @@ class ProductionBackendAdapterSourceGuardTest {
 
         assertTrue(
             offenders.isEmpty(),
-            "Container/manifest/storage contract must not add parser, writer, storage, or secure-storage APIs: $offenders",
+            "Container/manifest/storage contract must not add unapproved parser/writer, storage, or secure-storage APIs: $offenders",
+        )
+    }
+
+    @Test
+    fun inMemoryVaultContainerParserWriterStaysInApprovedFileAndDoesNotPersistOrRunCrypto() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security"),
+            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security"),
+            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security"),
+        )
+        val approvedParserWriterFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ContainerFormat.kt"
+        val parserWriterPatterns = listOf(
+            Regex("""\bSkaldVaultV1ContainerFormat\b"""),
+            Regex("""\bSkaldVaultV1ContainerResult\b"""),
+            Regex("""\bSkaldVaultV1ContainerRecordEntry\b"""),
+            Regex("""\bSkaldVaultV1ContainerManifestSection\b"""),
+            Regex("""\bSkaldVaultV1ContainerManifestRecordState\b"""),
+        )
+        val misplacedParserWriter = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedParserWriterFile &&
+                            parserWriterPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedParserWriter.isEmpty(),
+            "Container parser/writer types must stay in the exact approved file: $misplacedParserWriter",
+        )
+
+        val source = File(root, approvedParserWriterFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bFile\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bjava\.nio\.file\.Files\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "In-memory container parser/writer must not add persistence, crypto execution, randomness, logging, or storage APIs: $offenders",
         )
     }
 

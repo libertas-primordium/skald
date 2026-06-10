@@ -4,7 +4,7 @@
 
 This document records the Skald Vault v1 Tink raw-key feasibility probes.
 
-This began as test/probe evidence only and now feeds a still-disabled record AEAD building block. It does not implement a production provider, provider-selectable AEAD execution, production key derivation, production randomness, key generation, vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
+This began as test/probe evidence only and now feeds a still-disabled record AEAD building block. It does not implement a production provider, provider-selectable AEAD execution, production key derivation, production randomness, key generation, file-backed vault container read/write, Tink keyset persistence, secure secret storage success, secure metadata storage success, sync, wallet behavior, signing, broadcasting, Tor, Nostr, backend clients, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 

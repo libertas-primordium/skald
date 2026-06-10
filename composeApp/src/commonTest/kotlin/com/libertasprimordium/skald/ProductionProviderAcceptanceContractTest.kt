@@ -1418,7 +1418,7 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
-    fun vaultContainerManifestStorageContractIsModeledOnlyAndDoesNotPersist() {
+    fun vaultContainerParserWriterIsImplementedButStorageContractsRemainBlocked() {
         val policy = contract.containerManifestStorageContract
 
         assertEquals("skald-vault-v1-container-contract-v1", policy.vaultContainerPolicyId)
@@ -1435,7 +1435,7 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertEquals("skald-vault-v1-anti-rollback-anchor-policy-v1", policy.antiRollbackAnchorPolicyId)
         assertEquals(
-            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.vaultContainerContractStatus,
         )
         assertEquals(
@@ -1491,7 +1491,7 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertContains(
             policy.containerRequirements,
-            ProductionProviderVaultContainerRequirement.NoParserWriterPersistenceInThisBranch,
+            ProductionProviderVaultContainerRequirement.NoPersistenceInThisBranch,
         )
 
         assertEquals(ProductionProviderManifestField.entries.toSet(), policy.manifestFields)
@@ -1544,8 +1544,8 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.localManifestStaleRecordDetectionModeled)
         assertFalse(policy.fullLocalDirectoryRollbackResistanceClaimed)
         assertFalse(policy.externalOrTrustedMonotonicAntiRollbackAnchorImplemented)
-        assertFalse(policy.parserImplemented)
-        assertFalse(policy.writerImplemented)
+        assertTrue(policy.parserImplemented)
+        assertTrue(policy.writerImplemented)
         assertFalse(policy.vaultPersistenceImplemented)
         assertFalse(policy.manifestReadWriteImplemented)
         assertFalse(policy.storageIndexReadWriteImplemented)
@@ -1564,7 +1564,6 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved,
             ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved,
             ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved,
-            ProductionProviderAcceptanceGate.VaultContainerContractApproved,
             ProductionProviderAcceptanceGate.ManifestContractApproved,
             ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved,
             ProductionProviderAcceptanceGate.StoragePolicyContractApproved,
@@ -1609,7 +1608,7 @@ class ProductionProviderAcceptanceContractTest {
             evidence.stateFor(ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved),
         )
         assertEquals(
-            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.VaultContainerContractApproved),
         )
         assertEquals(

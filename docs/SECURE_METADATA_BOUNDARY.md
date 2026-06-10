@@ -62,7 +62,7 @@ The primary future storage model is an app-controlled encrypted local vault.
 
 OS keyrings are not treated as primary wallet metadata storage. They may later wrap keys only after explicit design review. Existing non-secret settings storage remains for general backend profile configuration and non-operational metadata only. It is not a wallet observation, address index, UTXO, label, transaction note, or wallet-history store.
 
-The future container/manifest/storage contract is defined in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). That contract is model-only: it does not add a vault parser, vault writer, manifest read/write, storage success path, secure metadata success path, or anti-rollback anchor.
+The future container/manifest/storage contract is defined in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). That contract now includes a still-disabled in-memory parser/writer for caller-supplied byte arrays and fixed non-secret fixtures only. It does not add file I/O, vault persistence, manifest read/write, storage success path, secure metadata success path, or anti-rollback anchor.
 
 The disabled capability reports:
 
