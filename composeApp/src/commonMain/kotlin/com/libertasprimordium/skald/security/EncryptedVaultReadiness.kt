@@ -223,6 +223,9 @@ enum class EncryptedVaultRequirement(val label: String) {
     PersistenceReadinessGateImplementedAndTested(
         "vault persistence readiness gate implemented and tested",
     ),
+    LockSessionLifecycleBoundaryImplementedAndTested(
+        "vault lock/session lifecycle boundary implemented and tested",
+    ),
     OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
     PasswordManagerIntegrationRejected("password-manager integration rejected"),
     PassphraseFirstDefaultModeled("passphrase-first default modeled"),
@@ -397,6 +400,7 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     StorageSuccessPathAbsent("storage success path absent"),
     DisabledStorageServiceFacadeStillDisabled("disabled storage service facade has no storage success path"),
     PersistenceReadinessGateStillBlocked("vault persistence readiness gate remains blocked"),
+    LockSessionLifecycleStillDisabled("vault lock/session lifecycle remains disabled"),
     PlatformStorageImplementationMissing("platform storage implementation missing"),
     AtomicWriteImplementationMissing("atomic write implementation missing"),
     CrashRecoveryImplementationMissing("crash-recovery implementation missing"),
@@ -586,6 +590,10 @@ enum class EncryptedVaultCapability(
     ),
     PersistenceReadinessGateBoundaryBuildingBlock(
         "still-disabled vault persistence readiness gate building block",
+        enabledInProduction = false,
+    ),
+    LockSessionLifecycleBoundaryBuildingBlock(
+        "still-disabled vault lock/session lifecycle boundary building block",
         enabledInProduction = false,
     ),
     OsKeyringPassphraseRejectionModel(
@@ -1007,6 +1015,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
         )
         put(
+            EncryptedVaultRequirement.LockSessionLifecycleBoundaryImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
             EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -1222,7 +1234,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirement.StaleRecordDecisionPolicyImplemented,
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
         )
-        put(EncryptedVaultRequirement.LockSessionLifecycleTested, EncryptedVaultRequirementStatus.Absent)
+        put(EncryptedVaultRequirement.LockSessionLifecycleTested, EncryptedVaultRequirementStatus.ImplementedStillDisabled)
         put(EncryptedVaultRequirement.RedactionTestsPassed, EncryptedVaultRequirementStatus.Absent)
         put(EncryptedVaultRequirement.MigrationAndCorruptionTestsPassed, EncryptedVaultRequirementStatus.Absent)
         put(EncryptedVaultRequirement.SecureSecretStorageAvailable, EncryptedVaultRequirementStatus.DisabledByPolicy)
@@ -1251,6 +1263,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.StorageSuccessPathAbsent,
             EncryptedVaultBlockingIssue.DisabledStorageServiceFacadeStillDisabled,
             EncryptedVaultBlockingIssue.PersistenceReadinessGateStillBlocked,
+            EncryptedVaultBlockingIssue.LockSessionLifecycleStillDisabled,
             EncryptedVaultBlockingIssue.PlatformStorageImplementationMissing,
             EncryptedVaultBlockingIssue.AtomicWriteImplementationMissing,
             EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing,
@@ -1274,7 +1287,6 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.AntiRollbackAnchorAbsentNoFullRollbackClaim,
             EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing,
             EncryptedVaultBlockingIssue.KnownAnswerVectorsMissing,
-            EncryptedVaultBlockingIssue.LockSessionLifecycleUntested,
             EncryptedVaultBlockingIssue.RedactionTestsMissing,
             EncryptedVaultBlockingIssue.MigrationAndCorruptionTestsMissing,
             EncryptedVaultBlockingIssue.SecureSecretStorageDisabled,

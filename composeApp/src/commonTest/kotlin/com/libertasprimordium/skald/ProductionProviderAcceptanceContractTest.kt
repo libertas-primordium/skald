@@ -24,6 +24,7 @@ import com.libertasprimordium.skald.security.ProductionProviderKeyExpansionPrimi
 import com.libertasprimordium.skald.security.ProductionProviderKeySeparationLabel
 import com.libertasprimordium.skald.security.ProductionProviderLinuxCustomRootValidationRule
 import com.libertasprimordium.skald.security.ProductionProviderLinuxRootResolutionRule
+import com.libertasprimordium.skald.security.ProductionProviderLockSessionLifecycleRule
 import com.libertasprimordium.skald.security.ProductionProviderManifestField
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
@@ -63,6 +64,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
 import com.libertasprimordium.skald.security.SkaldVaultV1DisabledStorageServiceFacade
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1LockSessionLifecyclePolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
@@ -1509,6 +1511,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.disabledStorageServiceFacadePolicyId,
         )
         assertEquals(
+            SkaldVaultV1LockSessionLifecyclePolicy.POLICY_ID,
+            policy.lockSessionLifecycleBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1621,6 +1627,14 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.disabledStorageServiceFacadeStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.persistenceReadinessGateStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.lockSessionLifecycleBoundaryStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -2086,6 +2100,26 @@ class ProductionProviderAcceptanceContractTest {
             policy.disabledStorageServiceFacadeRules,
             ProductionProviderDisabledStorageServiceFacadeRule.DoesNotEnablePersistenceOrProviderSelection,
         )
+        assertEquals(
+            ProductionProviderLockSessionLifecycleRule.entries.toSet(),
+            policy.lockSessionLifecycleRules,
+        )
+        assertContains(
+            policy.lockSessionLifecycleRules,
+            ProductionProviderLockSessionLifecycleRule.DefaultDecisionBlocked,
+        )
+        assertContains(
+            policy.lockSessionLifecycleRules,
+            ProductionProviderLockSessionLifecycleRule.DoesNotAcceptPassphrasesOrPins,
+        )
+        assertContains(
+            policy.lockSessionLifecycleRules,
+            ProductionProviderLockSessionLifecycleRule.DoesNotHoldOrGenerateKeyMaterial,
+        )
+        assertContains(
+            policy.lockSessionLifecycleRules,
+            ProductionProviderLockSessionLifecycleRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -2207,6 +2241,22 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.storageServiceDoesNotEnableProviderSelection)
         assertTrue(policy.storageOperationFailureVocabularyModeled)
         assertFalse(policy.storageServiceOperationSuccessPathImplemented)
+        assertTrue(policy.persistenceReadinessGateModeled)
+        assertTrue(policy.persistenceReadinessGateStillBlocked)
+        assertTrue(policy.persistenceReadinessGateComposesStorageEvidence)
+        assertTrue(policy.persistenceReadinessGateDoesNotUseFilesystem)
+        assertTrue(policy.persistenceReadinessGateDoesNotEnablePersistence)
+        assertTrue(policy.persistenceReadinessGateDoesNotEnableProviderSelection)
+        assertTrue(policy.persistenceReadinessFailureVocabularyModeled)
+        assertTrue(policy.lockSessionLifecycleBoundaryModeled)
+        assertTrue(policy.lockSessionLifecycleStillDisabled)
+        assertTrue(policy.unlockDecisionStillBlocked)
+        assertTrue(policy.activeSessionUnavailable)
+        assertTrue(policy.lockSessionBoundaryDoesNotAcceptPassphrases)
+        assertTrue(policy.lockSessionBoundaryDoesNotHoldKeys)
+        assertTrue(policy.lockSessionBoundaryDoesNotEnablePersistence)
+        assertTrue(policy.lockSessionBoundaryDoesNotEnableProviderSelection)
+        assertTrue(policy.lockSessionFailureVocabularyModeled)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2270,6 +2320,8 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.PlatformPathConstructionBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.StorageSafetyPreflightBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.DisabledStorageServiceFacadeImplementedAndTested,
+            ProductionProviderAcceptanceGate.PersistenceReadinessGateImplementedAndTested,
+            ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2402,6 +2454,14 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.DisabledStorageServiceFacadeImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PersistenceReadinessGateImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

@@ -65,6 +65,8 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestReadWriteImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageSuccessPathAbsent)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.DisabledStorageServiceFacadeStillDisabled)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.PersistenceReadinessGateStillBlocked)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.LockSessionLifecycleStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PlatformStorageImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.AtomicWriteImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing)
@@ -133,6 +135,8 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.PlatformPathConstructionBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageSafetyPreflightBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DisabledStorageServiceFacadeBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PersistenceReadinessGateBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.LockSessionLifecycleBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
@@ -309,6 +313,8 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.PlatformPathConstructionBoundaryImplementedAndTested,
             EncryptedVaultRequirement.StorageSafetyPreflightBoundaryImplementedAndTested,
             EncryptedVaultRequirement.DisabledStorageServiceFacadeImplementedAndTested,
+            EncryptedVaultRequirement.PersistenceReadinessGateImplementedAndTested,
+            EncryptedVaultRequirement.LockSessionLifecycleBoundaryImplementedAndTested,
             EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
             EncryptedVaultRequirement.PasswordManagerIntegrationRejected,
             EncryptedVaultRequirement.PassphraseFirstDefaultModeled,
@@ -543,6 +549,22 @@ class EncryptedVaultReadinessPolicyTest {
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.DisabledStorageServiceFacadeImplementedAndTested
             ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.PersistenceReadinessGateImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.LockSessionLifecycleBoundaryImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[EncryptedVaultRequirement.LockSessionLifecycleTested],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
