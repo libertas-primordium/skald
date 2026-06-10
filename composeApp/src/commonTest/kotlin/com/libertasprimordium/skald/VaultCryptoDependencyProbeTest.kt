@@ -98,6 +98,7 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.LinuxRootResolutionPolicyImplementedTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PlatformRootResolverBoundaryImplementedTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PlatformPathConstructionBoundaryImplementedTested)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageSafetyPreflightBoundaryImplementedTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PassphraseFirstVaultAuthorityModeled)

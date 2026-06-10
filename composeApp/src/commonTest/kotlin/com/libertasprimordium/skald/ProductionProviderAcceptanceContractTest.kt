@@ -47,6 +47,7 @@ import com.libertasprimordium.skald.security.ProductionProviderStorageAtomicityR
 import com.libertasprimordium.skald.security.ProductionProviderStorageFailureCategory
 import com.libertasprimordium.skald.security.ProductionProviderStorageLayoutPlanRule
 import com.libertasprimordium.skald.security.ProductionProviderStorageNamespacePathRule
+import com.libertasprimordium.skald.security.ProductionProviderStorageSafetyPreflightRule
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
 import com.libertasprimordium.skald.security.ProductionProviderTestVectorContractStatus
@@ -63,6 +64,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPoli
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1StorageSafetyPreflightPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationState
 import com.libertasprimordium.skald.security.VaultCryptoProviderProductionApprovalGate
@@ -1497,6 +1499,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.platformPathConstructionBoundaryPolicyId,
         )
         assertEquals(
+            SkaldVaultV1StorageSafetyPreflightPolicy.POLICY_ID,
+            policy.storageSafetyPreflightBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1601,6 +1607,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.platformPathConstructionBoundaryStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.storageSafetyPreflightBoundaryStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -2022,6 +2032,30 @@ class ProductionProviderAcceptanceContractTest {
             policy.platformPathConstructionRules,
             ProductionProviderPlatformPathConstructionRule.DoesNotEnablePersistenceOrProviderSelection,
         )
+        assertEquals(
+            ProductionProviderStorageSafetyPreflightRule.entries.toSet(),
+            policy.storageSafetyPreflightRules,
+        )
+        assertContains(
+            policy.storageSafetyPreflightRules,
+            ProductionProviderStorageSafetyPreflightRule.EvidenceOnly,
+        )
+        assertContains(
+            policy.storageSafetyPreflightRules,
+            ProductionProviderStorageSafetyPreflightRule.ConsumesPlannedArtifactLocationEvidence,
+        )
+        assertContains(
+            policy.storageSafetyPreflightRules,
+            ProductionProviderStorageSafetyPreflightRule.GateVocabularyModeled,
+        )
+        assertContains(
+            policy.storageSafetyPreflightRules,
+            ProductionProviderStorageSafetyPreflightRule.DoesNotRunFilesystemChecks,
+        )
+        assertContains(
+            policy.storageSafetyPreflightRules,
+            ProductionProviderStorageSafetyPreflightRule.DoesNotEnablePersistenceOrProviderSelection,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -2129,6 +2163,12 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.platformPathConstructionDoesNotEnablePersistence)
         assertTrue(policy.platformPathConstructionDoesNotEnableProviderSelection)
         assertTrue(policy.plannedArtifactLocationEvidenceModeled)
+        assertTrue(policy.storageSafetyPreflightBoundaryModeled)
+        assertTrue(policy.storageSafetyPreflightStillDisabled)
+        assertTrue(policy.storageSafetyPreflightDoesNotRunFilesystemChecks)
+        assertTrue(policy.storageSafetyPreflightDoesNotEnablePersistence)
+        assertTrue(policy.storageSafetyPreflightDoesNotEnableProviderSelection)
+        assertTrue(policy.storageSafetyGateVocabularyModeled)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2190,6 +2230,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.LinuxRootResolutionPolicyImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformRootResolverBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformPathConstructionBoundaryImplementedAndTested,
+            ProductionProviderAcceptanceGate.StorageSafetyPreflightBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2314,6 +2355,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.PlatformPathConstructionBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StorageSafetyPreflightBoundaryImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

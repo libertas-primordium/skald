@@ -92,9 +92,17 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It consumes accepted platform root resolver evidence and the existing logical storage layout plan, then reuses the path-containment planner to return typed, redacted planned artifact-location evidence for current container, current manifest, current storage index, record, temporary, quarantine, and recovery metadata artifacts. Planned artifact locations are root-token-bound logical relative segment evidence only. They are not platform paths and are not usable for file I/O. The boundary does not accept raw platform paths as a persistence input, does not construct real or absolute paths, does not return `File`, `Path`, `Uri`, or platform filesystem objects, does not create directories, does not read files, does not write files, does not persist Settings, does not prove existence, does not prove real containment, does not prove symlink safety, does not prove permissions or ownership, does not prove durability or atomic-write safety, does not enable vault persistence, and does not make a provider selectable.
 
+A still-disabled storage safety preflight boundary now exists:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageSafetyPreflightBoundary.kt
+```
+
+It consumes planned artifact-location evidence and future caller-supplied safety evidence to produce typed, redacted preflight gate evidence only. The gate vocabulary covers root evidence, planned artifact-location evidence, real path construction, containment, symlink safety, permission, ownership, durability, atomic write, crash recovery, manifest read/write, storage-index read/write, record read/write, storage failure mapping, corruption handling, migration handling, redaction/logging safety, secure secret storage, secure metadata storage, anti-rollback limitation review, provider selectability review, and mainnet-disabled review. Current results remain fail-closed and still-disabled. The boundary does not run filesystem checks, construct real or absolute paths, use `File` or `Path`, create directories, read files, write files, persist Settings, prove existence, prove containment, prove symlink safety, prove permissions, prove ownership, prove durability, prove atomic-write safety, prove crash-recovery safety, enable manifest read/write, enable storage-index read/write, enable record read/write, enable vault persistence, or make a provider selectable.
+
 This branch also records the v1 durability fail-closed decision and warning-only rejection policy for encrypted vault writes. Unsupported, unknown, unreviewed, insufficient, unsafe, or failed durability blocks encrypted vault persistence. Warning-only encrypted vault persistence is not approved for v1, and user consent cannot override a required durability failure.
 
-The platform storage-root, platform root settings, Linux custom-root validation, Linux root-resolution evidence, platform root resolver boundary, platform path-construction boundary, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join real paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
+The platform storage-root, platform root settings, Linux custom-root validation, Linux root-resolution evidence, platform root resolver boundary, platform path-construction boundary, storage safety preflight boundary, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join real paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
 
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
@@ -127,6 +135,7 @@ Required policy ids:
 - Linux root-resolution policy id: `skald-vault-v1-linux-root-resolution-policy-v1`
 - Platform root resolver boundary policy id: `skald-vault-v1-platform-root-resolver-boundary-v1`
 - Platform path-construction boundary policy id: `skald-vault-v1-platform-path-construction-boundary-v1`
+- Storage safety preflight boundary policy id: `skald-vault-v1-storage-safety-preflight-boundary-v1`
 - OS keyring passphrase policy id: `skald-vault-v1-os-keyring-passphrase-policy-v1`
 - Password-manager passphrase policy id: `skald-vault-v1-password-manager-passphrase-policy-v1`
 - Passphrase-first vault authority policy id: `skald-vault-v1-passphrase-first-vault-authority-policy-v1`
@@ -799,6 +808,7 @@ The readiness and acceptance models must distinguish:
 - implemented/tested still-disabled logical storage layout plan;
 - implemented/tested still-disabled path-containment planner;
 - implemented/tested still-disabled Linux root-resolution evidence policy;
+- implemented/tested still-disabled storage safety preflight boundary;
 - documented/model-only platform storage boundary;
 - documented/model-only atomic write strategy;
 - documented/model-only crash-recovery contract;
@@ -814,12 +824,12 @@ The readiness and acceptance models must distinguish:
 - documented/model-only durability fail-closed policy;
 - documented/model-only warning-only durability rejection policy;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent actual path construction, path joining, real containment checks, directory creation, platform root selection/resolution, Settings UI, settings persistence, OS keyring integration, password-manager integration, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, storage, manifest file/storage read/write, storage index read/write, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
+- absent actual path construction, path joining, real containment checks, directory creation, platform root selection/resolution, Settings UI, settings persistence, OS keyring integration, password-manager integration, symlink checks, permission checks, durability probes, storage safety preflight filesystem checks, warning-only encrypted vault persistence path, storage, manifest file/storage read/write, storage index read/write, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
-Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, logical layout, path-containment planner, Linux root-resolution, platform-root, platform root settings, Settings UI/persistence, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
+Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, logical layout, path-containment planner, Linux root-resolution, platform-root, platform root settings, Settings UI/persistence, path-construction, storage safety preflight, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability/preflight evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
 
-Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed logical storage layout tests, completed path-containment planner tests, completed Linux root-resolution evidence tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
+Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed logical storage layout tests, completed path-containment planner tests, completed Linux root-resolution evidence tests, completed storage safety preflight tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
 ## Remaining Gates
 
