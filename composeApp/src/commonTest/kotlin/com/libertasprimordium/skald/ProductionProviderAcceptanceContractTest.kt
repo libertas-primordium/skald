@@ -28,6 +28,7 @@ import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowed
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPathContainmentPlannerRule
+import com.libertasprimordium.skald.security.ProductionProviderPlatformPathConstructionRule
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootSettingsRule
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootResolverRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
@@ -59,6 +60,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
@@ -1491,6 +1493,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.platformRootResolverPolicyId,
         )
         assertEquals(
+            SkaldVaultV1PlatformPathConstructionPolicy.POLICY_ID,
+            policy.platformPathConstructionBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1591,6 +1597,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.platformRootResolverBoundaryStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.platformPathConstructionBoundaryStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1984,6 +1994,34 @@ class ProductionProviderAcceptanceContractTest {
             policy.platformRootResolverRules,
             ProductionProviderPlatformRootResolverRule.DoesNotEnablePersistenceOrProviderSelection,
         )
+        assertEquals(
+            ProductionProviderPlatformPathConstructionRule.entries.toSet(),
+            policy.platformPathConstructionRules,
+        )
+        assertContains(
+            policy.platformPathConstructionRules,
+            ProductionProviderPlatformPathConstructionRule.EvidenceOnly,
+        )
+        assertContains(
+            policy.platformPathConstructionRules,
+            ProductionProviderPlatformPathConstructionRule.ConsumesRootResolverEvidence,
+        )
+        assertContains(
+            policy.platformPathConstructionRules,
+            ProductionProviderPlatformPathConstructionRule.ConsumesLogicalStorageLayout,
+        )
+        assertContains(
+            policy.platformPathConstructionRules,
+            ProductionProviderPlatformPathConstructionRule.PlannedLocationsAreNotPlatformPaths,
+        )
+        assertContains(
+            policy.platformPathConstructionRules,
+            ProductionProviderPlatformPathConstructionRule.DoesNotConstructRealOrAbsolutePaths,
+        )
+        assertContains(
+            policy.platformPathConstructionRules,
+            ProductionProviderPlatformPathConstructionRule.DoesNotEnablePersistenceOrProviderSelection,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -2085,6 +2123,12 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.platformRootResolverDoesNotEnablePersistence)
         assertTrue(policy.platformRootResolverDoesNotProveDurability)
         assertTrue(policy.platformRootResolverDoesNotEnableProviderSelection)
+        assertTrue(policy.platformPathConstructionBoundaryModeled)
+        assertTrue(policy.platformPathConstructionStillDisabled)
+        assertTrue(policy.platformPathConstructionDoesNotConstructRealPaths)
+        assertTrue(policy.platformPathConstructionDoesNotEnablePersistence)
+        assertTrue(policy.platformPathConstructionDoesNotEnableProviderSelection)
+        assertTrue(policy.plannedArtifactLocationEvidenceModeled)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2145,6 +2189,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.LinuxCustomRootValidationPolicyImplementedAndTested,
             ProductionProviderAcceptanceGate.LinuxRootResolutionPolicyImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformRootResolverBoundaryImplementedAndTested,
+            ProductionProviderAcceptanceGate.PlatformPathConstructionBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2265,6 +2310,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.PlatformRootResolverBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PlatformPathConstructionBoundaryImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
