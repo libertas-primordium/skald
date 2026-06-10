@@ -117,6 +117,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageFailureModelContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathHygieneContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathPolicyBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StorageLayoutPlanBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DurabilityFailClosedPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.WarningOnlyDurabilityRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
@@ -278,6 +279,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.StorageFailureModelModeled,
             EncryptedVaultRequirement.StorageNamespacePathHygieneModeled,
             EncryptedVaultRequirement.StorageNamespacePathPolicyImplementedAndTested,
+            EncryptedVaultRequirement.StorageLayoutPlanImplementedAndTested,
             EncryptedVaultRequirement.PlatformStorageRootContractModeled,
             EncryptedVaultRequirement.SafePathConstructionContractModeled,
             EncryptedVaultRequirement.SymlinkTraversalContractModeled,
@@ -443,6 +445,12 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.StorageNamespacePathPolicyImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.StorageLayoutPlanImplementedAndTested
             ],
         )
         assertEquals(
