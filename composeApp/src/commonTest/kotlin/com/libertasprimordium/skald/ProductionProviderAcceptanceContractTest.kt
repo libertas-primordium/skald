@@ -25,10 +25,19 @@ import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbidd
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
+import com.libertasprimordium.skald.security.ProductionProviderAtomicWritePhase
+import com.libertasprimordium.skald.security.ProductionProviderAtomicWriteRequirement
+import com.libertasprimordium.skald.security.ProductionProviderCrashRecoveryCheck
+import com.libertasprimordium.skald.security.ProductionProviderCrashRecoveryFailClosedState
 import com.libertasprimordium.skald.security.ProductionProviderSecureStorageBoundaryRequirement
 import com.libertasprimordium.skald.security.ProductionProviderStaleRecordManifestBinding
 import com.libertasprimordium.skald.security.ProductionProviderStaleRecordManifestRequirement
+import com.libertasprimordium.skald.security.ProductionProviderStorageBoundaryAllowedBytes
+import com.libertasprimordium.skald.security.ProductionProviderStorageBoundaryForbiddenMaterial
+import com.libertasprimordium.skald.security.ProductionProviderStorageBoundaryRequirement
 import com.libertasprimordium.skald.security.ProductionProviderStorageAtomicityRequirement
+import com.libertasprimordium.skald.security.ProductionProviderStorageFailureCategory
+import com.libertasprimordium.skald.security.ProductionProviderStorageNamespacePathRule
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
 import com.libertasprimordium.skald.security.ProductionProviderTestVectorContractStatus
@@ -1427,10 +1436,28 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals("skald-vault-v1-container-contract-v1", policy.vaultContainerPolicyId)
         assertEquals("skald-vault-v1-manifest-contract-v1", policy.manifestPolicyId)
         assertEquals("skald-vault-v1-local-manifest-storage-policy-v1", policy.storagePolicyId)
+        assertEquals(
+            "skald-vault-v1-platform-storage-boundary-policy-v1",
+            policy.platformStorageBoundaryPolicyId,
+        )
         assertEquals("skald-vault-v1-stale-record-manifest-policy-v1", policy.staleRecordPolicyId)
         assertEquals(
             "skald-vault-v1-atomicity-crash-recovery-policy-v1",
             policy.atomicityCrashRecoveryPolicyId,
+        )
+        assertEquals("skald-vault-v1-atomic-write-strategy-policy-v1", policy.atomicWritePolicyId)
+        assertEquals("skald-vault-v1-crash-recovery-policy-v1", policy.crashRecoveryPolicyId)
+        assertEquals(
+            "skald-vault-v1-storage-interruption-test-policy-v1",
+            policy.interruptionTestPolicyId,
+        )
+        assertEquals(
+            "skald-vault-v1-storage-failure-model-policy-v1",
+            policy.storageFailureModelPolicyId,
+        )
+        assertEquals(
+            "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
+            policy.storageNamespacePathPolicyId,
         )
         assertEquals(
             "skald-vault-v1-secure-storage-boundary-policy-v1",
@@ -1450,12 +1477,36 @@ class ProductionProviderAcceptanceContractTest {
             policy.storagePolicyContractStatus,
         )
         assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.platformStorageBoundaryContractStatus,
+        )
+        assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.staleRecordPolicyStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
             policy.atomicityCrashRecoveryContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.atomicWriteContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.crashRecoveryContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.interruptionTestContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.storageFailureModelStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.storageNamespacePathHygieneStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1508,6 +1559,55 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(ProductionProviderStaleRecordManifestBinding.entries.toSet(), policy.manifestBindings)
         assertEquals(ProductionProviderStaleRecordManifestRequirement.entries.toSet(), policy.manifestRequirements)
 
+        assertEquals(ProductionProviderStorageBoundaryAllowedBytes.entries.toSet(), policy.storageBoundaryAllowedBytes)
+        assertContains(
+            policy.storageBoundaryAllowedBytes,
+            ProductionProviderStorageBoundaryAllowedBytes.EncryptedContainerBytes,
+        )
+        assertContains(
+            policy.storageBoundaryAllowedBytes,
+            ProductionProviderStorageBoundaryAllowedBytes.CrashRecoveryTemporaryState,
+        )
+        assertEquals(
+            ProductionProviderStorageBoundaryForbiddenMaterial.entries.toSet(),
+            policy.storageBoundaryForbiddenMaterial,
+        )
+        assertContains(
+            policy.storageBoundaryForbiddenMaterial,
+            ProductionProviderStorageBoundaryForbiddenMaterial.Passphrases,
+        )
+        assertContains(
+            policy.storageBoundaryForbiddenMaterial,
+            ProductionProviderStorageBoundaryForbiddenMaterial.Argon2idRootMaterial,
+        )
+        assertContains(
+            policy.storageBoundaryForbiddenMaterial,
+            ProductionProviderStorageBoundaryForbiddenMaterial.TinkKeysets,
+        )
+        assertContains(
+            policy.storageBoundaryForbiddenMaterial,
+            ProductionProviderStorageBoundaryForbiddenMaterial.WalletSeedMaterial,
+        )
+        assertEquals(
+            ProductionProviderStorageBoundaryRequirement.entries.toSet(),
+            policy.storageBoundaryRequirements,
+        )
+        assertContains(
+            policy.storageBoundaryRequirements,
+            ProductionProviderStorageBoundaryRequirement.AlreadyEncryptedOrNonSecretBytesOnly,
+        )
+        assertContains(
+            policy.storageBoundaryRequirements,
+            ProductionProviderStorageBoundaryRequirement.StorageLayerNotEncryptionBoundary,
+        )
+        assertContains(
+            policy.storageBoundaryRequirements,
+            ProductionProviderStorageBoundaryRequirement.DoNotLogStoredBytesOrSecretIdentifyingPaths,
+        )
+        assertContains(
+            policy.storageBoundaryRequirements,
+            ProductionProviderStorageBoundaryRequirement.NoStorageImplementationInThisBranch,
+        )
         assertEquals(ProductionProviderStorageAtomicityRequirement.entries.toSet(), policy.atomicityRequirements)
         assertContains(
             policy.atomicityRequirements,
@@ -1524,6 +1624,99 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.atomicityRequirements,
             ProductionProviderStorageAtomicityRequirement.NoWriteRecoveryImplementationInThisBranch,
+        )
+        assertEquals(ProductionProviderAtomicWritePhase.entries.toSet(), policy.atomicWritePhases)
+        assertContains(
+            policy.atomicWritePhases,
+            ProductionProviderAtomicWritePhase.BeforeTempContainerWrite,
+        )
+        assertContains(
+            policy.atomicWritePhases,
+            ProductionProviderAtomicWritePhase.AfterCommittingContainerBeforeManifest,
+        )
+        assertContains(policy.atomicWritePhases, ProductionProviderAtomicWritePhase.StartupRecovery)
+        assertEquals(ProductionProviderAtomicWriteRequirement.entries.toSet(), policy.atomicWriteRequirements)
+        assertContains(
+            policy.atomicWriteRequirements,
+            ProductionProviderAtomicWriteRequirement.RetainPreviousKnownGoodUntilCommitComplete,
+        )
+        assertContains(
+            policy.atomicWriteRequirements,
+            ProductionProviderAtomicWriteRequirement.NeverAcceptNewerRecordWithoutManifestAuthority,
+        )
+        assertContains(
+            policy.atomicWriteRequirements,
+            ProductionProviderAtomicWriteRequirement.DesktopFilesystemStrategyRequiresReview,
+        )
+        assertContains(
+            policy.atomicWriteRequirements,
+            ProductionProviderAtomicWriteRequirement.AndroidAppPrivateFilesystemStrategyRequiresReview,
+        )
+        assertContains(
+            policy.atomicWriteRequirements,
+            ProductionProviderAtomicWriteRequirement.NoAtomicWriteImplementationInThisBranch,
+        )
+        assertEquals(ProductionProviderCrashRecoveryCheck.entries.toSet(), policy.crashRecoveryChecks)
+        assertContains(
+            policy.crashRecoveryChecks,
+            ProductionProviderCrashRecoveryCheck.ValidateContainerParserOutput,
+        )
+        assertContains(
+            policy.crashRecoveryChecks,
+            ProductionProviderCrashRecoveryCheck.ApplyStaleRecordPolicyAgainstManifestState,
+        )
+        assertContains(
+            policy.crashRecoveryChecks,
+            ProductionProviderCrashRecoveryCheck.QuarantineInconsistentState,
+        )
+        assertEquals(
+            ProductionProviderCrashRecoveryFailClosedState.entries.toSet(),
+            policy.crashRecoveryFailClosedStates,
+        )
+        assertContains(
+            policy.crashRecoveryFailClosedStates,
+            ProductionProviderCrashRecoveryFailClosedState.MissingManifestWhenRequired,
+        )
+        assertContains(
+            policy.crashRecoveryFailClosedStates,
+            ProductionProviderCrashRecoveryFailClosedState.ManifestContainerVaultIdMismatch,
+        )
+        assertContains(
+            policy.crashRecoveryFailClosedStates,
+            ProductionProviderCrashRecoveryFailClosedState.UnknownRecoveryState,
+        )
+        assertEquals(ProductionProviderStorageFailureCategory.entries.toSet(), policy.storageFailureCategories)
+        assertContains(policy.storageFailureCategories, ProductionProviderStorageFailureCategory.StorageUnavailable)
+        assertContains(policy.storageFailureCategories, ProductionProviderStorageFailureCategory.PermissionDenied)
+        assertContains(policy.storageFailureCategories, ProductionProviderStorageFailureCategory.DurabilitySyncFailed)
+        assertContains(
+            policy.storageFailureCategories,
+            ProductionProviderStorageFailureCategory.RecoveryQuarantineRequired,
+        )
+        assertContains(
+            policy.storageFailureCategories,
+            ProductionProviderStorageFailureCategory.UnknownStorageState,
+        )
+        assertEquals(ProductionProviderStorageNamespacePathRule.entries.toSet(), policy.storageNamespacePathRules)
+        assertContains(
+            policy.storageNamespacePathRules,
+            ProductionProviderStorageNamespacePathRule.StableAsciiNamespaceIds,
+        )
+        assertContains(
+            policy.storageNamespacePathRules,
+            ProductionProviderStorageNamespacePathRule.UserControlledStringsNeverBecomePaths,
+        )
+        assertContains(
+            policy.storageNamespacePathRules,
+            ProductionProviderStorageNamespacePathRule.NoPathTraversal,
+        )
+        assertContains(
+            policy.storageNamespacePathRules,
+            ProductionProviderStorageNamespacePathRule.NoSecretValuesInPathNames,
+        )
+        assertContains(
+            policy.storageNamespacePathRules,
+            ProductionProviderStorageNamespacePathRule.NoPathConstructionInThisBranch,
         )
         assertEquals(
             ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
@@ -1555,10 +1748,19 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.vaultPersistenceImplemented)
         assertFalse(policy.manifestReadWriteImplemented)
         assertFalse(policy.storageIndexReadWriteImplemented)
+        assertFalse(policy.platformStorageImplementationAdded)
         assertFalse(policy.filesystemVaultStorageImplemented)
         assertFalse(policy.databaseVaultStorageImplemented)
         assertFalse(policy.dataStoreVaultStorageImplemented)
         assertFalse(policy.sharedPreferencesVaultStorageImplemented)
+        assertFalse(policy.tempFileImplementationAdded)
+        assertFalse(policy.journalImplementationAdded)
+        assertFalse(policy.atomicReplaceImplementationAdded)
+        assertFalse(policy.durabilitySyncImplementationAdded)
+        assertFalse(policy.crashRecoveryImplementationAdded)
+        assertFalse(policy.interruptionTestRuntimeHooksAdded)
+        assertFalse(policy.storageFailureRuntimeMappingImplemented)
+        assertFalse(policy.storagePathConstructionImplemented)
         assertFalse(policy.secureSecretStorageSuccessPathImplemented)
         assertFalse(policy.secureMetadataStorageSuccessPathImplemented)
         assertFalse(policy.atomicWriteRecoveryImplementationAdded)
@@ -1573,7 +1775,13 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.ManifestContractApproved,
             ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved,
             ProductionProviderAcceptanceGate.StoragePolicyContractApproved,
+            ProductionProviderAcceptanceGate.PlatformStorageBoundaryContractApproved,
             ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved,
+            ProductionProviderAcceptanceGate.AtomicWriteStrategyContractApproved,
+            ProductionProviderAcceptanceGate.CrashRecoveryContractApproved,
+            ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved,
+            ProductionProviderAcceptanceGate.StorageFailureModelContractApproved,
+            ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved,
             ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved,
             ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed,
         )
@@ -1631,7 +1839,31 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PlatformStorageBoundaryContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
             evidence.stateFor(ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.AtomicWriteStrategyContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.CrashRecoveryContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StorageFailureModelContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

@@ -405,18 +405,24 @@ A production provider cannot become selectable until every gate below is satisfi
 25. Provider-level KAT strategy is approved and still-disabled harness KATs execute deterministic vectors plus randomized AEAD behavioral checks.
 26. Randomized AEAD behavioral KAT policy is approved and still-disabled harness KATs do not require fixed ciphertext hex for Tink XChaCha20-Poly1305.
 27. Integrated verification-order KATs prove in the still-disabled harness that header commitment verification happens before record decrypt.
-28. Stale-record and rollback manifest policy is approved, including local manifest binding, atomicity/crash recovery review, stale-record quarantine/rejection behavior, and no global rollback-resistance claim without an anti-rollback anchor.
-29. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-30. Unknown randomness/provider state blocks vault creation.
-31. Forbidden random APIs remain guarded.
-32. Secure secret storage is reviewed and approved.
-33. Secure metadata storage is reviewed and approved.
-34. Crash, corruption, and partial-write behavior are reviewed.
-35. Redaction, logging, and crash-report leakage checks pass.
-36. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-37. The still-disabled provider facade is approved as metadata/status only and remains non-selectable.
-38. A production provider implementation exists behind Skald-owned interfaces.
-39. Release readiness excludes debug and test-only providers from selection.
+28. Stale-record and rollback manifest policy is approved, including local manifest binding, stale-record quarantine/rejection behavior, and no global rollback-resistance claim without an anti-rollback anchor.
+29. Platform storage boundary contract is approved: future storage accepts only encrypted/non-secret bytes and never handles passphrases, root material, subkeys, plaintext records, keysets, wallet seeds, private keys, Nostr secrets, Cashu proofs, or backend credentials.
+30. Atomic write strategy contract is approved for desktop filesystem, Android app-private filesystem, future database strategy review, and unsupported-platform fail-closed behavior.
+31. Crash-recovery contract is approved for committed state, temporary state, container/manifest validation, manifest reference validation, stale-record policy, safe previous state, quarantine, and user-facing unrecoverable corruption.
+32. Interruption-test contract is approved for every write/recovery phase before persistence approval.
+33. Storage failure model is approved with typed categories for unavailable storage, permissions, read/write failures, durability sync, atomic replace, malformed/missing manifest/container/record data, stale/conflicting records, quarantine, user action, and unknown state.
+34. Storage namespace/path hygiene is approved: stable ASCII namespaces, encoded vault ids, no user-controlled paths, no path traversal, no absolute user-supplied paths, reviewed symlink behavior, no secrets or labels in path names, and reviewed app-private roots.
+35. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+36. Unknown randomness/provider state blocks vault creation.
+37. Forbidden random APIs remain guarded.
+38. Secure secret storage is reviewed and approved.
+39. Secure metadata storage is reviewed and approved.
+40. Crash, corruption, and partial-write behavior are reviewed.
+41. Redaction, logging, and crash-report leakage checks pass.
+42. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+43. The still-disabled provider facade is approved as metadata/status only and remains non-selectable.
+44. A production provider implementation exists behind Skald-owned interfaces.
+45. Release readiness excludes debug and test-only providers from selection.
 
 Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, strict AAD/record-AEAD building-block tests, still-disabled integrated provider harness KATs, still-disabled provider facade checks, documented stale-record manifest policy, or a design-only acceptance assessment must not bypass the remaining gates.
 
@@ -440,6 +446,9 @@ This contract does not allow:
 - raw key persistence,
 - file-backed vault container read/write,
 - file/settings/SharedPreferences storage in the provider boundary,
+- manifest file read/write,
+- storage index read/write,
+- temp-file, journal, rename, fsync, or recovery implementation,
 - secure secret storage success,
 - secure metadata storage success,
 - production sync,
