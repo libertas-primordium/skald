@@ -84,6 +84,8 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
     DurabilityCapabilityContractApproved("durability capability contract approved"),
+    DurabilityFailClosedPolicyApproved("durability fail-closed policy approved"),
+    WarningOnlyDurabilityPersistenceRejected("warning-only durability persistence rejected"),
     SecureStorageBoundaryContractApproved("secure storage boundary contract approved"),
     RollbackLimitationAndAntiRollbackAnchorReviewed(
         "rollback limitation and anti-rollback anchor status reviewed",
@@ -731,6 +733,9 @@ enum class ProductionProviderStorageFailureCategory(val label: String) {
     UnsafePermissions("unsafe permissions"),
     DurabilityCapabilityUnknown("durability capability unknown"),
     DurabilityCapabilityInsufficient("durability capability insufficient"),
+    WarningOnlyDurabilityRejected("warning-only durability rejected"),
+    UserConsentDurabilityOverrideRejected("user consent durability override rejected"),
+    EquivalentSafeStrategyUnreviewed("equivalent safe strategy unreviewed"),
     ExternalStorageRejected("external storage rejected"),
     UserPathRejected("user path rejected"),
 }
@@ -849,13 +854,57 @@ enum class ProductionProviderDurabilityCapabilityRule(val label: String) {
     ),
     OrderingGuaranteesDocumented("future implementation documents whether platform APIs guarantee expected ordering"),
     UnsupportedPrimitiveFallbackDefined(
-        "future implementation defines behavior when durability primitives are unsupported",
+        "future implementation defines reviewed equivalent safe strategies for unsupported durability primitives",
     ),
-    UnsupportedDurabilityBlocksOrWarnsExplicitly(
-        "future implementation decides whether unsupported durability blocks persistence or needs explicit warning",
+    RequiredDurabilityFailuresBlockEncryptedVaultPersistence(
+        "unknown, unsupported, insufficient, unreviewed, unsafe, or failed durability blocks encrypted vault persistence",
+    ),
+    WarningOnlyEncryptedVaultPersistenceRejected(
+        "warning-only encrypted vault persistence is rejected for v1",
+    ),
+    EquivalentSafeStrategyRequiresHumanReview(
+        "equivalent safe durability strategies require explicit future human review",
+    ),
+    UserConsentCannotOverrideDurabilityFailure(
+        "user consent cannot override required durability failure for encrypted vault writes",
+    ),
+    AndroidDurabilityRequiresReviewBeforePersistence(
+        "Android app-private storage durability requires implementation proof and review before persistence",
+    ),
+    DesktopDurabilityRequiresReviewBeforePersistence(
+        "desktop filesystem durability requires implementation proof and review before persistence",
     ),
     AndroidDesktopDifferencesDocumented("Android and desktop durability differences are documented"),
     NoDurabilityProbeImplementationInThisBranch("no durability probe implementation exists in this branch"),
+}
+
+enum class ProductionProviderDurabilityFailClosedCondition(val label: String) {
+    DurabilityCapabilityUnknown("durability capability unknown"),
+    DurabilityCapabilityInsufficient("durability capability insufficient"),
+    DurabilitySyncUnsupported("durability sync unsupported"),
+    DurabilitySyncFailed("durability sync failed"),
+    AtomicReplaceUnsupported("atomic replace unsupported"),
+    AtomicReplaceFailed("atomic replace failed"),
+    PlatformRootUnreviewed("platform root unreviewed"),
+    PlatformRootUnsafe("platform root unsafe"),
+    PermissionStateUnknown("permission state unknown"),
+    UnsafePermissions("unsafe permissions"),
+    UnknownStorageState("unknown storage state"),
+}
+
+enum class ProductionProviderWarningOnlyDurabilityRule(val label: String) {
+    WarningOnlyEncryptedVaultPersistenceRejected(
+        "warning-only encrypted vault persistence is rejected for v1",
+    ),
+    UserConsentCannotOverrideDurabilityFailure(
+        "user consent cannot override required durability failure",
+    ),
+    NonSecretDiagnosticsOnlyAfterReview(
+        "future warning-only behavior is limited to non-secret diagnostics or reviewed non-critical artifacts",
+    ),
+    EquivalentSafeStrategyRequiresHumanReview(
+        "equivalent safe durability strategies require future human review",
+    ),
 }
 
 enum class ProductionProviderSecureStorageBoundaryRequirement(val label: String) {
@@ -888,6 +937,8 @@ data class ProductionProviderContainerManifestStorageContract(
     val symlinkTraversalPolicyId: String,
     val storagePermissionOwnershipPolicyId: String,
     val durabilityCapabilityPolicyId: String,
+    val durabilityFailClosedPolicyId: String,
+    val warningOnlyDurabilityRejectionPolicyId: String,
     val storageAtomicitySimulatorPolicyId: String,
     val secureStorageBoundaryPolicyId: String,
     val antiRollbackAnchorPolicyId: String,
@@ -907,6 +958,8 @@ data class ProductionProviderContainerManifestStorageContract(
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
     val durabilityCapabilityContractStatus: ProductionProviderConstructionContractStatus,
+    val durabilityFailClosedPolicyStatus: ProductionProviderConstructionContractStatus,
+    val warningOnlyDurabilityRejectionStatus: ProductionProviderConstructionContractStatus,
     val storageAtomicitySimulatorStatus: ProductionProviderConstructionContractStatus,
     val secureStorageBoundaryStatus: ProductionProviderConstructionContractStatus,
     val containerFields: Set<ProductionProviderVaultContainerField>,
@@ -929,6 +982,8 @@ data class ProductionProviderContainerManifestStorageContract(
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
     val durabilityCapabilityRules: Set<ProductionProviderDurabilityCapabilityRule>,
+    val durabilityFailClosedConditions: Set<ProductionProviderDurabilityFailClosedCondition>,
+    val warningOnlyDurabilityRules: Set<ProductionProviderWarningOnlyDurabilityRule>,
     val secureStorageBoundaryRequirements: Set<ProductionProviderSecureStorageBoundaryRequirement>,
     val strictAadSubstitutionProtectionModeled: Boolean,
     val strictAadFreshnessProofClaimed: Boolean,
@@ -965,6 +1020,11 @@ data class ProductionProviderContainerManifestStorageContract(
     val symlinkCheckImplementationAdded: Boolean,
     val permissionCheckImplementationAdded: Boolean,
     val durabilityProbeImplementationAdded: Boolean,
+    val warningOnlyEncryptedVaultPersistenceAllowed: Boolean,
+    val userConsentDurabilityOverrideAllowed: Boolean,
+    val equivalentSafeDurabilityStrategyApproved: Boolean,
+    val androidDurabilityReviewed: Boolean,
+    val desktopDurabilityReviewed: Boolean,
     val storageNamespacePathPolicyImplemented: Boolean,
     val storagePathSegmentEncodingImplemented: Boolean,
     val inMemoryAtomicityCrashSimulatorImplemented: Boolean,
@@ -1286,6 +1346,10 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.DurabilityCapabilityContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.DurabilityFailClosedPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.WarningOnlyDurabilityPersistenceRejected to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -1682,6 +1746,10 @@ data class ProductionProviderAcceptanceContract(
                         "skald-vault-v1-storage-permission-ownership-policy-v1",
                     durabilityCapabilityPolicyId =
                         "skald-vault-v1-durability-capability-policy-v1",
+                    durabilityFailClosedPolicyId =
+                        "skald-vault-v1-durability-fail-closed-policy-v1",
+                    warningOnlyDurabilityRejectionPolicyId =
+                        "skald-vault-v1-warning-only-durability-rejection-policy-v1",
                     storageAtomicitySimulatorPolicyId =
                         "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
                     secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
@@ -1715,6 +1783,10 @@ data class ProductionProviderAcceptanceContract(
                     storagePermissionOwnershipContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     durabilityCapabilityContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    durabilityFailClosedPolicyStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    warningOnlyDurabilityRejectionStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storageAtomicitySimulatorStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
@@ -1750,6 +1822,10 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderStoragePermissionOwnershipRule.entries.toSet(),
                     durabilityCapabilityRules =
                         ProductionProviderDurabilityCapabilityRule.entries.toSet(),
+                    durabilityFailClosedConditions =
+                        ProductionProviderDurabilityFailClosedCondition.entries.toSet(),
+                    warningOnlyDurabilityRules =
+                        ProductionProviderWarningOnlyDurabilityRule.entries.toSet(),
                     secureStorageBoundaryRequirements =
                         ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
                     strictAadSubstitutionProtectionModeled = true,
@@ -1787,6 +1863,11 @@ data class ProductionProviderAcceptanceContract(
                     symlinkCheckImplementationAdded = false,
                     permissionCheckImplementationAdded = false,
                     durabilityProbeImplementationAdded = false,
+                    warningOnlyEncryptedVaultPersistenceAllowed = false,
+                    userConsentDurabilityOverrideAllowed = false,
+                    equivalentSafeDurabilityStrategyApproved = false,
+                    androidDurabilityReviewed = false,
+                    desktopDurabilityReviewed = false,
                     storageNamespacePathPolicyImplemented = true,
                     storagePathSegmentEncodingImplemented = true,
                     inMemoryAtomicityCrashSimulatorImplemented = true,

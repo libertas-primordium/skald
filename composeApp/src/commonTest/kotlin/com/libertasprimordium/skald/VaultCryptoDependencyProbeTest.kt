@@ -89,6 +89,8 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageFailureModelContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageNamespacePathHygieneContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageNamespacePathPolicyImplementedTested)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.DurabilityFailClosedPolicyModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.WarningOnlyDurabilityRejectionModeled)
         assertContains(
             selected.capabilities,
             VaultCryptoDependencyCapability.RollbackLimitationAntiRollbackAnchorModeled,
@@ -198,6 +200,8 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageFailureRuntimeMappingMissing)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.StorageNamespacePathImplementationMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StoragePathConstructionImplementationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.DurabilityFailClosedRuntimeEvidenceMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.WarningOnlyDurabilityPersistenceRejected)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.AntiRollbackAnchorAbsentNoFullRollbackClaim)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ManifestStorageAtomicityReviewMissing)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.PassphraseEncodingProductionValidationMissing))
