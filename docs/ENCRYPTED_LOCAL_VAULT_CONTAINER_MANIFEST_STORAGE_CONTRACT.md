@@ -20,6 +20,14 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 They accept caller-supplied byte arrays and in-memory descriptors only, return byte arrays or typed parse/validation/decision results, and have deterministic non-secret fixture tests. They do not read files, write files, persist manifest bytes, access storage, call secure storage, derive keys, verify passphrases, decrypt records, call Argon2id, call HKDF, call HMAC, call Tink AEAD, create vaults, unlock vaults, or make a provider selectable.
 
+An in-memory storage atomicity/crash simulator now exists as a still-disabled shared test harness:
+
+```text
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultStorageAtomicitySimulatorTest.kt
+```
+
+It operates only on caller-supplied non-secret container and manifest byte arrays plus in-memory temporary/committed/quarantine state. It injects interruptions at the documented write phases, validates bytes through the existing in-memory container and manifest parsers, applies the local manifest-relative stale-record policy, and returns typed recovery decisions. It does not read files, write files, call platform storage, call database APIs, call DataStore or SharedPreferences, implement temp files, implement journals, implement rename/fsync behavior, persist bytes, access secure storage, or prove platform durability.
+
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
 Related evidence is modeled in:
@@ -41,6 +49,7 @@ Required policy ids:
 - Storage interruption-test policy id: `skald-vault-v1-storage-interruption-test-policy-v1`
 - Storage failure model policy id: `skald-vault-v1-storage-failure-model-policy-v1`
 - Storage namespace/path hygiene policy id: `skald-vault-v1-storage-namespace-path-hygiene-policy-v1`
+- In-memory storage atomicity simulator policy id: `skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1`
 - Secure-storage boundary policy id: `skald-vault-v1-secure-storage-boundary-policy-v1`
 - Anti-rollback anchor policy id: `skald-vault-v1-anti-rollback-anchor-policy-v1`
 
@@ -271,7 +280,9 @@ The implementation strategy must distinguish:
 - future database-backed behavior if a database is ever chosen;
 - unsupported platform behavior that must fail closed.
 
-This branch does not implement an atomic write strategy, journal, recovery routine, temp-file workflow, rename/fsync sequence, or interruption tests.
+The still-disabled in-memory simulator tests these phases as a state-machine contract over byte arrays only. That simulator evidence is useful for future implementation review, but it is not a platform storage implementation and does not prove filesystem, database, rename, fsync, Android app-private storage, or crash-durability behavior.
+
+This branch does not implement an atomic write strategy, journal, recovery routine, temp-file workflow, rename/fsync sequence, platform interruption hooks, or durable storage tests.
 
 ## Crash-Recovery Contract
 
@@ -304,7 +315,9 @@ Recovery must fail closed for:
 - truncated temporary state;
 - unknown recovery state.
 
-This branch does not implement recovery.
+The in-memory simulator returns typed recovery decisions for expected malformed, missing, mismatched, stale, conflicting, and unknown states. It does not implement startup recovery against platform storage.
+
+This branch does not implement production recovery.
 
 ## Interruption-Test Contract
 
@@ -330,7 +343,7 @@ Future tests must prove:
 - stale records are rejected or quarantined according to policy;
 - typed recovery decisions are returned.
 
-This branch documents and models those tests only. It does not add interruption-test runtime hooks.
+The in-memory simulator executes these interruption points against fixed non-secret byte-array fixtures. These are contract/state-machine tests only; they are not runtime platform interruption hooks and do not approve persistence.
 
 ## Storage Failure Model
 
@@ -397,6 +410,7 @@ The readiness and acceptance models must distinguish:
 - implemented/tested still-disabled in-memory container parser/writer;
 - implemented/tested still-disabled in-memory manifest parser/writer;
 - implemented/tested still-disabled local manifest-relative stale-record decision policy;
+- implemented/tested still-disabled in-memory storage atomicity/crash simulator;
 - documented/model-only platform storage boundary;
 - documented/model-only atomic write strategy;
 - documented/model-only crash-recovery contract;
@@ -405,12 +419,12 @@ The readiness and acceptance models must distinguish:
 - documented/model-only storage namespace/path hygiene contract;
 - documented/model-only secure-storage boundary;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent storage, manifest file/storage read/write, storage index, atomic write/recovery, and secure-storage implementation;
+- absent storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
 Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, atomicity, or secure-storage evidence must block provider selectability and persistence.
 
-Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
+Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
 ## Remaining Gates
 

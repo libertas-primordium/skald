@@ -1460,6 +1460,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageNamespacePathPolicyId,
         )
         assertEquals(
+            "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
+            policy.storageAtomicitySimulatorPolicyId,
+        )
+        assertEquals(
             "skald-vault-v1-secure-storage-boundary-policy-v1",
             policy.secureStorageBoundaryPolicyId,
         )
@@ -1507,6 +1511,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
             policy.storageNamespacePathHygieneStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.storageAtomicitySimulatorStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1761,6 +1769,9 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.interruptionTestRuntimeHooksAdded)
         assertFalse(policy.storageFailureRuntimeMappingImplemented)
         assertFalse(policy.storagePathConstructionImplemented)
+        assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
+        assertTrue(policy.inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted)
+        assertTrue(policy.inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested)
         assertFalse(policy.secureSecretStorageSuccessPathImplemented)
         assertFalse(policy.secureMetadataStorageSuccessPathImplemented)
         assertFalse(policy.atomicWriteRecoveryImplementationAdded)
@@ -1780,6 +1791,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.AtomicWriteStrategyContractApproved,
             ProductionProviderAcceptanceGate.CrashRecoveryContractApproved,
             ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved,
+            ProductionProviderAcceptanceGate.StorageAtomicityCrashSimulatorExecuted,
             ProductionProviderAcceptanceGate.StorageFailureModelContractApproved,
             ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved,
             ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved,
@@ -1856,6 +1868,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
             evidence.stateFor(ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StorageAtomicityCrashSimulatorExecuted),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

@@ -1362,6 +1362,112 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun inMemoryStorageAtomicitySimulatorStaysInApprovedTestFileAndDoesNotPersistOrUsePlatformStorage() {
+        val root = repositoryRoot()
+        val sourceRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+            File(root, "composeApp/src/commonTest"),
+        )
+        val approvedSimulatorFile =
+            "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultStorageAtomicitySimulatorTest.kt"
+        val simulatorPatterns = listOf(
+            Regex("""\bSkaldVaultV1InMemoryStorageAtomicitySimulator\b"""),
+            Regex("""\bSkaldVaultV1SimulatedStorageState\b"""),
+            Regex("""\bSkaldVaultV1StorageAtomicityRecoveryDecision\b"""),
+            Regex("""\bSkaldVaultV1StorageAtomicitySimulationResult\b"""),
+        )
+        val misplacedSimulator = sourceRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedSimulatorFile &&
+                            simulatorPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedSimulator.isEmpty(),
+            "In-memory storage atomicity simulator types must stay in the exact approved test file: $misplacedSimulator",
+        )
+
+        val source = File(root, approvedSimulatorFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bFile\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bFileChannel\b"""),
+            Regex("""\bFiles\.move\b"""),
+            Regex("""\bFiles\.createTempFile\b"""),
+            Regex("""\bStandardCopyOption\b"""),
+            Regex("""\.renameTo\("""),
+            Regex("""\.force\("""),
+            Regex("""\bfsync\("""),
+            Regex("""\bAtomicFile\b"""),
+            Regex("""\bjava\.nio\.file\.Files\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "In-memory storage atomicity simulator must not add platform storage, persistence, crypto execution, randomness, logging, or wrapping APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),

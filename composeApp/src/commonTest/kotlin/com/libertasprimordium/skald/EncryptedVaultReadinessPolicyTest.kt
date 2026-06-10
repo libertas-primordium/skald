@@ -110,6 +110,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.AtomicWriteStrategyContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.CrashRecoveryContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageInterruptionTestContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.InMemoryStorageAtomicityCrashSimulator)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageFailureModelContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathHygieneContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
@@ -267,6 +268,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.AtomicWriteStrategyContractModeled,
             EncryptedVaultRequirement.CrashRecoveryContractModeled,
             EncryptedVaultRequirement.StorageInterruptionTestContractModeled,
+            EncryptedVaultRequirement.StorageAtomicityCrashSimulatorImplementedAndTested,
             EncryptedVaultRequirement.StorageFailureModelModeled,
             EncryptedVaultRequirement.StorageNamespacePathHygieneModeled,
             EncryptedVaultRequirement.SecureStorageBoundaryContractModeled,
@@ -408,6 +410,12 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.StorageInterruptionTestContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.StorageAtomicityCrashSimulatorImplementedAndTested
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
