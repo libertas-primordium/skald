@@ -199,6 +199,14 @@ enum class EncryptedVaultRequirement(val label: String) {
         "path-containment planner implemented and tested",
     ),
     PlatformStorageRootContractModeled("platform storage root contract modeled"),
+    PlatformRootSettingsPolicyModeled("platform root settings policy modeled"),
+    AndroidAppPrivateRootPolicyModeled("Android app-private internal root policy modeled"),
+    LinuxRootSettingsPolicyModeled("Linux root settings policy modeled"),
+    OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
+    PasswordManagerIntegrationRejected("password-manager integration rejected"),
+    PassphraseFirstDefaultModeled("passphrase-first default modeled"),
+    SettingsUiAbsent("vault storage-root Settings UI absent"),
+    SettingsPersistenceAbsent("vault storage-root settings persistence absent"),
     SafePathConstructionContractModeled("safe path-construction contract modeled"),
     SymlinkTraversalContractModeled("symlink and filesystem traversal contract modeled"),
     StoragePermissionOwnershipContractModeled("storage permission and ownership contract modeled"),
@@ -374,6 +382,10 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     StorageNamespacePathImplementationMissing("storage namespace/path implementation missing"),
     StoragePathConstructionImplementationMissing("actual storage path construction implementation missing"),
     PlatformStorageRootImplementationMissing("platform storage root resolution implementation missing"),
+    PlatformRootSettingsImplementationMissing("platform root settings implementation missing"),
+    SettingsUiMissing("vault storage-root Settings UI missing"),
+    SettingsPersistenceMissing("vault storage-root settings persistence missing"),
+    LinuxCustomRootValidationMissing("Linux custom root validation missing"),
     SafePathConstructionImplementationMissing("safe storage path construction implementation missing"),
     SymlinkTraversalImplementationMissing("symlink and traversal check implementation missing"),
     StoragePermissionOwnershipImplementationMissing("storage permission and ownership check implementation missing"),
@@ -403,6 +415,8 @@ enum class EncryptedVaultWarning(val label: String) {
     KdfCalibrationProbeOnly("KDF calibration policy/probes are not production settings"),
     KdfCandidateParameterPolicyNotFinal("candidate KDF parameter policy is not final"),
     OsKeyringsNotPrimaryStorage("OS keyrings are not primary storage"),
+    OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
+    PasswordManagerIntegrationRejected("Skald-managed password-manager integration rejected"),
     AndroidWrappingOptional("Android wrapping is optional"),
     LinuxPassphraseFirst("Linux passphrase-first vault policy"),
     TorRoutingMetadataSensitive("Tor routing metadata is sensitive metadata"),
@@ -509,6 +523,30 @@ enum class EncryptedVaultCapability(
     ),
     PlatformStorageRootContractModel(
         "platform storage root contract model",
+        enabledInProduction = true,
+    ),
+    PlatformRootSettingsPolicyModel(
+        "platform root settings policy model",
+        enabledInProduction = true,
+    ),
+    AndroidAppPrivateRootPolicyModel(
+        "Android app-private internal root policy model",
+        enabledInProduction = true,
+    ),
+    LinuxRootSettingsPolicyModel(
+        "Linux root settings policy model",
+        enabledInProduction = true,
+    ),
+    OsKeyringPassphraseRejectionModel(
+        "OS keyring passphrase storage rejection model",
+        enabledInProduction = true,
+    ),
+    PasswordManagerIntegrationRejectionModel(
+        "password-manager integration rejection model",
+        enabledInProduction = true,
+    ),
+    PassphraseFirstDefaultModel(
+        "passphrase-first vault authority model",
         enabledInProduction = true,
     ),
     SafePathConstructionContractModel(
@@ -878,6 +916,38 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
         put(
+            EncryptedVaultRequirement.PlatformRootSettingsPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.AndroidAppPrivateRootPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.LinuxRootSettingsPolicyModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.PasswordManagerIntegrationRejected,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.PassphraseFirstDefaultModeled,
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+        )
+        put(
+            EncryptedVaultRequirement.SettingsUiAbsent,
+            EncryptedVaultRequirementStatus.DisabledByPolicy,
+        )
+        put(
+            EncryptedVaultRequirement.SettingsPersistenceAbsent,
+            EncryptedVaultRequirementStatus.DisabledByPolicy,
+        )
+        put(
             EncryptedVaultRequirement.SafePathConstructionContractModeled,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -1107,6 +1177,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.StorageFailureRuntimeMappingMissing,
             EncryptedVaultBlockingIssue.StoragePathConstructionImplementationMissing,
             EncryptedVaultBlockingIssue.PlatformStorageRootImplementationMissing,
+            EncryptedVaultBlockingIssue.PlatformRootSettingsImplementationMissing,
+            EncryptedVaultBlockingIssue.SettingsUiMissing,
+            EncryptedVaultBlockingIssue.SettingsPersistenceMissing,
+            EncryptedVaultBlockingIssue.LinuxCustomRootValidationMissing,
             EncryptedVaultBlockingIssue.SafePathConstructionImplementationMissing,
             EncryptedVaultBlockingIssue.SymlinkTraversalImplementationMissing,
             EncryptedVaultBlockingIssue.StoragePermissionOwnershipImplementationMissing,
@@ -1134,14 +1208,16 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultWarning.KdfCalibrationProbeOnly,
             EncryptedVaultWarning.KdfCandidateParameterPolicyNotFinal,
             EncryptedVaultWarning.OsKeyringsNotPrimaryStorage,
+            EncryptedVaultWarning.OsKeyringPassphraseStorageRejected,
+            EncryptedVaultWarning.PasswordManagerIntegrationRejected,
             EncryptedVaultWarning.AndroidWrappingOptional,
             EncryptedVaultWarning.LinuxPassphraseFirst,
             EncryptedVaultWarning.TorRoutingMetadataSensitive,
             EncryptedVaultWarning.MemoryClearingBestEffort,
         ),
         capabilities = EncryptedVaultCapability.entries.toSet(),
-        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, provider-level KAT strategy, randomized AEAD behavioral KAT policy, integrated verification-order KAT policy, vault container contract, manifest contract, stale-record policy, platform storage boundary, atomic write strategy, crash-recovery contract, storage interruption-test contract, storage failure model, storage namespace/path hygiene, platform storage-root contract, safe path-construction contract, symlink/traversal contract, storage permission/ownership contract, durability capability contract, durability fail-closed policy, warning-only durability rejection, secure-storage boundary contract, rollback limitation/anti-rollback anchor status, a disabled provider boundary, a still-disabled provider facade boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, Argon2id calibration floor/candidate-selection/memory-failure/no-downgrade policy, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, Tink XChaCha20-Poly1305 record AEAD, in-memory vault container parser/writer, in-memory manifest parser/writer, local manifest-relative stale-record decision, in-memory storage atomicity/crash simulator, storage namespace/path policy, rootless logical storage layout plan, and path-containment planner building blocks now exist and match fixed non-secret tests where applicable. A still-disabled provider integration harness composes those building blocks and executes provider-level deterministic vectors plus randomized AEAD behavioral KATs in the required verification order, and a still-disabled facade exposes only metadata/status and typed disabled operation results, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, unlock, manifest storage read/write, vault storage, filesystem/database/platform settings persistence, actual path construction, path joining, directory creation, platform root selection, real path containment checks, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, atomic write/recovery implementation, key generation, secure storage success path, metadata persistence, anti-rollback anchor, or provider-selectable record AEAD path is enabled.",
-        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a still-disabled metadata-only provider facade, provider-level KAT strategy evidence for deterministic vectors plus randomized AEAD behavioral checks, a still-disabled verification-order KAT harness requiring header commitment before record decrypt, implemented-still-disabled in-memory container parser/writer evidence, implemented-still-disabled in-memory manifest parser/writer and local manifest-relative stale-record decision evidence, implemented-still-disabled in-memory storage atomicity/crash simulator evidence, implemented-still-disabled storage namespace/path policy evidence, implemented-still-disabled rootless logical storage layout plan evidence, implemented-still-disabled path-containment planner evidence, model-only platform storage boundary, platform storage-root, safe path-construction, symlink/traversal, permission/ownership, durability capability, durability fail-closed and warning-only rejection policies, atomic write strategy, crash recovery, interruption-test, storage failure model, secure-storage boundary, and rollback-limitation contracts, an implemented-still-disabled Argon2id calibration floor and candidate-selection policy, memory/execution fail-closed handling, no stored-parameter downgrade model, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, and a disabled provider-selection boundary. Production implementation remains blocked until final production KDF parameter approval, supported-platform runtime provider and randomness checks, selectable production provider implementation, production provider-boundary KAT validation on desktop and Android, manifest-backed storage integration, platform storage implementation, actual path construction and platform root review, real path containment checks, symlink/permission/durability implementation review, durability proof that is not warning-only or user-consent-overridable, atomic write and crash recovery implementation, interruption/corruption tests, secure storage boundaries, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
+        implementationNote = "Encrypted vault readiness, Android compatibility/entropy policy, runtime randomness provider checks, a v1 production-provider acceptance contract, header commitment, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, canonical header vector contract, HKDF/HMAC test-vector contracts, canonical header encoding, key-separation labels, strict AAD, provider-level KAT strategy, randomized AEAD behavioral KAT policy, integrated verification-order KAT policy, vault container contract, manifest contract, stale-record policy, platform storage boundary, atomic write strategy, crash-recovery contract, storage interruption-test contract, storage failure model, storage namespace/path hygiene, platform storage-root contract, platform root settings policy, safe path-construction contract, symlink/traversal contract, storage permission/ownership contract, durability capability contract, durability fail-closed policy, warning-only durability rejection, secure-storage boundary contract, rollback limitation/anti-rollback anchor status, a disabled provider boundary, a still-disabled provider facade boundary, and a provider-selection boundary are modeled. The passphrase policy validation, explicit-parameter Bouncy Castle Argon2id root derivation, Argon2id calibration floor/candidate-selection/memory-failure/no-downgrade policy, canonical header serializer, HKDF-SHA-256 key expansion, HMAC-SHA-256 header-commitment, strict AAD serialization, Tink XChaCha20-Poly1305 record AEAD, in-memory vault container parser/writer, in-memory manifest parser/writer, local manifest-relative stale-record decision, in-memory storage atomicity/crash simulator, storage namespace/path policy, rootless logical storage layout plan, and path-containment planner building blocks now exist and match fixed non-secret tests where applicable. A still-disabled provider integration harness composes those building blocks and executes provider-level deterministic vectors plus randomized AEAD behavioral KATs in the required verification order, and a still-disabled facade exposes only metadata/status and typed disabled operation results, but the vault is not implemented. Provider selection returns only the disabled provider. No vault creation, unlock, manifest storage read/write, vault storage, filesystem/database/platform settings persistence, vault storage-root Settings UI, settings persistence, OS keyring passphrase storage, password-manager integration, actual path construction, path joining, directory creation, platform root selection, real path containment checks, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, atomic write/recovery implementation, key generation, secure storage success path, metadata persistence, anti-rollback anchor, or provider-selectable record AEAD path is enabled.",
+        futureImplementationHint = "The Tink plus Bouncy Castle split stack has candidate-level dependency, license, keyset/storage, split-provider review evidence, desktop and Android test-scope Tink raw-key public API feasibility evidence, a disabled Skald-owned provider boundary, a still-disabled metadata-only provider facade, provider-level KAT strategy evidence for deterministic vectors plus randomized AEAD behavioral checks, a still-disabled verification-order KAT harness requiring header commitment before record decrypt, implemented-still-disabled in-memory container parser/writer evidence, implemented-still-disabled in-memory manifest parser/writer and local manifest-relative stale-record decision evidence, implemented-still-disabled in-memory storage atomicity/crash simulator evidence, implemented-still-disabled storage namespace/path policy evidence, implemented-still-disabled rootless logical storage layout plan evidence, implemented-still-disabled path-containment planner evidence, model-only platform storage boundary, platform storage-root, platform root settings, safe path-construction, symlink/traversal, permission/ownership, durability capability, durability fail-closed and warning-only rejection policies, atomic write strategy, crash recovery, interruption-test, storage failure model, secure-storage boundary, and rollback-limitation contracts, an implemented-still-disabled Argon2id calibration floor and candidate-selection policy, memory/execution fail-closed handling, no stored-parameter downgrade model, a manual Android calibration evidence-capture model, a supported Android compatibility/entropy policy, a runtime randomness provider check model, a v1 production-provider acceptance contract, header commitment policy, HKDF-SHA-256 key-expansion policy, HMAC-SHA-256 header-commitment primitive policy, key-expansion output layout policy, canonical header/HKDF/HMAC vectors matched by still-disabled building blocks, canonical header encoding policy, key-separation labels policy, passphrase validation and explicit Argon2id root derivation building blocks, strict AAD serialization and Tink record AEAD building blocks, and a disabled provider-selection boundary. Production implementation remains blocked until final production KDF parameter approval, supported-platform runtime provider and randomness checks, selectable production provider implementation, production provider-boundary KAT validation on desktop and Android, manifest-backed storage integration, platform storage implementation, actual path construction and platform root review, Settings UI/persistence and Linux custom-root validation review where custom roots are used, real path containment checks, symlink/permission/durability implementation review, durability proof that is not warning-only or user-consent-overridable, atomic write and crash recovery implementation, interruption/corruption tests, secure storage boundaries, lock/session lifecycle, redaction, migration, storage, and release-hardening reviews pass.",
     )
 }
 

@@ -1,0 +1,125 @@
+package com.libertasprimordium.skald.security
+
+enum class SkaldVaultV1PlatformRootSettingsDecision(val label: String) {
+    AndroidAppPrivateInternalRootRequired("Android v1 vault storage root must be app-private internal storage"),
+    AndroidExternalStorageRejected("Android external or shared storage is rejected for v1 vault persistence"),
+    AndroidUserSelectedRootRejected("Android user-selected arbitrary storage roots are rejected for v1"),
+    AndroidRootResolutionUnimplemented("Android storage root resolution is not implemented"),
+    AndroidBackupBehaviorUnreviewed("Android backup and restore behavior remains unreviewed"),
+    AndroidUninstallBehaviorUnreviewed("Android uninstall and user data deletion behavior remains unreviewed"),
+    LinuxDefaultUserDataRootPolicy("Linux v1 defaults to a user-data storage root policy"),
+    LinuxLocalShareFallbackPolicy("Linux default root convention falls back to ~/.local/share/"),
+    LinuxXdgStyleUserDataLocationFutureOnly("Linux XDG-style user-data resolution is future-only"),
+    LinuxCustomRootSettingsPlanned("Linux custom vault directory is a future Settings option"),
+    LinuxCustomRootUnimplemented("Linux custom vault directory support is not implemented"),
+    LinuxCustomRootUnreviewed("Linux custom vault directory review is incomplete"),
+    UserConfiguredRootRequiresValidation("user-configured roots require validation before use"),
+    LinuxCustomRootRequiresContainmentReview("Linux custom roots require containment review"),
+    LinuxCustomRootRequiresSymlinkReview("Linux custom roots require symlink review"),
+    LinuxCustomRootRequiresPermissionReview("Linux custom roots require permission review"),
+    LinuxCustomRootRequiresDurabilityReview("Linux custom roots require durability review"),
+    LinuxCustomRootCannotWeakenVaultPolicies("Linux custom roots cannot weaken encryption, atomicity, or durability policy"),
+    OsKeyringPrimaryStorageRejected("OS keyrings are rejected as primary encrypted vault storage"),
+    OsKeyringPassphraseStorageRejected("OS keyring storage for vault passphrases is rejected"),
+    PasswordManagerIntegrationRejected("Skald-managed password-manager integration is rejected"),
+    PassphraseFirstRequired("passphrase-first remains the default and primary vault authority"),
+    ExternalPasswordManagersOutsideSkald("manual external passphrase management is outside Skald"),
+    SettingsUiUnimplemented("vault storage-root Settings UI is not implemented"),
+    SettingsPersistenceUnimplemented("vault storage-root settings persistence is not implemented"),
+    PlatformRootResolutionAbsent("platform root resolution is absent"),
+    PlatformPathConstructionAbsent("platform path construction is absent"),
+    AndroidWrappingUnimplemented("Android wrapping is unimplemented and not a passphrase replacement"),
+}
+
+enum class SkaldVaultV1PlatformRootSettingsFailureReason(val label: String) {
+    AndroidAppPrivateInternalRootRequired("Android app-private internal root required"),
+    AndroidExternalStorageRejected("Android external storage rejected"),
+    AndroidUserSelectedRootRejected("Android user-selected root rejected"),
+    AndroidRootResolutionUnimplemented("Android root resolution unimplemented"),
+    AndroidBackupBehaviorUnreviewed("Android backup behavior unreviewed"),
+    AndroidUninstallBehaviorUnreviewed("Android uninstall behavior unreviewed"),
+    LinuxDefaultUserDataRootPolicy("Linux default user-data root policy only"),
+    LinuxCustomRootSettingsPlanned("Linux custom root settings planned only"),
+    LinuxCustomRootUnimplemented("Linux custom root unimplemented"),
+    LinuxCustomRootUnreviewed("Linux custom root unreviewed"),
+    UserConfiguredRootRequiresValidation("user-configured root requires validation"),
+    LinuxCustomRootRequiresContainmentReview("Linux custom root requires containment review"),
+    LinuxCustomRootRequiresSymlinkReview("Linux custom root requires symlink review"),
+    LinuxCustomRootRequiresPermissionReview("Linux custom root requires permission review"),
+    LinuxCustomRootRequiresDurabilityReview("Linux custom root requires durability review"),
+    OsKeyringPrimaryStorageRejected("OS keyring primary storage rejected"),
+    OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
+    PasswordManagerIntegrationRejected("password-manager integration rejected"),
+    PassphraseFirstRequired("passphrase-first required"),
+    SettingsUiUnimplemented("Settings UI unimplemented"),
+    SettingsPersistenceUnimplemented("settings persistence unimplemented"),
+    PlatformRootResolutionAbsent("platform root resolution absent"),
+    PlatformPathConstructionAbsent("platform path construction absent"),
+    SecureStorageSuccessPathAbsent("secure storage success path absent"),
+    UnknownPlatformRootSettingsPolicy("unknown platform-root settings policy"),
+}
+
+data class SkaldVaultV1PlatformRootSettingsContract(
+    val policyId: String,
+    val androidRootPolicyId: String,
+    val linuxRootSettingsPolicyId: String,
+    val osKeyringPassphrasePolicyId: String,
+    val passwordManagerPassphrasePolicyId: String,
+    val passphraseFirstPolicyId: String,
+    val androidReviewedRootToken: SkaldVaultV1PathContainmentRootToken,
+    val linuxReviewedRootToken: SkaldVaultV1PathContainmentRootToken,
+    val linuxDefaultUserDataDirectoryConvention: String,
+    val linuxXdgStyleUserDataModelDocumented: Boolean,
+    val linuxCustomRootSettingsPlanned: Boolean,
+    val androidRootResolutionImplemented: Boolean,
+    val linuxRootResolutionImplemented: Boolean,
+    val settingsUiImplemented: Boolean,
+    val settingsPersistenceImplemented: Boolean,
+    val actualPathConstructionImplemented: Boolean,
+    val storageImplementationImplemented: Boolean,
+    val osKeyringPrimaryStorageAllowed: Boolean,
+    val osKeyringPassphraseStorageAllowed: Boolean,
+    val passwordManagerIntegrationAllowed: Boolean,
+    val passphraseFirstDefault: Boolean,
+    val androidWrappingImplemented: Boolean,
+    val decisions: Set<SkaldVaultV1PlatformRootSettingsDecision>,
+    val blockingFailureReasons: Set<SkaldVaultV1PlatformRootSettingsFailureReason>,
+)
+
+object SkaldVaultV1PlatformRootSettingsPolicy {
+    const val POLICY_ID = "skald-vault-v1-platform-root-settings-policy-v1"
+    const val ANDROID_ROOT_POLICY_ID = "skald-vault-v1-android-app-private-internal-root-policy-v1"
+    const val LINUX_ROOT_SETTINGS_POLICY_ID = "skald-vault-v1-linux-root-settings-policy-v1"
+    const val OS_KEYRING_PASSPHRASE_POLICY_ID = "skald-vault-v1-os-keyring-passphrase-policy-v1"
+    const val PASSWORD_MANAGER_PASSPHRASE_POLICY_ID = "skald-vault-v1-password-manager-passphrase-policy-v1"
+    const val PASSPHRASE_FIRST_POLICY_ID = "skald-vault-v1-passphrase-first-vault-authority-policy-v1"
+    const val LINUX_LOCAL_SHARE_FALLBACK_CONVENTION = "~/.local/share/"
+
+    fun currentContract(): SkaldVaultV1PlatformRootSettingsContract =
+        SkaldVaultV1PlatformRootSettingsContract(
+            policyId = POLICY_ID,
+            androidRootPolicyId = ANDROID_ROOT_POLICY_ID,
+            linuxRootSettingsPolicyId = LINUX_ROOT_SETTINGS_POLICY_ID,
+            osKeyringPassphrasePolicyId = OS_KEYRING_PASSPHRASE_POLICY_ID,
+            passwordManagerPassphrasePolicyId = PASSWORD_MANAGER_PASSPHRASE_POLICY_ID,
+            passphraseFirstPolicyId = PASSPHRASE_FIRST_POLICY_ID,
+            androidReviewedRootToken = SkaldVaultV1PathContainmentRootToken.AndroidAppPrivateInternalRoot,
+            linuxReviewedRootToken = SkaldVaultV1PathContainmentRootToken.DesktopAppControlledUserDataRoot,
+            linuxDefaultUserDataDirectoryConvention = LINUX_LOCAL_SHARE_FALLBACK_CONVENTION,
+            linuxXdgStyleUserDataModelDocumented = true,
+            linuxCustomRootSettingsPlanned = true,
+            androidRootResolutionImplemented = false,
+            linuxRootResolutionImplemented = false,
+            settingsUiImplemented = false,
+            settingsPersistenceImplemented = false,
+            actualPathConstructionImplemented = false,
+            storageImplementationImplemented = false,
+            osKeyringPrimaryStorageAllowed = false,
+            osKeyringPassphraseStorageAllowed = false,
+            passwordManagerIntegrationAllowed = false,
+            passphraseFirstDefault = true,
+            androidWrappingImplemented = false,
+            decisions = SkaldVaultV1PlatformRootSettingsDecision.entries.toSet(),
+            blockingFailureReasons = SkaldVaultV1PlatformRootSettingsFailureReason.entries.toSet(),
+        )
+}

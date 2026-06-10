@@ -26,6 +26,7 @@ import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowed
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPathContainmentPlannerRule
+import com.libertasprimordium.skald.security.ProductionProviderPlatformRootSettingsRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
 import com.libertasprimordium.skald.security.ProductionProviderAtomicWritePhase
@@ -53,6 +54,7 @@ import com.libertasprimordium.skald.security.ProductionProviderWarningOnlyDurabi
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
+import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
 import com.libertasprimordium.skald.security.VaultCryptoProviderImplementationState
 import com.libertasprimordium.skald.security.VaultCryptoProviderProductionApprovalGate
@@ -1467,6 +1469,18 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals("skald-vault-v1-storage-layout-plan-v1", policy.storageLayoutPlanPolicyId)
         assertEquals("skald-vault-v1-path-containment-planner-v1", policy.pathContainmentPlannerPolicyId)
         assertEquals("skald-vault-v1-platform-storage-root-policy-v1", policy.platformStorageRootPolicyId)
+        assertEquals(SkaldVaultV1PlatformRootSettingsPolicy.POLICY_ID, policy.platformRootSettingsPolicyId)
+        assertEquals(SkaldVaultV1PlatformRootSettingsPolicy.ANDROID_ROOT_POLICY_ID, policy.androidRootPolicyId)
+        assertEquals(SkaldVaultV1PlatformRootSettingsPolicy.LINUX_ROOT_SETTINGS_POLICY_ID, policy.linuxRootSettingsPolicyId)
+        assertEquals(
+            SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
+            policy.osKeyringPassphrasePolicyId,
+        )
+        assertEquals(
+            SkaldVaultV1PlatformRootSettingsPolicy.PASSWORD_MANAGER_PASSPHRASE_POLICY_ID,
+            policy.passwordManagerPassphrasePolicyId,
+        )
+        assertEquals(SkaldVaultV1PlatformRootSettingsPolicy.PASSPHRASE_FIRST_POLICY_ID, policy.passphraseFirstPolicyId)
         assertEquals("skald-vault-v1-safe-path-construction-policy-v1", policy.safePathConstructionPolicyId)
         assertEquals("skald-vault-v1-symlink-traversal-policy-v1", policy.symlinkTraversalPolicyId)
         assertEquals(
@@ -1543,6 +1557,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
             policy.platformStorageRootContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.platformRootSettingsPolicyStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1848,6 +1866,34 @@ class ProductionProviderAcceptanceContractTest {
             policy.pathContainmentPlannerRules,
             ProductionProviderPathContainmentPlannerRule.RealContainmentChecksAbsent,
         )
+        assertEquals(
+            ProductionProviderPlatformRootSettingsRule.entries.toSet(),
+            policy.platformRootSettingsRules,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.AndroidAppPrivateInternalRootRequired,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.LinuxLocalShareFallbackPolicy,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.LinuxCustomRootSettingsPlanned,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.OsKeyringPassphraseStorageRejected,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.PasswordManagerIntegrationRejected,
+        )
+        assertContains(
+            policy.platformRootSettingsRules,
+            ProductionProviderPlatformRootSettingsRule.SettingsPersistenceUnimplemented,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -1926,6 +1972,23 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.storagePathConstructionImplemented)
         assertFalse(policy.platformRootResolutionImplemented)
         assertFalse(policy.platformRootSelectionImplemented)
+        assertTrue(policy.androidAppPrivateInternalRootPolicyModeled)
+        assertTrue(policy.androidExternalStorageRejected)
+        assertTrue(policy.androidUserSelectedRootRejected)
+        assertFalse(policy.androidRootResolutionImplemented)
+        assertFalse(policy.androidBackupBehaviorReviewed)
+        assertFalse(policy.androidUninstallBehaviorReviewed)
+        assertTrue(policy.linuxDefaultUserDataRootPolicyModeled)
+        assertTrue(policy.linuxLocalShareFallbackModeled)
+        assertTrue(policy.linuxCustomRootSettingsContractModeled)
+        assertFalse(policy.linuxCustomRootUsable)
+        assertFalse(policy.linuxCustomRootValidationImplemented)
+        assertFalse(policy.settingsUiImplemented)
+        assertFalse(policy.settingsPersistenceImplemented)
+        assertTrue(policy.osKeyringPrimaryStorageRejected)
+        assertTrue(policy.osKeyringPassphraseStorageRejected)
+        assertTrue(policy.passwordManagerIntegrationRejected)
+        assertTrue(policy.passphraseFirstDefaultModeled)
         assertFalse(policy.actualPathConstructionImplemented)
         assertFalse(policy.pathJoinImplementationAdded)
         assertFalse(policy.pathContainmentCheckImplementationAdded)
@@ -1976,6 +2039,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested,
             ProductionProviderAcceptanceGate.PathContainmentPlannerImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved,
+            ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2080,6 +2144,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
             evidence.stateFor(ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

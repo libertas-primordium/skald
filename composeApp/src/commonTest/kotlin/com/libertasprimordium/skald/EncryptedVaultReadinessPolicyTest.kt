@@ -71,6 +71,10 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageFailureRuntimeMappingMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StorageNamespacePathImplementationMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StoragePathConstructionImplementationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.PlatformRootSettingsImplementationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.SettingsUiMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.SettingsPersistenceMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.LinuxCustomRootValidationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.DurabilityFailClosedRuntimeEvidenceMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.WarningOnlyDurabilityPersistenceRejected)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing))
@@ -119,6 +123,12 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageLayoutPlanBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PathContainmentPlannerBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PlatformRootSettingsPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidAppPrivateRootPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxRootSettingsPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.DurabilityFailClosedPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.WarningOnlyDurabilityRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
@@ -283,6 +293,14 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.StorageLayoutPlanImplementedAndTested,
             EncryptedVaultRequirement.PathContainmentPlannerImplementedAndTested,
             EncryptedVaultRequirement.PlatformStorageRootContractModeled,
+            EncryptedVaultRequirement.PlatformRootSettingsPolicyModeled,
+            EncryptedVaultRequirement.AndroidAppPrivateRootPolicyModeled,
+            EncryptedVaultRequirement.LinuxRootSettingsPolicyModeled,
+            EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
+            EncryptedVaultRequirement.PasswordManagerIntegrationRejected,
+            EncryptedVaultRequirement.PassphraseFirstDefaultModeled,
+            EncryptedVaultRequirement.SettingsUiAbsent,
+            EncryptedVaultRequirement.SettingsPersistenceAbsent,
             EncryptedVaultRequirement.SafePathConstructionContractModeled,
             EncryptedVaultRequirement.SymlinkTraversalContractModeled,
             EncryptedVaultRequirement.StoragePermissionOwnershipContractModeled,
@@ -464,6 +482,38 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.PlatformStorageRootContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.PlatformRootSettingsPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.AndroidAppPrivateRootPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.LinuxRootSettingsPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.PasswordManagerIntegrationRejected],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.PassphraseFirstDefaultModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.DisabledByPolicy,
+            readiness.requirementStatuses[EncryptedVaultRequirement.SettingsUiAbsent],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.DisabledByPolicy,
+            readiness.requirementStatuses[EncryptedVaultRequirement.SettingsPersistenceAbsent],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

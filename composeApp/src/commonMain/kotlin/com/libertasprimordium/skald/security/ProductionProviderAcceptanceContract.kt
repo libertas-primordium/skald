@@ -82,6 +82,7 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     StorageLayoutPlanImplementedAndTested("rootless logical storage layout plan implemented and tested"),
     PathContainmentPlannerImplementedAndTested("path-containment planner implemented and tested"),
     PlatformStorageRootContractApproved("platform storage root contract approved"),
+    PlatformRootSettingsPolicyApproved("platform root settings policy approved"),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -841,6 +842,37 @@ enum class ProductionProviderPlatformStorageRootRule(val label: String) {
     NoPlatformRootResolutionInThisBranch("no platform root resolution is implemented in this branch"),
 }
 
+enum class ProductionProviderPlatformRootSettingsRule(val label: String) {
+    AndroidAppPrivateInternalRootRequired("Android app-private internal storage is required for v1"),
+    AndroidExternalStorageRejected("Android external or shared storage is rejected for v1"),
+    AndroidUserSelectedRootRejected("Android arbitrary user-selected roots are rejected for v1"),
+    AndroidRootResolutionUnimplemented("Android root resolution is unimplemented"),
+    AndroidBackupBehaviorUnreviewed("Android backup behavior remains unreviewed"),
+    AndroidUninstallDataDeletionUnreviewed("Android uninstall and data-deletion behavior remains unreviewed"),
+    LinuxDefaultUserDataRootPolicy("Linux default root uses a user-data location policy"),
+    LinuxLocalShareFallbackPolicy("Linux default convention falls back to ~/.local/share/"),
+    LinuxXdgStyleUserDataLocationFutureOnly("Linux XDG-style user-data resolution is future-only"),
+    LinuxCustomRootSettingsPlanned("Linux custom root is a planned Settings option"),
+    LinuxCustomRootUnimplemented("Linux custom root is unimplemented"),
+    LinuxCustomRootUnreviewed("Linux custom root is unreviewed"),
+    UserConfiguredRootRequiresValidation("user-configured roots require validation before use"),
+    LinuxCustomRootRequiresContainmentReview("Linux custom roots require containment review"),
+    LinuxCustomRootRequiresSymlinkReview("Linux custom roots require symlink review"),
+    LinuxCustomRootRequiresPermissionReview("Linux custom roots require permission review"),
+    LinuxCustomRootRequiresDurabilityReview("Linux custom roots require durability review"),
+    LinuxCustomRootCannotWeakenVaultPolicies("Linux custom roots cannot weaken vault safety policies"),
+    OsKeyringPrimaryStorageRejected("OS keyrings are rejected as primary vault storage"),
+    OsKeyringPassphraseStorageRejected("OS keyring passphrase storage is rejected"),
+    PasswordManagerIntegrationRejected("Skald-managed password-manager integration is rejected"),
+    PassphraseFirstRequired("passphrase-first remains the default vault authority"),
+    ExternalPasswordManagersOutsideSkald("manual external password-manager use is outside Skald"),
+    SettingsUiUnimplemented("Settings UI is unimplemented"),
+    SettingsPersistenceUnimplemented("settings persistence is unimplemented"),
+    PlatformRootResolutionAbsent("platform root resolution is absent"),
+    PlatformPathConstructionAbsent("platform path construction is absent"),
+    NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
+}
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -984,6 +1016,12 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageLayoutPlanPolicyId: String,
     val pathContainmentPlannerPolicyId: String,
     val platformStorageRootPolicyId: String,
+    val platformRootSettingsPolicyId: String,
+    val androidRootPolicyId: String,
+    val linuxRootSettingsPolicyId: String,
+    val osKeyringPassphrasePolicyId: String,
+    val passwordManagerPassphrasePolicyId: String,
+    val passphraseFirstPolicyId: String,
     val safePathConstructionPolicyId: String,
     val symlinkTraversalPolicyId: String,
     val storagePermissionOwnershipPolicyId: String,
@@ -1007,6 +1045,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageLayoutPlanStatus: ProductionProviderConstructionContractStatus,
     val pathContainmentPlannerStatus: ProductionProviderConstructionContractStatus,
     val platformStorageRootContractStatus: ProductionProviderConstructionContractStatus,
+    val platformRootSettingsPolicyStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1033,6 +1072,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val storageLayoutPlanRules: Set<ProductionProviderStorageLayoutPlanRule>,
     val pathContainmentPlannerRules: Set<ProductionProviderPathContainmentPlannerRule>,
     val platformStorageRootRules: Set<ProductionProviderPlatformStorageRootRule>,
+    val platformRootSettingsRules: Set<ProductionProviderPlatformRootSettingsRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1068,6 +1108,23 @@ data class ProductionProviderContainerManifestStorageContract(
     val storagePathConstructionImplemented: Boolean,
     val platformRootResolutionImplemented: Boolean,
     val platformRootSelectionImplemented: Boolean,
+    val androidAppPrivateInternalRootPolicyModeled: Boolean,
+    val androidExternalStorageRejected: Boolean,
+    val androidUserSelectedRootRejected: Boolean,
+    val androidRootResolutionImplemented: Boolean,
+    val androidBackupBehaviorReviewed: Boolean,
+    val androidUninstallBehaviorReviewed: Boolean,
+    val linuxDefaultUserDataRootPolicyModeled: Boolean,
+    val linuxLocalShareFallbackModeled: Boolean,
+    val linuxCustomRootSettingsContractModeled: Boolean,
+    val linuxCustomRootUsable: Boolean,
+    val linuxCustomRootValidationImplemented: Boolean,
+    val settingsUiImplemented: Boolean,
+    val settingsPersistenceImplemented: Boolean,
+    val osKeyringPrimaryStorageRejected: Boolean,
+    val osKeyringPassphraseStorageRejected: Boolean,
+    val passwordManagerIntegrationRejected: Boolean,
+    val passphraseFirstDefaultModeled: Boolean,
     val actualPathConstructionImplemented: Boolean,
     val pathJoinImplementationAdded: Boolean,
     val pathContainmentCheckImplementationAdded: Boolean,
@@ -1405,6 +1462,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.PathContainmentPlannerImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -1809,6 +1868,18 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1PathContainmentPlanner.POLICY_ID,
                     platformStorageRootPolicyId =
                         "skald-vault-v1-platform-storage-root-policy-v1",
+                    platformRootSettingsPolicyId =
+                        SkaldVaultV1PlatformRootSettingsPolicy.POLICY_ID,
+                    androidRootPolicyId =
+                        SkaldVaultV1PlatformRootSettingsPolicy.ANDROID_ROOT_POLICY_ID,
+                    linuxRootSettingsPolicyId =
+                        SkaldVaultV1PlatformRootSettingsPolicy.LINUX_ROOT_SETTINGS_POLICY_ID,
+                    osKeyringPassphrasePolicyId =
+                        SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
+                    passwordManagerPassphrasePolicyId =
+                        SkaldVaultV1PlatformRootSettingsPolicy.PASSWORD_MANAGER_PASSPHRASE_POLICY_ID,
+                    passphraseFirstPolicyId =
+                        SkaldVaultV1PlatformRootSettingsPolicy.PASSPHRASE_FIRST_POLICY_ID,
                     safePathConstructionPolicyId =
                         "skald-vault-v1-safe-path-construction-policy-v1",
                     symlinkTraversalPolicyId =
@@ -1850,6 +1921,8 @@ data class ProductionProviderAcceptanceContract(
                     pathContainmentPlannerStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     platformStorageRootContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    platformRootSettingsPolicyStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1893,6 +1966,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderPathContainmentPlannerRule.entries.toSet(),
                     platformStorageRootRules =
                         ProductionProviderPlatformStorageRootRule.entries.toSet(),
+                    platformRootSettingsRules =
+                        ProductionProviderPlatformRootSettingsRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -1935,6 +2010,23 @@ data class ProductionProviderAcceptanceContract(
                     storagePathConstructionImplemented = false,
                     platformRootResolutionImplemented = false,
                     platformRootSelectionImplemented = false,
+                    androidAppPrivateInternalRootPolicyModeled = true,
+                    androidExternalStorageRejected = true,
+                    androidUserSelectedRootRejected = true,
+                    androidRootResolutionImplemented = false,
+                    androidBackupBehaviorReviewed = false,
+                    androidUninstallBehaviorReviewed = false,
+                    linuxDefaultUserDataRootPolicyModeled = true,
+                    linuxLocalShareFallbackModeled = true,
+                    linuxCustomRootSettingsContractModeled = true,
+                    linuxCustomRootUsable = false,
+                    linuxCustomRootValidationImplemented = false,
+                    settingsUiImplemented = false,
+                    settingsPersistenceImplemented = false,
+                    osKeyringPrimaryStorageRejected = true,
+                    osKeyringPassphraseStorageRejected = true,
+                    passwordManagerIntegrationRejected = true,
+                    passphraseFirstDefaultModeled = true,
                     actualPathConstructionImplemented = false,
                     pathJoinImplementationAdded = false,
                     pathContainmentCheckImplementationAdded = false,
