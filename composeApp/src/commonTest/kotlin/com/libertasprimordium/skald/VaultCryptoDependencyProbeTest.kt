@@ -85,6 +85,7 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AtomicWriteStrategyContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.CrashRecoveryContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageInterruptionTestContractModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.InMemoryStorageAtomicityCrashSimulatorTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageFailureModelContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StorageNamespacePathHygieneContractModeled)
         assertContains(

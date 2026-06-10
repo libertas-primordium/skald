@@ -52,6 +52,10 @@ class VaultStorageAtomicityCrashContractTest {
             "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
             policy.storageNamespacePathPolicyId,
         )
+        assertEquals(
+            "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
+            policy.storageAtomicitySimulatorPolicyId,
+        )
 
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -76,6 +80,10 @@ class VaultStorageAtomicityCrashContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
             policy.storageNamespacePathHygieneStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.storageAtomicitySimulatorStatus,
         )
 
         assertContains(
@@ -160,6 +168,9 @@ class VaultStorageAtomicityCrashContractTest {
         assertFalse(policy.interruptionTestRuntimeHooksAdded)
         assertFalse(policy.storageFailureRuntimeMappingImplemented)
         assertFalse(policy.storagePathConstructionImplemented)
+        assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
+        assertTrue(policy.inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted)
+        assertTrue(policy.inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested)
         assertFalse(policy.atomicWriteRecoveryImplementationAdded)
         assertFalse(policy.vaultPersistenceImplemented)
     }
@@ -173,6 +184,7 @@ class VaultStorageAtomicityCrashContractTest {
             ProductionProviderAcceptanceGate.AtomicWriteStrategyContractApproved,
             ProductionProviderAcceptanceGate.CrashRecoveryContractApproved,
             ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved,
+            ProductionProviderAcceptanceGate.StorageAtomicityCrashSimulatorExecuted,
             ProductionProviderAcceptanceGate.StorageFailureModelContractApproved,
             ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved,
         )

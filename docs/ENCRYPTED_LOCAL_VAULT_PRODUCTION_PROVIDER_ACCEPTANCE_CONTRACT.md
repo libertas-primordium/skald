@@ -4,7 +4,7 @@
 
 This document defines the Skald Vault v1 production-provider acceptance contract.
 
-It is design and acceptance-contract material with isolated still-disabled building blocks. The passphrase policy validator/NFC UTF-8 encoder, Bouncy Castle Argon2id explicit-parameter passphrase-to-root-material derivation, Argon2id calibration policy/candidate-selection/memory-failure/no-downgrade model, canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, HMAC-SHA-256 header commitment computation/verification, strict AAD serialization, Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material, in-memory vault container parser/writer, in-memory manifest parser/writer, and local manifest-relative stale-record decision policy now exist as production-source building blocks. A still-disabled integrated provider KAT harness now composes those building blocks with fixed non-secret fixtures and executes deterministic provider-level vectors plus randomized AEAD behavioral checks in the required verification order. A still-disabled provider facade now exposes metadata/status/typed-disabled-result evidence only. This contract also models the future storage, atomicity, crash-recovery, secure-storage boundary, and rollback-limitation contracts as documented-only evidence. It still does not implement a selectable production provider, production provider approval, final production calibration approval, production random-byte generation, key generation, vault creation, vault unlock, vault persistence, file-backed vault container read/write, manifest file/storage read/write, storage success, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+It is design and acceptance-contract material with isolated still-disabled building blocks. The passphrase policy validator/NFC UTF-8 encoder, Bouncy Castle Argon2id explicit-parameter passphrase-to-root-material derivation, Argon2id calibration policy/candidate-selection/memory-failure/no-downgrade model, canonical header serializer, HKDF-SHA-256 expansion from caller-supplied 64-byte root material, HMAC-SHA-256 header commitment computation/verification, strict AAD serialization, Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material, in-memory vault container parser/writer, in-memory manifest parser/writer, and local manifest-relative stale-record decision policy now exist as production-source building blocks. A still-disabled shared-test in-memory storage atomicity/crash simulator validates the future write/recovery state machine with fixed non-secret byte arrays, interruption injection, parser validation, and typed recovery decisions. A still-disabled integrated provider KAT harness now composes those building blocks with fixed non-secret fixtures and executes deterministic provider-level vectors plus randomized AEAD behavioral checks in the required verification order. A still-disabled provider facade now exposes metadata/status/typed-disabled-result evidence only. This contract also models the future storage, atomicity, crash-recovery, secure-storage boundary, and rollback-limitation contracts as documented-only evidence. It still does not implement a selectable production provider, production provider approval, final production calibration approval, production random-byte generation, key generation, vault creation, vault unlock, vault persistence, file-backed vault container read/write, manifest file/storage read/write, storage success, Android Keystore or StrongBox wrapping, biometric unlock, secure secret storage success, secure metadata storage success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 The focused v1 header commitment, canonical header encoding, key-separation label, and strict AAD construction contract is documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key-expansion primitive, HMAC-SHA-256 header-commitment primitive, output layout, and threat-model rationale are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). The deterministic non-secret canonical header, HKDF, and HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy, still-disabled integrated KAT harness, randomized Tink AEAD behavioral checks, verification-order checks, and stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The detailed v1 vault container, manifest, storage, stale-record, rollback, atomicity, crash-recovery, and secure-storage boundary contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). These documents are part of this acceptance contract; the vector-matched building blocks, integrated harness, and contract models remain non-selectable.
 
@@ -28,11 +28,18 @@ skald-vault-v1-manifest-contract-v1
 skald-vault-v1-local-manifest-storage-policy-v1
 skald-vault-v1-stale-record-manifest-policy-v1
 skald-vault-v1-atomicity-crash-recovery-policy-v1
+skald-vault-v1-platform-storage-boundary-policy-v1
+skald-vault-v1-atomic-write-strategy-policy-v1
+skald-vault-v1-crash-recovery-policy-v1
+skald-vault-v1-storage-interruption-test-policy-v1
+skald-vault-v1-storage-failure-model-policy-v1
+skald-vault-v1-storage-namespace-path-hygiene-policy-v1
+skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1
 skald-vault-v1-secure-storage-boundary-policy-v1
 skald-vault-v1-anti-rollback-anchor-policy-v1
 ```
 
-Missing, unknown, failed, unsupported, documented-only, or unimplemented evidence for the container contract, manifest contract, storage policy, stale-record policy, atomicity/crash-recovery policy, secure-storage boundary, or anti-rollback limitation review blocks provider selectability and persistence. Model-only evidence does not enable persistence.
+Missing, unknown, failed, unsupported, documented-only, or unimplemented evidence for the container contract, manifest contract, storage policy, stale-record policy, atomicity/crash-recovery policy, in-memory simulator execution, secure-storage boundary, or anti-rollback limitation review blocks provider selectability and persistence. Model-only evidence and simulator evidence do not enable persistence.
 
 ## V1 Provider Suite
 
@@ -410,19 +417,20 @@ A production provider cannot become selectable until every gate below is satisfi
 30. Atomic write strategy contract is approved for desktop filesystem, Android app-private filesystem, future database strategy review, and unsupported-platform fail-closed behavior.
 31. Crash-recovery contract is approved for committed state, temporary state, container/manifest validation, manifest reference validation, stale-record policy, safe previous state, quarantine, and user-facing unrecoverable corruption.
 32. Interruption-test contract is approved for every write/recovery phase before persistence approval.
-33. Storage failure model is approved with typed categories for unavailable storage, permissions, read/write failures, durability sync, atomic replace, malformed/missing manifest/container/record data, stale/conflicting records, quarantine, user action, and unknown state.
-34. Storage namespace/path hygiene is approved: stable ASCII namespaces, encoded vault ids, no user-controlled paths, no path traversal, no absolute user-supplied paths, reviewed symlink behavior, no secrets or labels in path names, and reviewed app-private roots.
-35. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
-36. Unknown randomness/provider state blocks vault creation.
-37. Forbidden random APIs remain guarded.
-38. Secure secret storage is reviewed and approved.
-39. Secure metadata storage is reviewed and approved.
-40. Crash, corruption, and partial-write behavior are reviewed.
-41. Redaction, logging, and crash-report leakage checks pass.
-42. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
-43. The still-disabled provider facade is approved as metadata/status only and remains non-selectable.
-44. A production provider implementation exists behind Skald-owned interfaces.
-45. Release readiness excludes debug and test-only providers from selection.
+33. In-memory storage atomicity/crash simulator evidence executes every documented interruption point and typed recovery decision with fixed non-secret byte arrays, without platform storage or persistence.
+34. Storage failure model is approved with typed categories for unavailable storage, permissions, read/write failures, durability sync, atomic replace, malformed/missing manifest/container/record data, stale/conflicting records, quarantine, user action, and unknown state.
+35. Storage namespace/path hygiene is approved: stable ASCII namespaces, encoded vault ids, no user-controlled paths, no path traversal, no absolute user-supplied paths, reviewed symlink behavior, no secrets or labels in path names, and reviewed app-private roots.
+36. Runtime randomness uses OS SecureRandom with provider/algorithm evidence.
+37. Unknown randomness/provider state blocks vault creation.
+38. Forbidden random APIs remain guarded.
+39. Secure secret storage is reviewed and approved.
+40. Secure metadata storage is reviewed and approved.
+41. Crash, corruption, and partial-write behavior are reviewed.
+42. Redaction, logging, and crash-report leakage checks pass.
+43. Android optional wrapping remains separate from entropy/randomness and passphrase recovery.
+44. The still-disabled provider facade is approved as metadata/status only and remains non-selectable.
+45. A production provider implementation exists behind Skald-owned interfaces.
+46. Release readiness excludes debug and test-only providers from selection.
 
 Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, strict AAD/record-AEAD building-block tests, still-disabled integrated provider harness KATs, still-disabled provider facade checks, documented stale-record manifest policy, or a design-only acceptance assessment must not bypass the remaining gates.
 
@@ -449,6 +457,7 @@ This contract does not allow:
 - manifest file read/write,
 - storage index read/write,
 - temp-file, journal, rename, fsync, or recovery implementation,
+- platform interruption-test runtime hooks,
 - secure secret storage success,
 - secure metadata storage success,
 - production sync,

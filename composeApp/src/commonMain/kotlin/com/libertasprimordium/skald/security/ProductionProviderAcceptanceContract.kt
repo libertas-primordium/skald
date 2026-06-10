@@ -76,6 +76,7 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     AtomicWriteStrategyContractApproved("atomic write strategy contract approved"),
     CrashRecoveryContractApproved("crash-recovery contract approved"),
     StorageInterruptionTestContractApproved("storage interruption-test contract approved"),
+    StorageAtomicityCrashSimulatorExecuted("in-memory storage atomicity/crash simulator executed"),
     StorageFailureModelContractApproved("storage failure model contract approved"),
     StorageNamespacePathHygieneContractApproved("storage namespace and path hygiene contract approved"),
     SecureStorageBoundaryContractApproved("secure storage boundary contract approved"),
@@ -755,6 +756,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestPolicyId: String,
     val storageFailureModelPolicyId: String,
     val storageNamespacePathPolicyId: String,
+    val storageAtomicitySimulatorPolicyId: String,
     val secureStorageBoundaryPolicyId: String,
     val antiRollbackAnchorPolicyId: String,
     val vaultContainerContractStatus: ProductionProviderConstructionContractStatus,
@@ -768,6 +770,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestContractStatus: ProductionProviderConstructionContractStatus,
     val storageFailureModelStatus: ProductionProviderConstructionContractStatus,
     val storageNamespacePathHygieneStatus: ProductionProviderConstructionContractStatus,
+    val storageAtomicitySimulatorStatus: ProductionProviderConstructionContractStatus,
     val secureStorageBoundaryStatus: ProductionProviderConstructionContractStatus,
     val containerFields: Set<ProductionProviderVaultContainerField>,
     val containerRequirements: Set<ProductionProviderVaultContainerRequirement>,
@@ -811,6 +814,9 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestRuntimeHooksAdded: Boolean,
     val storageFailureRuntimeMappingImplemented: Boolean,
     val storagePathConstructionImplemented: Boolean,
+    val inMemoryAtomicityCrashSimulatorImplemented: Boolean,
+    val inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted: Boolean,
+    val inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested: Boolean,
     val secureSecretStorageSuccessPathImplemented: Boolean,
     val secureMetadataStorageSuccessPathImplemented: Boolean,
     val atomicWriteRecoveryImplementationAdded: Boolean,
@@ -1112,6 +1118,8 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StorageInterruptionTestContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StorageAtomicityCrashSimulatorExecuted to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StorageFailureModelContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved to
@@ -1501,6 +1509,8 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureModelPolicyId = "skald-vault-v1-storage-failure-model-policy-v1",
                     storageNamespacePathPolicyId =
                         "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
+                    storageAtomicitySimulatorPolicyId =
+                        "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
                     secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
                     antiRollbackAnchorPolicyId = "skald-vault-v1-anti-rollback-anchor-policy-v1",
                     vaultContainerContractStatus =
@@ -1523,6 +1533,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storageNamespacePathHygieneStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    storageAtomicitySimulatorStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     secureStorageBoundaryStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     containerFields = ProductionProviderVaultContainerField.entries.toSet(),
@@ -1573,6 +1585,9 @@ data class ProductionProviderAcceptanceContract(
                     interruptionTestRuntimeHooksAdded = false,
                     storageFailureRuntimeMappingImplemented = false,
                     storagePathConstructionImplemented = false,
+                    inMemoryAtomicityCrashSimulatorImplemented = true,
+                    inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted = true,
+                    inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested = true,
                     secureSecretStorageSuccessPathImplemented = false,
                     secureMetadataStorageSuccessPathImplemented = false,
                     atomicWriteRecoveryImplementationAdded = false,
