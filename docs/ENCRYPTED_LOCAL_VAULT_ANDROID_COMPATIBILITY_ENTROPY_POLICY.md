@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned Android compatibility and entropy policy model for future encrypted local vault creation.
 
-This is policy/model/test evidence only. It does not implement entropy collection, random byte generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is policy/model/test evidence only. It does not implement entropy collection, random byte generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, key generation, file-backed vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 

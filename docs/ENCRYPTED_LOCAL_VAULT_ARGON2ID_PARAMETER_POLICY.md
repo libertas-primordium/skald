@@ -4,7 +4,7 @@
 
 Skald Vault now has a still-disabled Argon2id parameter/calibration policy building block, deterministic candidate-selection model, memory/execution failure model, stored-parameter no-downgrade model, manual Android calibration evidence-capture model, and a still-disabled explicit-parameter Bouncy Castle Argon2id passphrase-to-root-material building block for the future app-controlled encrypted local vault unlock KDF.
 
-This is design, policy, and isolated building-block implementation only. It does not implement executable selectable production `VaultCryptoProvider` behavior, provider-selectable KDF execution, vault creation, unlock UI, AEAD execution, key generation, vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is design, policy, and isolated building-block implementation only. It does not implement executable selectable production `VaultCryptoProvider` behavior, provider-selectable KDF execution, vault creation, unlock UI, AEAD execution, key generation, file-backed vault container read/write, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 The manual Android calibration capture protocol is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md). Android compatibility and entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this non-final parameter policy, unknown runtime provider/randomness checks, incomplete production-provider acceptance, disabled storage, and missing production provider approval as production-selection blockers.
 
@@ -166,7 +166,7 @@ This parameter-policy branch does not enable:
 - key generation,
 - Tink keyset creation or storage,
 - raw key material persistence,
-- vault container read/write,
+- file-backed vault container read/write,
 - passphrase, PIN, biometric, or unlock UI,
 - secure secret storage success,
 - secure metadata persistence success,
@@ -183,4 +183,4 @@ This parameter-policy branch does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Do not proceed to vault container read/write or persistence from this policy pass.
+The next focused branch should remain design/probe-only: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Do not proceed to file-backed vault container read/write or persistence from this policy pass.

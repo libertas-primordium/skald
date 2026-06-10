@@ -75,6 +75,7 @@ class VaultCryptoDependencyProbeTest {
             VaultCryptoDependencyCapability.StillDisabledProviderFacadeBoundaryModeled,
         )
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.VaultContainerContractModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.InMemoryVaultContainerParserWriterTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.ManifestContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StoragePolicyContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AtomicityCrashRecoveryContractModeled)
@@ -177,7 +178,7 @@ class VaultCryptoDependencyProbeTest {
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkRecordAeadProviderIntegrationMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StaleRecordManifestIntegrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StaleRecordManifestPolicyImplementationMissing)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultContainerStorageContractOnly)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultContainerPersistenceImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ManifestReadWriteImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageSuccessPathAbsent)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.AntiRollbackAnchorAbsentNoFullRollbackClaim)

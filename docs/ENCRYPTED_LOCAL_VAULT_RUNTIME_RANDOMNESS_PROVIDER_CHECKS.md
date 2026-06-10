@@ -4,7 +4,7 @@
 
 Skald Vault now has a Skald-owned runtime randomness/provider check model plus test-only Android and Linux/JVM availability probes.
 
-This is design/model/test evidence only. It does not implement production entropy collection, production random-byte generation for vault records, key generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is design/model/test evidence only. It does not implement production entropy collection, production random-byte generation for vault records, key generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, file-backed vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) uses this runtime randomness policy as a prerequisite gate. It pins the review direction to OS SecureRandom, requires provider/algorithm evidence, rejects provider-wrapped or hybrid randomness for v1 unless separately reviewed, and keeps unknown or unavailable randomness state fail-closed.
 

@@ -4,7 +4,7 @@
 
 Skald Vault now has a test-only provider-level known-answer-test harness for the future app-controlled encrypted local vault `VaultCryptoProvider` boundary.
 
-This is test scaffolding only. It does not implement a production provider, provider-selectable KDF execution, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is test scaffolding only. It does not implement a production provider, provider-selectable KDF execution, production AEAD execution, key generation, Tink keyset creation or storage, raw key material persistence, file-backed vault container read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Runtime behavior remains fail-closed:
 
@@ -145,4 +145,4 @@ The harness does not persist inputs, outputs, ciphertexts, key material, keysets
 
 ## Next Step
 
-The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage. Do not proceed to vault container read/write or persistence from this harness pass.
+The next focused branch must remain design/probe-only unless the user explicitly approves implementation scope. Recommended next decision point: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage. Do not proceed to file-backed vault container read/write or persistence from this harness pass.

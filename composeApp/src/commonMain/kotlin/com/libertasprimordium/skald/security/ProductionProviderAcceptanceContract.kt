@@ -546,7 +546,7 @@ enum class ProductionProviderVaultContainerRequirement(val label: String) {
         "future parser rejects malformed, duplicated, unknown, unsupported, or non-canonical header evidence",
     ),
     TypedFailuresForMalformedUntrustedInput("future parser returns typed failures for untrusted malformed input"),
-    NoParserWriterPersistenceInThisBranch("no parser, writer, or persistence implementation exists in this branch"),
+    NoPersistenceInThisBranch("no persistence implementation exists in this branch"),
 }
 
 enum class ProductionProviderManifestField(val label: String) {
@@ -915,7 +915,7 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.VaultContainerContractApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.ManifestContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
@@ -1301,7 +1301,7 @@ data class ProductionProviderAcceptanceContract(
                     secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
                     antiRollbackAnchorPolicyId = "skald-vault-v1-anti-rollback-anchor-policy-v1",
                     vaultContainerContractStatus =
-                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     manifestContractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storagePolicyContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1323,8 +1323,8 @@ data class ProductionProviderAcceptanceContract(
                     localManifestStaleRecordDetectionModeled = true,
                     fullLocalDirectoryRollbackResistanceClaimed = false,
                     externalOrTrustedMonotonicAntiRollbackAnchorImplemented = false,
-                    parserImplemented = false,
-                    writerImplemented = false,
+                    parserImplemented = true,
+                    writerImplemented = true,
                     vaultPersistenceImplemented = false,
                     manifestReadWriteImplemented = false,
                     storageIndexReadWriteImplemented = false,

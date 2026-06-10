@@ -90,6 +90,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledIntegratedVerificationOrderKatExecution)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledProviderFacadeBoundary)
         assertContains(readiness.capabilities, EncryptedVaultCapability.VaultContainerContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.InMemoryVaultContainerParserWriterBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ManifestContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StaleRecordManifestPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StoragePolicyContractModel)
@@ -287,6 +288,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.KnownAnswerVectorsIdentified,
             EncryptedVaultRequirement.VaultContainerFormatImplemented,
             EncryptedVaultRequirement.VaultContainerParserImplemented,
+            EncryptedVaultRequirement.VaultContainerWriterImplemented,
             EncryptedVaultRequirement.LockSessionLifecycleTested,
             EncryptedVaultRequirement.RedactionTestsPassed,
             EncryptedVaultRequirement.MigrationAndCorruptionTestsPassed,

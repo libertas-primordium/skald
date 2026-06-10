@@ -4,7 +4,7 @@
 
 Skald Vault now has a narrow Skald-owned disabled `VaultCryptoProvider` boundary for the future app-controlled encrypted local vault.
 
-This is a provider-boundary and policy-model pass. The passphrase policy validator, explicit-parameter Argon2id root derivation, Argon2id calibration policy/candidate-selection/memory-failure/no-downgrade model, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 header commitment verification, strict AAD serialization, Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material, metadata-only still-disabled provider facade, and model-only vault container/manifest/storage contract now exist as still-disabled building blocks/evidence. The provider boundary still does not implement selectable provider crypto, final production calibration approval, provider-wired Argon2id passphrase KDF execution, provider-wired AEAD execution, key generation, Tink keyset creation or storage, raw key material storage, vault container parsing or writing, manifest read/write, storage success, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
+This is a provider-boundary and policy-model pass. The passphrase policy validator, explicit-parameter Argon2id root derivation, Argon2id calibration policy/candidate-selection/memory-failure/no-downgrade model, canonical header serializer, HKDF-SHA-256 expansion, HMAC-SHA-256 header commitment verification, strict AAD serialization, Tink XChaCha20-Poly1305 record AEAD construction from caller-supplied 32-byte key material, in-memory vault container parser/writer, metadata-only still-disabled provider facade, and model-only manifest/storage contract now exist as still-disabled building blocks/evidence. The provider boundary still does not implement selectable provider crypto, final production calibration approval, provider-wired Argon2id passphrase KDF execution, provider-wired AEAD execution, key generation, Tink keyset creation or storage, raw key material storage, file-backed vault container read/write, manifest read/write, storage success, secure secret storage, secure metadata persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
 Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The Tink raw-key feasibility probes are documented in [`ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md`](ENCRYPTED_LOCAL_VAULT_TINK_RAW_KEY_FEASIBILITY_PROBE.md). The header commitment, canonical header encoding, key-separation label, strict AAD construction contract, deterministic AAD bytes, and record AEAD behavioral fixture are documented in [`ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_HEADER_COMMITMENT_AAD_CONTRACT.md). The selected HKDF-SHA-256 key expansion, HMAC-SHA-256 header commitment, and output layout are documented in [`ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md`](ENCRYPTED_LOCAL_VAULT_KEY_EXPANSION_COMMITMENT_POLICY.md). Deterministic non-secret canonical header/HKDF/HMAC vectors are documented in [`ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md`](ENCRYPTED_LOCAL_VAULT_CANONICAL_HEADER_HKDF_HMAC_VECTORS.md). The provider-level KAT strategy for randomized AEAD and stale-record/rollback manifest contract are documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_KAT_CONTRACT.md). The detailed vault container, manifest, storage, stale-record, rollback, atomicity, crash-recovery, and secure-storage boundary contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). The v1 production-provider acceptance contract is documented in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md). That registry selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate and no production provider is selectable.
 
@@ -27,6 +27,7 @@ Production-safe common boundary:
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProvider.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ContainerFormat.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt
@@ -36,6 +37,7 @@ Tests and source guards:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderBoundaryTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultContainerParserWriterTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderKatContractTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTestProviderKatHarnessTest.kt
 composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt
@@ -163,7 +165,7 @@ Tink and Bouncy Castle imports remain confined to platform compile probes, appro
 
 ## Readiness Alignment
 
-`EncryptedVaultReadinessPolicy` now records that a disabled provider boundary, provider-level KAT contract, still-disabled Argon2id calibration policy building block, still-disabled integrated provider KAT execution, metadata-only still-disabled provider facade, and model-only vault container/manifest/storage contract exist. This does not satisfy production persistence or provider selectability.
+`EncryptedVaultReadinessPolicy` now records that a disabled provider boundary, provider-level KAT contract, still-disabled Argon2id calibration policy building block, still-disabled integrated provider KAT execution, metadata-only still-disabled provider facade, still-disabled in-memory container parser/writer, and model-only manifest/storage contract exist. This does not satisfy production persistence or provider selectability.
 
 The readiness model still blocks on:
 
@@ -172,7 +174,7 @@ The readiness model still blocks on:
 - final KDF parameter approval missing,
 - KDF calibration policy implemented as a still-disabled floor/candidate-selection/no-downgrade model with non-final parameter tiers documented in [`ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ARGON2ID_PARAMETER_POLICY.md),
 - AEAD verification incomplete,
-- vault container format absent,
+- vault container persistence implementation missing,
 - stale-record manifest/storage policy unimplemented,
 - manifest/storage atomicity and crash recovery unreviewed,
 - lock/session lifecycle tests absent,
@@ -200,7 +202,7 @@ This boundary does not enable:
 - Tink keyset creation,
 - Tink keyset persistence,
 - raw key material persistence,
-- vault container read/write,
+- file-backed vault container read/write,
 - passphrase, PIN, biometric, or unlock UI,
 - secure secret storage success,
 - secure metadata persistence success,
@@ -232,4 +234,4 @@ Before any future branch implements provider crypto:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a disabled production-provider skeleton with no storage, without vault container read/write or persistence.
+The next focused branch should remain design/probe-only unless the user explicitly approves executable provider work: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a disabled production-provider skeleton with no storage, without file-backed vault container read/write or persistence.
