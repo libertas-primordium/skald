@@ -25,6 +25,7 @@ import com.libertasprimordium.skald.security.ProductionProviderManifestField
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
+import com.libertasprimordium.skald.security.ProductionProviderPathContainmentPlannerRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
 import com.libertasprimordium.skald.security.ProductionProviderAtomicWritePhase
@@ -1464,6 +1465,7 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageNamespacePathPolicyId,
         )
         assertEquals("skald-vault-v1-storage-layout-plan-v1", policy.storageLayoutPlanPolicyId)
+        assertEquals("skald-vault-v1-path-containment-planner-v1", policy.pathContainmentPlannerPolicyId)
         assertEquals("skald-vault-v1-platform-storage-root-policy-v1", policy.platformStorageRootPolicyId)
         assertEquals("skald-vault-v1-safe-path-construction-policy-v1", policy.safePathConstructionPolicyId)
         assertEquals("skald-vault-v1-symlink-traversal-policy-v1", policy.symlinkTraversalPolicyId)
@@ -1533,6 +1535,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.storageLayoutPlanStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.pathContainmentPlannerStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -1813,6 +1819,35 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageLayoutPlanRules,
             ProductionProviderStorageLayoutPlanRule.FuturePathConstructionRequiresReviewedRoot,
         )
+        assertEquals(ProductionProviderPathContainmentPlannerRule.entries.toSet(), policy.pathContainmentPlannerRules)
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.ReviewedRootTokensOnly,
+        )
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.ExternalSharedRootsRejected,
+        )
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.UserPathRootsRejected,
+        )
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.PlannedLocationsRootTokenBound,
+        )
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.PlannedLocationsAreNotPlatformPaths,
+        )
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.SegmentLevelContainmentOnly,
+        )
+        assertContains(
+            policy.pathContainmentPlannerRules,
+            ProductionProviderPathContainmentPlannerRule.RealContainmentChecksAbsent,
+        )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
             policy.durabilityCapabilityRules,
@@ -1908,6 +1943,11 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.storageLayoutPlanImplemented)
         assertTrue(policy.storageLayoutLocationsRootless)
         assertTrue(policy.storageLayoutUsesSafeSegmentsOnly)
+        assertTrue(policy.reviewedRootTokenPolicyImplemented)
+        assertTrue(policy.pathContainmentPlannerImplemented)
+        assertTrue(policy.plannedLocationsRootTokenBound)
+        assertFalse(policy.plannedLocationsArePlatformPaths)
+        assertTrue(policy.plannedLocationsUseSafeSegmentsOnly)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested)
@@ -1934,6 +1974,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.StorageFailureModelContractApproved,
             ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved,
             ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested,
+            ProductionProviderAcceptanceGate.PathContainmentPlannerImplementedAndTested,
             ProductionProviderAcceptanceGate.PlatformStorageRootContractApproved,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
@@ -2031,6 +2072,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.StorageLayoutPlanImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PathContainmentPlannerImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
