@@ -19,17 +19,22 @@ import com.libertasprimordium.skald.security.ProductionProviderHeaderCommitmentP
 import com.libertasprimordium.skald.security.ProductionProviderIntegratedVerificationOrderKatStep
 import com.libertasprimordium.skald.security.ProductionProviderKeyExpansionPrimitive
 import com.libertasprimordium.skald.security.ProductionProviderKeySeparationLabel
+import com.libertasprimordium.skald.security.ProductionProviderManifestField
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
+import com.libertasprimordium.skald.security.ProductionProviderSecureStorageBoundaryRequirement
 import com.libertasprimordium.skald.security.ProductionProviderStaleRecordManifestBinding
 import com.libertasprimordium.skald.security.ProductionProviderStaleRecordManifestRequirement
+import com.libertasprimordium.skald.security.ProductionProviderStorageAtomicityRequirement
 import com.libertasprimordium.skald.security.ProductionProviderSuiteModel
 import com.libertasprimordium.skald.security.ProductionProviderTamperCoverage
 import com.libertasprimordium.skald.security.ProductionProviderTestVectorContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderTinkRawKeyFeasibilityStatus
+import com.libertasprimordium.skald.security.ProductionProviderVaultContainerField
+import com.libertasprimordium.skald.security.ProductionProviderVaultContainerRequirement
 import com.libertasprimordium.skald.security.ProductionProviderWeakDeviceFailureMode
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
@@ -1413,12 +1418,159 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
+    fun vaultContainerManifestStorageContractIsModeledOnlyAndDoesNotPersist() {
+        val policy = contract.containerManifestStorageContract
+
+        assertEquals("skald-vault-v1-container-contract-v1", policy.vaultContainerPolicyId)
+        assertEquals("skald-vault-v1-manifest-contract-v1", policy.manifestPolicyId)
+        assertEquals("skald-vault-v1-local-manifest-storage-policy-v1", policy.storagePolicyId)
+        assertEquals("skald-vault-v1-stale-record-manifest-policy-v1", policy.staleRecordPolicyId)
+        assertEquals(
+            "skald-vault-v1-atomicity-crash-recovery-policy-v1",
+            policy.atomicityCrashRecoveryPolicyId,
+        )
+        assertEquals(
+            "skald-vault-v1-secure-storage-boundary-policy-v1",
+            policy.secureStorageBoundaryPolicyId,
+        )
+        assertEquals("skald-vault-v1-anti-rollback-anchor-policy-v1", policy.antiRollbackAnchorPolicyId)
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.vaultContainerContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.manifestContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.storagePolicyContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.staleRecordPolicyStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.atomicityCrashRecoveryContractStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            policy.secureStorageBoundaryStatus,
+        )
+
+        assertEquals(ProductionProviderVaultContainerField.entries.toSet(), policy.containerFields)
+        assertContains(policy.containerFields, ProductionProviderVaultContainerField.VaultMagicDomainMarker)
+        assertContains(
+            policy.containerFields,
+            ProductionProviderVaultContainerField.CanonicalVaultHeaderBytesOrReconstructableFields,
+        )
+        assertContains(policy.containerFields, ProductionProviderVaultContainerField.HeaderCommitmentTag)
+        assertContains(policy.containerFields, ProductionProviderVaultContainerField.ManifestPolicyIdVersion)
+        assertContains(policy.containerFields, ProductionProviderVaultContainerField.StoragePolicyIdVersion)
+        assertContains(
+            policy.containerFields,
+            ProductionProviderVaultContainerField.EncryptedRecordsSectionOrReferences,
+        )
+        assertContains(
+            policy.containerFields,
+            ProductionProviderVaultContainerField.IntegrityCriticalPreUnlockMetadata,
+        )
+        assertEquals(ProductionProviderVaultContainerRequirement.entries.toSet(), policy.containerRequirements)
+        assertContains(
+            policy.containerRequirements,
+            ProductionProviderVaultContainerRequirement.NoPlaintextSecretsInContainer,
+        )
+        assertContains(
+            policy.containerRequirements,
+            ProductionProviderVaultContainerRequirement.NoRootMaterialSubkeysPassphrasesPlaintextOrTinkKeysets,
+        )
+        assertContains(
+            policy.containerRequirements,
+            ProductionProviderVaultContainerRequirement.HeaderCommitmentBeforeRecordAead,
+        )
+        assertContains(
+            policy.containerRequirements,
+            ProductionProviderVaultContainerRequirement.NoParserWriterPersistenceInThisBranch,
+        )
+
+        assertEquals(ProductionProviderManifestField.entries.toSet(), policy.manifestFields)
+        assertContains(policy.manifestFields, ProductionProviderManifestField.ManifestMagicDomainMarker)
+        assertContains(policy.manifestFields, ProductionProviderManifestField.HeaderCommitmentContext)
+        assertContains(
+            policy.manifestFields,
+            ProductionProviderManifestField.LatestTrustedRecordVersionCounterPerRecordId,
+        )
+        assertContains(policy.manifestFields, ProductionProviderManifestField.CrashRecoveryMetadata)
+        assertEquals(ProductionProviderStaleRecordManifestBinding.entries.toSet(), policy.manifestBindings)
+        assertEquals(ProductionProviderStaleRecordManifestRequirement.entries.toSet(), policy.manifestRequirements)
+
+        assertEquals(ProductionProviderStorageAtomicityRequirement.entries.toSet(), policy.atomicityRequirements)
+        assertContains(
+            policy.atomicityRequirements,
+            ProductionProviderStorageAtomicityRequirement.AtomicAtContainerManifestBoundary,
+        )
+        assertContains(
+            policy.atomicityRequirements,
+            ProductionProviderStorageAtomicityRequirement.PartialWritesRejected,
+        )
+        assertContains(
+            policy.atomicityRequirements,
+            ProductionProviderStorageAtomicityRequirement.NoNewerRecordWithoutManifestAuthority,
+        )
+        assertContains(
+            policy.atomicityRequirements,
+            ProductionProviderStorageAtomicityRequirement.NoWriteRecoveryImplementationInThisBranch,
+        )
+        assertEquals(
+            ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
+            policy.secureStorageBoundaryRequirements,
+        )
+        assertContains(
+            policy.secureStorageBoundaryRequirements,
+            ProductionProviderSecureStorageBoundaryRequirement.SecureSecretStorageDisabledFailClosed,
+        )
+        assertContains(
+            policy.secureStorageBoundaryRequirements,
+            ProductionProviderSecureStorageBoundaryRequirement.SecureMetadataStorageDisabledFailClosed,
+        )
+        assertContains(
+            policy.secureStorageBoundaryRequirements,
+            ProductionProviderSecureStorageBoundaryRequirement.LinuxKeyringsNotPrimaryVaultProtection,
+        )
+
+        assertTrue(policy.strictAadSubstitutionProtectionModeled)
+        assertFalse(policy.strictAadFreshnessProofClaimed)
+        assertTrue(policy.localManifestStaleRecordDetectionModeled)
+        assertFalse(policy.fullLocalDirectoryRollbackResistanceClaimed)
+        assertFalse(policy.externalOrTrustedMonotonicAntiRollbackAnchorImplemented)
+        assertFalse(policy.parserImplemented)
+        assertFalse(policy.writerImplemented)
+        assertFalse(policy.vaultPersistenceImplemented)
+        assertFalse(policy.manifestReadWriteImplemented)
+        assertFalse(policy.storageIndexReadWriteImplemented)
+        assertFalse(policy.filesystemVaultStorageImplemented)
+        assertFalse(policy.databaseVaultStorageImplemented)
+        assertFalse(policy.dataStoreVaultStorageImplemented)
+        assertFalse(policy.sharedPreferencesVaultStorageImplemented)
+        assertFalse(policy.secureSecretStorageSuccessPathImplemented)
+        assertFalse(policy.secureMetadataStorageSuccessPathImplemented)
+        assertFalse(policy.atomicWriteRecoveryImplementationAdded)
+    }
+
+    @Test
     fun providerKatAndManifestEvidenceMustBeImplementedNotMerelyDocumented() {
         val gates = setOf(
             ProductionProviderAcceptanceGate.ProviderLevelKatStrategyApproved,
             ProductionProviderAcceptanceGate.RandomizedAeadBehavioralKatPolicyApproved,
             ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved,
+            ProductionProviderAcceptanceGate.VaultContainerContractApproved,
+            ProductionProviderAcceptanceGate.ManifestContractApproved,
             ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved,
+            ProductionProviderAcceptanceGate.StoragePolicyContractApproved,
+            ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved,
+            ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved,
+            ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed,
         )
         val states = listOf(
             ProductionProviderAcceptanceEvidenceState.Missing to
@@ -1458,7 +1610,31 @@ class ProductionProviderAcceptanceContractTest {
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.VaultContainerContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.ManifestContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
             evidence.stateFor(ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.StoragePolicyContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            evidence.stateFor(ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed),
         )
 
         val assessment = contract.assess(evidence)

@@ -1019,8 +1019,13 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bManifest(?:Reader|Writer|Repository|Store)\b"""),
             Regex("""\bStorageIndex(?:Reader|Writer|Repository|Store)\b"""),
             Regex("""\bVaultContainer(?:Reader|Writer|Repository|Store)\b"""),
+            Regex("""\bVaultContainerParser\b"""),
+            Regex("""\bparseVaultContainer\("""),
+            Regex("""\breadVaultContainer\("""),
+            Regex("""\bwriteVaultContainer\("""),
             Regex("""\bcreateVault\("""),
             Regex("""\bopenVault\("""),
+            Regex("""\bunlockVault\("""),
             Regex("""\bpersistVault\("""),
             Regex("""\bwriteManifest\("""),
             Regex("""\breadManifest\("""),
@@ -1029,12 +1034,20 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bFileOutputStream\b"""),
             Regex("""\bFileInputStream\b"""),
             Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bjava\.nio\.file\.Files\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
             Regex("""\.writeText\("""),
             Regex("""\.readText\("""),
             Regex("""import\s+android\.content\.SharedPreferences"""),
             Regex("""import\s+androidx\.datastore"""),
             Regex("""\bRoomDatabase\b"""),
             Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
         )
         val offenders = productionRoots
             .flatMap { sourceRoot ->
@@ -1048,6 +1061,91 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Provider KAT/stale-record contracts must not add provider, manifest, container, or storage writers: $offenders",
+        )
+    }
+
+    @Test
+    fun containerManifestStorageContractDoesNotAddStorageImplementations() {
+        val root = repositoryRoot()
+        val files = listOf(
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultReadiness.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/ProductionProviderAcceptanceContract.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderFacade.kt",
+            ),
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
+            Regex("""\bProductionVaultCryptoProvider\b"""),
+            Regex("""\bVaultContainerParser\b"""),
+            Regex("""\bVaultContainerReader\b"""),
+            Regex("""\bVaultContainerWriter\b"""),
+            Regex("""\bVaultContainerRepository\b"""),
+            Regex("""\bManifestReader\b"""),
+            Regex("""\bManifestWriter\b"""),
+            Regex("""\bManifestRepository\b"""),
+            Regex("""\bManifestStore\b"""),
+            Regex("""\bStorageIndexReader\b"""),
+            Regex("""\bStorageIndexWriter\b"""),
+            Regex("""\bStorageIndexRepository\b"""),
+            Regex("""\bparseVaultContainer\("""),
+            Regex("""\bserializeVaultContainer\("""),
+            Regex("""\breadVaultContainer\("""),
+            Regex("""\bwriteVaultContainer\("""),
+            Regex("""\bcreateVault\("""),
+            Regex("""\bopenVault\("""),
+            Regex("""\bunlockVault\("""),
+            Regex("""\bpersistVault\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadStorageIndex\("""),
+            Regex("""\bwriteStorageIndex\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bjava\.nio\.file\.Files\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+            Regex("""\bStrongBoxUnavailableException\b"""),
+        )
+        val offenders = files
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Container/manifest/storage contract must not add parser, writer, storage, or secure-storage APIs: $offenders",
         )
     }
 

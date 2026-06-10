@@ -74,6 +74,15 @@ class VaultCryptoDependencyProbeTest {
             selected.capabilities,
             VaultCryptoDependencyCapability.StillDisabledProviderFacadeBoundaryModeled,
         )
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.VaultContainerContractModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.ManifestContractModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.StoragePolicyContractModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.AtomicityCrashRecoveryContractModeled)
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.RollbackLimitationAntiRollbackAnchorModeled,
+        )
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.SecureStorageBoundaryContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCalibrationPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.Argon2idCandidateParameterPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidCompatibilityEntropyPolicyModeled)
@@ -168,6 +177,10 @@ class VaultCryptoDependencyProbeTest {
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkRecordAeadProviderIntegrationMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StaleRecordManifestIntegrationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StaleRecordManifestPolicyImplementationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultContainerStorageContractOnly)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.ManifestReadWriteImplementationMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageSuccessPathAbsent)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.AntiRollbackAnchorAbsentNoFullRollbackClaim)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ManifestStorageAtomicityReviewMissing)
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.PassphraseEncodingProductionValidationMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.PassphrasePolicyProviderIntegrationMissing))
