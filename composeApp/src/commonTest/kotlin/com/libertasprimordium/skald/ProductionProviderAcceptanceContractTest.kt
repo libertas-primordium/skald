@@ -1456,7 +1456,7 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageFailureModelPolicyId,
         )
         assertEquals(
-            "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
+            "skald-vault-v1-storage-namespace-path-policy-v1",
             policy.storageNamespacePathPolicyId,
         )
         assertEquals(
@@ -1509,7 +1509,7 @@ class ProductionProviderAcceptanceContractTest {
             policy.storageFailureModelStatus,
         )
         assertEquals(
-            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.storageNamespacePathHygieneStatus,
         )
         assertEquals(
@@ -1769,6 +1769,8 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.interruptionTestRuntimeHooksAdded)
         assertFalse(policy.storageFailureRuntimeMappingImplemented)
         assertFalse(policy.storagePathConstructionImplemented)
+        assertTrue(policy.storageNamespacePathPolicyImplemented)
+        assertTrue(policy.storagePathSegmentEncodingImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested)
@@ -1878,7 +1880,7 @@ class ProductionProviderAcceptanceContractTest {
             evidence.stateFor(ProductionProviderAcceptanceGate.StorageFailureModelContractApproved),
         )
         assertEquals(
-            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved),
         )
         assertEquals(

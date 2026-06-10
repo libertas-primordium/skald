@@ -49,7 +49,7 @@ class VaultStorageAtomicityCrashContractTest {
             policy.storageFailureModelPolicyId,
         )
         assertEquals(
-            "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
+            "skald-vault-v1-storage-namespace-path-policy-v1",
             policy.storageNamespacePathPolicyId,
         )
         assertEquals(
@@ -78,7 +78,7 @@ class VaultStorageAtomicityCrashContractTest {
             policy.storageFailureModelStatus,
         )
         assertEquals(
-            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.storageNamespacePathHygieneStatus,
         )
         assertEquals(
@@ -168,6 +168,8 @@ class VaultStorageAtomicityCrashContractTest {
         assertFalse(policy.interruptionTestRuntimeHooksAdded)
         assertFalse(policy.storageFailureRuntimeMappingImplemented)
         assertFalse(policy.storagePathConstructionImplemented)
+        assertTrue(policy.storageNamespacePathPolicyImplemented)
+        assertTrue(policy.storagePathSegmentEncodingImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorImplemented)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted)
         assertTrue(policy.inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested)
@@ -231,12 +233,14 @@ class VaultStorageAtomicityCrashContractTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageInterruptionTestContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageFailureModelContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathHygieneContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathPolicyBuildingBlock)
         assertContains(readiness.blockers, EncryptedVaultBlockingIssue.PlatformStorageImplementationMissing)
         assertContains(readiness.blockers, EncryptedVaultBlockingIssue.AtomicWriteImplementationMissing)
         assertContains(readiness.blockers, EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing)
         assertContains(readiness.blockers, EncryptedVaultBlockingIssue.StorageInterruptionTestsMissing)
         assertContains(readiness.blockers, EncryptedVaultBlockingIssue.StorageFailureRuntimeMappingMissing)
-        assertContains(readiness.blockers, EncryptedVaultBlockingIssue.StorageNamespacePathImplementationMissing)
+        assertFalse(readiness.blockers.contains(EncryptedVaultBlockingIssue.StorageNamespacePathImplementationMissing))
+        assertContains(readiness.blockers, EncryptedVaultBlockingIssue.StoragePathConstructionImplementationMissing)
         assertFalse(readiness.productionPersistenceEnabled)
         assertFalse(readiness.readyForProductionPersistence)
 
@@ -252,12 +256,17 @@ class VaultStorageAtomicityCrashContractTest {
             selected.capabilities,
             VaultCryptoDependencyCapability.StorageNamespacePathHygieneContractModeled,
         )
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.StorageNamespacePathPolicyImplementedTested,
+        )
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.PlatformStorageImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.AtomicWriteImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.CrashRecoveryImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageInterruptionTestsMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageFailureRuntimeMappingMissing)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageNamespacePathImplementationMissing)
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.StorageNamespacePathImplementationMissing))
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.StoragePathConstructionImplementationMissing)
         assertFalse(selected.storageEnabled)
         assertFalse(selected.productionPersistenceEnabled)
         assertFalse(selected.readyForVaultImplementation)

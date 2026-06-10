@@ -814,6 +814,8 @@ data class ProductionProviderContainerManifestStorageContract(
     val interruptionTestRuntimeHooksAdded: Boolean,
     val storageFailureRuntimeMappingImplemented: Boolean,
     val storagePathConstructionImplemented: Boolean,
+    val storageNamespacePathPolicyImplemented: Boolean,
+    val storagePathSegmentEncodingImplemented: Boolean,
     val inMemoryAtomicityCrashSimulatorImplemented: Boolean,
     val inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted: Boolean,
     val inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested: Boolean,
@@ -1123,7 +1125,7 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.StorageFailureModelContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StorageNamespacePathHygieneContractApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed to
@@ -1508,7 +1510,7 @@ data class ProductionProviderAcceptanceContract(
                     interruptionTestPolicyId = "skald-vault-v1-storage-interruption-test-policy-v1",
                     storageFailureModelPolicyId = "skald-vault-v1-storage-failure-model-policy-v1",
                     storageNamespacePathPolicyId =
-                        "skald-vault-v1-storage-namespace-path-hygiene-policy-v1",
+                        SkaldVaultV1StorageNamespacePathPolicy.POLICY_ID,
                     storageAtomicitySimulatorPolicyId =
                         "skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1",
                     secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
@@ -1532,7 +1534,7 @@ data class ProductionProviderAcceptanceContract(
                     storageFailureModelStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     storageNamespacePathHygieneStatus =
-                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     storageAtomicitySimulatorStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     secureStorageBoundaryStatus =
@@ -1585,6 +1587,8 @@ data class ProductionProviderAcceptanceContract(
                     interruptionTestRuntimeHooksAdded = false,
                     storageFailureRuntimeMappingImplemented = false,
                     storagePathConstructionImplemented = false,
+                    storageNamespacePathPolicyImplemented = true,
+                    storagePathSegmentEncodingImplemented = true,
                     inMemoryAtomicityCrashSimulatorImplemented = true,
                     inMemoryAtomicityCrashSimulatorInterruptionTestsExecuted = true,
                     inMemoryAtomicityCrashSimulatorRecoveryDecisionsTested = true,
