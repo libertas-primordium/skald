@@ -12,7 +12,15 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It accepts caller-supplied byte arrays, returns byte arrays or typed parse/validation failures, and has deterministic non-secret fixture tests. It does not read files, write files, persist bytes, access storage, call secure storage, derive keys, verify passphrases, decrypt records, call Argon2id, call HKDF, call HMAC, call Tink AEAD, create vaults, unlock vaults, or make a provider selectable.
 
-This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
+The in-memory v1 manifest parser/writer and local manifest-relative stale-record decision policy now also exist as still-disabled byte-level building blocks:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ManifestFormat.kt
+```
+
+They accept caller-supplied byte arrays and in-memory descriptors only, return byte arrays or typed parse/validation/decision results, and have deterministic non-secret fixture tests. They do not read files, write files, persist manifest bytes, access storage, call secure storage, derive keys, verify passphrases, decrypt records, call Argon2id, call HKDF, call HMAC, call Tink AEAD, create vaults, unlock vaults, or make a provider selectable.
+
+This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
 Related evidence is modeled in:
 
@@ -99,7 +107,9 @@ The parser/writer tests assert:
 
 ## Manifest Contract
 
-The future manifest is the authority for latest trusted local record state. AAD binds record version/counter into each record encryption operation, but the manifest is what will decide whether a record is fresh relative to the latest trusted local state.
+The manifest is the authority for latest trusted local record state. AAD binds record version/counter into each record encryption operation, but the manifest is what decides whether a record is fresh relative to the latest trusted local state.
+
+The still-disabled in-memory manifest parser/writer implements the byte-level manifest model for caller-supplied byte arrays only; manifest files, storage locations, storage indexes, atomic write behavior, recovery behavior, and persistence remain future work.
 
 Required manifest fields:
 
@@ -117,7 +127,7 @@ Required manifest fields:
 - manifest sequence/version;
 - integrity-critical crash-recovery metadata.
 
-The future manifest must be integrity-protected and bound to:
+The future stored manifest must be integrity-protected and bound to:
 
 - vault id;
 - provider suite id;
@@ -127,11 +137,52 @@ The future manifest must be integrity-protected and bound to:
 - record namespace;
 - latest record counters.
 
-This branch does not implement manifest read/write, a manifest file, a storage index, record locations, tombstones, or conflict handling code.
+The in-memory manifest model includes fixed non-secret record references and tombstone/deletion state for format and stale-policy testing. This branch does not implement manifest file/storage read/write, a manifest file location, a storage index, sync/import conflict handling, or persistence.
+
+## In-Memory Manifest Parser/Writer Fixture
+
+`SkaldVaultV1ManifestFormat.vectorFixtureManifest()` defines the fixed non-secret v1 manifest fixture. It uses:
+
+- fixed non-secret vault id bytes `20..2f`;
+- fixed non-secret header commitment context bytes matching the header-commitment fixture tag;
+- storage namespace `skald-vault/v1/local-records`;
+- record namespace `skald-vault/v1/records`;
+- manifest sequence `4`;
+- fixed non-secret crash-recovery metadata bytes;
+- two fixed non-secret record ids;
+- one active `sensitive-metadata` record with latest counter `7`;
+- one tombstoned `secret-payload` record with latest counter `3`;
+- fixed non-secret in-memory record reference strings.
+
+The fixture serializes deterministically and the byte-exact expected hex is asserted in:
+
+```text
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultManifestParserStalePolicyTest.kt
+```
+
+The manifest parser/writer tests assert:
+
+- fixture serialization is deterministic;
+- serialized fixture bytes match the expected hex;
+- `parse(serialize(fixture))` returns the logical fixture;
+- record entries are serialized in deterministic record-id order;
+- malformed magic, unsupported manifest policy/version, unsupported suite id, malformed storage namespace, malformed record namespace, malformed length prefixes, truncation, trailing bytes, unknown fields, duplicate fields, duplicate record ids, conflicting counters, malformed record references, and malformed tombstone states fail closed with typed reasons;
+- serializer rejects unsupported or malformed model values before returning bytes;
+- parser/writer evidence does not enable persistence or provider selectability.
 
 ## Stale-Record And Rollback Boundary
 
 Strict AAD binding prevents undetected cross-vault, cross-provider, cross-record, cross-type, and cross-version ciphertext substitution. It does not by itself prove freshness.
+
+The still-disabled local stale-record decision policy in `SkaldVaultV1ManifestFormat.decideRecordState(...)` implements in-memory, local manifest-relative decisions only:
+
+- a candidate whose record id, type, tombstone state, and version/counter equal the latest trusted manifest state is `CurrentTrusted`;
+- a candidate with a higher version/counter is `NewerPendingManifestUpdate`, not trusted current;
+- a candidate with a lower version/counter is `StaleRejected`;
+- a candidate whose record type conflicts with manifest state is `RecordTypeConflictRejected`;
+- a candidate whose tombstone/deletion state conflicts with manifest state is `TombstoneConflictRejected`;
+- an unknown record id is `UnknownRecordPendingManifestUpdate`, not trusted current;
+- malformed candidate descriptors are rejected.
 
 Future manifest/storage behavior must:
 
@@ -179,18 +230,18 @@ Provider KAT success and the still-disabled provider facade do not enable storag
 The readiness and acceptance models must distinguish:
 
 - implemented/tested still-disabled in-memory container parser/writer;
-- documented/model-only manifest contract;
+- implemented/tested still-disabled in-memory manifest parser/writer;
+- implemented/tested still-disabled local manifest-relative stale-record decision policy;
 - documented/model-only storage policy;
-- documented/model-only stale-record policy;
 - documented/model-only atomicity/crash-recovery contract;
 - documented/model-only secure-storage boundary;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent storage, manifest read/write, storage index, atomic write/recovery, and secure-storage implementation;
+- absent storage, manifest file/storage read/write, storage index, atomic write/recovery, and secure-storage implementation;
 - disabled production persistence.
 
 Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, atomicity, or secure-storage evidence must block provider selectability and persistence.
 
-Completed in-memory parser/writer tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
+Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
 ## Remaining Gates
 
@@ -205,8 +256,8 @@ Before provider selectability:
 
 Before vault persistence:
 
-- manifest read/write implementation and tests;
-- manifest-backed stale-record enforcement;
+- manifest file/storage read/write implementation and tests;
+- manifest-backed storage integration for stale-record enforcement;
 - storage atomicity and crash-recovery implementation;
 - interruption/corruption tests;
 - secure secret storage and secure metadata storage boundary implementation;

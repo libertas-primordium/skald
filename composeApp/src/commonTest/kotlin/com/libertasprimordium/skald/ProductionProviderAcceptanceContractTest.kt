@@ -1376,12 +1376,12 @@ class ProductionProviderAcceptanceContractTest {
     }
 
     @Test
-    fun staleRecordManifestPolicyIsModeledButNotImplemented() {
+    fun staleRecordManifestPolicyIsImplementedButNotStorageBacked() {
         val policy = contract.staleRecordManifestPolicy
 
         assertEquals("skald-vault-v1-stale-record-manifest-policy-v1", policy.policyId)
         assertEquals("skald-vault-v1-local-manifest-storage-policy-v1", policy.manifestStoragePolicyId)
-        assertEquals(ProductionProviderConstructionContractStatus.DocumentedModelOnly, policy.contractStatus)
+        assertEquals(ProductionProviderConstructionContractStatus.ImplementedTested, policy.contractStatus)
         assertTrue(policy.recordVersionCounterBoundIntoAad)
         assertEquals(ProductionProviderStaleRecordManifestBinding.entries.toSet(), policy.bindings)
         assertContains(policy.bindings, ProductionProviderStaleRecordManifestBinding.VaultId)
@@ -1408,6 +1408,9 @@ class ProductionProviderAcceptanceContractTest {
             policy.requirements,
             ProductionProviderStaleRecordManifestRequirement.NoManifestReadWriteInThisBranch,
         )
+        assertTrue(policy.manifestParserImplemented)
+        assertTrue(policy.manifestWriterImplemented)
+        assertTrue(policy.staleRecordDecisionPolicyImplemented)
         assertFalse(policy.manifestReadWriteImplemented)
         assertFalse(policy.storageIndexReadWriteImplemented)
         assertFalse(policy.staleRecordEnforcementImplemented)
@@ -1439,7 +1442,7 @@ class ProductionProviderAcceptanceContractTest {
             policy.vaultContainerContractStatus,
         )
         assertEquals(
-            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.manifestContractStatus,
         )
         assertEquals(
@@ -1447,7 +1450,7 @@ class ProductionProviderAcceptanceContractTest {
             policy.storagePolicyContractStatus,
         )
         assertEquals(
-            ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+            ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.staleRecordPolicyStatus,
         )
         assertEquals(
@@ -1546,6 +1549,9 @@ class ProductionProviderAcceptanceContractTest {
         assertFalse(policy.externalOrTrustedMonotonicAntiRollbackAnchorImplemented)
         assertTrue(policy.parserImplemented)
         assertTrue(policy.writerImplemented)
+        assertTrue(policy.manifestParserImplemented)
+        assertTrue(policy.manifestWriterImplemented)
+        assertTrue(policy.staleRecordDecisionPolicyImplemented)
         assertFalse(policy.vaultPersistenceImplemented)
         assertFalse(policy.manifestReadWriteImplemented)
         assertFalse(policy.storageIndexReadWriteImplemented)
@@ -1612,11 +1618,11 @@ class ProductionProviderAcceptanceContractTest {
             evidence.stateFor(ProductionProviderAcceptanceGate.VaultContainerContractApproved),
         )
         assertEquals(
-            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.ManifestContractApproved),
         )
         assertEquals(
-            ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved),
         )
         assertEquals(
