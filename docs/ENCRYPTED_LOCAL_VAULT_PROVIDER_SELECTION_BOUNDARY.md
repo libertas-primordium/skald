@@ -62,6 +62,14 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 The lock/session lifecycle boundary composes typed readiness, provider, disabled storage, secure storage, secure metadata, and lifecycle-event evidence into blocked/fail-closed session decisions. It models locked, unlock-requested, unlock-blocked, unlock-unavailable, active-session-unavailable, active-session-modeled-but-unusable, session-expired, background/close/error/provider-change/storage-change/platform-security-change/mainnet-block, and forced-locked states. It does not accept or store passphrases or PINs, derive keys, hold decrypted keys, implement memory wipe/zeroization, implement biometrics, implement Android Keystore, implement OS keyrings, implement password managers, add unlock UI, persist session state, run filesystem checks, construct paths, create/read/write files, persist Settings, enable vault unlock, enable vault persistence, approve production provider use, approve mainnet, or make a provider selectable.
 
+Vault redaction/leakage boundary:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RedactionLeakageBoundary.kt
+```
+
+The redaction/leakage boundary composes typed value-kind, output-target, scope, and redacted-token evidence into fail-closed safe-output decisions. It models future forbidden value classes, sensitive metadata summaries, operational metadata summaries, public non-wallet vector scope, public policy identifiers, enum/capability evidence, aggregate statistics, source-guard material classes, and future output targets. It does not accept raw secrets, passphrases, key material, byte arrays, raw paths, payloads, wallet labels, transaction notes, credentials, stack traces, provider handles, storage handles, or backend handles. It does not hash or fingerprint secrets, log, add crash reporting, add analytics, add support export, add runtime diagnostics, persist diagnostic output, display secrets, implement unlock UI, implement provider execution, implement storage, enable vault unlock, enable vault persistence, approve production provider use, approve mainnet, or make a provider selectable. Public non-wallet cryptographic vectors remain scoped to docs/tests/KAT/source-guard evidence only; wallet, UTXO, sync, and production source paths still reject hardcoded address, txid, secret, and wallet-material fixtures.
+
 Selection tests:
 
 ```text
@@ -242,6 +250,7 @@ This boundary does not enable:
 - OS keyring or password-manager integration for Skald-managed vault passphrases,
 - passphrase, PIN, biometric, or unlock UI,
 - lock/session state persistence or usable active sessions,
+- runtime logging, crash reporting, analytics, support export, runtime diagnostics, diagnostic persistence, secret display, secret hashing, secret fingerprinting, or redaction/leakage evidence as provider readiness,
 - secure secret storage success,
 - secure metadata persistence success,
 - production observation/address-index/UTXO/label/note/wallet-history persistence,

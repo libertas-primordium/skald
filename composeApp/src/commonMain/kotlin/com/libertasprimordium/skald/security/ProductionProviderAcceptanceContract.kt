@@ -107,6 +107,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     LockSessionLifecycleBoundaryImplementedAndTested(
         "vault lock/session lifecycle boundary implemented and tested",
     ),
+    RedactionLeakageBoundaryImplementedAndTested(
+        "vault redaction/leakage boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1074,6 +1077,34 @@ enum class ProductionProviderLockSessionLifecycleRule(val label: String) {
     ),
 }
 
+enum class ProductionProviderRedactionLeakageRule(val label: String) {
+    EvidenceOnly("redaction/leakage boundary returns evidence only"),
+    ValueKindVocabularyModeled("boundary models sensitive value kinds"),
+    OutputTargetVocabularyModeled("boundary models output targets"),
+    DecisionVocabularyModeled("boundary models redaction decisions"),
+    DefaultFailClosed("unknown or unsupported value classes fail closed"),
+    DoesNotAcceptRawSecrets("boundary does not accept raw secrets"),
+    DoesNotHashOrFingerprintSecrets("boundary does not hash or fingerprint secrets"),
+    DoesNotImplementLoggingCrashAnalyticsOrSupportExport(
+        "boundary does not implement logging, crash reporting, analytics, or support export",
+    ),
+    PublicVectorsScopedToDocsTestsAndSourceGuards(
+        "public non-wallet vectors are scoped to docs, tests, and source guards",
+    ),
+    WalletUtxoSyncMaterialCannotUsePublicVectorException(
+        "wallet, UTXO, and sync material cannot use the public-vector exception",
+    ),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsSecretRootPathRecordPayloadProviderEvidence(
+        "boundary redacts secret, root, path, record, payload, and provider evidence",
+    ),
+}
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1228,6 +1259,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val disabledStorageServiceFacadePolicyId: String,
     val persistenceReadinessGatePolicyId: String,
     val lockSessionLifecycleBoundaryPolicyId: String,
+    val redactionLeakageBoundaryPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1263,6 +1295,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val disabledStorageServiceFacadeStatus: ProductionProviderConstructionContractStatus,
     val persistenceReadinessGateStatus: ProductionProviderConstructionContractStatus,
     val lockSessionLifecycleBoundaryStatus: ProductionProviderConstructionContractStatus,
+    val redactionLeakageBoundaryStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1298,6 +1331,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val disabledStorageServiceFacadeRules: Set<ProductionProviderDisabledStorageServiceFacadeRule>,
     val persistenceReadinessGateRules: Set<ProductionProviderPersistenceReadinessGateRule>,
     val lockSessionLifecycleRules: Set<ProductionProviderLockSessionLifecycleRule>,
+    val redactionLeakageRules: Set<ProductionProviderRedactionLeakageRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1392,6 +1426,15 @@ data class ProductionProviderContainerManifestStorageContract(
     val lockSessionBoundaryDoesNotEnablePersistence: Boolean,
     val lockSessionBoundaryDoesNotEnableProviderSelection: Boolean,
     val lockSessionFailureVocabularyModeled: Boolean,
+    val redactionLeakageBoundaryModeled: Boolean,
+    val redactionLeakageBoundaryStillDisabled: Boolean,
+    val redactionLeakageClassifiesSensitiveValueKinds: Boolean,
+    val redactionLeakageDoesNotAcceptRawSecrets: Boolean,
+    val redactionLeakageDoesNotHashSecrets: Boolean,
+    val redactionLeakageDoesNotLog: Boolean,
+    val redactionLeakageDoesNotEnablePersistence: Boolean,
+    val redactionLeakageDoesNotEnableProviderSelection: Boolean,
+    val redactionLeakageFailureVocabularyModeled: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val osKeyringPrimaryStorageRejected: Boolean,
@@ -1754,6 +1797,10 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved to
@@ -2179,6 +2226,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1PersistenceReadinessGate.POLICY_ID,
                     lockSessionLifecycleBoundaryPolicyId =
                         SkaldVaultV1LockSessionLifecyclePolicy.POLICY_ID,
+                    redactionLeakageBoundaryPolicyId =
+                        SkaldVaultV1RedactionLeakagePolicy.POLICY_ID,
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
@@ -2245,6 +2294,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     lockSessionLifecycleBoundaryStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
+                    redactionLeakageBoundaryStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     symlinkTraversalContractStatus =
@@ -2305,6 +2356,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderPersistenceReadinessGateRule.entries.toSet(),
                     lockSessionLifecycleRules =
                         ProductionProviderLockSessionLifecycleRule.entries.toSet(),
+                    redactionLeakageRules =
+                        ProductionProviderRedactionLeakageRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -2406,6 +2459,15 @@ data class ProductionProviderAcceptanceContract(
                     lockSessionBoundaryDoesNotEnablePersistence = true,
                     lockSessionBoundaryDoesNotEnableProviderSelection = true,
                     lockSessionFailureVocabularyModeled = true,
+                    redactionLeakageBoundaryModeled = true,
+                    redactionLeakageBoundaryStillDisabled = true,
+                    redactionLeakageClassifiesSensitiveValueKinds = true,
+                    redactionLeakageDoesNotAcceptRawSecrets = true,
+                    redactionLeakageDoesNotHashSecrets = true,
+                    redactionLeakageDoesNotLog = true,
+                    redactionLeakageDoesNotEnablePersistence = true,
+                    redactionLeakageDoesNotEnableProviderSelection = true,
+                    redactionLeakageFailureVocabularyModeled = true,
                     settingsUiImplemented = false,
                     settingsPersistenceImplemented = false,
                     osKeyringPrimaryStorageRejected = true,
