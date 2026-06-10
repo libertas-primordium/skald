@@ -77,6 +77,8 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.VaultContainerContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.InMemoryVaultContainerParserWriterTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.ManifestContractModeled)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.InMemoryManifestParserWriterTested)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.LocalManifestStaleRecordDecisionPolicyTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.StoragePolicyContractModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AtomicityCrashRecoveryContractModeled)
         assertContains(
@@ -177,7 +179,7 @@ class VaultCryptoDependencyProbeTest {
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.StrictAadProviderIntegrationMissing))
         assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.TinkRecordAeadProviderIntegrationMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StaleRecordManifestIntegrationMissing)
-        assertContains(selected.blockers, VaultCryptoDependencyBlocker.StaleRecordManifestPolicyImplementationMissing)
+        assertFalse(selected.blockers.contains(VaultCryptoDependencyBlocker.StaleRecordManifestPolicyImplementationMissing))
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultContainerPersistenceImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ManifestReadWriteImplementationMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.StorageSuccessPathAbsent)

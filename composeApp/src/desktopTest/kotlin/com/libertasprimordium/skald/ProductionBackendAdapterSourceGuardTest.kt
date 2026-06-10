@@ -1248,6 +1248,104 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun inMemoryManifestParserWriterStaysInApprovedFileAndDoesNotPersistOrRunCrypto() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security"),
+            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security"),
+            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security"),
+        )
+        val approvedParserWriterFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ManifestFormat.kt"
+        val parserWriterPatterns = listOf(
+            Regex("""\bSkaldVaultV1ManifestFormat\b"""),
+            Regex("""\bSkaldVaultV1ManifestResult\b"""),
+            Regex("""\bSkaldVaultV1ManifestRecordEntry\b"""),
+            Regex("""\bSkaldVaultV1CandidateRecordDescriptor\b"""),
+            Regex("""\bSkaldVaultV1StaleRecordDecision\b"""),
+        )
+        val misplacedParserWriter = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedParserWriterFile &&
+                            parserWriterPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedParserWriter.isEmpty(),
+            "Manifest parser/writer types must stay in the exact approved file: $misplacedParserWriter",
+        )
+
+        val source = File(root, approvedParserWriterFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bFile\("""),
+            Regex("""\bFileOutputStream\b"""),
+            Regex("""\bFileInputStream\b"""),
+            Regex("""\bRandomAccessFile\b"""),
+            Regex("""\bjava\.nio\.file\.Files\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\.writeBytes\("""),
+            Regex("""\.readBytes\("""),
+            Regex("""\.writeText\("""),
+            Regex("""\.readText\("""),
+            Regex("""\.outputStream\("""),
+            Regex("""\.inputStream\("""),
+            Regex("""\bopenFileOutput\("""),
+            Regex("""\bopenFileInput\("""),
+            Regex("""\bgetSharedPreferences\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bsetIsStrongBoxBacked\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprint\("""),
+            Regex("""\bLog\."""),
+            Regex("""\bLogger\b"""),
+            Regex("""com\.google\.crypto\.tink\.internal"""),
+            Regex("""com\.google\.crypto\.tink\.subtle"""),
+            Regex("""\bjava\.lang\.reflect\b"""),
+            Regex("""\bClass\.forName\("""),
+            Regex("""\bgetDeclared"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "In-memory manifest parser/writer must not add persistence, crypto execution, randomness, logging, or storage APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),

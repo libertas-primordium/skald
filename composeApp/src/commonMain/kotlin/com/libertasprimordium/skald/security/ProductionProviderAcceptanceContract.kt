@@ -488,7 +488,7 @@ enum class ProductionProviderStaleRecordManifestRequirement(val label: String) {
     RejectOrQuarantineConflictingDuplicateRecordId("future manifest rejects or quarantines duplicate record ids with conflicting latest counters"),
     ConflictHandlingBeforeSyncOrImport("conflict handling is defined before sync or import behavior"),
     NoGlobalRollbackClaimWithoutAnchor("no global rollback-resistance claim without external or trusted monotonic anchor"),
-    NoManifestReadWriteInThisBranch("no manifest reader or writer exists in this branch"),
+    NoManifestReadWriteInThisBranch("no manifest storage reader or writer exists in this branch"),
 }
 
 data class ProductionProviderStaleRecordManifestPolicy(
@@ -498,6 +498,9 @@ data class ProductionProviderStaleRecordManifestPolicy(
     val recordVersionCounterBoundIntoAad: Boolean,
     val bindings: Set<ProductionProviderStaleRecordManifestBinding>,
     val requirements: Set<ProductionProviderStaleRecordManifestRequirement>,
+    val manifestParserImplemented: Boolean,
+    val manifestWriterImplemented: Boolean,
+    val staleRecordDecisionPolicyImplemented: Boolean,
     val manifestReadWriteImplemented: Boolean,
     val storageIndexReadWriteImplemented: Boolean,
     val staleRecordEnforcementImplemented: Boolean,
@@ -624,6 +627,9 @@ data class ProductionProviderContainerManifestStorageContract(
     val externalOrTrustedMonotonicAntiRollbackAnchorImplemented: Boolean,
     val parserImplemented: Boolean,
     val writerImplemented: Boolean,
+    val manifestParserImplemented: Boolean,
+    val manifestWriterImplemented: Boolean,
+    val staleRecordDecisionPolicyImplemented: Boolean,
     val vaultPersistenceImplemented: Boolean,
     val manifestReadWriteImplemented: Boolean,
     val storageIndexReadWriteImplemented: Boolean,
@@ -917,9 +923,9 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.VaultContainerContractApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.ManifestContractApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
-                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.StoragePolicyContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved to
@@ -1280,10 +1286,13 @@ data class ProductionProviderAcceptanceContract(
                 staleRecordManifestPolicy = ProductionProviderStaleRecordManifestPolicy(
                     policyId = "skald-vault-v1-stale-record-manifest-policy-v1",
                     manifestStoragePolicyId = "skald-vault-v1-local-manifest-storage-policy-v1",
-                    contractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    contractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     recordVersionCounterBoundIntoAad = true,
                     bindings = ProductionProviderStaleRecordManifestBinding.entries.toSet(),
                     requirements = ProductionProviderStaleRecordManifestRequirement.entries.toSet(),
+                    manifestParserImplemented = true,
+                    manifestWriterImplemented = true,
+                    staleRecordDecisionPolicyImplemented = true,
                     manifestReadWriteImplemented = false,
                     storageIndexReadWriteImplemented = false,
                     staleRecordEnforcementImplemented = false,
@@ -1302,10 +1311,10 @@ data class ProductionProviderAcceptanceContract(
                     antiRollbackAnchorPolicyId = "skald-vault-v1-anti-rollback-anchor-policy-v1",
                     vaultContainerContractStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
-                    manifestContractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    manifestContractStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     storagePolicyContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
-                    staleRecordPolicyStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    staleRecordPolicyStatus = ProductionProviderConstructionContractStatus.ImplementedTested,
                     atomicityCrashRecoveryContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     secureStorageBoundaryStatus =
@@ -1325,6 +1334,9 @@ data class ProductionProviderAcceptanceContract(
                     externalOrTrustedMonotonicAntiRollbackAnchorImplemented = false,
                     parserImplemented = true,
                     writerImplemented = true,
+                    manifestParserImplemented = true,
+                    manifestWriterImplemented = true,
+                    staleRecordDecisionPolicyImplemented = true,
                     vaultPersistenceImplemented = false,
                     manifestReadWriteImplemented = false,
                     storageIndexReadWriteImplemented = false,

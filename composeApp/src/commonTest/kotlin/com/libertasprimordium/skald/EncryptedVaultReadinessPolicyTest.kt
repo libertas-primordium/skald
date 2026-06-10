@@ -64,7 +64,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultContainerPersistenceImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestReadWriteImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageSuccessPathAbsent)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing)
+        assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.AntiRollbackAnchorAbsentNoFullRollbackClaim)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved))
@@ -93,6 +93,11 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.InMemoryVaultContainerParserWriterBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ManifestContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StaleRecordManifestPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.InMemoryManifestParserWriterBuildingBlock)
+        assertContains(
+            readiness.capabilities,
+            EncryptedVaultCapability.LocalManifestStaleRecordDecisionPolicyBuildingBlock,
+        )
         assertContains(readiness.capabilities, EncryptedVaultCapability.StoragePolicyContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.AtomicityCrashRecoveryContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
@@ -289,6 +294,9 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.VaultContainerFormatImplemented,
             EncryptedVaultRequirement.VaultContainerParserImplemented,
             EncryptedVaultRequirement.VaultContainerWriterImplemented,
+            EncryptedVaultRequirement.ManifestParserImplemented,
+            EncryptedVaultRequirement.ManifestWriterImplemented,
+            EncryptedVaultRequirement.StaleRecordDecisionPolicyImplemented,
             EncryptedVaultRequirement.LockSessionLifecycleTested,
             EncryptedVaultRequirement.RedactionTestsPassed,
             EncryptedVaultRequirement.MigrationAndCorruptionTestsPassed,
@@ -546,6 +554,18 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.Absent,
             readiness.requirementStatuses[EncryptedVaultRequirement.ProviderBoundaryKnownAnswerVectorsPassed],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ManifestParserImplemented],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ManifestWriterImplemented],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[EncryptedVaultRequirement.StaleRecordDecisionPolicyImplemented],
         )
         assertTrue(EncryptedVaultRequirement.SecureSecretStorageAvailable in readiness.requirementStatuses)
         assertEquals(
