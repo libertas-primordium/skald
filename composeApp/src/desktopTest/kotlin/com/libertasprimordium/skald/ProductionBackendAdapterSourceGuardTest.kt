@@ -181,6 +181,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootSettingsPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxCustomRootValidationPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxRootResolutionPolicy.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootResolver.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -1119,6 +1120,10 @@ class ProductionBackendAdapterSourceGuardTest {
             File(
                 root,
                 "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxRootResolutionPolicy.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootResolver.kt",
             ),
         )
         val forbiddenPatterns = listOf(
@@ -2296,6 +2301,128 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Linux root-resolution policy must not resolve roots, construct paths, persist settings, use storage, use keyrings/password managers, log, or add network/process APIs: $offenders",
+        )
+    }
+
+    @Test
+    fun platformRootResolverBoundaryStaysInApprovedFileAndDoesNotUseStorageSettingsOrPlatformApis() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val approvedPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformRootResolver.kt"
+        val policyDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1PlatformRootResolver"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1PlatformRootEvidenceToken\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1LinuxRootResolverInputSnapshot\b"""),
+        )
+        val misplacedDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedPolicyFile &&
+                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Platform root resolver boundary definitions must stay in the exact approved file: $misplacedDefinitions",
+        )
+
+        val source = File(root, approvedPolicyFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""System\.getenv"""),
+            Regex("""System\.getProperty"""),
+            Regex(""""HOME""""),
+            Regex(""""XDG_DATA_HOME""""),
+            Regex("""\bHOME\b"""),
+            Regex("""\bXDG_DATA_HOME\b"""),
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""import\s+android\.content"""),
+            Regex("""import\s+android\.net\.Uri"""),
+            Regex("""import\s+androidx\.datastore"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\bandroid\.net\.Uri\b"""),
+            Regex("""\bandroid\.content\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\.separator\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\.of\b"""),
+            Regex("""\bPaths\.get\b"""),
+            Regex("""\bPaths\."""),
+            Regex("""\bFiles\."""),
+            Regex("""\.toPath\("""),
+            Regex("""\.toFile\("""),
+            Regex("""\.absolute"""),
+            Regex("""\.canonical"""),
+            Regex("""\.normalize\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.relativize\("""),
+            Regex("""\bexists\("""),
+            Regex("""\bisDirectory\b"""),
+            Regex("""\bisRegularFile\b"""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadAttributes\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\binputStream\b"""),
+            Regex("""\boutputStream\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bEnvironment\.getExternalStorageDirectory\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bStorageManager\b"""),
+            Regex("""\bDocumentsContract\b"""),
+            Regex("""\bACTION_OPEN_DOCUMENT_TREE\b"""),
+            Regex("""\bMANAGE_EXTERNAL_STORAGE\b"""),
+            Regex("""\blibsecret\b"""),
+            Regex("""\bSecretService\b"""),
+            Regex("""\bKWallet\b"""),
+            Regex("""\bCredentialManager\b"""),
+            Regex("""\bKeyStore\b"""),
+            Regex("""\bPasswordManager\b"""),
+            Regex("""\bAutofillManager\b"""),
+            Regex("""\bGooglePasswordManager\b"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bRpcClient\b"""),
+            Regex("""\bURL\("""),
+            Regex("""\bURI\("""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bLogger\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\("""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Platform root resolver boundary must not use platform path, storage, settings, keyring/password-manager, crypto, BDK, network/process, or logging APIs: $offenders",
         )
     }
 
