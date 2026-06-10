@@ -84,9 +84,17 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It accepts injected, caller-supplied evidence snapshots for future Android app-private internal root evidence, Linux default user-data root evidence, and Linux custom-root validation evidence. It returns typed, redacted root evidence tokens and a disabled capability model only. Android evidence remains app-private internal only; Android external/shared and user-selected roots are rejected. Linux evidence delegates to the existing Linux root-resolution and custom-root validation policies. The resolver boundary does not create directories, read files, write files, persist Settings, persist vault root choices, construct artifact paths, return platform path objects, prove existence, prove containment, prove symlink safety, prove permissions, prove ownership, prove durability, prove atomic-write safety, enable vault persistence, or make a provider selectable.
 
+A still-disabled platform path-construction boundary now exists:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PlatformPathConstructionBoundary.kt
+```
+
+It consumes accepted platform root resolver evidence and the existing logical storage layout plan, then reuses the path-containment planner to return typed, redacted planned artifact-location evidence for current container, current manifest, current storage index, record, temporary, quarantine, and recovery metadata artifacts. Planned artifact locations are root-token-bound logical relative segment evidence only. They are not platform paths and are not usable for file I/O. The boundary does not accept raw platform paths as a persistence input, does not construct real or absolute paths, does not return `File`, `Path`, `Uri`, or platform filesystem objects, does not create directories, does not read files, does not write files, does not persist Settings, does not prove existence, does not prove real containment, does not prove symlink safety, does not prove permissions or ownership, does not prove durability or atomic-write safety, does not enable vault persistence, and does not make a provider selectable.
+
 This branch also records the v1 durability fail-closed decision and warning-only rejection policy for encrypted vault writes. Unsupported, unknown, unreviewed, insufficient, unsafe, or failed durability blocks encrypted vault persistence. Warning-only encrypted vault persistence is not approved for v1, and user consent cannot override a required durability failure.
 
-The platform storage-root, platform root settings, Linux custom-root validation, Linux root-resolution evidence, platform root resolver boundary, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
+The platform storage-root, platform root settings, Linux custom-root validation, Linux root-resolution evidence, platform root resolver boundary, platform path-construction boundary, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join real paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
 
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
@@ -118,6 +126,7 @@ Required policy ids:
 - Linux custom-root validation policy id: `skald-vault-v1-linux-custom-root-validation-policy-v1`
 - Linux root-resolution policy id: `skald-vault-v1-linux-root-resolution-policy-v1`
 - Platform root resolver boundary policy id: `skald-vault-v1-platform-root-resolver-boundary-v1`
+- Platform path-construction boundary policy id: `skald-vault-v1-platform-path-construction-boundary-v1`
 - OS keyring passphrase policy id: `skald-vault-v1-os-keyring-passphrase-policy-v1`
 - Password-manager passphrase policy id: `skald-vault-v1-password-manager-passphrase-policy-v1`
 - Passphrase-first vault authority policy id: `skald-vault-v1-passphrase-first-vault-authority-policy-v1`

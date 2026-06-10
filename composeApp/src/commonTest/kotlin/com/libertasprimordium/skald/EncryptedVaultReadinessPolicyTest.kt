@@ -129,6 +129,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxCustomRootValidationPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxRootResolutionPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PlatformRootResolverBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.PlatformPathConstructionBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
@@ -302,6 +303,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.LinuxCustomRootValidationPolicyImplementedAndTested,
             EncryptedVaultRequirement.LinuxRootResolutionPolicyImplementedAndTested,
             EncryptedVaultRequirement.PlatformRootResolverBoundaryImplementedAndTested,
+            EncryptedVaultRequirement.PlatformPathConstructionBoundaryImplementedAndTested,
             EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
             EncryptedVaultRequirement.PasswordManagerIntegrationRejected,
             EncryptedVaultRequirement.PassphraseFirstDefaultModeled,
@@ -517,6 +519,12 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.PlatformRootResolverBoundaryImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.PlatformPathConstructionBoundaryImplementedAndTested
             ],
         )
         assertEquals(
