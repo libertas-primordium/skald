@@ -61,7 +61,11 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StillDisabledProviderIntegrationHarnessNotSelectable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StillDisabledProviderFacadeNotSelectable)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestIntegrationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultContainerPersistenceImplementationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestReadWriteImplementationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageSuccessPathAbsent)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.AntiRollbackAnchorAbsentNoFullRollbackClaim)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.PassphraseEncodingPolicyUnapproved))
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.PassphrasePolicyProviderIntegrationMissing))
@@ -85,7 +89,13 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledRandomizedAeadBehavioralKatExecution)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledIntegratedVerificationOrderKatExecution)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StillDisabledProviderFacadeBoundary)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.VaultContainerContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ManifestContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StaleRecordManifestPolicyModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StoragePolicyContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.AtomicityCrashRecoveryContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.SecureStorageBoundaryContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCalibrationPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateParameterPolicyModel)
@@ -230,7 +240,13 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.StillDisabledProviderFacadeImplementedAndTested,
             EncryptedVaultRequirement.StillDisabledProviderFacadeMetadataOnly,
             EncryptedVaultRequirement.StillDisabledProviderFacadeOperationsDisabled,
+            EncryptedVaultRequirement.VaultContainerContractModeled,
+            EncryptedVaultRequirement.ManifestContractModeled,
             EncryptedVaultRequirement.StaleRecordManifestPolicyModeled,
+            EncryptedVaultRequirement.StoragePolicyContractModeled,
+            EncryptedVaultRequirement.AtomicityCrashRecoveryContractModeled,
+            EncryptedVaultRequirement.SecureStorageBoundaryContractModeled,
+            EncryptedVaultRequirement.RollbackLimitationAndAntiRollbackAnchorModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
             EncryptedVaultRequirement.KdfCandidateParameterPolicyModeled,
             EncryptedVaultRequirement.Argon2idCalibrationPolicyImplementedAndTested,
@@ -332,6 +348,32 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.StaleRecordManifestPolicyModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.VaultContainerContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.ManifestContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.StoragePolicyContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.AtomicityCrashRecoveryContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[EncryptedVaultRequirement.SecureStorageBoundaryContractModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.CandidateReviewedOnly,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.RollbackLimitationAndAntiRollbackAnchorModeled
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

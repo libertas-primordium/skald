@@ -67,7 +67,15 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     ProviderLevelKatStrategyApproved("provider-level KAT strategy approved"),
     RandomizedAeadBehavioralKatPolicyApproved("randomized AEAD behavioral KAT policy approved"),
     IntegratedVerificationOrderKatPolicyApproved("integrated verification-order KAT policy approved"),
+    VaultContainerContractApproved("vault container contract approved"),
+    ManifestContractApproved("manifest contract approved"),
     StaleRecordManifestPolicyApproved("stale-record and rollback manifest policy approved"),
+    StoragePolicyContractApproved("storage policy contract approved"),
+    AtomicityCrashRecoveryContractApproved("atomicity and crash-recovery contract approved"),
+    SecureStorageBoundaryContractApproved("secure storage boundary contract approved"),
+    RollbackLimitationAndAntiRollbackAnchorReviewed(
+        "rollback limitation and anti-rollback anchor status reviewed",
+    ),
     RuntimeOsSecureRandomEvidenceApproved("OS SecureRandom runtime provider/algorithm evidence approved"),
     UnknownRandomnessProviderStateRejected("unknown randomness/provider state rejected"),
     ForbiddenRandomApisGuarded("forbidden language and ad hoc random APIs guarded"),
@@ -499,6 +507,135 @@ data class ProductionProviderStaleRecordManifestPolicy(
     val providerSelectabilityBlockedUntilImplementedAndTested: Boolean,
 )
 
+enum class ProductionProviderVaultContainerField(val label: String) {
+    VaultMagicDomainMarker("vault magic/domain marker"),
+    VaultFormatVersion("vault format version"),
+    CanonicalVaultHeaderBytesOrReconstructableFields(
+        "canonical vault header bytes or fields sufficient to reconstruct them",
+    ),
+    HeaderCommitmentTag("header commitment tag"),
+    ProviderSuiteId("provider suite id"),
+    KdfAlgorithmVersionParameters("KDF algorithm, version, and parameters"),
+    SaltLengthAndBytes("salt length and salt bytes"),
+    DerivedRootMaterialLength("derived root material length"),
+    VaultId("vault id"),
+    PassphrasePolicyId("passphrase policy id"),
+    KeyExpansionPolicyId("key-expansion policy id"),
+    KeySeparationPolicyId("key-separation policy id"),
+    HeaderCommitmentPrimitivePolicyId("header commitment primitive policy id"),
+    HeaderCommitmentPolicyId("header commitment policy id"),
+    RecordFormatPolicyIdVersion("record format policy id/version"),
+    AadPolicyIdVersion("AAD policy id/version"),
+    ManifestPolicyIdVersion("manifest policy id/version"),
+    StoragePolicyIdVersion("storage policy id/version"),
+    FeatureFlags("feature flags"),
+    EncryptedRecordsSectionOrReferences("encrypted records section or record references"),
+    ManifestSectionOrReference("manifest section or manifest reference"),
+    IntegrityCriticalPreUnlockMetadata("integrity-critical metadata needed before unlock"),
+}
+
+enum class ProductionProviderVaultContainerRequirement(val label: String) {
+    NoPlaintextSecretsInContainer("plaintext secrets never appear in the container"),
+    NoRootMaterialSubkeysPassphrasesPlaintextOrTinkKeysets(
+        "root material, subkeys, passphrases, plaintext records, and Tink keysets never appear",
+    ),
+    HeaderCommitmentBeforeRecordAead("header commitment is verified before record AEAD use"),
+    StrictAadForRecordAead("record AEAD uses strict AAD"),
+    RandomizedCiphertextNotDeterministic("record ciphertext may be randomized and is not a fixed vector"),
+    RejectMalformedDuplicatedUnknownUnsupportedNonCanonicalHeader(
+        "future parser rejects malformed, duplicated, unknown, unsupported, or non-canonical header evidence",
+    ),
+    TypedFailuresForMalformedUntrustedInput("future parser returns typed failures for untrusted malformed input"),
+    NoParserWriterPersistenceInThisBranch("no parser, writer, or persistence implementation exists in this branch"),
+}
+
+enum class ProductionProviderManifestField(val label: String) {
+    ManifestMagicDomainMarker("manifest magic/domain marker"),
+    ManifestPolicyIdVersion("manifest policy id/version"),
+    VaultId("vault id"),
+    ProviderSuiteId("provider suite id"),
+    HeaderCommitmentContext("header commitment context"),
+    StorageNamespace("storage namespace"),
+    RecordNamespace("record namespace"),
+    LatestTrustedRecordVersionCounterPerRecordId("latest trusted record version/counter per record id"),
+    RecordTypePerRecordId("record type per record id"),
+    RecordLocationReference("record location/reference"),
+    TombstoneDeletionState("tombstone/deletion state"),
+    ManifestSequenceVersion("manifest sequence/version"),
+    CrashRecoveryMetadata("integrity-critical metadata needed for crash recovery"),
+}
+
+enum class ProductionProviderStorageAtomicityRequirement(val label: String) {
+    AtomicAtContainerManifestBoundary("writes are atomic at the vault-container/manifest boundary"),
+    PartialWritesRejected("partial writes are not treated as valid vault state"),
+    ManifestAndRecordDurabilityOrSafePreviousState(
+        "manifest update and record write both become durable or recovery chooses a safe previous state",
+    ),
+    NoNewerRecordWithoutManifestAuthority("crash recovery does not accept a newer record without manifest authority"),
+    NoOrphanOrResurrectRecords("crash recovery does not silently orphan or resurrect records"),
+    StartupRecoveryValidatesConsistencyBeforeUnlockSuccess(
+        "startup recovery validates manifest/header/record consistency before unlock success",
+    ),
+    PlatformStrategyRequiredBeforePersistenceApproval(
+        "temp-file, journal, rename, fsync, or equivalent strategy required before persistence approval",
+    ),
+    InterruptionTestsRequiredAtEachWritePhase("interruption tests are required at each write phase"),
+    NoWriteRecoveryImplementationInThisBranch("no atomic write or recovery implementation exists in this branch"),
+}
+
+enum class ProductionProviderSecureStorageBoundaryRequirement(val label: String) {
+    EncryptedContainerStorageSeparateFromSecureSecretStorage(
+        "encrypted vault container storage is separate from secure secret storage",
+    ),
+    SecureSecretStorageDisabledFailClosed("secure secret storage remains disabled and fail-closed"),
+    SecureMetadataStorageDisabledFailClosed("secure metadata storage remains disabled and fail-closed"),
+    AndroidWrappingOptionalConvenienceOnly("Android hardware/biometric wrapping is optional future convenience only"),
+    LinuxKeyringsNotPrimaryVaultProtection("Linux desktop keyrings are not primary vault protection"),
+    NoStorageSuccessUntilSecureBoundariesImplementedAndTested(
+        "no storage success path is approved until secure boundaries are implemented and tested",
+    ),
+}
+
+data class ProductionProviderContainerManifestStorageContract(
+    val vaultContainerPolicyId: String,
+    val manifestPolicyId: String,
+    val storagePolicyId: String,
+    val staleRecordPolicyId: String,
+    val atomicityCrashRecoveryPolicyId: String,
+    val secureStorageBoundaryPolicyId: String,
+    val antiRollbackAnchorPolicyId: String,
+    val vaultContainerContractStatus: ProductionProviderConstructionContractStatus,
+    val manifestContractStatus: ProductionProviderConstructionContractStatus,
+    val storagePolicyContractStatus: ProductionProviderConstructionContractStatus,
+    val staleRecordPolicyStatus: ProductionProviderConstructionContractStatus,
+    val atomicityCrashRecoveryContractStatus: ProductionProviderConstructionContractStatus,
+    val secureStorageBoundaryStatus: ProductionProviderConstructionContractStatus,
+    val containerFields: Set<ProductionProviderVaultContainerField>,
+    val containerRequirements: Set<ProductionProviderVaultContainerRequirement>,
+    val manifestFields: Set<ProductionProviderManifestField>,
+    val manifestBindings: Set<ProductionProviderStaleRecordManifestBinding>,
+    val manifestRequirements: Set<ProductionProviderStaleRecordManifestRequirement>,
+    val atomicityRequirements: Set<ProductionProviderStorageAtomicityRequirement>,
+    val secureStorageBoundaryRequirements: Set<ProductionProviderSecureStorageBoundaryRequirement>,
+    val strictAadSubstitutionProtectionModeled: Boolean,
+    val strictAadFreshnessProofClaimed: Boolean,
+    val localManifestStaleRecordDetectionModeled: Boolean,
+    val fullLocalDirectoryRollbackResistanceClaimed: Boolean,
+    val externalOrTrustedMonotonicAntiRollbackAnchorImplemented: Boolean,
+    val parserImplemented: Boolean,
+    val writerImplemented: Boolean,
+    val vaultPersistenceImplemented: Boolean,
+    val manifestReadWriteImplemented: Boolean,
+    val storageIndexReadWriteImplemented: Boolean,
+    val filesystemVaultStorageImplemented: Boolean,
+    val databaseVaultStorageImplemented: Boolean,
+    val dataStoreVaultStorageImplemented: Boolean,
+    val sharedPreferencesVaultStorageImplemented: Boolean,
+    val secureSecretStorageSuccessPathImplemented: Boolean,
+    val secureMetadataStorageSuccessPathImplemented: Boolean,
+    val atomicWriteRecoveryImplementationAdded: Boolean,
+)
+
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
     EmptyPassphrase("empty passphrase"),
     UnicodeControlCharacters("Unicode control characters"),
@@ -777,7 +914,19 @@ data class ProductionProviderAcceptanceEvidence(
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.IntegratedVerificationOrderKatPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.VaultContainerContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.ManifestContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StaleRecordManifestPolicyApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.StoragePolicyContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.AtomicityCrashRecoveryContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.SecureStorageBoundaryContractApproved to
+                        ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
+                    ProductionProviderAcceptanceGate.RollbackLimitationAndAntiRollbackAnchorReviewed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.StillDisabledProviderFacadeApproved to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
@@ -826,6 +975,7 @@ data class ProductionProviderAcceptanceContract(
     val randomizedAeadBehavioralKatPolicy: ProductionProviderRandomizedAeadBehavioralKatPolicy,
     val integratedVerificationOrderKatPolicy: ProductionProviderIntegratedVerificationOrderKatPolicy,
     val staleRecordManifestPolicy: ProductionProviderStaleRecordManifestPolicy,
+    val containerManifestStorageContract: ProductionProviderContainerManifestStorageContract,
     val canonicalHeaderEncodingPolicy: ProductionProviderCanonicalHeaderEncodingPolicy,
     val keySeparationPolicy: ProductionProviderKeySeparationPolicy,
     val passphraseEncodingPolicy: ProductionProviderPassphraseEncodingPolicy,
@@ -1141,6 +1291,50 @@ data class ProductionProviderAcceptanceContract(
                     externalOrTrustedMonotonicAnchorDesigned = false,
                     antiRollbackAnchorRequiredForGlobalRollbackResistance = true,
                     providerSelectabilityBlockedUntilImplementedAndTested = true,
+                ),
+                containerManifestStorageContract = ProductionProviderContainerManifestStorageContract(
+                    vaultContainerPolicyId = "skald-vault-v1-container-contract-v1",
+                    manifestPolicyId = "skald-vault-v1-manifest-contract-v1",
+                    storagePolicyId = "skald-vault-v1-local-manifest-storage-policy-v1",
+                    staleRecordPolicyId = "skald-vault-v1-stale-record-manifest-policy-v1",
+                    atomicityCrashRecoveryPolicyId = "skald-vault-v1-atomicity-crash-recovery-policy-v1",
+                    secureStorageBoundaryPolicyId = "skald-vault-v1-secure-storage-boundary-policy-v1",
+                    antiRollbackAnchorPolicyId = "skald-vault-v1-anti-rollback-anchor-policy-v1",
+                    vaultContainerContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    manifestContractStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    storagePolicyContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    staleRecordPolicyStatus = ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    atomicityCrashRecoveryContractStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    secureStorageBoundaryStatus =
+                        ProductionProviderConstructionContractStatus.DocumentedModelOnly,
+                    containerFields = ProductionProviderVaultContainerField.entries.toSet(),
+                    containerRequirements = ProductionProviderVaultContainerRequirement.entries.toSet(),
+                    manifestFields = ProductionProviderManifestField.entries.toSet(),
+                    manifestBindings = ProductionProviderStaleRecordManifestBinding.entries.toSet(),
+                    manifestRequirements = ProductionProviderStaleRecordManifestRequirement.entries.toSet(),
+                    atomicityRequirements = ProductionProviderStorageAtomicityRequirement.entries.toSet(),
+                    secureStorageBoundaryRequirements =
+                        ProductionProviderSecureStorageBoundaryRequirement.entries.toSet(),
+                    strictAadSubstitutionProtectionModeled = true,
+                    strictAadFreshnessProofClaimed = false,
+                    localManifestStaleRecordDetectionModeled = true,
+                    fullLocalDirectoryRollbackResistanceClaimed = false,
+                    externalOrTrustedMonotonicAntiRollbackAnchorImplemented = false,
+                    parserImplemented = false,
+                    writerImplemented = false,
+                    vaultPersistenceImplemented = false,
+                    manifestReadWriteImplemented = false,
+                    storageIndexReadWriteImplemented = false,
+                    filesystemVaultStorageImplemented = false,
+                    databaseVaultStorageImplemented = false,
+                    dataStoreVaultStorageImplemented = false,
+                    sharedPreferencesVaultStorageImplemented = false,
+                    secureSecretStorageSuccessPathImplemented = false,
+                    secureMetadataStorageSuccessPathImplemented = false,
+                    atomicWriteRecoveryImplementationAdded = false,
                 ),
                 canonicalHeaderEncodingPolicy = ProductionProviderCanonicalHeaderEncodingPolicy(
                     policyId = "skald-vault-v1-canonical-header-encoding-v1",
