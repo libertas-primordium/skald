@@ -69,7 +69,8 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageInterruptionTestsMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageFailureRuntimeMappingMissing)
-        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StorageNamespacePathImplementationMissing)
+        assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StorageNamespacePathImplementationMissing))
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.StoragePathConstructionImplementationMissing)
         assertFalse(decision.blockers.contains(EncryptedVaultBlockingIssue.StaleRecordManifestPolicyImplementationMissing))
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.AntiRollbackAnchorAbsentNoFullRollbackClaim)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ManifestStorageAtomicityReviewMissing)
@@ -113,6 +114,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.InMemoryStorageAtomicityCrashSimulator)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageFailureModelContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathHygieneContractModel)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.StorageNamespacePathPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.RollbackLimitationAntiRollbackAnchorModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.SecureStorageBoundaryContractModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.TestOnlyProviderKatHarnessModel)
@@ -271,6 +273,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.StorageAtomicityCrashSimulatorImplementedAndTested,
             EncryptedVaultRequirement.StorageFailureModelModeled,
             EncryptedVaultRequirement.StorageNamespacePathHygieneModeled,
+            EncryptedVaultRequirement.StorageNamespacePathPolicyImplementedAndTested,
             EncryptedVaultRequirement.SecureStorageBoundaryContractModeled,
             EncryptedVaultRequirement.RollbackLimitationAndAntiRollbackAnchorModeled,
             EncryptedVaultRequirement.KdfCalibrationPolicyModeled,
@@ -424,6 +427,12 @@ class EncryptedVaultReadinessPolicyTest {
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.StorageNamespacePathHygieneModeled],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.StorageNamespacePathPolicyImplementedAndTested
+            ],
         )
         assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,

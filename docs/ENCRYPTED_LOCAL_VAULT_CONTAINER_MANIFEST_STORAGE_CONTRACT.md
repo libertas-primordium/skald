@@ -28,6 +28,14 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultStorageAtomic
 
 It operates only on caller-supplied non-secret container and manifest byte arrays plus in-memory temporary/committed/quarantine state. It injects interruptions at the documented write phases, validates bytes through the existing in-memory container and manifest parsers, applies the local manifest-relative stale-record policy, and returns typed recovery decisions. It does not read files, write files, call platform storage, call database APIs, call DataStore or SharedPreferences, implement temp files, implement journals, implement rename/fsync behavior, persist bytes, access secure storage, or prove platform durability.
 
+A still-disabled storage namespace/path policy building block now exists:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageNamespacePathPolicy.kt
+```
+
+It validates stable namespace/policy identifiers and deterministically encodes fixed non-secret vault and record ID bytes into relative safe path segments. It does not construct absolute paths, choose platform storage roots, create directories, read files, write files, access storage, persist bytes, or approve persistence.
+
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
 Related evidence is modeled in:
@@ -48,7 +56,7 @@ Required policy ids:
 - Crash-recovery policy id: `skald-vault-v1-crash-recovery-policy-v1`
 - Storage interruption-test policy id: `skald-vault-v1-storage-interruption-test-policy-v1`
 - Storage failure model policy id: `skald-vault-v1-storage-failure-model-policy-v1`
-- Storage namespace/path hygiene policy id: `skald-vault-v1-storage-namespace-path-hygiene-policy-v1`
+- Storage namespace/path policy id: `skald-vault-v1-storage-namespace-path-policy-v1`
 - In-memory storage atomicity simulator policy id: `skald-vault-v1-in-memory-storage-atomicity-simulator-policy-v1`
 - Secure-storage boundary policy id: `skald-vault-v1-secure-storage-boundary-policy-v1`
 - Anti-rollback anchor policy id: `skald-vault-v1-anti-rollback-anchor-policy-v1`
@@ -375,19 +383,42 @@ This branch models the categories only. It does not map real platform exceptions
 
 ## Storage Namespace And Path Hygiene
 
+The storage namespace/path policy id is:
+
+```text
+skald-vault-v1-storage-namespace-path-policy-v1
+```
+
+The still-disabled policy validates these stable internal identifiers:
+
+- storage policy id: `skald-vault-v1-local-manifest-storage-policy-v1`;
+- storage namespace id: `skald-vault/v1/local-records`;
+- record namespace id: `skald-vault/v1/records`;
+- manifest namespace id: `skald-vault/v1/manifests`.
+
 Future storage namespace and path rules:
 
 - storage namespace ids must be stable ASCII constants or validated safe identifiers;
-- vault ids must not be used directly as raw filesystem paths without encoding;
+- namespace IDs may contain `/` only as internal namespace identifiers, never as filesystem path segments;
+- path segments must be encoded by explicit policy before any future filesystem use;
+- path segments are lowercase ASCII letters, digits, hyphen, and underscore only;
+- vault ids must not be used directly as raw filesystem paths;
+- fixed non-secret 16-byte vault ids encode deterministically as `vault_` plus lowercase hex;
+- fixed non-secret 16-byte record ids encode deterministically as `record_` plus lowercase hex;
+- the manifest segment is the stable safe segment `manifest_v1`;
 - user-controlled strings must not become filesystem paths;
 - path traversal is forbidden;
 - absolute user-supplied paths are forbidden;
-- symlink-following behavior requires review before implementation;
-- secret values must not appear in path names;
-- wallet labels and note text must not appear in path names;
-- future implementation must choose a reviewed platform-specific app-private root.
+- Windows drive prefixes and URI-like prefixes such as `file:` are forbidden;
+- whitespace, control characters, invisible format characters, non-ASCII text, and unsupported punctuation are forbidden in path segments;
+- secret-looking material must not appear in path names;
+- wallet labels, note text, wallet names, record titles, and other user-provided names must not appear in path names;
+- future implementation must choose a reviewed platform-specific app-private root;
+- symlink-following behavior requires review before implementation.
 
-This branch does not implement namespace validation beyond the existing in-memory manifest fixture rules, path construction, platform root selection, symlink behavior, or storage access.
+The policy returns typed rejection reasons for empty identifiers, dot segments, parent segments, path separators, traversal, control characters, whitespace, invisible format characters, non-ASCII characters, unsupported characters, excessive length, wrong vault/record ID length, user-controlled input, secret-looking material, absolute paths, URI-like prefixes, Windows drive prefixes, and unknown namespace policy values.
+
+This branch implements only pure validation and relative safe segment encoding. It does not implement path construction, absolute paths, platform root selection, directory creation, symlink behavior, storage index read/write, file reads, file writes, database storage, DataStore, SharedPreferences, manifest file/storage read/write, secure-storage success paths, or persistence.
 
 ## Secure Storage Boundary
 
@@ -411,20 +442,20 @@ The readiness and acceptance models must distinguish:
 - implemented/tested still-disabled in-memory manifest parser/writer;
 - implemented/tested still-disabled local manifest-relative stale-record decision policy;
 - implemented/tested still-disabled in-memory storage atomicity/crash simulator;
+- implemented/tested still-disabled storage namespace/path policy;
 - documented/model-only platform storage boundary;
 - documented/model-only atomic write strategy;
 - documented/model-only crash-recovery contract;
 - documented/model-only interruption-test contract;
 - documented/model-only storage failure model;
-- documented/model-only storage namespace/path hygiene contract;
 - documented/model-only secure-storage boundary;
 - absent anti-rollback anchor and no full rollback-resistance claim;
-- absent storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
+- absent actual path construction, platform root selection, storage, manifest file/storage read/write, storage index, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
-Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, atomicity, or secure-storage evidence must block provider selectability and persistence.
+Missing, unknown, failed, unsupported, documented-only, or unimplemented container, manifest, stale-record, namespace/path, atomicity, or secure-storage evidence must block provider selectability and persistence.
 
-Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
+Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
 ## Remaining Gates
 
@@ -446,6 +477,6 @@ Before vault persistence:
 - crash-recovery implementation;
 - interruption/corruption tests;
 - storage failure runtime mapping;
-- storage namespace/path implementation and review;
+- actual path construction and platform root review;
 - secure secret storage and secure metadata storage boundary implementation;
 - explicit review of rollback limitations and any anti-rollback anchor decision.
