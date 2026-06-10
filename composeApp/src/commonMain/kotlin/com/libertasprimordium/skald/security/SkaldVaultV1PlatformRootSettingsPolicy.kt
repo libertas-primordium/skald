@@ -11,6 +11,7 @@ enum class SkaldVaultV1PlatformRootSettingsDecision(val label: String) {
     LinuxLocalShareFallbackPolicy("Linux default root convention falls back to ~/.local/share/"),
     LinuxXdgStyleUserDataLocationFutureOnly("Linux XDG-style user-data resolution is future-only"),
     LinuxCustomRootSettingsPlanned("Linux custom vault directory is a future Settings option"),
+    LinuxCustomRootValidationPolicyImplemented("Linux custom root static validation policy is implemented"),
     LinuxCustomRootUnimplemented("Linux custom vault directory support is not implemented"),
     LinuxCustomRootUnreviewed("Linux custom vault directory review is incomplete"),
     UserConfiguredRootRequiresValidation("user-configured roots require validation before use"),
@@ -63,6 +64,7 @@ data class SkaldVaultV1PlatformRootSettingsContract(
     val policyId: String,
     val androidRootPolicyId: String,
     val linuxRootSettingsPolicyId: String,
+    val linuxCustomRootValidationPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -73,6 +75,7 @@ data class SkaldVaultV1PlatformRootSettingsContract(
     val linuxCustomRootSettingsPlanned: Boolean,
     val androidRootResolutionImplemented: Boolean,
     val linuxRootResolutionImplemented: Boolean,
+    val linuxCustomRootValidationImplemented: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val actualPathConstructionImplemented: Boolean,
@@ -90,6 +93,8 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
     const val POLICY_ID = "skald-vault-v1-platform-root-settings-policy-v1"
     const val ANDROID_ROOT_POLICY_ID = "skald-vault-v1-android-app-private-internal-root-policy-v1"
     const val LINUX_ROOT_SETTINGS_POLICY_ID = "skald-vault-v1-linux-root-settings-policy-v1"
+    const val LINUX_CUSTOM_ROOT_VALIDATION_POLICY_ID =
+        SkaldVaultV1LinuxCustomRootValidationPolicy.POLICY_ID
     const val OS_KEYRING_PASSPHRASE_POLICY_ID = "skald-vault-v1-os-keyring-passphrase-policy-v1"
     const val PASSWORD_MANAGER_PASSPHRASE_POLICY_ID = "skald-vault-v1-password-manager-passphrase-policy-v1"
     const val PASSPHRASE_FIRST_POLICY_ID = "skald-vault-v1-passphrase-first-vault-authority-policy-v1"
@@ -100,6 +105,7 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
             policyId = POLICY_ID,
             androidRootPolicyId = ANDROID_ROOT_POLICY_ID,
             linuxRootSettingsPolicyId = LINUX_ROOT_SETTINGS_POLICY_ID,
+            linuxCustomRootValidationPolicyId = LINUX_CUSTOM_ROOT_VALIDATION_POLICY_ID,
             osKeyringPassphrasePolicyId = OS_KEYRING_PASSPHRASE_POLICY_ID,
             passwordManagerPassphrasePolicyId = PASSWORD_MANAGER_PASSPHRASE_POLICY_ID,
             passphraseFirstPolicyId = PASSPHRASE_FIRST_POLICY_ID,
@@ -110,6 +116,7 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
             linuxCustomRootSettingsPlanned = true,
             androidRootResolutionImplemented = false,
             linuxRootResolutionImplemented = false,
+            linuxCustomRootValidationImplemented = true,
             settingsUiImplemented = false,
             settingsPersistenceImplemented = false,
             actualPathConstructionImplemented = false,
