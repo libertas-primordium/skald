@@ -12,6 +12,11 @@ enum class SkaldVaultV1PlatformRootSettingsDecision(val label: String) {
     LinuxXdgStyleUserDataLocationFutureOnly("Linux XDG-style user-data resolution is future-only"),
     LinuxCustomRootSettingsPlanned("Linux custom vault directory is a future Settings option"),
     LinuxCustomRootValidationPolicyImplemented("Linux custom root static validation policy is implemented"),
+    LinuxRootResolutionEvidenceModeled("Linux root-resolution evidence model is implemented"),
+    LinuxRootResolutionStillDisabled("Linux root-resolution evidence remains still disabled"),
+    LinuxRootResolutionDoesNotResolveFilesystem("Linux root-resolution evidence does not resolve the filesystem"),
+    LinuxRootResolutionDoesNotConstructPaths("Linux root-resolution evidence does not construct platform paths"),
+    LinuxRootResolutionDoesNotEnablePersistence("Linux root-resolution evidence does not enable persistence"),
     LinuxCustomRootUnimplemented("Linux custom vault directory support is not implemented"),
     LinuxCustomRootUnreviewed("Linux custom vault directory review is incomplete"),
     UserConfiguredRootRequiresValidation("user-configured roots require validation before use"),
@@ -41,6 +46,10 @@ enum class SkaldVaultV1PlatformRootSettingsFailureReason(val label: String) {
     AndroidUninstallBehaviorUnreviewed("Android uninstall behavior unreviewed"),
     LinuxDefaultUserDataRootPolicy("Linux default user-data root policy only"),
     LinuxCustomRootSettingsPlanned("Linux custom root settings planned only"),
+    LinuxRootResolutionStillDisabled("Linux root-resolution evidence still disabled"),
+    LinuxRootResolutionDoesNotResolveFilesystem("Linux root-resolution evidence does not resolve filesystem state"),
+    LinuxRootResolutionDoesNotConstructPaths("Linux root-resolution evidence does not construct paths"),
+    LinuxRootResolutionDoesNotEnablePersistence("Linux root-resolution evidence does not enable persistence"),
     LinuxCustomRootUnimplemented("Linux custom root unimplemented"),
     LinuxCustomRootUnreviewed("Linux custom root unreviewed"),
     UserConfiguredRootRequiresValidation("user-configured root requires validation"),
@@ -65,6 +74,7 @@ data class SkaldVaultV1PlatformRootSettingsContract(
     val androidRootPolicyId: String,
     val linuxRootSettingsPolicyId: String,
     val linuxCustomRootValidationPolicyId: String,
+    val linuxRootResolutionPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -76,6 +86,11 @@ data class SkaldVaultV1PlatformRootSettingsContract(
     val androidRootResolutionImplemented: Boolean,
     val linuxRootResolutionImplemented: Boolean,
     val linuxCustomRootValidationImplemented: Boolean,
+    val linuxRootResolutionEvidenceModeled: Boolean,
+    val linuxRootResolutionStillDisabled: Boolean,
+    val linuxRootResolutionDoesNotResolveFilesystem: Boolean,
+    val linuxRootResolutionDoesNotConstructPaths: Boolean,
+    val linuxRootResolutionDoesNotEnablePersistence: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val actualPathConstructionImplemented: Boolean,
@@ -95,6 +110,8 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
     const val LINUX_ROOT_SETTINGS_POLICY_ID = "skald-vault-v1-linux-root-settings-policy-v1"
     const val LINUX_CUSTOM_ROOT_VALIDATION_POLICY_ID =
         SkaldVaultV1LinuxCustomRootValidationPolicy.POLICY_ID
+    const val LINUX_ROOT_RESOLUTION_POLICY_ID =
+        SkaldVaultV1LinuxRootResolutionPolicy.POLICY_ID
     const val OS_KEYRING_PASSPHRASE_POLICY_ID = "skald-vault-v1-os-keyring-passphrase-policy-v1"
     const val PASSWORD_MANAGER_PASSPHRASE_POLICY_ID = "skald-vault-v1-password-manager-passphrase-policy-v1"
     const val PASSPHRASE_FIRST_POLICY_ID = "skald-vault-v1-passphrase-first-vault-authority-policy-v1"
@@ -106,6 +123,7 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
             androidRootPolicyId = ANDROID_ROOT_POLICY_ID,
             linuxRootSettingsPolicyId = LINUX_ROOT_SETTINGS_POLICY_ID,
             linuxCustomRootValidationPolicyId = LINUX_CUSTOM_ROOT_VALIDATION_POLICY_ID,
+            linuxRootResolutionPolicyId = LINUX_ROOT_RESOLUTION_POLICY_ID,
             osKeyringPassphrasePolicyId = OS_KEYRING_PASSPHRASE_POLICY_ID,
             passwordManagerPassphrasePolicyId = PASSWORD_MANAGER_PASSPHRASE_POLICY_ID,
             passphraseFirstPolicyId = PASSPHRASE_FIRST_POLICY_ID,
@@ -117,6 +135,11 @@ object SkaldVaultV1PlatformRootSettingsPolicy {
             androidRootResolutionImplemented = false,
             linuxRootResolutionImplemented = false,
             linuxCustomRootValidationImplemented = true,
+            linuxRootResolutionEvidenceModeled = true,
+            linuxRootResolutionStillDisabled = true,
+            linuxRootResolutionDoesNotResolveFilesystem = true,
+            linuxRootResolutionDoesNotConstructPaths = true,
+            linuxRootResolutionDoesNotEnablePersistence = true,
             settingsUiImplemented = false,
             settingsPersistenceImplemented = false,
             actualPathConstructionImplemented = false,

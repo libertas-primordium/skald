@@ -86,6 +86,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     LinuxCustomRootValidationPolicyImplementedAndTested(
         "Linux custom root validation policy implemented and tested",
     ),
+    LinuxRootResolutionPolicyImplementedAndTested(
+        "Linux root-resolution evidence policy implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -899,6 +902,29 @@ enum class ProductionProviderLinuxCustomRootValidationRule(val label: String) {
     NoStorageImplementationInThisBranch("no storage implementation exists in this branch"),
 }
 
+enum class ProductionProviderLinuxRootResolutionRule(val label: String) {
+    CallerSuppliedStaticEvidenceOnly("root-resolution evidence consumes caller-supplied static evidence only"),
+    DefaultUserDataEvidenceCanBePlanned("caller-supplied default user-data evidence can be planned"),
+    CustomRootValidationResultIntegrated("custom-root validation results are integrated"),
+    RejectedCustomRootValidationBlocksResolutionEvidence(
+        "rejected custom-root validation blocks root-resolution evidence",
+    ),
+    AcceptedCustomRootValidationStillDisabled(
+        "accepted custom-root validation produces still-disabled planned evidence only",
+    ),
+    RootTokensAreNotPlatformPaths("root tokens are not platform paths"),
+    DiagnosticsRedactRootStrings("diagnostics redact root strings by default"),
+    DoesNotReadEnvironmentOrSystemProperties("policy does not read environment variables or system properties"),
+    DoesNotResolveLinuxUserDataRoot("policy does not resolve the Linux user-data root"),
+    DoesNotConstructPlatformPaths("policy does not construct platform paths"),
+    DoesNotTouchFilesystem("policy does not call filesystem APIs"),
+    DoesNotPersistSettings("policy does not persist Settings"),
+    DoesNotProveExistenceContainmentSymlinkPermissionOwnershipDurability(
+        "policy does not prove existence, containment, symlink, permission, ownership, or durability state",
+    ),
+    DoesNotEnablePersistenceOrProviderSelection("policy does not enable persistence or provider selection"),
+}
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1046,6 +1072,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val androidRootPolicyId: String,
     val linuxRootSettingsPolicyId: String,
     val linuxCustomRootValidationPolicyId: String,
+    val linuxRootResolutionPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1074,6 +1101,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformStorageRootContractStatus: ProductionProviderConstructionContractStatus,
     val platformRootSettingsPolicyStatus: ProductionProviderConstructionContractStatus,
     val linuxCustomRootValidationPolicyStatus: ProductionProviderConstructionContractStatus,
+    val linuxRootResolutionPolicyStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1102,6 +1130,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformStorageRootRules: Set<ProductionProviderPlatformStorageRootRule>,
     val platformRootSettingsRules: Set<ProductionProviderPlatformRootSettingsRule>,
     val linuxCustomRootValidationRules: Set<ProductionProviderLinuxCustomRootValidationRule>,
+    val linuxRootResolutionRules: Set<ProductionProviderLinuxRootResolutionRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1148,6 +1177,11 @@ data class ProductionProviderContainerManifestStorageContract(
     val linuxCustomRootSettingsContractModeled: Boolean,
     val linuxCustomRootUsable: Boolean,
     val linuxCustomRootValidationImplemented: Boolean,
+    val linuxRootResolutionEvidenceModeled: Boolean,
+    val linuxRootResolutionStillDisabled: Boolean,
+    val linuxRootResolutionDoesNotResolveFilesystem: Boolean,
+    val linuxRootResolutionDoesNotConstructPaths: Boolean,
+    val linuxRootResolutionDoesNotEnablePersistence: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val osKeyringPrimaryStorageRejected: Boolean,
@@ -1495,6 +1529,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.PlatformRootSettingsPolicyApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
                     ProductionProviderAcceptanceGate.LinuxCustomRootValidationPolicyImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.LinuxRootResolutionPolicyImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -1907,6 +1943,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1PlatformRootSettingsPolicy.LINUX_ROOT_SETTINGS_POLICY_ID,
                     linuxCustomRootValidationPolicyId =
                         SkaldVaultV1LinuxCustomRootValidationPolicy.POLICY_ID,
+                    linuxRootResolutionPolicyId =
+                        SkaldVaultV1LinuxRootResolutionPolicy.POLICY_ID,
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
@@ -1959,6 +1997,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     linuxCustomRootValidationPolicyStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
+                    linuxRootResolutionPolicyStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     symlinkTraversalContractStatus =
@@ -2005,6 +2045,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderPlatformRootSettingsRule.entries.toSet(),
                     linuxCustomRootValidationRules =
                         ProductionProviderLinuxCustomRootValidationRule.entries.toSet(),
+                    linuxRootResolutionRules =
+                        ProductionProviderLinuxRootResolutionRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -2058,6 +2100,11 @@ data class ProductionProviderAcceptanceContract(
                     linuxCustomRootSettingsContractModeled = true,
                     linuxCustomRootUsable = false,
                     linuxCustomRootValidationImplemented = true,
+                    linuxRootResolutionEvidenceModeled = true,
+                    linuxRootResolutionStillDisabled = true,
+                    linuxRootResolutionDoesNotResolveFilesystem = true,
+                    linuxRootResolutionDoesNotConstructPaths = true,
+                    linuxRootResolutionDoesNotEnablePersistence = true,
                     settingsUiImplemented = false,
                     settingsPersistenceImplemented = false,
                     osKeyringPrimaryStorageRejected = true,

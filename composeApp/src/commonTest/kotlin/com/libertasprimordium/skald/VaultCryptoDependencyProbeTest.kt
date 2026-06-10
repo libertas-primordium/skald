@@ -95,6 +95,7 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.AndroidAppPrivateRootPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.LinuxRootSettingsPolicyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.LinuxCustomRootValidationPolicyImplementedTested)
+        assertContains(selected.capabilities, VaultCryptoDependencyCapability.LinuxRootResolutionPolicyImplementedTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PassphraseFirstVaultAuthorityModeled)

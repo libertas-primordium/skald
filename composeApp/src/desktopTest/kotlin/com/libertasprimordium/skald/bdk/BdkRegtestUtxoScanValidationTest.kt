@@ -383,15 +383,9 @@ class BdkRegtestUtxoScanValidationTest {
     @Test
     fun sourceDocsAndTestsContainNoHardcodedUtxoScanAddressOrTxidFixtures() {
         val root = repositoryRoot()
-        val roots = listOf(
-            File(root, "README.md"),
-            File(root, "docs"),
-            File(root, "composeApp/src"),
-        )
-        val hardcodedAddress = Regex("""\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\b""", RegexOption.IGNORE_CASE)
-        val hardcodedTxid = Regex("""\b[0-9a-fA-F]{64}\b""")
-        val offenders = roots
+        val offenders = utxoScanFixtureGuardTargets(root)
             .asSequence()
+            .filter { it.exists() }
             .flatMap { rootFile ->
                 if (rootFile.isDirectory) {
                     rootFile.walkTopDown().asSequence()
@@ -400,14 +394,23 @@ class BdkRegtestUtxoScanValidationTest {
                 }
             }
             .filter { it.isFile && (it.extension in setOf("md", "kt", "kts") || it.name == "README.md") }
-            .filter { file ->
+            .filterNot { file -> file.relativeTo(root).invariantSeparatorsPath == ThisGuardFile }
+            .flatMap { file ->
                 val text = file.readText()
-                hardcodedAddress.containsMatchIn(text) || hardcodedTxid.containsMatchIn(text)
+                forbiddenUtxoScanFixturePatterns().mapNotNull { pattern ->
+                    if (pattern.regex.containsMatchIn(text)) {
+                        "${file.relativeTo(root).invariantSeparatorsPath} (${pattern.label})"
+                    } else {
+                        null
+                    }
+                }.asSequence()
             }
-            .map { it.relativeTo(root).invariantSeparatorsPath }
             .toList()
 
-        assertTrue(offenders.isEmpty(), "Hardcoded address/txid-like fixtures found: $offenders")
+        assertTrue(
+            offenders.isEmpty(),
+            "Hardcoded UTXO scan wallet/address/txid-like fixtures found: $offenders",
+        )
     }
 
     private fun operationalWallet(
@@ -446,7 +449,87 @@ class BdkRegtestUtxoScanValidationTest {
         generateSequence(File(".").absoluteFile) { file -> file.parentFile }
             .first { candidate -> File(candidate, "settings.gradle.kts").exists() }
 
+    private data class ForbiddenUtxoScanFixturePattern(
+        val label: String,
+        val regex: Regex,
+    )
+
+    private fun utxoScanFixtureGuardTargets(root: File): List<File> =
+        listOf(
+            File(root, "docs/BDK_REGTEST_UTXO_SCAN_VALIDATION.md"),
+            File(root, "docs/BDK_REGTEST_WALLET_VALIDATION.md"),
+            File(root, "docs/BDK_REGTEST_ADDRESS_DERIVATION.md"),
+            File(root, "docs/LOCAL_ELECTRUM_REGTEST_HARNESS.md"),
+            File(root, "docs/REGTEST_HARNESS.md"),
+            File(root, "docs/BACKEND_OBSERVATION_STATE.md"),
+            File(root, "docs/RECEIVE_ADDRESS_POLICY.md"),
+            File(root, "docs/PRODUCTION_BACKEND_ADAPTER_BOUNDARY.md"),
+            File(root, "docs/PRODUCTION_SYNC_SERVICE_BOUNDARY.md"),
+            File(root, "docs/RECOVERY_PRIVACY_SYNC_STATUS.md"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BackendEndpointPolicyTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BackendObservationStateTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BackendSettingsTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinBackendConnectionHarnessTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncServiceTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BitcoinWalletSyncStatusUiModelTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/BdkAdapterBoundaryTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/DescriptorWalletWorkflowTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterBoundaryTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/ReceiveAddressPolicyTest.kt"),
+            File(root, "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RecoveryPrivacySyncStatusTest.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/BackendObservationSourceGuardTest.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/BdkDesktopAdapterProbeTest.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ReceiveAddressPolicySourceGuardTest.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/regtest"),
+        )
+
+    private fun forbiddenUtxoScanFixturePatterns(): List<ForbiddenUtxoScanFixturePattern> =
+        listOf(
+            ForbiddenUtxoScanFixturePattern(
+                label = "Bitcoin address",
+                regex = Regex("""\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\b""", RegexOption.IGNORE_CASE),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "64-hex txid/outpoint-like fixture",
+                regex = Regex("""\b[0-9a-fA-F]{64}\b"""),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "raw transaction hex-like fixture",
+                regex = Regex("""\b0[12][0-9a-fA-F]{80,}\b"""),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "serialized PSBT-like fixture",
+                regex = Regex("""\bcHNidP8[A-Za-z0-9+/=]{16,}\b"""),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "extended private key-like fixture",
+                regex = Regex("""\b[xt]prv[A-Za-z0-9]{20,}\b""", RegexOption.IGNORE_CASE),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "WIF-like private key fixture",
+                regex = Regex("""\b(?:K|L|5)[1-9A-HJ-NP-Za-km-z]{50,51}\b"""),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "Nostr secret key-like fixture",
+                regex = Regex("""\bnsec1[A-Za-z0-9]{20,}\b""", RegexOption.IGNORE_CASE),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "backend credential-like fixture",
+                regex = Regex("""(?i)\b(?:rpcpassword|rpcuser|rpccookie|cookie|macaroon|token|api[_-]?key)\s*[:=]\s*[A-Za-z0-9+/]{20,}\b"""),
+            ),
+            ForbiddenUtxoScanFixturePattern(
+                label = "mnemonic-like fixture",
+                regex = Regex("""(?i)\b(?:abandon\s+){2,}[a-z]+(?:\s+[a-z]+){8,}\b"""),
+            ),
+        )
+
     private companion object {
+        const val ThisGuardFile =
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/BdkRegtestUtxoScanValidationTest.kt"
+
         const val ElectrumScanAdapterFile =
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/bdk/BdkRegtestElectrumScanAdapter.kt"
     }

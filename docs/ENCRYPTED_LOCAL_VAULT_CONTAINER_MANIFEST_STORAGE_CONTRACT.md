@@ -68,9 +68,17 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 
 It performs pure static validation of candidate Linux custom vault-root strings. It can accept a candidate only as policy evidence and returns typed rejection reasons for relative paths, tilde paths, root/temp/system/runtime/removable-media roots, traversal, empty segments, control or invisible characters, whitespace, unsupported characters, URI-like prefixes, Windows drive prefixes, user-label sources, secret-looking material, and excessive length. Accepted candidates remain untrusted strings: they are not resolved, not expanded, not checked for existence, not checked for containment, not checked for symlinks, not checked for permissions, not checked for durability, not persisted as settings, and not usable for storage. The policy does not read `XDG_DATA_HOME`, read `HOME`, expand `~`, construct paths, create directories, call filesystem APIs, add Settings UI, persist settings, or approve persistence.
 
+A still-disabled Linux root-resolution evidence policy now exists:
+
+```text
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LinuxRootResolutionPolicy.kt
+```
+
+It consumes caller-supplied static default-root evidence or the existing Linux custom-root validation result and returns typed, redacted, still-disabled root-resolution evidence. Accepted evidence produces a root token and capability model only. It is not a platform path, does not read `HOME`, does not read `XDG_DATA_HOME`, does not read environment variables or system properties, does not resolve real paths, does not construct platform paths, does not call filesystem APIs, does not prove existence, containment, symlink safety, permissions, ownership, durability, or atomic-write safety, does not add Settings UI or settings persistence, does not add secure storage, does not make custom roots usable, does not enable vault persistence, and does not make a provider selectable.
+
 This branch also records the v1 durability fail-closed decision and warning-only rejection policy for encrypted vault writes. Unsupported, unknown, unreviewed, insufficient, unsafe, or failed durability blocks encrypted vault persistence. Warning-only encrypted vault persistence is not approved for v1, and user consent cannot override a required durability failure.
 
-The platform storage-root, platform root settings, Linux custom-root validation, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
+The platform storage-root, platform root settings, Linux custom-root validation, Linux root-resolution evidence, safe path-construction, symlink/traversal, permission/ownership, durability-capability, durability fail-closed, and warning-only rejection contracts are represented in `ProductionProviderAcceptanceContract`, `EncryptedVaultReadiness`, and `VaultCryptoDependencyProbe` only. They do not resolve Android or desktop storage roots, join paths, check symlinks, inspect permissions, probe durability, create directories, read files, write files, add Settings UI, persist settings, integrate OS keyrings, integrate password managers, or approve persistence.
 
 This remains contract and still-disabled building-block evidence only. It does not implement provider selectability, vault creation, vault unlock, vault persistence, manifest file/storage read/write, storage index read/write, filesystem storage, database storage, DataStore or SharedPreferences storage, secure secret storage success, secure metadata storage success, migration, re-encryption, sync, import/export, wallet behavior, backend behavior, signing, broadcasting, Tor, Nostr, or mainnet.
 
@@ -100,6 +108,7 @@ Required policy ids:
 - Android root policy id: `skald-vault-v1-android-app-private-internal-root-policy-v1`
 - Linux root settings policy id: `skald-vault-v1-linux-root-settings-policy-v1`
 - Linux custom-root validation policy id: `skald-vault-v1-linux-custom-root-validation-policy-v1`
+- Linux root-resolution policy id: `skald-vault-v1-linux-root-resolution-policy-v1`
 - OS keyring passphrase policy id: `skald-vault-v1-os-keyring-passphrase-policy-v1`
 - Password-manager passphrase policy id: `skald-vault-v1-password-manager-passphrase-policy-v1`
 - Passphrase-first vault authority policy id: `skald-vault-v1-passphrase-first-vault-authority-policy-v1`
@@ -216,6 +225,8 @@ Linux root/settings decisions:
 - Linux custom vault roots are planned only as a future Settings-configurable option.
 - `skald-vault-v1-linux-custom-root-validation-policy-v1` validates static custom-root candidate strings only.
 - Accepted custom-root candidates are not resolved paths and do not prove path existence, filesystem safety, containment, symlink state, permissions, durability, Settings readiness, storage readiness, or persistence readiness.
+- `skald-vault-v1-linux-root-resolution-policy-v1` consumes caller-supplied static evidence only. It may turn accepted default-root evidence or accepted custom-root validation evidence into a redacted, still-disabled root token, but that token is not a filesystem path and is not usable for file I/O.
+- Linux root-resolution evidence does not read `HOME`, read `XDG_DATA_HOME`, read environment variables, read system properties, expand `~`, resolve real roots, construct platform paths, call filesystem APIs, prove existence, prove containment, prove symlink safety, prove permissions, prove ownership, prove durability, prove atomic-write safety, persist settings, enable storage, enable persistence, or make a provider selectable.
 - Custom roots are not usable until Settings UI, settings persistence, root resolution, containment review, symlink review, permission review, durability review, and storage implementation exist.
 - Custom roots must not contain secrets, wallet labels, account labels, note text, or unsafe user-controlled path content.
 
@@ -768,6 +779,7 @@ The readiness and acceptance models must distinguish:
 - implemented/tested still-disabled storage namespace/path policy;
 - implemented/tested still-disabled logical storage layout plan;
 - implemented/tested still-disabled path-containment planner;
+- implemented/tested still-disabled Linux root-resolution evidence policy;
 - documented/model-only platform storage boundary;
 - documented/model-only atomic write strategy;
 - documented/model-only crash-recovery contract;
@@ -786,9 +798,9 @@ The readiness and acceptance models must distinguish:
 - absent actual path construction, path joining, real containment checks, directory creation, platform root selection/resolution, Settings UI, settings persistence, OS keyring integration, password-manager integration, symlink checks, permission checks, durability probes, warning-only encrypted vault persistence path, storage, manifest file/storage read/write, storage index read/write, real atomic write/recovery, platform interruption hooks, and secure-storage implementation;
 - disabled production persistence.
 
-Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, logical layout, path-containment planner, platform-root, platform root settings, Settings UI/persistence, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
+Missing, unknown, failed, unsupported, unreviewed, insufficient, unsafe, documented-only, or unimplemented container, manifest, stale-record, namespace/path, logical layout, path-containment planner, Linux root-resolution, platform-root, platform root settings, Settings UI/persistence, path-construction, symlink/traversal, permission/ownership, durability, atomicity, or secure-storage evidence must block provider selectability and persistence. Warning-only durability evidence and user-consent override evidence are not sufficient for encrypted vault persistence.
 
-Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed logical storage layout tests, completed path-containment planner tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
+Completed in-memory container parser/writer tests, completed in-memory manifest parser/writer tests, completed local stale-record decision tests, completed in-memory storage atomicity/crash simulator tests, completed namespace/path policy tests, completed logical storage layout tests, completed path-containment planner tests, completed Linux root-resolution evidence tests, completed provider-level KATs, completed still-disabled crypto building-block tests, and the metadata-only provider facade do not make the provider selectable and do not make storage persistence-ready.
 
 ## Remaining Gates
 
