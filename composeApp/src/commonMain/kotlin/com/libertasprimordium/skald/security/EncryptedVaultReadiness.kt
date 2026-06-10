@@ -205,6 +205,9 @@ enum class EncryptedVaultRequirement(val label: String) {
     LinuxCustomRootValidationPolicyImplementedAndTested(
         "Linux custom root validation policy implemented and tested",
     ),
+    LinuxRootResolutionPolicyImplementedAndTested(
+        "Linux root-resolution evidence policy implemented and tested",
+    ),
     OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
     PasswordManagerIntegrationRejected("password-manager integration rejected"),
     PassphraseFirstDefaultModeled("passphrase-first default modeled"),
@@ -542,6 +545,10 @@ enum class EncryptedVaultCapability(
     ),
     LinuxCustomRootValidationPolicyBuildingBlock(
         "still-disabled Linux custom root validation policy building block",
+        enabledInProduction = false,
+    ),
+    LinuxRootResolutionPolicyBuildingBlock(
+        "still-disabled Linux root-resolution evidence policy building block",
         enabledInProduction = false,
     ),
     OsKeyringPassphraseRejectionModel(
@@ -936,6 +943,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
         )
         put(
             EncryptedVaultRequirement.LinuxCustomRootValidationPolicyImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
+            EncryptedVaultRequirement.LinuxRootResolutionPolicyImplementedAndTested,
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
         )
         put(

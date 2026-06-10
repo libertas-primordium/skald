@@ -16,6 +16,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1PathContainmentRejectio
 import com.libertasprimordium.skald.security.SkaldVaultV1PathContainmentResult
 import com.libertasprimordium.skald.security.SkaldVaultV1PathContainmentRootToken
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsDecision
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsFailureReason
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
@@ -50,6 +51,10 @@ class VaultPlatformRootSettingsContractTest {
         assertEquals(
             "skald-vault-v1-linux-custom-root-validation-policy-v1",
             platformPolicy.linuxCustomRootValidationPolicyId,
+        )
+        assertEquals(
+            "skald-vault-v1-linux-root-resolution-policy-v1",
+            platformPolicy.linuxRootResolutionPolicyId,
         )
         assertEquals(
             "skald-vault-v1-os-keyring-passphrase-policy-v1",
@@ -137,6 +142,26 @@ class VaultPlatformRootSettingsContractTest {
             SkaldVaultV1PlatformRootSettingsDecision.LinuxCustomRootValidationPolicyImplemented,
         )
         assertContains(
+            platformPolicy.decisions,
+            SkaldVaultV1PlatformRootSettingsDecision.LinuxRootResolutionEvidenceModeled,
+        )
+        assertContains(
+            platformPolicy.decisions,
+            SkaldVaultV1PlatformRootSettingsDecision.LinuxRootResolutionStillDisabled,
+        )
+        assertContains(
+            platformPolicy.decisions,
+            SkaldVaultV1PlatformRootSettingsDecision.LinuxRootResolutionDoesNotResolveFilesystem,
+        )
+        assertContains(
+            platformPolicy.decisions,
+            SkaldVaultV1PlatformRootSettingsDecision.LinuxRootResolutionDoesNotConstructPaths,
+        )
+        assertContains(
+            platformPolicy.decisions,
+            SkaldVaultV1PlatformRootSettingsDecision.LinuxRootResolutionDoesNotEnablePersistence,
+        )
+        assertContains(
             platformPolicy.blockingFailureReasons,
             SkaldVaultV1PlatformRootSettingsFailureReason.LinuxCustomRootUnimplemented,
         )
@@ -166,6 +191,11 @@ class VaultPlatformRootSettingsContractTest {
         )
         assertFalse(platformPolicy.linuxRootResolutionImplemented)
         assertTrue(platformPolicy.linuxCustomRootValidationImplemented)
+        assertTrue(platformPolicy.linuxRootResolutionEvidenceModeled)
+        assertTrue(platformPolicy.linuxRootResolutionStillDisabled)
+        assertTrue(platformPolicy.linuxRootResolutionDoesNotResolveFilesystem)
+        assertTrue(platformPolicy.linuxRootResolutionDoesNotConstructPaths)
+        assertTrue(platformPolicy.linuxRootResolutionDoesNotEnablePersistence)
         assertFalse(platformPolicy.settingsUiImplemented)
         assertFalse(platformPolicy.settingsPersistenceImplemented)
         assertFalse(platformPolicy.actualPathConstructionImplemented)
@@ -221,6 +251,10 @@ class VaultPlatformRootSettingsContractTest {
             storagePolicy.linuxCustomRootValidationPolicyId,
         )
         assertEquals(
+            SkaldVaultV1LinuxRootResolutionPolicy.POLICY_ID,
+            storagePolicy.linuxRootResolutionPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             storagePolicy.osKeyringPassphrasePolicyId,
         )
@@ -240,6 +274,10 @@ class VaultPlatformRootSettingsContractTest {
             ProductionProviderConstructionContractStatus.ImplementedTested,
             storagePolicy.linuxCustomRootValidationPolicyStatus,
         )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            storagePolicy.linuxRootResolutionPolicyStatus,
+        )
         assertEquals(ProductionProviderPlatformRootSettingsRule.entries.toSet(), storagePolicy.platformRootSettingsRules)
         assertTrue(storagePolicy.androidAppPrivateInternalRootPolicyModeled)
         assertTrue(storagePolicy.androidExternalStorageRejected)
@@ -252,6 +290,11 @@ class VaultPlatformRootSettingsContractTest {
         assertTrue(storagePolicy.linuxCustomRootSettingsContractModeled)
         assertFalse(storagePolicy.linuxCustomRootUsable)
         assertTrue(storagePolicy.linuxCustomRootValidationImplemented)
+        assertTrue(storagePolicy.linuxRootResolutionEvidenceModeled)
+        assertTrue(storagePolicy.linuxRootResolutionStillDisabled)
+        assertTrue(storagePolicy.linuxRootResolutionDoesNotResolveFilesystem)
+        assertTrue(storagePolicy.linuxRootResolutionDoesNotConstructPaths)
+        assertTrue(storagePolicy.linuxRootResolutionDoesNotEnablePersistence)
         assertFalse(storagePolicy.settingsUiImplemented)
         assertFalse(storagePolicy.settingsPersistenceImplemented)
         assertTrue(storagePolicy.osKeyringPrimaryStorageRejected)
@@ -329,6 +372,12 @@ class VaultPlatformRootSettingsContractTest {
             ],
         )
         assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.LinuxRootResolutionPolicyImplementedAndTested
+            ],
+        )
+        assertEquals(
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
             readiness.requirementStatuses[EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected],
         )
@@ -352,6 +401,7 @@ class VaultPlatformRootSettingsContractTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidAppPrivateRootPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxRootSettingsPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxCustomRootValidationPolicyBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxRootResolutionPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
@@ -368,6 +418,10 @@ class VaultPlatformRootSettingsContractTest {
         assertContains(
             dependency.capabilities,
             VaultCryptoDependencyCapability.LinuxCustomRootValidationPolicyImplementedTested,
+        )
+        assertContains(
+            dependency.capabilities,
+            VaultCryptoDependencyCapability.LinuxRootResolutionPolicyImplementedTested,
         )
         assertContains(dependency.capabilities, VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected)
         assertContains(dependency.capabilities, VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected)

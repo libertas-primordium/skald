@@ -109,6 +109,9 @@ enum class VaultCryptoDependencyCapability(val label: String) {
     LinuxCustomRootValidationPolicyImplementedTested(
         "Linux custom root validation policy implemented and tested",
     ),
+    LinuxRootResolutionPolicyImplementedTested(
+        "Linux root-resolution evidence policy implemented and tested",
+    ),
     OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
     PasswordManagerIntegrationRejected("password-manager integration rejected"),
     PassphraseFirstVaultAuthorityModeled("passphrase-first vault authority modeled"),
@@ -404,6 +407,7 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyCapability.AndroidAppPrivateRootPolicyModeled,
                     VaultCryptoDependencyCapability.LinuxRootSettingsPolicyModeled,
                     VaultCryptoDependencyCapability.LinuxCustomRootValidationPolicyImplementedTested,
+                    VaultCryptoDependencyCapability.LinuxRootResolutionPolicyImplementedTested,
                     VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected,
                     VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected,
                     VaultCryptoDependencyCapability.PassphraseFirstVaultAuthorityModeled,

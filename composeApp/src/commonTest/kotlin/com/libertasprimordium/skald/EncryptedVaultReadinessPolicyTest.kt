@@ -127,6 +127,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.AndroidAppPrivateRootPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxRootSettingsPolicyModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxCustomRootValidationPolicyBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.LinuxRootResolutionPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
@@ -298,6 +299,7 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirement.AndroidAppPrivateRootPolicyModeled,
             EncryptedVaultRequirement.LinuxRootSettingsPolicyModeled,
             EncryptedVaultRequirement.LinuxCustomRootValidationPolicyImplementedAndTested,
+            EncryptedVaultRequirement.LinuxRootResolutionPolicyImplementedAndTested,
             EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
             EncryptedVaultRequirement.PasswordManagerIntegrationRejected,
             EncryptedVaultRequirement.PassphraseFirstDefaultModeled,
@@ -501,6 +503,12 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.LinuxCustomRootValidationPolicyImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.LinuxRootResolutionPolicyImplementedAndTested
             ],
         )
         assertEquals(
