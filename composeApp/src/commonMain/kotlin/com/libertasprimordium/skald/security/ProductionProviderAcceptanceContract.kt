@@ -95,6 +95,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     PlatformPathConstructionBoundaryImplementedAndTested(
         "platform path-construction boundary implemented and tested",
     ),
+    StorageSafetyPreflightBoundaryImplementedAndTested(
+        "storage safety preflight boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -970,6 +973,28 @@ enum class ProductionProviderPlatformPathConstructionRule(val label: String) {
     DoesNotEnablePersistenceOrProviderSelection("boundary does not enable persistence or provider selection"),
 }
 
+enum class ProductionProviderStorageSafetyPreflightRule(val label: String) {
+    EvidenceOnly("storage safety preflight returns evidence only"),
+    ConsumesPlannedArtifactLocationEvidence("boundary consumes planned artifact-location evidence"),
+    ConsumesFutureSafetyEvidence("boundary consumes future caller-supplied safety evidence"),
+    GateVocabularyModeled("boundary models required storage safety gates"),
+    DefaultFailClosed("boundary defaults to fail closed"),
+    WarningOnlyCannotEnablePersistence("warning-only evidence cannot enable persistence"),
+    UserConsentCannotOverrideFailedGates("user consent cannot override failed or missing safety gates"),
+    DoesNotRunFilesystemChecks("boundary does not run filesystem checks"),
+    DoesNotConstructRealOrAbsolutePaths("boundary does not construct real or absolute paths"),
+    DoesNotUseFilePathOrFilesystemApis("boundary does not use File, Path, or filesystem APIs"),
+    DoesNotCreateReadOrWriteFiles("boundary does not create, read, or write files"),
+    DoesNotPersistSettings("boundary does not persist Settings"),
+    DoesNotProveExistenceContainmentSymlinkPermissionOwnershipDurability(
+        "boundary does not prove existence, containment, symlink, permission, ownership, or durability state",
+    ),
+    DoesNotEnableManifestStorageIndexRecordReadWrite(
+        "boundary does not enable manifest, storage-index, or record read/write",
+    ),
+    DoesNotEnablePersistenceOrProviderSelection("boundary does not enable persistence or provider selection"),
+}
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1120,6 +1145,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val linuxRootResolutionPolicyId: String,
     val platformRootResolverPolicyId: String,
     val platformPathConstructionBoundaryPolicyId: String,
+    val storageSafetyPreflightBoundaryPolicyId: String,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1151,6 +1177,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val linuxRootResolutionPolicyStatus: ProductionProviderConstructionContractStatus,
     val platformRootResolverBoundaryStatus: ProductionProviderConstructionContractStatus,
     val platformPathConstructionBoundaryStatus: ProductionProviderConstructionContractStatus,
+    val storageSafetyPreflightBoundaryStatus: ProductionProviderConstructionContractStatus,
     val safePathConstructionContractStatus: ProductionProviderConstructionContractStatus,
     val symlinkTraversalContractStatus: ProductionProviderConstructionContractStatus,
     val storagePermissionOwnershipContractStatus: ProductionProviderConstructionContractStatus,
@@ -1182,6 +1209,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val linuxRootResolutionRules: Set<ProductionProviderLinuxRootResolutionRule>,
     val platformRootResolverRules: Set<ProductionProviderPlatformRootResolverRule>,
     val platformPathConstructionRules: Set<ProductionProviderPlatformPathConstructionRule>,
+    val storageSafetyPreflightRules: Set<ProductionProviderStorageSafetyPreflightRule>,
     val safePathConstructionRules: Set<ProductionProviderSafePathConstructionRule>,
     val symlinkTraversalRules: Set<ProductionProviderSymlinkTraversalRule>,
     val storagePermissionOwnershipRules: Set<ProductionProviderStoragePermissionOwnershipRule>,
@@ -1246,6 +1274,12 @@ data class ProductionProviderContainerManifestStorageContract(
     val platformPathConstructionDoesNotEnablePersistence: Boolean,
     val platformPathConstructionDoesNotEnableProviderSelection: Boolean,
     val plannedArtifactLocationEvidenceModeled: Boolean,
+    val storageSafetyPreflightBoundaryModeled: Boolean,
+    val storageSafetyPreflightStillDisabled: Boolean,
+    val storageSafetyPreflightDoesNotRunFilesystemChecks: Boolean,
+    val storageSafetyPreflightDoesNotEnablePersistence: Boolean,
+    val storageSafetyPreflightDoesNotEnableProviderSelection: Boolean,
+    val storageSafetyGateVocabularyModeled: Boolean,
     val settingsUiImplemented: Boolean,
     val settingsPersistenceImplemented: Boolean,
     val osKeyringPrimaryStorageRejected: Boolean,
@@ -1599,6 +1633,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.PlatformRootResolverBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PlatformPathConstructionBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.StorageSafetyPreflightBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.SafePathConstructionContractApproved to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2017,6 +2053,8 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1PlatformRootResolverPolicy.POLICY_ID,
                     platformPathConstructionBoundaryPolicyId =
                         SkaldVaultV1PlatformPathConstructionPolicy.POLICY_ID,
+                    storageSafetyPreflightBoundaryPolicyId =
+                        SkaldVaultV1StorageSafetyPreflightPolicy.POLICY_ID,
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
@@ -2075,6 +2113,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderConstructionContractStatus.ImplementedTested,
                     platformPathConstructionBoundaryStatus =
                         ProductionProviderConstructionContractStatus.ImplementedTested,
+                    storageSafetyPreflightBoundaryStatus =
+                        ProductionProviderConstructionContractStatus.ImplementedTested,
                     safePathConstructionContractStatus =
                         ProductionProviderConstructionContractStatus.DocumentedModelOnly,
                     symlinkTraversalContractStatus =
@@ -2127,6 +2167,8 @@ data class ProductionProviderAcceptanceContract(
                         ProductionProviderPlatformRootResolverRule.entries.toSet(),
                     platformPathConstructionRules =
                         ProductionProviderPlatformPathConstructionRule.entries.toSet(),
+                    storageSafetyPreflightRules =
+                        ProductionProviderStorageSafetyPreflightRule.entries.toSet(),
                     safePathConstructionRules =
                         ProductionProviderSafePathConstructionRule.entries.toSet(),
                     symlinkTraversalRules =
@@ -2198,6 +2240,12 @@ data class ProductionProviderAcceptanceContract(
                     platformPathConstructionDoesNotEnablePersistence = true,
                     platformPathConstructionDoesNotEnableProviderSelection = true,
                     plannedArtifactLocationEvidenceModeled = true,
+                    storageSafetyPreflightBoundaryModeled = true,
+                    storageSafetyPreflightStillDisabled = true,
+                    storageSafetyPreflightDoesNotRunFilesystemChecks = true,
+                    storageSafetyPreflightDoesNotEnablePersistence = true,
+                    storageSafetyPreflightDoesNotEnableProviderSelection = true,
+                    storageSafetyGateVocabularyModeled = true,
                     settingsUiImplemented = false,
                     settingsPersistenceImplemented = false,
                     osKeyringPrimaryStorageRejected = true,
