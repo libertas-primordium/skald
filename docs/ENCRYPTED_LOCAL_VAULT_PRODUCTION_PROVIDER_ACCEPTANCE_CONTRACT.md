@@ -489,6 +489,14 @@ A production provider cannot become selectable until every gate below is satisfi
 
 Passing dependency-level KATs, test-provider KATs, runtime randomness availability probes, vector-matched canonical/HKDF/HMAC building blocks, strict AAD/record-AEAD building-block tests, still-disabled integrated provider harness KATs, still-disabled provider facade checks, disabled storage service facade checks, vault persistence readiness gate checks, documented stale-record manifest policy, or a design-only acceptance assessment must not bypass the remaining gates.
 
+## Provider Operation Authorization Boundary
+
+`ProductionProviderAcceptanceContract` now records the still-disabled provider operation authorization boundary as tested model evidence and as a required acceptance gate. The evidence states that provider operation authorization is modeled, still disabled, blocks all operations, does not run crypto, does not run KATs, does not generate randomness, does not enable unlock, does not enable persistence, does not enable provider selection, and models provider-operation failure vocabulary.
+
+This evidence is not provider readiness. It does not authorize provider availability checks, provider KAT execution, runtime randomness checks, entropy/salt/nonce/key generation, Argon2id/KDF/HKDF/HMAC execution, header commitment computation or verification, AEAD encrypt/decrypt, record encrypt/decrypt, manifest or storage-index authentication, key wrapping or unwrapping, provider clear/dispose, production provider selection, vault creation, vault unlock, vault persistence, or mainnet operation.
+
+The contract still requires the provider selection registry to remain disabled until a future reviewed implementation satisfies every hard gate. `productionProviderSelectable` remains false, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default vault authority.
+
 ## Source And Storage Boundaries
 
 This contract does not allow:

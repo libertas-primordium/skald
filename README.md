@@ -165,3 +165,9 @@ The scaffold includes no Skald-operated defaults for:
 - `docs/PHASE1_COMPLETION_AUDIT.md` records the Phase 1 hardening/completion audit. It is an audit artifact only; it does not enable wallet functionality.
 - `DemoPortfolioRepository` is static design-preview data only. It is deliberately named as demo state and must not be treated as live wallet data.
 - `DemoOnChainRepository`, `DemoCoinControlRepository`, `FakeBitcoinBackendConnectionTester`, and `DemoRecoveryRepository` drive Phase 1 UI scaffolding with sentinel placeholders such as `DESCRIPTOR_NOT_CREATED`, `BACKEND_NOT_CONFIGURED`, `CONNECTION_TEST_NOT_REAL_NETWORK`, `DEMO_UTXO_ID_*`, and `PSBT_NOT_CREATED`.
+
+### Provider Operation Authorization Boundary
+
+`SkaldVaultV1ProviderOperationAuthorizationPolicy` now exists as a still-disabled common model only. It models future provider operation kinds, operation purposes, required authorization gates, blockers, warnings, and disabled capabilities, but the current decision is always blocked/fail-closed. It accepts typed policy evidence only and does not accept provider handles, passphrases, keys, entropy, salts, nonces, ciphertext, plaintext, records, storage bytes, paths, Settings values, or platform handles.
+
+The boundary does not run provider operations, provider KATs, runtime randomness checks, entropy/salt/nonce/key generation, Argon2id/KDF/HKDF/HMAC, AEAD encrypt/decrypt, header commitment computation or verification, record encrypt/decrypt, manifest or storage-index authentication, key wrapping/unwrapping, provider clear/dispose, vault creation, vault unlock, vault persistence, provider selection, or mainnet. Provider selection still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.

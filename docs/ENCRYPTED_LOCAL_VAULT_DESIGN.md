@@ -606,3 +606,9 @@ Recommended next implementation sequence:
 13. Enable only the smallest low-risk persistence path after explicit approval.
 
 Do not enable production wallet creation, production sync, production address derivation, production UTXO persistence, signing, broadcasting, Nostr secret-bearing flows, public endpoint defaults, or mainnet as part of vault design work.
+
+## Provider Operation Authorization Boundary
+
+`SkaldVaultV1ProviderOperationAuthorizationPolicy` is the still-disabled v1 model for future crypto-provider operation authorization. It classifies typed provider operation requests by operation kind, operation purpose, required gate, blocker, warning, and disabled capability. Current authorization is always blocked/fail-closed because the registry still selects only `DisabledVaultCryptoProvider` and `productionProviderSelectable` remains false.
+
+This model does not run provider operations, provider KATs, runtime randomness checks, entropy/salt/nonce/key generation, Argon2id/KDF/HKDF/HMAC, AEAD encrypt/decrypt, header commitment computation or verification, record encrypt/decrypt, manifest or storage-index authentication, key wrapping/unwrapping, provider clear/dispose, vault creation, vault unlock, vault persistence, provider selection, or mainnet. It does not accept raw passphrases, keys, ciphertext, plaintext, storage bytes, provider handles, paths, Settings values, OS keyring values, or password-manager values. OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.
