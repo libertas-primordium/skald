@@ -27,6 +27,7 @@ import com.libertasprimordium.skald.security.ProductionProviderLinuxCustomRootVa
 import com.libertasprimordium.skald.security.ProductionProviderLinuxRootResolutionRule
 import com.libertasprimordium.skald.security.ProductionProviderLockSessionLifecycleRule
 import com.libertasprimordium.skald.security.ProductionProviderManifestField
+import com.libertasprimordium.skald.security.ProductionProviderMigrationCorruptionBoundaryRule
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
@@ -69,6 +70,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1DisabledStorageServiceF
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LockSessionLifecyclePolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1MigrationCorruptionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PassphrasePolicyGate
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
@@ -1533,6 +1535,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.clearWipeStrategyBoundaryPolicyId,
         )
         assertEquals(
+            SkaldVaultV1MigrationCorruptionPolicy.POLICY_ID,
+            policy.migrationCorruptionBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -1657,6 +1663,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderConstructionContractStatus.ImplementedTested,
             policy.redactionLeakageBoundaryStatus,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            policy.migrationCorruptionBoundaryStatus,
         )
         assertEquals(
             ProductionProviderConstructionContractStatus.DocumentedModelOnly,
@@ -2138,6 +2148,10 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderClearWipeStrategyBoundaryRule.entries.toSet(),
             policy.clearWipeStrategyBoundaryRules,
         )
+        assertEquals(
+            ProductionProviderMigrationCorruptionBoundaryRule.entries.toSet(),
+            policy.migrationCorruptionBoundaryRules,
+        )
         assertContains(
             policy.lockSessionLifecycleRules,
             ProductionProviderLockSessionLifecycleRule.DefaultDecisionBlocked,
@@ -2205,6 +2219,30 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.clearWipeStrategyBoundaryRules,
             ProductionProviderClearWipeStrategyBoundaryRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
+        )
+        assertContains(
+            policy.migrationCorruptionBoundaryRules,
+            ProductionProviderMigrationCorruptionBoundaryRule.EvidenceOnly,
+        )
+        assertContains(
+            policy.migrationCorruptionBoundaryRules,
+            ProductionProviderMigrationCorruptionBoundaryRule.DefaultDecisionBlocked,
+        )
+        assertContains(
+            policy.migrationCorruptionBoundaryRules,
+            ProductionProviderMigrationCorruptionBoundaryRule.DoesNotAcceptRawStorageOrRecordBytes,
+        )
+        assertContains(
+            policy.migrationCorruptionBoundaryRules,
+            ProductionProviderMigrationCorruptionBoundaryRule.DoesNotParseRealStorage,
+        )
+        assertContains(
+            policy.migrationCorruptionBoundaryRules,
+            ProductionProviderMigrationCorruptionBoundaryRule.DoesNotRunMigration,
+        )
+        assertContains(
+            policy.migrationCorruptionBoundaryRules,
+            ProductionProviderMigrationCorruptionBoundaryRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
         )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(

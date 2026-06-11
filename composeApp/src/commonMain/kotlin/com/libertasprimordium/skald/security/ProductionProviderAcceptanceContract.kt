@@ -116,6 +116,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     ClearWipeStrategyBoundaryImplementedAndTested(
         "vault clear/wipe strategy boundary implemented and tested",
     ),
+    MigrationCorruptionBoundaryImplementedAndTested(
+        "vault migration/corruption boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1188,6 +1191,47 @@ data class ProductionProviderClearWipeStrategyBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderMigrationCorruptionBoundaryRule(val label: String) {
+    EvidenceOnly("migration/corruption boundary returns evidence only"),
+    DefaultDecisionBlocked("current migration/corruption decision remains blocked or model-only"),
+    EvidenceCategoryVocabularyModeled("boundary models container, manifest, index, and record evidence categories"),
+    FailureClassVocabularyModeled("boundary models migration/corruption failure classes"),
+    RequiredActionVocabularyModeled("boundary models fail-closed required actions"),
+    DoesNotAcceptRawStorageOrRecordBytes("boundary does not accept raw storage, ciphertext, or record bytes"),
+    DoesNotParseRealStorage("boundary does not parse real persisted storage"),
+    DoesNotRepairStorage("boundary does not repair storage"),
+    DoesNotRunMigration("boundary does not run migration or migration dry-runs"),
+    DoesNotQuarantineOrRecoverRecords("boundary does not quarantine or recover records"),
+    DoesNotVerifyAeadOrHeaderCommitments(
+        "boundary does not verify AEAD tags or real header commitments",
+    ),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsStorageRecordRootPathProviderEvidence(
+        "boundary redacts storage, record, root, path, and provider evidence",
+    ),
+}
+
+data class ProductionProviderMigrationCorruptionBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderMigrationCorruptionBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val classifiesFailureKinds: Boolean,
+    val doesNotParseRealStorage: Boolean,
+    val doesNotRepairStorage: Boolean,
+    val doesNotRunMigration: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1345,6 +1389,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val redactionLeakageBoundaryPolicyId: String,
     val passphrasePolicyBoundaryEvidence: ProductionProviderPassphrasePolicyBoundaryEvidence,
     val clearWipeStrategyBoundaryEvidence: ProductionProviderClearWipeStrategyBoundaryEvidence,
+    val migrationCorruptionBoundaryEvidence: ProductionProviderMigrationCorruptionBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1629,6 +1674,45 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val clearWipeFailureVocabularyModeled: Boolean
         get() = clearWipeStrategyBoundaryEvidence.failureVocabularyModeled
+
+    val migrationCorruptionBoundaryPolicyId: String
+        get() = migrationCorruptionBoundaryEvidence.policyId
+
+    val migrationCorruptionBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = migrationCorruptionBoundaryEvidence.status
+
+    val migrationCorruptionBoundaryRules: Set<ProductionProviderMigrationCorruptionBoundaryRule>
+        get() = migrationCorruptionBoundaryEvidence.rules
+
+    val migrationCorruptionBoundaryModeled: Boolean
+        get() = migrationCorruptionBoundaryEvidence.modeled
+
+    val migrationCorruptionBoundaryStillDisabled: Boolean
+        get() = migrationCorruptionBoundaryEvidence.stillDisabled
+
+    val migrationCorruptionClassifiesFailureKinds: Boolean
+        get() = migrationCorruptionBoundaryEvidence.classifiesFailureKinds
+
+    val migrationCorruptionDoesNotParseRealStorage: Boolean
+        get() = migrationCorruptionBoundaryEvidence.doesNotParseRealStorage
+
+    val migrationCorruptionDoesNotRepairStorage: Boolean
+        get() = migrationCorruptionBoundaryEvidence.doesNotRepairStorage
+
+    val migrationCorruptionDoesNotRunMigration: Boolean
+        get() = migrationCorruptionBoundaryEvidence.doesNotRunMigration
+
+    val migrationCorruptionDoesNotEnableUnlock: Boolean
+        get() = migrationCorruptionBoundaryEvidence.doesNotEnableUnlock
+
+    val migrationCorruptionDoesNotEnablePersistence: Boolean
+        get() = migrationCorruptionBoundaryEvidence.doesNotEnablePersistence
+
+    val migrationCorruptionDoesNotEnableProviderSelection: Boolean
+        get() = migrationCorruptionBoundaryEvidence.doesNotEnableProviderSelection
+
+    val migrationCorruptionFailureVocabularyModeled: Boolean
+        get() = migrationCorruptionBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -1962,6 +2046,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.PassphrasePolicyBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.ClearWipeStrategyBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.MigrationCorruptionBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2418,6 +2504,22 @@ data class ProductionProviderAcceptanceContract(
                             doesNotAcceptRawSensitiveValues = true,
                             doesNotClearRealMemory = true,
                             doesNotProveJvmZeroization = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    migrationCorruptionBoundaryEvidence =
+                        ProductionProviderMigrationCorruptionBoundaryEvidence(
+                            policyId = SkaldVaultV1MigrationCorruptionPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderMigrationCorruptionBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            classifiesFailureKinds = true,
+                            doesNotParseRealStorage = true,
+                            doesNotRepairStorage = true,
+                            doesNotRunMigration = true,
                             doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,

@@ -185,6 +185,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StorageSafetyPreflightBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LockSessionLifecycleBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RedactionLeakageBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1MigrationCorruptionBoundary.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -1151,6 +1152,10 @@ class ProductionBackendAdapterSourceGuardTest {
             File(
                 root,
                 "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RedactionLeakageBoundary.kt",
+            ),
+            File(
+                root,
+                "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1MigrationCorruptionBoundary.kt",
             ),
         )
         val forbiddenPatterns = listOf(
@@ -3657,6 +3662,201 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun migrationCorruptionBoundaryStaysInApprovedFileAndDoesNotUseStorageCryptoMigrationOrPlatformApis() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val approvedPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1MigrationCorruptionBoundary.kt"
+        val policyDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1MigrationCorruptionBoundary\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1MigrationCorruptionPolicy\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1VaultMigrationCorruption"""),
+        )
+        val misplacedDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedPolicyFile &&
+                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Migration/corruption boundary definitions must stay in the exact approved file: $misplacedDefinitions",
+        )
+
+        val source = File(root, approvedPolicyFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""System\.getenv"""),
+            Regex("""System\.getProperty"""),
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""import\s+android\.content"""),
+            Regex("""import\s+android\.net\.Uri"""),
+            Regex("""import\s+androidx\.datastore"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\.separator\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\.of\b"""),
+            Regex("""\bPaths\.get\b"""),
+            Regex("""\bPaths\."""),
+            Regex("""\bFiles\."""),
+            Regex("""\.toPath\("""),
+            Regex("""\.toFile\("""),
+            Regex("""\.absolute"""),
+            Regex("""\.canonical"""),
+            Regex("""\.normalize\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.relativize\("""),
+            Regex("""\bexists\("""),
+            Regex("""\bisDirectory\b"""),
+            Regex("""\bisRegularFile\b"""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadAttributes\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bdelete\("""),
+            Regex("""\brename\("""),
+            Regex("""\bcopy\("""),
+            Regex("""\bmove\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\binputStream\b"""),
+            Regex("""\boutputStream\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bEnvironment\.getExternalStorageDirectory\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bStorageManager\b"""),
+            Regex("""\bDocumentsContract\b"""),
+            Regex("""\bACTION_OPEN_DOCUMENT_TREE\b"""),
+            Regex("""\bMANAGE_EXTERNAL_STORAGE\b"""),
+            Regex("""\bLifecycleObserver\b"""),
+            Regex("""\bDefaultLifecycleObserver\b"""),
+            Regex("""\bProcessLifecycleOwner\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bCredentialManager\s*\("""),
+            Regex("""\bKeyStore\s*\("""),
+            Regex("""\bAutofillManager\b"""),
+            Regex("""\bGooglePasswordManager\b"""),
+            Regex("""\blibsecret\b"""),
+            Regex("""\bSecretService\b"""),
+            Regex("""\bKWallet\b"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bSHA-"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bSecretKey\b"""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\.authenticate\("""),
+            Regex("""\.derive\("""),
+            Regex("""\bverifyTag\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bByteArray\("""),
+            Regex("""\bfill\(0"""),
+            Regex("""\bArrays\.fill\b"""),
+            Regex("""\bByteBuffer\.allocateDirect\b"""),
+            Regex("""\bCleaner\b"""),
+            Regex("""\bPhantomReference\b"""),
+            Regex("""\bfinalize\("""),
+            Regex("""\bzeroize\b"""),
+            Regex("""\bzeroizationLibrary\b"""),
+            Regex("""\bproviderClear\("""),
+            Regex("""\bstorageClear\("""),
+            Regex("""\breadVaultContainer\("""),
+            Regex("""\bwriteVaultContainer\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadStorageIndex\("""),
+            Regex("""\bwriteStorageIndex\("""),
+            Regex("""\breadRecord\("""),
+            Regex("""\bwriteRecord\("""),
+            Regex("""\bmigrateVault\("""),
+            Regex("""\brunMigration\("""),
+            Regex("""\brepairVault\("""),
+            Regex("""\brepairStorage\("""),
+            Regex("""\bquarantineRecord\("""),
+            Regex("""\brecoverRecord\("""),
+            Regex("""\brewriteManifest\("""),
+            Regex("""\brewriteStorageIndex\("""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bRpcClient\b"""),
+            Regex("""\bURL\("""),
+            Regex("""\bURI\("""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bLogger\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\("""),
+            Regex("""migrationAvailable\s*=\s*true"""),
+            Regex("""migrationDryRunAvailable\s*=\s*true"""),
+            Regex("""repairAvailable\s*=\s*true"""),
+            Regex("""quarantineAvailable\s*=\s*true"""),
+            Regex("""crashRecoveryAvailable\s*=\s*true"""),
+            Regex("""rollbackProtectionAvailable\s*=\s*true"""),
+            Regex("""realCorruptionDetectionAvailable\s*=\s*true"""),
+            Regex("""realHeaderCommitmentVerificationAvailable\s*=\s*true"""),
+            Regex("""realAeadAuthenticationAvailable\s*=\s*true"""),
+            Regex("""recordReadAvailable\s*=\s*true"""),
+            Regex("""recordWriteAvailable\s*=\s*true"""),
+            Regex("""manifestReadWriteAvailable\s*=\s*true"""),
+            Regex("""storageIndexReadWriteAvailable\s*=\s*true"""),
+            Regex("""providerCryptoAvailable\s*=\s*true"""),
+            Regex("""storageServiceAvailable\s*=\s*true"""),
+            Regex("""secureSecretStorageAvailable\s*=\s*true"""),
+            Regex("""secureMetadataStorageAvailable\s*=\s*true"""),
+            Regex("""unlockAvailable\s*=\s*true"""),
+            Regex("""activeSessionAvailable\s*=\s*true"""),
+            Regex("""providerSelectable\s*=\s*true"""),
+            Regex("""vaultCreationAvailable\s*=\s*true"""),
+            Regex("""vaultUnlockAvailable\s*=\s*true"""),
+            Regex("""vaultPersistenceAvailable\s*=\s*true"""),
+            Regex("""mainnetAvailable\s*=\s*true"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Migration/corruption boundary must not use storage bytes, migration/repair/quarantine execution, platform path, storage, settings, crypto, BDK, network/process, logging, unlock, provider-selectable, or persistence-success APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),
@@ -3675,6 +3875,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RedactionLeakageBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicyBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ClearWipeStrategyBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1MigrationCorruptionBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
