@@ -3473,6 +3473,190 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun clearWipeStrategyBoundaryStaysInApprovedFileAndDoesNotUseZeroizationStorageOrPlatformApis() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val approvedPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ClearWipeStrategyBoundary.kt"
+        val policyDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ClearWipeStrategyBoundary\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ClearWipeStrategyPolicy\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1VaultClearWipe"""),
+        )
+        val misplacedDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedPolicyFile &&
+                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Clear/wipe strategy boundary definitions must stay in the exact approved file: $misplacedDefinitions",
+        )
+
+        val source = File(root, approvedPolicyFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""System\.getenv"""),
+            Regex("""System\.getProperty"""),
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+kotlin\.io\.path"""),
+            Regex("""import\s+android\.content"""),
+            Regex("""import\s+android\.net\.Uri"""),
+            Regex("""import\s+androidx\.datastore"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\.separator\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\.of\b"""),
+            Regex("""\bPaths\.get\b"""),
+            Regex("""\bPaths\."""),
+            Regex("""\bFiles\."""),
+            Regex("""\.toPath\("""),
+            Regex("""\.toFile\("""),
+            Regex("""\.absolute"""),
+            Regex("""\.canonical"""),
+            Regex("""\.normalize\("""),
+            Regex("""\.resolve\("""),
+            Regex("""\.relativize\("""),
+            Regex("""\bexists\("""),
+            Regex("""\bisDirectory\b"""),
+            Regex("""\bisRegularFile\b"""),
+            Regex("""\bisSymbolicLink\b"""),
+            Regex("""\breadAttributes\b"""),
+            Regex("""\bsetPosixFilePermissions\b"""),
+            Regex("""\bcreateDirectories\b"""),
+            Regex("""\bdelete\("""),
+            Regex("""\brename\("""),
+            Regex("""\bcopy\("""),
+            Regex("""\bmove\("""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\binputStream\b"""),
+            Regex("""\boutputStream\b"""),
+            Regex("""\bDataStore\b"""),
+            Regex("""\bRoomDatabase\b"""),
+            Regex("""\bSQLiteDatabase\b"""),
+            Regex("""\bEnvironment\.getExternalStorageDirectory\b"""),
+            Regex("""\bgetExternalFilesDir\("""),
+            Regex("""\bStorageManager\b"""),
+            Regex("""\bDocumentsContract\b"""),
+            Regex("""\bACTION_OPEN_DOCUMENT_TREE\b"""),
+            Regex("""\bMANAGE_EXTERNAL_STORAGE\b"""),
+            Regex("""\bLifecycleObserver\b"""),
+            Regex("""\bDefaultLifecycleObserver\b"""),
+            Regex("""\bProcessLifecycleOwner\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bCredentialManager\s*\("""),
+            Regex("""\bKeyStore\s*\("""),
+            Regex("""\bAutofillManager\b"""),
+            Regex("""\bGooglePasswordManager\b"""),
+            Regex("""\blibsecret\b"""),
+            Regex("""\bSecretService\b"""),
+            Regex("""\bKWallet\b"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bHmacSHA256\b"""),
+            Regex("""\bSHA-"""),
+            Regex("""\bHKDFBytesGenerator\b"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bSecretKey\b"""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\.derive\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bSecureRandom\b"""),
+            Regex("""\bByteArray\("""),
+            Regex("""\bCharArray\("""),
+            Regex("""\bfill\(0"""),
+            Regex("""\bArrays\.fill\b"""),
+            Regex("""\bByteBuffer\.allocateDirect\b"""),
+            Regex("""\bCleaner\b"""),
+            Regex("""\bPhantomReference\b"""),
+            Regex("""\bfinalize\("""),
+            Regex("""\bzeroize\b"""),
+            Regex("""\bzeroizationLibrary\b"""),
+            Regex("""\bproviderClear\("""),
+            Regex("""\bstorageClear\("""),
+            Regex("""\breadVaultContainer\("""),
+            Regex("""\bwriteVaultContainer\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadStorageIndex\("""),
+            Regex("""\bwriteStorageIndex\("""),
+            Regex("""\breadRecord\("""),
+            Regex("""\bwriteRecord\("""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bRpcClient\b"""),
+            Regex("""\bURL\("""),
+            Regex("""\bURI\("""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bLogger\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\("""),
+            Regex("""actualClearImplemented\s*=\s*true"""),
+            Regex("""actualZeroizationImplemented\s*=\s*true"""),
+            Regex("""jvmZeroizationProven\s*=\s*true"""),
+            Regex("""nativeZeroizationAvailable\s*=\s*true"""),
+            Regex("""providerClearAvailable\s*=\s*true"""),
+            Regex("""storageClearAvailable\s*=\s*true"""),
+            Regex("""sessionInvalidationAvailable\s*=\s*true"""),
+            Regex("""passphraseClearAvailable\s*=\s*true"""),
+            Regex("""keyMaterialClearAvailable\s*=\s*true"""),
+            Regex("""decryptedRecordClearAvailable\s*=\s*true"""),
+            Regex("""diagnosticBufferClearAvailable\s*=\s*true"""),
+            Regex("""unlockAvailable\s*=\s*true"""),
+            Regex("""activeSessionAvailable\s*=\s*true"""),
+            Regex("""decryptedKeyMaterialPresent\s*=\s*true"""),
+            Regex("""providerSelectable\s*=\s*true"""),
+            Regex("""productionProviderSelected\s*=\s*true"""),
+            Regex("""providerCryptoAvailable\s*=\s*true"""),
+            Regex("""vaultUnlockAvailable\s*=\s*true"""),
+            Regex("""vaultPersistenceAvailable\s*=\s*true"""),
+            Regex("""secureSecretStorageAvailable\s*=\s*true"""),
+            Regex("""secureMetadataStorageAvailable\s*=\s*true"""),
+            Regex("""mainnetAvailable\s*=\s*true"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Clear/wipe strategy boundary must not use zeroization, mutable secret-buffer, passphrase/key, biometric, keyring/password-manager, platform path, storage, settings, crypto, hash/fingerprint, BDK, network/process, logging, unlock, provider-selectable, or persistence-success APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),
@@ -3490,6 +3674,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1LockSessionLifecycleBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RedactionLeakageBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicyBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ClearWipeStrategyBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),

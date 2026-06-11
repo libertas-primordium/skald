@@ -51,6 +51,7 @@ enum class SkaldVaultV1VaultPersistenceRequiredGate(val label: String) {
     SecureMetadataStorageAvailable("secure metadata storage available"),
     LockSessionLifecycleApproved("lock/session lifecycle approved"),
     RedactionLeakageReviewApproved("redaction and leakage review approved"),
+    ClearWipeStrategyApproved("clear/wipe strategy approved"),
     MigrationCorruptionHandlingApproved("migration and corruption handling approved"),
     PlatformRootEvidenceApproved("platform root evidence approved"),
     PathConstructionApproved("platform path-construction evidence approved"),
@@ -98,6 +99,7 @@ enum class SkaldVaultV1VaultPersistenceReadinessEvidenceKind(val label: String) 
     SecureMetadataStorage("secure metadata storage"),
     LockSession("lock/session"),
     Redaction("redaction"),
+    ClearWipe("clear/wipe"),
     MigrationCorruption("migration/corruption"),
     Mainnet("mainnet"),
 }
@@ -1001,6 +1003,7 @@ object SkaldVaultV1PersistenceReadinessGate : SkaldVaultV1VaultPersistenceReadin
             }
             add(SkaldVaultV1VaultPersistenceReadinessEvidenceKind.LockSession)
             add(SkaldVaultV1VaultPersistenceReadinessEvidenceKind.Redaction)
+            add(SkaldVaultV1VaultPersistenceReadinessEvidenceKind.ClearWipe)
             add(SkaldVaultV1VaultPersistenceReadinessEvidenceKind.MigrationCorruption)
             add(SkaldVaultV1VaultPersistenceReadinessEvidenceKind.Mainnet)
         }
