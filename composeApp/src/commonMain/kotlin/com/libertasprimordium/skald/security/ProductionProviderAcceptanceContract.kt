@@ -125,6 +125,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     RuntimeRandomnessAuthorizationBoundaryImplementedAndTested(
         "vault runtime randomness authorization boundary implemented and tested",
     ),
+    KdfCalibrationAuthorizationBoundaryImplementedAndTested(
+        "vault KDF calibration authorization boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1330,6 +1333,51 @@ data class ProductionProviderRuntimeRandomnessAuthorizationBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderKdfCalibrationAuthorizationBoundaryRule(val label: String) {
+    EvidenceOnly("KDF calibration authorization boundary returns evidence only"),
+    DefaultDecisionBlocked("current KDF calibration authorization decision remains blocked"),
+    OperationKindVocabularyModeled("boundary models KDF operation kinds"),
+    OperationPurposeVocabularyModeled("boundary models KDF operation purposes"),
+    ParameterEvidenceVocabularyModeled("boundary models KDF parameter/evidence kinds"),
+    PlatformDeviceClassVocabularyModeled("boundary models KDF platform/device classes"),
+    RequiredGateVocabularyModeled("boundary models required KDF authorization gates"),
+    BlocksAllOperations("boundary blocks all KDF calibration and execution operations"),
+    DoesNotAcceptRawPassphraseSaltKdfOrBenchmarkInputs(
+        "boundary does not accept raw passphrases, salts, KDF material, or benchmark logs",
+    ),
+    DoesNotRunArgon2idKdfCalibrationOrBenchmarks(
+        "boundary does not run Argon2id, KDFs, calibration, or benchmarks",
+    ),
+    DoesNotGenerateConsumeSaltOrRandomness("boundary does not generate or consume salts or randomness"),
+    DoesNotRunProviderOperationsOrKats("boundary does not run provider operations or KATs"),
+    DoesNotApproveFinalParameters("boundary does not approve final production KDF parameters"),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsKdfCalibrationCryptoStorageAndSecretEvidence(
+        "boundary redacts KDF, calibration, crypto, storage, path, and secret evidence",
+    ),
+}
+
+data class ProductionProviderKdfCalibrationAuthorizationBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderKdfCalibrationAuthorizationBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val blocksAllOperations: Boolean,
+    val doesNotRunArgon2id: Boolean,
+    val doesNotRunCalibration: Boolean,
+    val doesNotApproveFinalParameters: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1492,6 +1540,8 @@ data class ProductionProviderContainerManifestStorageContract(
         ProductionProviderOperationAuthorizationBoundaryEvidence,
     val runtimeRandomnessAuthorizationBoundaryEvidence:
         ProductionProviderRuntimeRandomnessAuthorizationBoundaryEvidence,
+    val kdfCalibrationAuthorizationBoundaryEvidence:
+        ProductionProviderKdfCalibrationAuthorizationBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1900,6 +1950,46 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val runtimeRandomnessFailureVocabularyModeled: Boolean
         get() = runtimeRandomnessAuthorizationBoundaryEvidence.failureVocabularyModeled
+
+    val kdfCalibrationAuthorizationBoundaryPolicyId: String
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.policyId
+
+    val kdfCalibrationAuthorizationBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.status
+
+    val kdfCalibrationAuthorizationBoundaryRules:
+        Set<ProductionProviderKdfCalibrationAuthorizationBoundaryRule>
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.rules
+
+    val kdfCalibrationAuthorizationBoundaryModeled: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.modeled
+
+    val kdfCalibrationAuthorizationStillDisabled: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.stillDisabled
+
+    val kdfCalibrationAuthorizationBlocksAllOperations: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.blocksAllOperations
+
+    val kdfCalibrationAuthorizationDoesNotRunArgon2id: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.doesNotRunArgon2id
+
+    val kdfCalibrationAuthorizationDoesNotRunCalibration: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.doesNotRunCalibration
+
+    val kdfCalibrationAuthorizationDoesNotApproveFinalParameters: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.doesNotApproveFinalParameters
+
+    val kdfCalibrationAuthorizationDoesNotEnableUnlock: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.doesNotEnableUnlock
+
+    val kdfCalibrationAuthorizationDoesNotEnablePersistence: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.doesNotEnablePersistence
+
+    val kdfCalibrationAuthorizationDoesNotEnableProviderSelection: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.doesNotEnableProviderSelection
+
+    val kdfCalibrationFailureVocabularyModeled: Boolean
+        get() = kdfCalibrationAuthorizationBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2239,6 +2329,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.ProviderOperationAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RuntimeRandomnessAuthorizationBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.KdfCalibrationAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2745,6 +2837,22 @@ data class ProductionProviderAcceptanceContract(
                             doesNotGenerateSaltOrNonce = true,
                             doesNotGenerateKeys = true,
                             doesNotEnableProviderOperations = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    kdfCalibrationAuthorizationBoundaryEvidence =
+                        ProductionProviderKdfCalibrationAuthorizationBoundaryEvidence(
+                            policyId = SkaldVaultV1KdfCalibrationAuthorizationPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderKdfCalibrationAuthorizationBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            blocksAllOperations = true,
+                            doesNotRunArgon2id = true,
+                            doesNotRunCalibration = true,
+                            doesNotApproveFinalParameters = true,
                             doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,

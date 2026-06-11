@@ -210,6 +210,12 @@ It does not approve:
 - production sync,
 - mainnet relevance.
 
+## KDF Calibration Authorization Boundary
+
+`SkaldVaultV1KdfCalibrationAuthorizationPolicy` now consumes Android calibration evidence only as typed, redacted model evidence. It models future Android calibration review alongside KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, and disabled capabilities, but current Android KDF calibration authorization is blocked/fail-closed.
+
+The boundary does not run Android calibration, run benchmarks, inspect real Android device identifiers, inspect real memory/CPU details, run Argon2id, run KDFs, approve final Android KDF parameters, normalize or encode real passphrases, generate or consume salts, call Android randomness APIs, run provider operations, run provider KATs, derive vault keys, enable unlock, enable persistence, make a provider selectable, or approve mainnet. Android calibration remains future-reviewed only and hardware-backed key protection is not KDF approval by itself.
+
 ## Next Step
 
 The next focused pass should remain design/probe-only unless explicitly narrowed by the user: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Executable production provider work, vault containers, entropy collection, key generation, and persistence must remain separate branches with explicit approval.

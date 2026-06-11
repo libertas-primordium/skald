@@ -164,6 +164,12 @@ This readiness policy does not enable:
 - Skald-operated infrastructure,
 - mainnet.
 
+## KDF Calibration Authorization Boundary
+
+The KDF calibration authorization boundary is readiness evidence only. It models future KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted tokens, but current KDF calibration authorization is blocked/fail-closed.
+
+It does not run Argon2id, run KDFs, run calibration, run benchmarks, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable vault creation, enable vault unlock, enable vault persistence, make a provider selectable, or approve mainnet. Provider operation authorization remains blocked, runtime randomness remains blocked, passphrase input remains blocked, Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, and mainnet KDF use remains blocked until release review.
+
 ## Next Step
 
 The next focused pass should review runtime provider/primitive/randomness check evidence for supported Android and Linux paths, then decide whether final Argon2id calibration approval can proceed before provider selectability. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA variant-resolution work remain separate replacement-stack probes if needed. Do not add production entropy collection, key generation, production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.

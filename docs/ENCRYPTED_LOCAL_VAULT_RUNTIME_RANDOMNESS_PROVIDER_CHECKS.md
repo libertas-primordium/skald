@@ -199,6 +199,12 @@ This boundary does not enable:
 - Skald-operated infrastructure,
 - mainnet.
 
+## KDF Calibration Authorization Boundary
+
+`SkaldVaultV1KdfCalibrationAuthorizationPolicy` now depends on runtime randomness authorization as one of its future gates for KDF salt use, but it remains still-disabled model-only evidence. It models KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens.
+
+Current KDF calibration authorization is blocked/fail-closed because runtime randomness authorization is blocked, provider operation authorization is blocked, passphrase input remains blocked, final KDF calibration is not approved, and `productionProviderSelectable` remains false. The boundary does not run Argon2id, run KDFs, run calibration, run benchmarks, generate or consume salts, call randomness APIs, run provider operations, run KATs, derive vault keys, enable unlock, enable persistence, make a provider selectable, or approve mainnet.
+
 ## Next Step
 
 The next focused pass should remain design/probe-only unless the user explicitly approves implementation scope. Recommended decision point: review the runtime provider, primitive, and randomness gate data together and decide the supported Android/Linux baseline for a future still-disabled production-provider skeleton. Do not add vault containers, provider-selectable KDF execution, key generation, persistence, or unlock UI in that branch.

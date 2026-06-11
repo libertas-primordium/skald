@@ -558,6 +558,14 @@ productionPersistenceAllowed = false
 
 `VaultCryptoProviderSelectionRegistry` still selects only the disabled provider. The contract is a prerequisite boundary, not an enablement path.
 
+## KDF Calibration Authorization Boundary
+
+The acceptance contract now records `SkaldVaultV1KdfCalibrationAuthorizationPolicy` as a still-disabled, implemented/tested, model-only boundary. It models future KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens.
+
+Current KDF calibration authorization is blocked/fail-closed. The evidence explicitly does not authorize KDF calibration, does not authorize KDF execution, does not make Argon2id execution available, does not approve final KDF parameters, does not approve Android or Linux calibration, does not approve memory/iteration/parallelism/salt/output parameters, does not accept passphrases, does not normalize or encode passphrases, does not generate or consume salts, does not call randomness APIs, does not run provider operations or KATs, does not derive vault keys, does not enable vault unlock, does not enable vault persistence, does not make a provider selectable, and does not approve mainnet.
+
+Provider selection still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, mainnet KDF use remains blocked until release review, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.
+
 ## Next Step
 
 The next focused step should remain implementation-safe only if it is additional still-disabled design/model/source-guard work. Provider selectability, calibrated production KDF execution, file-backed vault container read/write, platform root resolution, actual path construction, persistence, biometric wrapping, and unlock UI must remain out of scope until the acceptance gates above are reviewed and intentionally moved into an implementation branch.
