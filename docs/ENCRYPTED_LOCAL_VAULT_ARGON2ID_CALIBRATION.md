@@ -230,6 +230,12 @@ This calibration branch does not enable:
 - Skald-operated infrastructure,
 - mainnet.
 
+## KDF Calibration Authorization Boundary
+
+`SkaldVaultV1KdfCalibrationAuthorizationPolicy` now separates future KDF calibration authorization from the existing still-disabled Argon2id calibration policy. It models future KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens, but current authorization is blocked/fail-closed.
+
+The boundary does not run Argon2id, run KDFs, run calibration, benchmark devices, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable unlock, enable persistence, make a provider selectable, or approve mainnet. Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, and mainnet KDF use remains blocked until release review.
+
 ## Next Step
 
 The next focused branch should keep provider selection disabled unless the user explicitly approves provider-selectability work. Recommended next decision point: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, then decide whether final production calibration approval can move forward before any vault container or persistence implementation.

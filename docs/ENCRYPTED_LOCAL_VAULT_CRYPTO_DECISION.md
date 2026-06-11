@@ -641,6 +641,14 @@ The boundary does not call `SecureRandom`, Kotlin Random, Java Random, `Math.ran
 
 Future vault secrets, salts, nonces, and keys must use reviewed OS cryptographic randomness/CSPRNG or reviewed provider randomness. General-purpose PRNGs are forbidden for secret/key/nonce/salt material. Android OS CSPRNG/SecureRandom remains future-reviewed only, Android hardware-backed key protection is separate from entropy quality, Linux entropy quality remains a required review gate, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.
 
+## KDF Calibration Authorization Boundary
+
+Skald Vault v1 now has a still-disabled KDF calibration authorization boundary as model-only evidence. It models future KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens before any future branch can approve Argon2id parameters or authorize KDF execution.
+
+Current KDF calibration authorization is blocked/fail-closed. The boundary records that provider operations remain unauthorized, runtime randomness remains unauthorized, passphrase input remains blocked, final KDF calibration is not approved, the registry still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, and no production KDF execution is allowed.
+
+The boundary does not run Argon2id, run KDFs, run calibration, run benchmarks, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable vault creation, enable vault unlock, enable vault persistence, approve provider selectability, or approve mainnet. Android calibration and Linux calibration remain future-reviewed only. Test-vector KDF profiles do not authorize production runtime unlock, and mainnet KDF use remains blocked until release review.
+
 ## Unresolved Decisions
 
 These remain unresolved and require focused provider-implementation, calibration, or implementation spikes:

@@ -71,6 +71,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PassphrasePolicyBoundaryStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.ClearWipeStrategyBoundaryStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.MigrationCorruptionBoundaryStillDisabled)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderOperationAuthorizationBoundaryStillDisabled)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.RuntimeRandomnessAuthorizationBoundaryStillDisabled)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.KdfCalibrationAuthorizationBoundaryStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PlatformStorageImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.AtomicWriteImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing)
@@ -145,6 +148,9 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphrasePolicyBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.ClearWipeStrategyBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.MigrationCorruptionBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderOperationAuthorizationBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.RuntimeRandomnessAuthorizationBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.KdfCalibrationAuthorizationBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
@@ -190,6 +196,12 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idCandidateSelectionPolicyBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idMemoryFailureHandlingModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.Argon2idStoredParameterNoDowngradeModel)
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.KdfCalibrationAuthorizationBoundaryImplementedAndTested
+            ],
+        )
         assertEquals(
             Argon2idCalibrationImplementationStatus.StillDisabledBuildingBlockImplemented,
             readiness.argon2idCalibrationPolicy.status,

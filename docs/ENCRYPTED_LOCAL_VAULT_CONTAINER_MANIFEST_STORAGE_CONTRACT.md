@@ -932,3 +932,11 @@ Before vault persistence:
 - durability fail-closed runtime evidence, with no warning-only or user-consent override path for encrypted vault writes;
 - secure secret storage and secure metadata storage boundary implementation;
 - explicit review of rollback limitations and any anti-rollback anchor decision.
+
+## KDF Calibration Authorization Boundary
+
+The storage contract now records `SkaldVaultV1KdfCalibrationAuthorizationPolicy` as still-disabled model-only evidence before any future storage/unlock path can rely on KDF parameters or KDF execution. It models future KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens.
+
+Current KDF calibration authorization is blocked/fail-closed because provider operations are unauthorized, runtime randomness is unauthorized, passphrase input remains blocked, final KDF calibration is not approved, `productionProviderSelectable` remains false, and no production KDF execution is allowed. The boundary does not run Argon2id, run KDFs, run calibration, benchmark devices, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable vault unlock, enable vault persistence, read or write container/manifest/storage-index/record data, make a provider selectable, or approve mainnet.
+
+Android calibration remains future-reviewed only, Linux calibration remains future-reviewed only, test-vector profiles do not authorize production runtime unlock, mainnet KDF use remains blocked until release review, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.

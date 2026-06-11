@@ -570,3 +570,11 @@ The boundary does not call `SecureRandom`, Kotlin Random, Java Random, `Math.ran
 11. Later enable seed/imported-key storage only after a separate security review.
 
 No implementation step should enable wallet creation, signing, broadcasting, backend networking, Cashu proof persistence, Lightning credential use, Nostr identity-key storage, or mainnet by implication.
+
+## KDF Calibration Authorization Boundary
+
+Secure storage now also depends on `SkaldVaultV1KdfCalibrationAuthorizationPolicy` before any future unlock, passphrase-derived root material, storage key derivation, metadata key derivation, record key material, wrapping material, backup/export material, or restore/import material can exist. The boundary models future KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens.
+
+Current KDF calibration authorization is blocked/fail-closed because provider operations are unauthorized, runtime randomness is unauthorized, passphrase input remains blocked, final KDF calibration is not approved, `productionProviderSelectable` remains false, and no production KDF execution is allowed. The boundary does not run Argon2id, run KDFs, run calibration, benchmark devices, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable vault unlock, enable vault persistence, make a provider selectable, or approve mainnet.
+
+Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, mainnet KDF use remains blocked until release review, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.

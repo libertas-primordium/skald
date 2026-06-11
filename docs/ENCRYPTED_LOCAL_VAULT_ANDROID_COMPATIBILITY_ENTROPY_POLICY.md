@@ -188,6 +188,12 @@ This policy does not enable:
 - Skald-operated infrastructure,
 - mainnet.
 
+## KDF Calibration Authorization Boundary
+
+`SkaldVaultV1KdfCalibrationAuthorizationPolicy` now models the future Android/Linux KDF authorization gates that must sit above compatibility and entropy evidence. It models KDF operation kinds, purposes, parameter/evidence kinds, platform/device classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens, but current authorization is blocked/fail-closed.
+
+The boundary does not run Argon2id, run KDFs, run calibration, run benchmarks, inspect real Android or Linux host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable vault creation, enable vault unlock, enable vault persistence, make a provider selectable, or approve mainnet. Android OS CSPRNG/SecureRandom remains future-reviewed only, Android hardware-backed key protection is separate from entropy quality and KDF approval, Linux entropy/calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, and `productionProviderSelectable` remains false.
+
 ## Next Step
 
 The next focused pass should remain design/probe-only unless explicitly narrowed by the user. Recommended next decision point: review runtime provider/primitive/randomness check evidence together and decide whether a still-disabled production-provider skeleton is warranted. Do not implement vault creation, provider-selectable KDF execution, key generation, or storage in that branch.
