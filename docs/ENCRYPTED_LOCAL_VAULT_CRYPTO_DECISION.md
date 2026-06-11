@@ -631,6 +631,16 @@ The boundary accepts only typed policy requests and evidence. It does not accept
 
 OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage. Passphrase-first remains the default vault authority.
 
+## Runtime Randomness Authorization Boundary
+
+Skald Vault v1 now has a still-disabled runtime randomness authorization boundary as model-only evidence. It classifies future randomness operation kinds, purposes, source kinds, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens before any future branch can obtain entropy, salt, nonce, or key-generation input.
+
+Current runtime randomness authorization is blocked/fail-closed. The boundary records that provider operations remain unauthorized, runtime randomness checks are not production gates, no platform randomness source is reviewed or enabled for production use, the registry still selects only `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
+
+The boundary does not call `SecureRandom`, Kotlin Random, Java Random, `Math.random`, OS CSPRNG APIs, provider randomness APIs, or randomness health checks. It does not generate entropy, salts, nonces, keys, deterministic vectors, or random byte fixtures; it does not run provider operations, KATs, Argon2id/KDF/HKDF/HMAC, AEAD encrypt/decrypt, header commitment logic, record crypto, key wrapping, vault creation, vault unlock, vault persistence, provider selection, or mainnet.
+
+Future vault secrets, salts, nonces, and keys must use reviewed OS cryptographic randomness/CSPRNG or reviewed provider randomness. General-purpose PRNGs are forbidden for secret/key/nonce/salt material. Android OS CSPRNG/SecureRandom remains future-reviewed only, Android hardware-backed key protection is separate from entropy quality, Linux entropy quality remains a required review gate, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.
+
 ## Unresolved Decisions
 
 These remain unresolved and require focused provider-implementation, calibration, or implementation spikes:

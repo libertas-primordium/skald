@@ -497,6 +497,14 @@ This evidence is not provider readiness. It does not authorize provider availabi
 
 The contract still requires the provider selection registry to remain disabled until a future reviewed implementation satisfies every hard gate. `productionProviderSelectable` remains false, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default vault authority.
 
+## Runtime Randomness Authorization Boundary
+
+`ProductionProviderAcceptanceContract` now records the still-disabled runtime randomness authorization boundary as tested model evidence and as a required acceptance gate. The evidence states that runtime randomness authorization is modeled, still disabled, blocks all operations, does not call SecureRandom, does not generate entropy, does not generate salts or nonces, does not generate keys, does not enable provider operations, does not enable unlock, does not enable persistence, does not enable provider selection, and models runtime-randomness failure vocabulary.
+
+This evidence is not randomness readiness. It does not authorize OS CSPRNG calls, provider randomness calls, hardware-backed entropy use, runtime health checks, entropy generation, salt generation, nonce generation, key-generation input, KDF salt generation, AEAD nonce generation, deterministic test-vector randomness for production runtime, provider operations, KATs, KDF/HKDF/HMAC/AEAD execution, vault creation, vault unlock, vault persistence, provider selection, or mainnet operation.
+
+Future acceptable randomness for production vault material must come from reviewed OS cryptographic randomness/CSPRNG or reviewed provider randomness. General-purpose PRNGs remain forbidden for secret/key/nonce/salt material. Android OS CSPRNG/SecureRandom remains future-reviewed only, Android hardware-backed key protection remains separate from entropy quality, Linux entropy quality remains a required review gate, `productionProviderSelectable` remains false, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default vault authority.
+
 ## Source And Storage Boundaries
 
 This contract does not allow:
