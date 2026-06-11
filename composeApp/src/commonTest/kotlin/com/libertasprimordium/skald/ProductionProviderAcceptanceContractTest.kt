@@ -11,6 +11,7 @@ import com.libertasprimordium.skald.security.ProductionProviderAcceptanceEvidenc
 import com.libertasprimordium.skald.security.ProductionProviderAcceptanceGate
 import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderCanonicalHeaderEncodingRule
+import com.libertasprimordium.skald.security.ProductionProviderClearWipeStrategyBoundaryRule
 import com.libertasprimordium.skald.security.ProductionProviderConstructionContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderDisabledStorageServiceFacadeRule
 import com.libertasprimordium.skald.security.ProductionProviderDeterministicKatVector
@@ -63,6 +64,7 @@ import com.libertasprimordium.skald.security.ProductionProviderWarningOnlyDurabi
 import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
+import com.libertasprimordium.skald.security.SkaldVaultV1ClearWipeStrategyPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1DisabledStorageServiceFacade
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
@@ -1527,6 +1529,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.passphrasePolicyBoundaryPolicyId,
         )
         assertEquals(
+            SkaldVaultV1ClearWipeStrategyPolicy.POLICY_ID,
+            policy.clearWipeStrategyBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -2128,6 +2134,10 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderPassphrasePolicyBoundaryRule.entries.toSet(),
             policy.passphrasePolicyBoundaryRules,
         )
+        assertEquals(
+            ProductionProviderClearWipeStrategyBoundaryRule.entries.toSet(),
+            policy.clearWipeStrategyBoundaryRules,
+        )
         assertContains(
             policy.lockSessionLifecycleRules,
             ProductionProviderLockSessionLifecycleRule.DefaultDecisionBlocked,
@@ -2175,6 +2185,26 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.passphrasePolicyBoundaryRules,
             ProductionProviderPassphrasePolicyBoundaryRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
+        )
+        assertContains(
+            policy.clearWipeStrategyBoundaryRules,
+            ProductionProviderClearWipeStrategyBoundaryRule.DefaultDecisionBlocked,
+        )
+        assertContains(
+            policy.clearWipeStrategyBoundaryRules,
+            ProductionProviderClearWipeStrategyBoundaryRule.DoesNotAcceptRawSensitiveValues,
+        )
+        assertContains(
+            policy.clearWipeStrategyBoundaryRules,
+            ProductionProviderClearWipeStrategyBoundaryRule.DoesNotClearRealMemory,
+        )
+        assertContains(
+            policy.clearWipeStrategyBoundaryRules,
+            ProductionProviderClearWipeStrategyBoundaryRule.DoesNotProveJvmZeroization,
+        )
+        assertContains(
+            policy.clearWipeStrategyBoundaryRules,
+            ProductionProviderClearWipeStrategyBoundaryRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
         )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
@@ -2332,6 +2362,15 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.passphrasePolicyDoesNotEnablePersistence)
         assertTrue(policy.passphrasePolicyDoesNotEnableProviderSelection)
         assertTrue(policy.passphrasePolicyFailureVocabularyModeled)
+        assertTrue(policy.clearWipeStrategyBoundaryModeled)
+        assertTrue(policy.clearWipeStrategyStillDisabled)
+        assertTrue(policy.clearWipeStrategyDoesNotAcceptRawSensitiveValues)
+        assertTrue(policy.clearWipeStrategyDoesNotClearRealMemory)
+        assertTrue(policy.clearWipeStrategyDoesNotProveJvmZeroization)
+        assertTrue(policy.clearWipeStrategyDoesNotEnableUnlock)
+        assertTrue(policy.clearWipeStrategyDoesNotEnablePersistence)
+        assertTrue(policy.clearWipeStrategyDoesNotEnableProviderSelection)
+        assertTrue(policy.clearWipeFailureVocabularyModeled)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)

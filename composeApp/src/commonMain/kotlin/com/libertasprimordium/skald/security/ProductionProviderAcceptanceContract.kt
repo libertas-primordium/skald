@@ -113,6 +113,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     PassphrasePolicyBoundaryImplementedAndTested(
         "vault passphrase policy boundary implemented and tested",
     ),
+    ClearWipeStrategyBoundaryImplementedAndTested(
+        "vault clear/wipe strategy boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1147,6 +1150,44 @@ data class ProductionProviderPassphrasePolicyBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderClearWipeStrategyBoundaryRule(val label: String) {
+    EvidenceOnly("clear/wipe strategy boundary returns evidence only"),
+    DefaultDecisionBlocked("current clear/wipe decision remains blocked or model-only"),
+    SensitiveValueVocabularyModeled("boundary models future sensitive value classes"),
+    LifecycleTriggerVocabularyModeled("boundary models lifecycle and failure triggers"),
+    StrategyVocabularyModeled("boundary models clear/wipe strategy classes"),
+    DoesNotAcceptRawSensitiveValues("boundary does not accept raw sensitive values"),
+    DoesNotClearRealMemory("boundary does not clear real memory"),
+    DoesNotProveJvmZeroization("boundary does not prove JVM zeroization"),
+    DoesNotUseNativeMemoryOrZeroizationApis("boundary does not use native memory or zeroization APIs"),
+    DoesNotCallProviderOrStorageClear("boundary does not call provider or storage clear operations"),
+    DoesNotInvalidateRealSessions("boundary does not invalidate real sessions"),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsPassphraseKeyBufferRootPathRecordPayloadProviderEvidence(
+        "boundary redacts passphrase, key, buffer, root, path, record, payload, and provider evidence",
+    ),
+}
+
+data class ProductionProviderClearWipeStrategyBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderClearWipeStrategyBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val doesNotAcceptRawSensitiveValues: Boolean,
+    val doesNotClearRealMemory: Boolean,
+    val doesNotProveJvmZeroization: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1303,6 +1344,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val lockSessionLifecycleBoundaryPolicyId: String,
     val redactionLeakageBoundaryPolicyId: String,
     val passphrasePolicyBoundaryEvidence: ProductionProviderPassphrasePolicyBoundaryEvidence,
+    val clearWipeStrategyBoundaryEvidence: ProductionProviderClearWipeStrategyBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1551,6 +1593,42 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val passphrasePolicyFailureVocabularyModeled: Boolean
         get() = passphrasePolicyBoundaryEvidence.failureVocabularyModeled
+
+    val clearWipeStrategyBoundaryPolicyId: String
+        get() = clearWipeStrategyBoundaryEvidence.policyId
+
+    val clearWipeStrategyBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = clearWipeStrategyBoundaryEvidence.status
+
+    val clearWipeStrategyBoundaryRules: Set<ProductionProviderClearWipeStrategyBoundaryRule>
+        get() = clearWipeStrategyBoundaryEvidence.rules
+
+    val clearWipeStrategyBoundaryModeled: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.modeled
+
+    val clearWipeStrategyStillDisabled: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.stillDisabled
+
+    val clearWipeStrategyDoesNotAcceptRawSensitiveValues: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.doesNotAcceptRawSensitiveValues
+
+    val clearWipeStrategyDoesNotClearRealMemory: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.doesNotClearRealMemory
+
+    val clearWipeStrategyDoesNotProveJvmZeroization: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.doesNotProveJvmZeroization
+
+    val clearWipeStrategyDoesNotEnableUnlock: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.doesNotEnableUnlock
+
+    val clearWipeStrategyDoesNotEnablePersistence: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.doesNotEnablePersistence
+
+    val clearWipeStrategyDoesNotEnableProviderSelection: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.doesNotEnableProviderSelection
+
+    val clearWipeFailureVocabularyModeled: Boolean
+        get() = clearWipeStrategyBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -1882,6 +1960,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.PassphrasePolicyBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.ClearWipeStrategyBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2323,6 +2403,21 @@ data class ProductionProviderAcceptanceContract(
                             doesNotAcceptRawPassphrases = true,
                             doesNotHashOrFingerprint = true,
                             doesNotRunKdf = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    clearWipeStrategyBoundaryEvidence =
+                        ProductionProviderClearWipeStrategyBoundaryEvidence(
+                            policyId = SkaldVaultV1ClearWipeStrategyPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderClearWipeStrategyBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            doesNotAcceptRawSensitiveValues = true,
+                            doesNotClearRealMemory = true,
+                            doesNotProveJvmZeroization = true,
                             doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,
