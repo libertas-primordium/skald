@@ -145,6 +145,7 @@ This boundary does not enable:
 - vault unlock or usable active sessions,
 - passphrase input acceptance, passphrase normalization or encoding execution, passphrase hashing, passphrase fingerprinting, passphrase-derived key material, passphrase UI, unlock UI, retry/throttle/lockout runtime behavior, or passphrase policy evidence as metadata persistence approval,
 - migration/corruption boundary evidence as real storage parsing, migration readiness, repair readiness, quarantine readiness, record recovery, rollback protection, crash recovery, AEAD authentication, real header-commitment verification, record read/write approval, or metadata persistence approval,
+- provider operation authorization boundary evidence as provider operation authorization, provider readiness, provider KAT readiness, runtime randomness readiness, entropy/salt/nonce/key generation readiness, KDF/Argon2id/HKDF/HMAC readiness, AEAD readiness, metadata encryption/decryption readiness, manifest or storage-index authentication readiness, key wrapping/unwrapping readiness, provider clear readiness, vault unlock approval, provider selectability, metadata persistence approval, or mainnet approval,
 - runtime logging, crash reporting, analytics, support export, runtime diagnostics, diagnostic persistence, secret hashing, or secret fingerprinting,
 - signing,
 - broadcasting,
@@ -167,6 +168,8 @@ Tests verify that:
 - Privacy status includes secure metadata storage unavailable,
 - non-secret settings storage does not add a secure metadata store key,
 - secure metadata and vault readiness production source remain BDK/client/process/persistence free.
+
+The still-disabled provider operation authorization boundary is covered only as typed policy evidence. It models future provider operation kinds, purposes, required gates, blockers, warnings, disabled capabilities, and redacted tokens. It does not accept provider handles, passphrases, keys, entropy/random/salt/nonce bytes, ciphertext, plaintext, record bytes, manifest bytes, storage-index bytes, persisted container bytes, paths, Settings values, backend URLs, descriptors, credentials, or wallet database bytes. It does not run provider operations, KATs, runtime randomness checks, key generation, Argon2id/KDF/HKDF/HMAC, AEAD, header commitment computation or verification, record encryption/decryption, manifest authentication, storage-index authentication, key wrapping, key unwrapping, or provider clear/dispose calls.
 
 ## Next Step
 

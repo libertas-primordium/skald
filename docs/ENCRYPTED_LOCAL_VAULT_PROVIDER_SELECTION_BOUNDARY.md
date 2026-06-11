@@ -326,3 +326,9 @@ Until then, the provider-selection registry must keep selecting the disabled pro
 ## Next Step
 
 The next focused branch should remain disabled unless the user explicitly approves provider-selectability scope. Remaining decision points are final Argon2id calibration approval, supported Android/Linux runtime provider and randomness review, passphrase policy production review, manifest/storage stale-record enforcement design, vault container/storage review, secure storage review, lock/session lifecycle production approval, redaction/leakage tests, migration/corruption tests, and release approval. The metadata-only facade is not a persistence or selection prerequisite by itself.
+
+## Provider Operation Authorization Boundary
+
+Provider selection now records `SkaldVaultV1ProviderOperationAuthorizationPolicy` as an adjacent still-disabled boundary. It models future provider operation authorization gates, but it cannot make a provider selectable and does not change registry behavior. The registry still selects only `DisabledVaultCryptoProvider`; Tink plus Bouncy Castle remains a blocked future candidate; Lazysodium remains rejected for this vault branch; IonSpin remains deferred; and `productionProviderSelectable` remains false.
+
+Current provider operation authorization is blocked/fail-closed for every operation kind and purpose. The boundary does not run provider KATs, runtime randomness checks, entropy/salt/nonce/key generation, Argon2id/KDF/HKDF/HMAC, AEAD encrypt/decrypt, header commitment computation or verification, record encrypt/decrypt, manifest/storage-index authentication, key wrapping/unwrapping, provider clear/dispose, vault creation, vault unlock, vault persistence, provider selection, or mainnet. OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.

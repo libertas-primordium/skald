@@ -119,6 +119,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     MigrationCorruptionBoundaryImplementedAndTested(
         "vault migration/corruption boundary implemented and tested",
     ),
+    ProviderOperationAuthorizationBoundaryImplementedAndTested(
+        "vault provider operation authorization boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1232,6 +1235,50 @@ data class ProductionProviderMigrationCorruptionBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderOperationAuthorizationBoundaryRule(val label: String) {
+    EvidenceOnly("provider operation authorization boundary returns evidence only"),
+    DefaultDecisionBlocked("current provider operation authorization decision remains blocked"),
+    OperationKindVocabularyModeled("boundary models provider operation kinds"),
+    OperationPurposeVocabularyModeled("boundary models provider operation purposes"),
+    RequiredGateVocabularyModeled("boundary models required authorization gates"),
+    BlocksAllOperations("boundary blocks all provider operations"),
+    DoesNotAcceptRawProviderOrSecretInputs(
+        "boundary does not accept provider handles, raw secrets, ciphertext, plaintext, or storage bytes",
+    ),
+    DoesNotRunProviderOperations("boundary does not run provider operations"),
+    DoesNotRunKatRandomnessKdfHkdfHmacOrAead(
+        "boundary does not run KAT, randomness, KDF, HKDF, HMAC, or AEAD execution",
+    ),
+    DoesNotGenerateEntropySaltNonceOrKeys(
+        "boundary does not generate entropy, salts, nonces, or keys",
+    ),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsProviderCryptoStorageAndSecretEvidence(
+        "boundary redacts provider, crypto, storage, path, and secret evidence",
+    ),
+}
+
+data class ProductionProviderOperationAuthorizationBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderOperationAuthorizationBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val blocksAllOperations: Boolean,
+    val doesNotRunCrypto: Boolean,
+    val doesNotRunKat: Boolean,
+    val doesNotGenerateRandomness: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1390,6 +1437,8 @@ data class ProductionProviderContainerManifestStorageContract(
     val passphrasePolicyBoundaryEvidence: ProductionProviderPassphrasePolicyBoundaryEvidence,
     val clearWipeStrategyBoundaryEvidence: ProductionProviderClearWipeStrategyBoundaryEvidence,
     val migrationCorruptionBoundaryEvidence: ProductionProviderMigrationCorruptionBoundaryEvidence,
+    val providerOperationAuthorizationBoundaryEvidence:
+        ProductionProviderOperationAuthorizationBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1713,6 +1762,45 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val migrationCorruptionFailureVocabularyModeled: Boolean
         get() = migrationCorruptionBoundaryEvidence.failureVocabularyModeled
+
+    val providerOperationAuthorizationBoundaryPolicyId: String
+        get() = providerOperationAuthorizationBoundaryEvidence.policyId
+
+    val providerOperationAuthorizationBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = providerOperationAuthorizationBoundaryEvidence.status
+
+    val providerOperationAuthorizationBoundaryRules: Set<ProductionProviderOperationAuthorizationBoundaryRule>
+        get() = providerOperationAuthorizationBoundaryEvidence.rules
+
+    val providerOperationAuthorizationBoundaryModeled: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.modeled
+
+    val providerOperationAuthorizationStillDisabled: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.stillDisabled
+
+    val providerOperationAuthorizationBlocksAllOperations: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.blocksAllOperations
+
+    val providerOperationAuthorizationDoesNotRunCrypto: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.doesNotRunCrypto
+
+    val providerOperationAuthorizationDoesNotRunKat: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.doesNotRunKat
+
+    val providerOperationAuthorizationDoesNotGenerateRandomness: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.doesNotGenerateRandomness
+
+    val providerOperationAuthorizationDoesNotEnableUnlock: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.doesNotEnableUnlock
+
+    val providerOperationAuthorizationDoesNotEnablePersistence: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.doesNotEnablePersistence
+
+    val providerOperationAuthorizationDoesNotEnableProviderSelection: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.doesNotEnableProviderSelection
+
+    val providerOperationFailureVocabularyModeled: Boolean
+        get() = providerOperationAuthorizationBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2048,6 +2136,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.ClearWipeStrategyBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.MigrationCorruptionBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.ProviderOperationAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2520,6 +2610,22 @@ data class ProductionProviderAcceptanceContract(
                             doesNotParseRealStorage = true,
                             doesNotRepairStorage = true,
                             doesNotRunMigration = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    providerOperationAuthorizationBoundaryEvidence =
+                        ProductionProviderOperationAuthorizationBoundaryEvidence(
+                            policyId = SkaldVaultV1ProviderOperationAuthorizationPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderOperationAuthorizationBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            blocksAllOperations = true,
+                            doesNotRunCrypto = true,
+                            doesNotRunKat = true,
+                            doesNotGenerateRandomness = true,
                             doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,

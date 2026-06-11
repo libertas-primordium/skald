@@ -619,6 +619,18 @@ Before enabling any real persistence:
 - no plaintext secret or sensitive metadata writes are possible,
 - user explicitly approves enabling the smallest production persistence class.
 
+## Provider Operation Authorization Boundary
+
+Skald Vault v1 now has a still-disabled provider operation authorization boundary as model-only evidence. It classifies future provider operation kinds, operation purposes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens before any executable provider crypto can exist.
+
+Current provider operation authorization is blocked/fail-closed. The boundary records that the provider registry still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, and no production provider use is approved.
+
+The boundary does not run provider operations, provider KATs, runtime randomness checks, entropy generation, salt generation, nonce generation, key generation, Argon2id, KDF, HKDF, HMAC, AEAD encrypt/decrypt, header commitment computation or verification, record encryption/decryption, manifest authentication, storage-index authentication, key wrapping, key unwrapping, or provider clear/dispose calls. It does not create provider handles, make a provider selectable, enable vault creation, enable vault unlock, enable vault persistence, or approve mainnet.
+
+The boundary accepts only typed policy requests and evidence. It does not accept passphrases, keys, provider handles, entropy/random/salt/nonce bytes, ciphertext, plaintext, record bytes, manifest bytes, storage-index bytes, persisted container bytes, raw paths, filesystem handles, Settings values, backend URLs, descriptors, credentials, or wallet database bytes.
+
+OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage. Passphrase-first remains the default vault authority.
+
 ## Unresolved Decisions
 
 These remain unresolved and require focused provider-implementation, calibration, or implementation spikes:

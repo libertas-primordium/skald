@@ -527,6 +527,14 @@ Real secret storage may not be enabled until all of these gates are satisfied:
 
 Until these gates are met, the disabled/fail-closed implementation remains the only acceptable runtime behavior.
 
+## Provider Operation Authorization Boundary
+
+The secure-storage design now depends on a still-disabled provider operation authorization boundary before any future provider-backed secret storage operation can exist. The boundary models future provider operation kinds, operation purposes, required gates, blockers, warnings, and disabled capabilities, but current authorization is blocked/fail-closed.
+
+The boundary does not run provider operations, provider KATs, runtime randomness checks, entropy generation, salt generation, nonce generation, key generation, Argon2id, KDF, HKDF, HMAC, AEAD encrypt/decrypt, header commitment computation or verification, record encryption/decryption, manifest authentication, storage-index authentication, key wrapping, key unwrapping, provider clear/dispose, or provider self-tests. It does not create provider handles, accept passphrases, accept keys, accept ciphertext or plaintext, read files, write files, persist Settings values, make a provider selectable, approve production provider use, enable vault creation, enable vault unlock, enable vault persistence, or approve mainnet.
+
+The provider registry still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default vault authority.
+
 ## Open questions
 
 - Should Android use Android Keystore only, or combine Keystore-wrapped keys with a user passphrase-encrypted layer?
