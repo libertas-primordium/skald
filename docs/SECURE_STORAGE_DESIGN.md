@@ -12,6 +12,8 @@ The detailed app-controlled encrypted local vault architecture and key-lifecycle
 
 A still-disabled redaction/leakage boundary now models safe-output policy for future secure-storage, provider, unlock/session, storage, persistence, recovery, source-guard, and failure-reporting paths. It classifies typed value kinds, output targets, scopes, redaction decisions, forbidden classes, allowed public evidence classes, and source-guard material classes only. It does not accept raw secrets, passphrases, PINs, mnemonics, seeds, private keys, key material, decrypted records, encrypted record bytes, wallet database bytes, credentials, raw platform paths, endpoints with credentials, stack traces, byte arrays, payloads, wallet labels, transaction notes, provider handles, storage handles, or backend handles. It does not hash or fingerprint secrets, log, add crash reporting, add analytics, add support export, add runtime diagnostics, persist diagnostic output, display secrets, implement unlock UI, implement provider execution, implement storage, enable vault unlock, enable vault persistence, enable provider selection, or approve mainnet. Public non-wallet cryptographic vectors remain scoped to docs/tests/KAT/source-guard evidence only; wallet, UTXO, sync, and production paths continue to reject hardcoded address, txid, secret, and wallet-material fixtures.
 
+A still-disabled passphrase policy boundary now models future passphrase input policy, normalization and encoding policy identifiers, retry/throttle/lockout policy requirements, memory-lifetime and clear/wipe requirements, redaction requirements, UI-entry absence, biometric and Android-Keystore future-only status, OS-keyring/password-manager passphrase-storage rejection, and unlock prerequisites. It accepts typed policy requests and typed evidence only. It does not accept raw passphrases, PINs, biometrics, password examples, mnemonic examples, passphrase bytes, KDF input/output, passphrase hashes, passphrase fingerprints, key material, raw paths, Settings values, provider handles, storage handles, or database handles. It does not store passphrases, normalize or encode real passphrases, hash or fingerprint passphrases, run Argon2id, run KDF/HKDF/HMAC/AEAD, implement retry/throttle/lockout runtime behavior, implement passphrase UI, implement unlock UI, implement memory wipe/zeroization, implement Android Keystore, implement OS keyrings, implement password managers, enable vault unlock, enable vault persistence, enable provider selection, approve production provider use, or approve mainnet.
+
 The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats disabled secure storage and disabled secure metadata persistence as blockers for production provider selection and selects only the disabled provider.
 
 The dependency spike pins Tink and Bouncy Castle artifacts for platform compile/package evaluation plus desktop and Android runtime public-vector validation only. The dependency review records candidate-level package, license, keyset/storage, Bouncy Castle Argon2id API, and split-provider evidence. The disabled provider boundary models the future provider surface while rejecting every operation. The provider-selection boundary blocks non-disabled provider selection. The provider-level KAT contract models future positive and negative provider checks, and the test-only harness exercises those checks without approving production provider behavior. The Argon2id parameter policy defines candidate tiers only; it does not approve final production parameters. None of these documents or models makes `SecureSecretStorage` available or adds secret persistence.
@@ -75,6 +77,7 @@ This design does not currently enable:
 - Biometric unlock implementation.
 - Lock/session state persistence.
 - Passphrase or PIN capture/storage.
+- Passphrase input acceptance, normalization or encoding execution, hashing, fingerprinting, retry/throttle/lockout runtime behavior, passphrase UI, unlock UI, or passphrase-derived key material.
 - Runtime logging, crash reporting, analytics, support export, secret hashing, or secret fingerprinting.
 - Encrypted local vault implementation.
 - Linux keyring wrapping implementation.
@@ -369,6 +372,7 @@ Policy requirements:
 
 - Optional biometric unlock may be convenience only.
 - PIN/passphrase policy must be defined before seed or imported-key storage.
+- The still-disabled passphrase policy boundary currently provides policy vocabulary only; it does not accept passphrases, execute normalization or UTF-8 encoding, implement retry/throttle/lockout, derive keys, or approve unlock.
 - Inactivity lock must clear unlocked secret session state.
 - Failed unlock handling must avoid leaking whether a specific secret exists beyond safe metadata.
 - High-risk flows must not use a background unlock silently.

@@ -29,6 +29,7 @@ import com.libertasprimordium.skald.security.ProductionProviderManifestField
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseAllowedClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseForbiddenClass
 import com.libertasprimordium.skald.security.ProductionProviderPassphraseNoTransformRule
+import com.libertasprimordium.skald.security.ProductionProviderPassphrasePolicyBoundaryRule
 import com.libertasprimordium.skald.security.ProductionProviderPathContainmentPlannerRule
 import com.libertasprimordium.skald.security.ProductionProviderPlatformPathConstructionRule
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootSettingsRule
@@ -66,6 +67,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1DisabledStorageServiceF
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LockSessionLifecyclePolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1PassphrasePolicyGate
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
@@ -1521,6 +1523,10 @@ class ProductionProviderAcceptanceContractTest {
             policy.redactionLeakageBoundaryPolicyId,
         )
         assertEquals(
+            SkaldVaultV1PassphrasePolicyGate.POLICY_ID,
+            policy.passphrasePolicyBoundaryPolicyId,
+        )
+        assertEquals(
             SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
             policy.osKeyringPassphrasePolicyId,
         )
@@ -2118,6 +2124,10 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderRedactionLeakageRule.entries.toSet(),
             policy.redactionLeakageRules,
         )
+        assertEquals(
+            ProductionProviderPassphrasePolicyBoundaryRule.entries.toSet(),
+            policy.passphrasePolicyBoundaryRules,
+        )
         assertContains(
             policy.lockSessionLifecycleRules,
             ProductionProviderLockSessionLifecycleRule.DefaultDecisionBlocked,
@@ -2149,6 +2159,22 @@ class ProductionProviderAcceptanceContractTest {
         assertContains(
             policy.redactionLeakageRules,
             ProductionProviderRedactionLeakageRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
+        )
+        assertContains(
+            policy.passphrasePolicyBoundaryRules,
+            ProductionProviderPassphrasePolicyBoundaryRule.DefaultDecisionBlocked,
+        )
+        assertContains(
+            policy.passphrasePolicyBoundaryRules,
+            ProductionProviderPassphrasePolicyBoundaryRule.DoesNotAcceptRawPassphrasesOrPins,
+        )
+        assertContains(
+            policy.passphrasePolicyBoundaryRules,
+            ProductionProviderPassphrasePolicyBoundaryRule.DoesNotHashFingerprintOrRunKdf,
+        )
+        assertContains(
+            policy.passphrasePolicyBoundaryRules,
+            ProductionProviderPassphrasePolicyBoundaryRule.DoesNotEnableUnlockPersistenceOrProviderSelection,
         )
         assertEquals(ProductionProviderDurabilityCapabilityRule.entries.toSet(), policy.durabilityCapabilityRules)
         assertContains(
@@ -2296,6 +2322,16 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(policy.redactionLeakageDoesNotEnablePersistence)
         assertTrue(policy.redactionLeakageDoesNotEnableProviderSelection)
         assertTrue(policy.redactionLeakageFailureVocabularyModeled)
+        assertTrue(policy.passphrasePolicyBoundaryModeled)
+        assertTrue(policy.passphrasePolicyStillDisabled)
+        assertTrue(policy.passphraseInputStillRejected)
+        assertTrue(policy.passphrasePolicyDoesNotAcceptRawPassphrases)
+        assertTrue(policy.passphrasePolicyDoesNotHashOrFingerprint)
+        assertTrue(policy.passphrasePolicyDoesNotRunKdf)
+        assertTrue(policy.passphrasePolicyDoesNotEnableUnlock)
+        assertTrue(policy.passphrasePolicyDoesNotEnablePersistence)
+        assertTrue(policy.passphrasePolicyDoesNotEnableProviderSelection)
+        assertTrue(policy.passphrasePolicyFailureVocabularyModeled)
         assertFalse(policy.settingsUiImplemented)
         assertFalse(policy.settingsPersistenceImplemented)
         assertTrue(policy.osKeyringPrimaryStorageRejected)
@@ -2362,6 +2398,7 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceGate.PersistenceReadinessGateImplementedAndTested,
             ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested,
+            ProductionProviderAcceptanceGate.PassphrasePolicyBoundaryImplementedAndTested,
             ProductionProviderAcceptanceGate.SafePathConstructionContractApproved,
             ProductionProviderAcceptanceGate.SymlinkTraversalContractApproved,
             ProductionProviderAcceptanceGate.StoragePermissionOwnershipContractApproved,
@@ -2506,6 +2543,10 @@ class ProductionProviderAcceptanceContractTest {
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.ImplementedTested,
             evidence.stateFor(ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.PassphrasePolicyBoundaryImplementedAndTested),
         )
         assertEquals(
             ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,

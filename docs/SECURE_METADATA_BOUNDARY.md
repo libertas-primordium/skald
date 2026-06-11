@@ -68,6 +68,8 @@ A still-disabled lock/session lifecycle boundary now models future lock/unlock/s
 
 A still-disabled redaction/leakage boundary now models safe-output policy for future secure metadata, provider, unlock/session, storage, persistence, recovery, source-guard, and failure-reporting paths. It classifies typed value kinds, output targets, scopes, redaction decisions, forbidden classes, allowed public evidence classes, and source-guard material classes only. It does not accept raw secrets, passphrases, key material, decrypted records, encrypted record bytes, wallet database bytes, credentials, raw platform paths, endpoints with credentials, stack traces, byte arrays, payloads, wallet labels, UTXO labels, transaction notes, provider handles, storage handles, or backend handles. It does not hash or fingerprint secrets, log, add crash reporting, add analytics, add support export, add runtime diagnostics, persist diagnostic output, display secrets, implement unlock UI, implement provider execution, implement storage, enable vault unlock, enable vault persistence, enable provider selection, or approve mainnet. Public non-wallet cryptographic vectors remain scoped to docs/tests/KAT/source-guard evidence only; wallet, UTXO, sync, and production paths continue to reject hardcoded address, txid, secret, and wallet-material fixtures.
 
+A still-disabled passphrase policy boundary now models future passphrase input policy, normalization and encoding policy identifiers, retry/throttle/lockout policy requirements, memory-lifetime and clear/wipe requirements, redaction requirements, UI-entry absence, biometric and Android-Keystore future-only status, OS-keyring/password-manager passphrase-storage rejection, and unlock prerequisites. It accepts typed policy requests and typed evidence only. It does not accept raw passphrases, PINs, biometrics, password examples, mnemonic examples, passphrase bytes, KDF input/output, passphrase hashes, passphrase fingerprints, key material, raw paths, Settings values, provider handles, storage handles, or database handles. It does not store passphrases, normalize or encode real passphrases, hash or fingerprint passphrases, run Argon2id, run KDF/HKDF/HMAC/AEAD, implement retry/throttle/lockout runtime behavior, implement passphrase UI, implement unlock UI, implement memory wipe/zeroization, implement Android Keystore, implement OS keyrings, implement password managers, enable vault unlock, enable vault persistence, enable provider selection, approve production provider use, or approve mainnet.
+
 The disabled capability reports:
 
 - encrypted vault unavailable,
@@ -137,6 +139,7 @@ This boundary does not enable:
 - secure secret storage,
 - lock/session state persistence,
 - vault unlock or usable active sessions,
+- passphrase input acceptance, passphrase normalization or encoding execution, passphrase hashing, passphrase fingerprinting, passphrase-derived key material, passphrase UI, unlock UI, retry/throttle/lockout runtime behavior, or passphrase policy evidence as metadata persistence approval,
 - runtime logging, crash reporting, analytics, support export, runtime diagnostics, diagnostic persistence, secret hashing, or secret fingerprinting,
 - signing,
 - broadcasting,
