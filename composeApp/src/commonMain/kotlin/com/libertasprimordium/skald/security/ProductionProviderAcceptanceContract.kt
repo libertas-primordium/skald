@@ -110,6 +110,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     RedactionLeakageBoundaryImplementedAndTested(
         "vault redaction/leakage boundary implemented and tested",
     ),
+    PassphrasePolicyBoundaryImplementedAndTested(
+        "vault passphrase policy boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1105,6 +1108,45 @@ enum class ProductionProviderRedactionLeakageRule(val label: String) {
     ),
 }
 
+enum class ProductionProviderPassphrasePolicyBoundaryRule(val label: String) {
+    EvidenceOnly("passphrase policy boundary returns evidence only"),
+    DefaultDecisionBlocked("current passphrase decision remains blocked"),
+    PolicyVocabularyModeled("boundary models passphrase policy vocabulary"),
+    NormalizationAndEncodingPolicyIdsOnly("boundary models normalization and encoding policy identifiers only"),
+    RetryThrottleLockoutRequirementsModeled("boundary models retry, throttle, and lockout requirements"),
+    DoesNotAcceptRawPassphrasesOrPins("boundary does not accept raw passphrases or PINs"),
+    DoesNotHashFingerprintOrRunKdf("boundary does not hash, fingerprint, or run KDFs"),
+    DoesNotImplementRetryThrottleLockout("boundary does not implement retry, throttle, or lockout behavior"),
+    DoesNotUseBiometricKeystoreKeyringPasswordManagerApis(
+        "boundary does not use biometric, Keystore, keyring, or password-manager APIs",
+    ),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsPassphraseKeyRootPathRecordPayloadProviderEvidence(
+        "boundary redacts passphrase, key, root, path, record, payload, and provider evidence",
+    ),
+}
+
+data class ProductionProviderPassphrasePolicyBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderPassphrasePolicyBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val inputStillRejected: Boolean,
+    val doesNotAcceptRawPassphrases: Boolean,
+    val doesNotHashOrFingerprint: Boolean,
+    val doesNotRunKdf: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1260,6 +1302,7 @@ data class ProductionProviderContainerManifestStorageContract(
     val persistenceReadinessGatePolicyId: String,
     val lockSessionLifecycleBoundaryPolicyId: String,
     val redactionLeakageBoundaryPolicyId: String,
+    val passphrasePolicyBoundaryEvidence: ProductionProviderPassphrasePolicyBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1469,7 +1512,46 @@ data class ProductionProviderContainerManifestStorageContract(
     val secureSecretStorageSuccessPathImplemented: Boolean,
     val secureMetadataStorageSuccessPathImplemented: Boolean,
     val atomicWriteRecoveryImplementationAdded: Boolean,
-)
+) {
+    val passphrasePolicyBoundaryPolicyId: String
+        get() = passphrasePolicyBoundaryEvidence.policyId
+
+    val passphrasePolicyBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = passphrasePolicyBoundaryEvidence.status
+
+    val passphrasePolicyBoundaryRules: Set<ProductionProviderPassphrasePolicyBoundaryRule>
+        get() = passphrasePolicyBoundaryEvidence.rules
+
+    val passphrasePolicyBoundaryModeled: Boolean
+        get() = passphrasePolicyBoundaryEvidence.modeled
+
+    val passphrasePolicyStillDisabled: Boolean
+        get() = passphrasePolicyBoundaryEvidence.stillDisabled
+
+    val passphraseInputStillRejected: Boolean
+        get() = passphrasePolicyBoundaryEvidence.inputStillRejected
+
+    val passphrasePolicyDoesNotAcceptRawPassphrases: Boolean
+        get() = passphrasePolicyBoundaryEvidence.doesNotAcceptRawPassphrases
+
+    val passphrasePolicyDoesNotHashOrFingerprint: Boolean
+        get() = passphrasePolicyBoundaryEvidence.doesNotHashOrFingerprint
+
+    val passphrasePolicyDoesNotRunKdf: Boolean
+        get() = passphrasePolicyBoundaryEvidence.doesNotRunKdf
+
+    val passphrasePolicyDoesNotEnableUnlock: Boolean
+        get() = passphrasePolicyBoundaryEvidence.doesNotEnableUnlock
+
+    val passphrasePolicyDoesNotEnablePersistence: Boolean
+        get() = passphrasePolicyBoundaryEvidence.doesNotEnablePersistence
+
+    val passphrasePolicyDoesNotEnableProviderSelection: Boolean
+        get() = passphrasePolicyBoundaryEvidence.doesNotEnableProviderSelection
+
+    val passphrasePolicyFailureVocabularyModeled: Boolean
+        get() = passphrasePolicyBoundaryEvidence.failureVocabularyModeled
+}
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
     EmptyPassphrase("empty passphrase"),
@@ -1798,6 +1880,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.LockSessionLifecycleBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.PassphrasePolicyBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2228,6 +2312,22 @@ data class ProductionProviderAcceptanceContract(
                         SkaldVaultV1LockSessionLifecyclePolicy.POLICY_ID,
                     redactionLeakageBoundaryPolicyId =
                         SkaldVaultV1RedactionLeakagePolicy.POLICY_ID,
+                    passphrasePolicyBoundaryEvidence =
+                        ProductionProviderPassphrasePolicyBoundaryEvidence(
+                            policyId = SkaldVaultV1PassphrasePolicyGate.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderPassphrasePolicyBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            inputStillRejected = true,
+                            doesNotAcceptRawPassphrases = true,
+                            doesNotHashOrFingerprint = true,
+                            doesNotRunKdf = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
                     osKeyringPassphrasePolicyId =
                         SkaldVaultV1PlatformRootSettingsPolicy.OS_KEYRING_PASSPHRASE_POLICY_ID,
                     passwordManagerPassphrasePolicyId =
