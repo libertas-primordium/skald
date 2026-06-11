@@ -153,6 +153,14 @@ When Android runtime provider/randomness evidence is unknown, Android provider p
 - migration/corruption tests are missing,
 - mainnet is disabled.
 
+## Runtime Randomness Authorization Boundary
+
+`SkaldVaultV1RuntimeRandomnessAuthorizationPolicy` now exists as a still-disabled model-only boundary for future runtime entropy and randomness authorization. It models Android OS CSPRNG evidence, Android hardware-backed capability evidence, reviewed provider randomness, salt generation, nonce generation, key-generation input, KDF salt, AEAD nonce, provider KAT randomness, deterministic test-vector scope, production runtime scope, release validation, required gates, blockers, warnings, and disabled capabilities.
+
+Current Android randomness authorization is blocked/fail-closed. The boundary does not call Android `SecureRandom`, Kotlin Random, Java Random, `Math.random`, Android randomness APIs, provider RNG APIs, or runtime randomness health checks. It does not generate entropy, salts, nonces, keys, random byte fixtures, deterministic vectors, provider operations, KATs, KDF/HKDF/HMAC/AEAD, vault creation, vault unlock, vault persistence, provider selection, or mainnet.
+
+Android OS CSPRNG/SecureRandom remains future-reviewed only. Android hardware-backed key protection or StrongBox-style capability evidence is separate from entropy quality and does not authorize randomness. Future acceptable vault randomness must come from reviewed OS cryptographic randomness/CSPRNG or reviewed provider randomness. General-purpose PRNGs remain forbidden for secrets, salts, nonces, and keys; deterministic test-vector randomness is not authorized for production runtime; provider selection still selects only `DisabledVaultCryptoProvider`; and `productionProviderSelectable` remains false.
+
 ## Explicit Non-Capabilities
 
 This policy does not enable:

@@ -122,6 +122,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     ProviderOperationAuthorizationBoundaryImplementedAndTested(
         "vault provider operation authorization boundary implemented and tested",
     ),
+    RuntimeRandomnessAuthorizationBoundaryImplementedAndTested(
+        "vault runtime randomness authorization boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1279,6 +1282,54 @@ data class ProductionProviderOperationAuthorizationBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderRuntimeRandomnessAuthorizationBoundaryRule(val label: String) {
+    EvidenceOnly("runtime randomness authorization boundary returns evidence only"),
+    DefaultDecisionBlocked("current runtime randomness authorization decision remains blocked"),
+    OperationKindVocabularyModeled("boundary models randomness operation kinds"),
+    OperationPurposeVocabularyModeled("boundary models randomness operation purposes"),
+    SourceKindVocabularyModeled("boundary models randomness source kinds"),
+    RequiredGateVocabularyModeled("boundary models required randomness gates"),
+    BlocksAllOperations("boundary blocks all randomness operations"),
+    DoesNotAcceptRawRandomnessOrSecretInputs(
+        "boundary does not accept random, entropy, salt, nonce, key, passphrase, ciphertext, plaintext, or storage bytes",
+    ),
+    DoesNotCallRandomApis("boundary does not call runtime randomness APIs"),
+    DoesNotRunProviderOperations("boundary does not run provider operations"),
+    DoesNotRunKatKdfHkdfHmacOrAead(
+        "boundary does not run KAT, KDF, HKDF, HMAC, or AEAD execution",
+    ),
+    DoesNotGenerateEntropySaltNonceOrKeys(
+        "boundary does not generate entropy, salts, nonces, or keys",
+    ),
+    DoesNotUseFilePathStorageSettingsOrPlatformApis(
+        "boundary does not use File, Path, storage, Settings, or platform APIs",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsRandomnessCryptoStorageAndSecretEvidence(
+        "boundary redacts randomness, crypto, storage, path, and secret evidence",
+    ),
+}
+
+data class ProductionProviderRuntimeRandomnessAuthorizationBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderRuntimeRandomnessAuthorizationBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val blocksAllOperations: Boolean,
+    val doesNotCallSecureRandom: Boolean,
+    val doesNotGenerateEntropy: Boolean,
+    val doesNotGenerateSaltOrNonce: Boolean,
+    val doesNotGenerateKeys: Boolean,
+    val doesNotEnableProviderOperations: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1439,6 +1490,8 @@ data class ProductionProviderContainerManifestStorageContract(
     val migrationCorruptionBoundaryEvidence: ProductionProviderMigrationCorruptionBoundaryEvidence,
     val providerOperationAuthorizationBoundaryEvidence:
         ProductionProviderOperationAuthorizationBoundaryEvidence,
+    val runtimeRandomnessAuthorizationBoundaryEvidence:
+        ProductionProviderRuntimeRandomnessAuthorizationBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1801,6 +1854,52 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val providerOperationFailureVocabularyModeled: Boolean
         get() = providerOperationAuthorizationBoundaryEvidence.failureVocabularyModeled
+
+    val runtimeRandomnessAuthorizationBoundaryPolicyId: String
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.policyId
+
+    val runtimeRandomnessAuthorizationBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.status
+
+    val runtimeRandomnessAuthorizationBoundaryRules:
+        Set<ProductionProviderRuntimeRandomnessAuthorizationBoundaryRule>
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.rules
+
+    val runtimeRandomnessAuthorizationBoundaryModeled: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.modeled
+
+    val runtimeRandomnessAuthorizationStillDisabled: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.stillDisabled
+
+    val runtimeRandomnessAuthorizationBlocksAllOperations: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.blocksAllOperations
+
+    val runtimeRandomnessAuthorizationDoesNotCallSecureRandom: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotCallSecureRandom
+
+    val runtimeRandomnessAuthorizationDoesNotGenerateEntropy: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotGenerateEntropy
+
+    val runtimeRandomnessAuthorizationDoesNotGenerateSaltOrNonce: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotGenerateSaltOrNonce
+
+    val runtimeRandomnessAuthorizationDoesNotGenerateKeys: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotGenerateKeys
+
+    val runtimeRandomnessAuthorizationDoesNotEnableProviderOperations: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotEnableProviderOperations
+
+    val runtimeRandomnessAuthorizationDoesNotEnableUnlock: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotEnableUnlock
+
+    val runtimeRandomnessAuthorizationDoesNotEnablePersistence: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotEnablePersistence
+
+    val runtimeRandomnessAuthorizationDoesNotEnableProviderSelection: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.doesNotEnableProviderSelection
+
+    val runtimeRandomnessFailureVocabularyModeled: Boolean
+        get() = runtimeRandomnessAuthorizationBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2138,6 +2237,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.MigrationCorruptionBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.ProviderOperationAuthorizationBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.RuntimeRandomnessAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2626,6 +2727,24 @@ data class ProductionProviderAcceptanceContract(
                             doesNotRunCrypto = true,
                             doesNotRunKat = true,
                             doesNotGenerateRandomness = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    runtimeRandomnessAuthorizationBoundaryEvidence =
+                        ProductionProviderRuntimeRandomnessAuthorizationBoundaryEvidence(
+                            policyId = SkaldVaultV1RuntimeRandomnessAuthorizationPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderRuntimeRandomnessAuthorizationBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            blocksAllOperations = true,
+                            doesNotCallSecureRandom = true,
+                            doesNotGenerateEntropy = true,
+                            doesNotGenerateSaltOrNonce = true,
+                            doesNotGenerateKeys = true,
+                            doesNotEnableProviderOperations = true,
                             doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,

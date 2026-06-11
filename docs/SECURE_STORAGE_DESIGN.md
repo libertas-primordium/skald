@@ -535,6 +535,10 @@ The boundary does not run provider operations, provider KATs, runtime randomness
 
 The provider registry still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default vault authority.
 
+The secure-storage design now also depends on a still-disabled runtime randomness authorization boundary before any future secret storage, wrapping, nonce, salt, KDF salt, AEAD nonce, backup/export material, or key-generation input can exist. The boundary models future randomness operation kinds, purposes, source kinds, required gates, blockers, warnings, and disabled capabilities, but current authorization is blocked/fail-closed.
+
+The boundary does not call `SecureRandom`, Kotlin Random, Java Random, `Math.random`, OS CSPRNG APIs, provider randomness APIs, or runtime randomness health checks. It does not generate entropy, salts, nonces, keys, random byte fixtures, deterministic vectors, provider operations, KATs, Argon2id/KDF/HKDF/HMAC, AEAD, header commitment logic, record crypto, key wrapping, provider clear/dispose, vault creation, vault unlock, vault persistence, provider selection, or mainnet. General-purpose PRNGs are forbidden for secrets, salts, nonces, and keys; future acceptable randomness must come from reviewed OS cryptographic randomness/CSPRNG or reviewed provider randomness; Android hardware-backed key protection is separate from entropy quality; Linux entropy quality remains a required review gate; provider selection still selects only `DisabledVaultCryptoProvider`; and `productionProviderSelectable` remains false.
+
 ## Open questions
 
 - Should Android use Android Keystore only, or combine Keystore-wrapped keys with a user passphrase-encrypted layer?

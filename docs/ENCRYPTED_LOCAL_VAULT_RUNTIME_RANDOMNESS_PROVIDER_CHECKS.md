@@ -145,6 +145,14 @@ Source guards require:
 
 The guards allow test files to mention forbidden API categories as negative scan patterns and policy names. They do not allow production security/vault code to import or call those APIs.
 
+## Runtime Randomness Authorization Boundary
+
+`SkaldVaultV1RuntimeRandomnessAuthorizationPolicy` now exists as a still-disabled model-only authorization boundary above these provider/randomness checks. It models future randomness operation kinds, purposes, source kinds, required gates, blockers, warnings, and disabled capabilities for runtime randomness availability checks, OS CSPRNG requests, provider randomness requests, hardware-backed entropy evidence, salt generation, nonce generation, key-generation input, KDF salts, AEAD nonces, record/manifest/storage-index nonce or counter seeds, backup/export material, migration/recovery planning, provider KAT randomness, deterministic test-vector randomness, production runtime randomness, release validation, and mainnet randomness.
+
+Current authorization is blocked/fail-closed for every operation. The boundary does not call `SecureRandom`, Kotlin Random, Java Random, `Math.random`, OS CSPRNG APIs, provider RNG APIs, or runtime randomness health checks. It does not generate entropy, salts, nonces, keys, random byte fixtures, deterministic vectors, provider operations, KATs, Argon2id/KDF/HKDF/HMAC, AEAD, header commitment logic, record crypto, key wrapping, vault creation, vault unlock, vault persistence, provider selection, or mainnet.
+
+General-purpose PRNGs are forbidden for secrets, salts, nonces, and keys. Future acceptable randomness must come from reviewed OS cryptographic randomness/CSPRNG or reviewed provider randomness. Android OS CSPRNG/SecureRandom remains future-reviewed only, Android hardware-backed key protection is separate from entropy quality, Linux entropy quality remains a required review gate, deterministic test-vector randomness is not authorized for production runtime, provider selection still selects only `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
+
 ## Relationship To Provider Selection
 
 Runtime randomness availability is one provider-selection gate, not provider approval.
