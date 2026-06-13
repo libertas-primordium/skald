@@ -205,6 +205,12 @@ This boundary does not enable:
 
 Current KDF calibration authorization is blocked/fail-closed because runtime randomness authorization is blocked, provider operation authorization is blocked, passphrase input remains blocked, final KDF calibration is not approved, and `productionProviderSelectable` remains false. The boundary does not run Argon2id, run KDFs, run calibration, run benchmarks, generate or consume salts, call randomness APIs, run provider operations, run KATs, derive vault keys, enable unlock, enable persistence, make a provider selectable, or approve mainnet.
 
+## Vault Unlock Authorization Boundary
+
+`SkaldVaultV1UnlockAuthorizationPolicy` now depends on runtime randomness authorization as one of its future gates for salt/nonce use during unlock, but it remains still-disabled model-only evidence. It models unlock operation kinds, purposes, credential classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens.
+
+Current unlock authorization is blocked/fail-closed because passphrase input is blocked, KDF calibration authorization is blocked, runtime randomness authorization is blocked, provider operations are unauthorized, secure-storage authorization is blocked, storage service operations are disabled, lock/session lifecycle is unavailable, persistence readiness is blocked, provider selection still selects only `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false. The boundary does not accept passphrases, PINs, or biometrics; normalize or encode passphrases; run Argon2id/KDF/HKDF/HMAC/AEAD; generate or consume salts, nonces, or random bytes; call provider operations; read secure storage, metadata storage, or encrypted vault storage; retrieve or unwrap wrapped keys; decrypt records; create active sessions; hold decrypted key material; persist unlock state; add UI; enable vault creation, unlock, persistence, provider selectability, or mainnet.
+
 ## Next Step
 
 The next focused pass should remain design/probe-only unless the user explicitly approves implementation scope. Recommended decision point: review the runtime provider, primitive, and randomness gate data together and decide the supported Android/Linux baseline for a future still-disabled production-provider skeleton. Do not add vault containers, provider-selectable KDF execution, key generation, persistence, or unlock UI in that branch.
