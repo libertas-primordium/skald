@@ -137,6 +137,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     CreationAuthorizationBoundaryImplementedAndTested(
         "vault creation authorization boundary implemented and tested",
     ),
+    AuthorizationReadinessMatrixImplementedAndTested(
+        "vault authorization/readiness matrix implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1532,6 +1535,37 @@ data class ProductionProviderCreationAuthorizationBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderAuthorizationReadinessMatrixRule(val label: String) {
+    EvidenceOnly("authorization/readiness matrix returns evidence only"),
+    DefaultDecisionBlocked("current matrix decision remains blocked"),
+    CapabilityVocabularyModeled("matrix models future capability categories"),
+    BoundaryTraceabilityModeled("matrix traces capability blockers to existing boundaries"),
+    BlocksAllRuntimeCapabilities("matrix blocks all production/runtime capabilities"),
+    WarningOnlyEvidenceCannotAuthorize("warning-only evidence cannot authorize production use"),
+    UserConsentCannotOverrideHardGates("user consent cannot override missing hard gates"),
+    TestOnlyEvidenceRejectedForProduction("test-only evidence cannot authorize production runtime"),
+    DoesNotEnableCreationUnlockPersistenceOrProviderSelection(
+        "matrix does not enable creation, unlock, persistence, or provider selection",
+    ),
+    RedactsBoundaryProviderPathStorageAndCapabilityEvidence(
+        "matrix redacts boundary, provider, path, storage, and capability evidence",
+    ),
+}
+
+data class ProductionProviderAuthorizationReadinessMatrixEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderAuthorizationReadinessMatrixRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val blocksAllRuntimeCapabilities: Boolean,
+    val doesNotEnableCreation: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1702,6 +1736,8 @@ data class ProductionProviderContainerManifestStorageContract(
         ProductionProviderUnlockAuthorizationBoundaryEvidence,
     val creationAuthorizationBoundaryEvidence:
         ProductionProviderCreationAuthorizationBoundaryEvidence,
+    val authorizationReadinessMatrixEvidence:
+        ProductionProviderAuthorizationReadinessMatrixEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -2276,6 +2312,40 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val creationAuthorizationFailureVocabularyModeled: Boolean
         get() = creationAuthorizationBoundaryEvidence.failureVocabularyModeled
+
+    val authorizationReadinessMatrixPolicyId: String
+        get() = authorizationReadinessMatrixEvidence.policyId
+
+    val authorizationReadinessMatrixStatus: ProductionProviderConstructionContractStatus
+        get() = authorizationReadinessMatrixEvidence.status
+
+    val authorizationReadinessMatrixRules:
+        Set<ProductionProviderAuthorizationReadinessMatrixRule>
+        get() = authorizationReadinessMatrixEvidence.rules
+
+    val authorizationReadinessMatrixModeled: Boolean
+        get() = authorizationReadinessMatrixEvidence.modeled
+
+    val authorizationReadinessMatrixStillDisabled: Boolean
+        get() = authorizationReadinessMatrixEvidence.stillDisabled
+
+    val authorizationReadinessMatrixBlocksAllRuntimeCapabilities: Boolean
+        get() = authorizationReadinessMatrixEvidence.blocksAllRuntimeCapabilities
+
+    val authorizationReadinessMatrixDoesNotEnableCreation: Boolean
+        get() = authorizationReadinessMatrixEvidence.doesNotEnableCreation
+
+    val authorizationReadinessMatrixDoesNotEnableUnlock: Boolean
+        get() = authorizationReadinessMatrixEvidence.doesNotEnableUnlock
+
+    val authorizationReadinessMatrixDoesNotEnablePersistence: Boolean
+        get() = authorizationReadinessMatrixEvidence.doesNotEnablePersistence
+
+    val authorizationReadinessMatrixDoesNotEnableProviderSelection: Boolean
+        get() = authorizationReadinessMatrixEvidence.doesNotEnableProviderSelection
+
+    val authorizationReadinessMatrixFailureVocabularyModeled: Boolean
+        get() = authorizationReadinessMatrixEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2623,6 +2693,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.UnlockAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.CreationAuthorizationBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.AuthorizationReadinessMatrixImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -3196,6 +3268,20 @@ data class ProductionProviderAcceptanceContract(
                             doesNotRunKdf = true,
                             doesNotWriteStorage = true,
                             doesNotCreateSession = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    authorizationReadinessMatrixEvidence =
+                        ProductionProviderAuthorizationReadinessMatrixEvidence(
+                            policyId = SkaldVaultV1AuthorizationReadinessMatrixPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderAuthorizationReadinessMatrixRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            blocksAllRuntimeCapabilities = true,
+                            doesNotEnableCreation = true,
+                            doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,
                             failureVocabularyModeled = true,
