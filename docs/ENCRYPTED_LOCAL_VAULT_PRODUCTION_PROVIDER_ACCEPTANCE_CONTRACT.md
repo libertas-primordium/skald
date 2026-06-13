@@ -566,6 +566,14 @@ Current KDF calibration authorization is blocked/fail-closed. The evidence expli
 
 Provider selection still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, mainnet KDF use remains blocked until release review, OS keyrings and password managers remain rejected for Skald-managed vault passphrase storage, and passphrase-first remains the default authority.
 
+## Secure-Storage Authorization Boundary
+
+The acceptance contract now records `SkaldVaultV1SecureStorageAuthorizationPolicy` as a still-disabled, implemented/tested, model-only boundary. It models future secure-storage operation kinds, value kinds, target kinds, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens.
+
+Current secure-storage authorization is blocked/fail-closed. The evidence explicitly does not authorize secure storage, does not make secure secret storage available, does not make secure metadata storage available, does not approve encrypted local vault storage, does not approve OS keyring primary storage or optional wrapping, does not approve password-manager passphrase storage, does not approve Android Keystore wrapping, does not approve Linux optional key wrapping, does not approve Settings secret storage, does not approve plaintext storage, does not approve store/retrieve/delete secret, does not approve key wrapping/unwrapping, does not approve metadata storage, does not approve backup/export/import, does not approve secure-storage migration or purge, does not run provider operations, does not run KDF/HKDF/HMAC/AEAD, does not call randomness APIs, does not enable vault unlock, does not enable vault persistence, does not make a provider selectable, and does not approve mainnet.
+
+Provider selection still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, Android hardware-backed wrapping remains future-reviewed only, Linux optional key wrapping remains future-reviewed only, OS keyrings remain rejected as primary storage and for Skald-managed vault passphrase storage, password managers remain rejected for Skald-managed vault passphrase storage, Settings/preferences remain rejected for secrets and sensitive metadata, plaintext diagnostics/export targets remain rejected for raw secret material, and passphrase-first remains the default authority.
+
 ## Next Step
 
 The next focused step should remain implementation-safe only if it is additional still-disabled design/model/source-guard work. Provider selectability, calibrated production KDF execution, file-backed vault container read/write, platform root resolution, actual path construction, persistence, biometric wrapping, and unlock UI must remain out of scope until the acceptance gates above are reviewed and intentionally moved into an implementation branch.

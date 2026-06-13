@@ -649,6 +649,14 @@ Current KDF calibration authorization is blocked/fail-closed. The boundary recor
 
 The boundary does not run Argon2id, run KDFs, run calibration, run benchmarks, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable vault creation, enable vault unlock, enable vault persistence, approve provider selectability, or approve mainnet. Android calibration and Linux calibration remain future-reviewed only. Test-vector KDF profiles do not authorize production runtime unlock, and mainnet KDF use remains blocked until release review.
 
+## Secure-Storage Authorization Boundary
+
+Skald Vault v1 now has a still-disabled secure-storage authorization boundary as model-only evidence. It models future secure-storage operation kinds, value kinds, target kinds, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens before any future branch can store, retrieve, delete, wrap, unwrap, export, import, migrate, purge, or disclose vault secrets, wrapped keys, sensitive metadata, provider material, manifest metadata, recovery metadata, or session-adjacent state.
+
+Current secure-storage authorization is blocked/fail-closed. The boundary records that persistence readiness is blocked, secure secret storage and secure metadata storage are unavailable, provider operations are unauthorized, runtime randomness authorization is blocked, KDF calibration authorization is blocked, the registry still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, and no target is approved for production secret storage.
+
+The boundary does not store secrets, retrieve secrets, delete secrets, wrap keys, unwrap keys, store wrapped keys, store metadata, export or import backup material, migrate or purge secure storage, use Android Keystore, use Android Credential Manager, use OS keyrings, use password managers, use SharedPreferences, use Settings storage, use files or databases, read or write the encrypted local vault, run provider operations, run KDF/HKDF/HMAC/AEAD, call randomness APIs, enable vault creation, enable vault unlock, enable vault persistence, approve production provider use, or approve mainnet. OS keyrings remain rejected as primary storage, password managers remain rejected for Skald-managed vault passphrase storage, Settings/preferences remain rejected for secrets and sensitive metadata, plaintext diagnostics/export targets remain rejected for raw secret material, Android wrapping and Linux optional key wrapping remain future-reviewed only, and passphrase-first remains the default authority.
+
 ## Unresolved Decisions
 
 These remain unresolved and require focused provider-implementation, calibration, or implementation spikes:
