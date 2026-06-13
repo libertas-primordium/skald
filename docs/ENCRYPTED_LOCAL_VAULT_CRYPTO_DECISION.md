@@ -8,12 +8,15 @@ This is a decision record only. It does not implement encryption, persist secret
 
 The dependency spike now pins platform-scoped Tink and Bouncy Castle artifacts for compile/package evaluation only. Those dependencies are not wired into secure storage, secure metadata persistence, production sync, wallet operations, or any vault implementation.
 
+The provider candidate packaging boundary now records how future provider candidates must be named, packaged, source-set isolated, dependency-reviewed, and kept non-selectable until later review. It is still-disabled model evidence only: it does not add dependencies, instantiate Tink, Bouncy Castle, Javax/JCA crypto, Android Keystore, or any provider runtime, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, generate or wrap keys, enable vault creation/unlock/persistence, or approve mainnet.
+
 Runtime behavior remains fail-closed:
 
 - `SecureSecretStorage` is disabled.
 - `SecureWalletMetadataRepository` is disabled.
 - `EncryptedVaultReadinessPolicy` reports disabled/not implemented readiness.
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider.
+- Provider candidate packaging evidence cannot make a provider selectable; `productionProviderSelectable` remains false.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 

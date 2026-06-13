@@ -16,6 +16,8 @@ DisabledVaultCryptoProvider
 
 The disabled provider rejects every operation and performs no crypto.
 
+The still-disabled provider candidate packaging boundary is additional evidence only. It describes future Tink JVM, Bouncy Castle JVM, Android Keystore wrapper, platform OS CSPRNG, test-only deterministic, unknown, and unsupported candidate packaging plus dependency categories, source-set placement constraints, review gates, and promotion blockers. It does not add dependencies, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, or change this registry. Provider selection still selects only `DisabledVaultCryptoProvider`, `productionProviderSelectable` remains false, and no candidate is executable or production-authorized.
+
 ## Source Location
 
 Production-safe provider-selection models and registry:
@@ -24,6 +26,7 @@ Production-safe provider-selection models and registry:
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderCandidatePackagingBoundary.kt
 ```
 
 Disabled provider boundary:

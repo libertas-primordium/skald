@@ -143,9 +143,21 @@ class VaultAuthorizationReadinessMatrixTest {
         )
         assertTrace(
             rows,
+            SkaldVaultV1AuthorizationReadinessCapabilityId.ProductionProviderSelectability,
+            SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderCandidatePackagingBoundary,
+            SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderCandidatePackagingStillDisabled,
+        )
+        assertTrace(
+            rows,
             SkaldVaultV1AuthorizationReadinessCapabilityId.ProviderOperationExecution,
             SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderOperationAuthorizationBoundary,
             SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderOperationAuthorizationBlocked,
+        )
+        assertTrace(
+            rows,
+            SkaldVaultV1AuthorizationReadinessCapabilityId.ProviderOperationExecution,
+            SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderCandidatePackagingBoundary,
+            SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderCandidatePackagingStillDisabled,
         )
         assertTrace(
             rows,
@@ -293,11 +305,19 @@ class VaultAuthorizationReadinessMatrixTest {
         assertFalse(providerSelection.productionProviderSelectable)
         assertFalse(providerSelection.requestedCandidate.productionSelectable)
         assertContains(readiness.blockers, EncryptedVaultBlockingIssue.AuthorizationReadinessMatrixStillDisabled)
+        assertContains(readiness.blockers, EncryptedVaultBlockingIssue.ProviderCandidatePackagingBoundaryStillDisabled)
         assertContains(readiness.capabilities, EncryptedVaultCapability.AuthorizationReadinessMatrixBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderCandidatePackagingBoundaryBuildingBlock)
         assertEquals(
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.AuthorizationReadinessMatrixImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.ProviderCandidatePackagingBoundaryImplementedAndTested
             ],
         )
         assertContains(
@@ -307,6 +327,14 @@ class VaultAuthorizationReadinessMatrixTest {
         assertContains(
             dependency.capabilities,
             VaultCryptoDependencyCapability.AuthorizationReadinessMatrixFailureVocabularyModeled,
+        )
+        assertContains(
+            dependency.capabilities,
+            VaultCryptoDependencyCapability.ProviderCandidatePackagingBoundaryImplementedTested,
+        )
+        assertContains(
+            dependency.capabilities,
+            VaultCryptoDependencyCapability.ProviderCandidatePackagingFailureVocabularyModeled,
         )
         assertContains(
             dependency.blockers,
@@ -319,6 +347,18 @@ class VaultAuthorizationReadinessMatrixTest {
         assertContains(
             dependency.blockers,
             VaultCryptoDependencyBlocker.AuthorizationReadinessMatrixTestsMissing,
+        )
+        assertContains(
+            dependency.blockers,
+            VaultCryptoDependencyBlocker.ProviderCandidatePackagingBoundaryStillDisabled,
+        )
+        assertContains(
+            dependency.blockers,
+            VaultCryptoDependencyBlocker.ProviderCandidatePackagingRuntimeReviewMissing,
+        )
+        assertContains(
+            dependency.blockers,
+            VaultCryptoDependencyBlocker.ProviderCandidatePackagingTestsMissing,
         )
         assertFalse(evidence.capability.mainnetAvailable)
         assertFalse(evidence.capability.providerSelectable)

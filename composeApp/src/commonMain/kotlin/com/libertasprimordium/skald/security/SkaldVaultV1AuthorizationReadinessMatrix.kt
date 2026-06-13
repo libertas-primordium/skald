@@ -63,6 +63,7 @@ enum class SkaldVaultV1AuthorizationReadinessCapabilityId(val label: String) {
 
 enum class SkaldVaultV1AuthorizationReadinessBoundaryId(val label: String) {
     ProviderSelectionBoundary("provider selection boundary"),
+    ProviderCandidatePackagingBoundary("provider candidate packaging boundary"),
     ProductionProviderAcceptanceContract("production provider acceptance contract"),
     DependencyProbe("dependency probe"),
     ProviderOperationAuthorizationBoundary("provider operation authorization boundary"),
@@ -99,6 +100,7 @@ enum class SkaldVaultV1AuthorizationReadinessBlockerCategory(val label: String) 
     DisabledProviderSelection("disabled provider selection"),
     ProductionProviderSelectableFalse("productionProviderSelectable is false"),
     ProviderImplementationMissing("provider implementation missing"),
+    ProviderCandidatePackagingStillDisabled("provider candidate packaging boundary still disabled"),
     ProviderKatsNotApproved("provider KATs not approved"),
     ProviderOperationAuthorizationBlocked("provider operation authorization blocked"),
     RuntimeRandomnessAuthorizationBlocked("runtime randomness authorization blocked"),
@@ -130,6 +132,7 @@ enum class SkaldVaultV1AuthorizationReadinessBlockerCategory(val label: String) 
 
 enum class SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence(val label: String) {
     ProductionProviderImplementationApproved("production provider implementation approved"),
+    ProviderCandidatePackagingApproved("provider candidate packaging approved"),
     ProviderKatsApproved("provider KATs approved"),
     ProviderOperationAuthorizationApproved("provider operation authorization approved"),
     RuntimeRandomnessAuthorizationApproved("runtime randomness authorization approved"),
@@ -503,6 +506,7 @@ object SkaldVaultV1AuthorizationReadinessMatrixPolicy :
                 capabilityId = SkaldVaultV1AuthorizationReadinessCapabilityId.ProductionProviderSelectability,
                 boundaries = setOf(
                     SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderSelectionBoundary,
+                    SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderCandidatePackagingBoundary,
                     SkaldVaultV1AuthorizationReadinessBoundaryId.ProductionProviderAcceptanceContract,
                     SkaldVaultV1AuthorizationReadinessBoundaryId.DependencyProbe,
                 ),
@@ -510,9 +514,11 @@ object SkaldVaultV1AuthorizationReadinessMatrixPolicy :
                     SkaldVaultV1AuthorizationReadinessBlockerCategory.DisabledProviderSelection,
                     SkaldVaultV1AuthorizationReadinessBlockerCategory.ProductionProviderSelectableFalse,
                     SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderImplementationMissing,
+                    SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderCandidatePackagingStillDisabled,
                     SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderKatsNotApproved,
                 ),
                 futureEvidence = setOf(
+                    SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence.ProviderCandidatePackagingApproved,
                     SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence.ProductionProviderImplementationApproved,
                     SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence.ProviderKatsApproved,
                 ),
@@ -521,14 +527,17 @@ object SkaldVaultV1AuthorizationReadinessMatrixPolicy :
             row(
                 capabilityId = SkaldVaultV1AuthorizationReadinessCapabilityId.ProviderOperationExecution,
                 boundaries = setOf(
+                    SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderCandidatePackagingBoundary,
                     SkaldVaultV1AuthorizationReadinessBoundaryId.ProviderOperationAuthorizationBoundary,
                     SkaldVaultV1AuthorizationReadinessBoundaryId.DisabledProviderFacade,
                 ),
                 blockers = setOf(
+                    SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderCandidatePackagingStillDisabled,
                     SkaldVaultV1AuthorizationReadinessBlockerCategory.ProviderOperationAuthorizationBlocked,
                     SkaldVaultV1AuthorizationReadinessBlockerCategory.DisabledProviderSelection,
                 ),
                 futureEvidence = setOf(
+                    SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence.ProviderCandidatePackagingApproved,
                     SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence.ProviderOperationAuthorizationApproved,
                     SkaldVaultV1AuthorizationReadinessRequiredFutureEvidence.ProductionProviderImplementationApproved,
                 ),
