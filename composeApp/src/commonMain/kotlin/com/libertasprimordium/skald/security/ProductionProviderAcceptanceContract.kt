@@ -134,6 +134,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     UnlockAuthorizationBoundaryImplementedAndTested(
         "vault unlock authorization boundary implemented and tested",
     ),
+    CreationAuthorizationBoundaryImplementedAndTested(
+        "vault creation authorization boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1475,6 +1478,60 @@ data class ProductionProviderUnlockAuthorizationBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderCreationAuthorizationBoundaryRule(val label: String) {
+    EvidenceOnly("creation authorization boundary returns evidence only"),
+    DefaultDecisionBlocked("current creation authorization decision remains blocked"),
+    OperationKindVocabularyModeled("boundary models creation operation kinds"),
+    PurposeVocabularyModeled("boundary models creation purposes"),
+    InitializerClassVocabularyModeled("boundary models creation initializer classes"),
+    RequiredGateVocabularyModeled("boundary models required creation authorization gates"),
+    BlocksAllOperations("boundary blocks all creation operations"),
+    DoesNotAcceptRawInitializersOrSecretInputs(
+        "boundary does not accept raw passphrases, credentials, keys, storage bytes, or provider handles",
+    ),
+    DoesNotGenerateKeysSaltsNoncesOrIds(
+        "boundary does not generate keys, salts, nonces, container ids, record ids, or metadata ids",
+    ),
+    DoesNotRunKdfRandomnessProviderCryptoOrHeaderCommitment(
+        "boundary does not run KDF, randomness, provider crypto, or header commitment operations",
+    ),
+    DoesNotCreateHeaderContainerManifestIndexRecordMetadataOrWrappedKeys(
+        "boundary does not create headers, containers, manifests, indexes, records, metadata, or wrapped keys",
+    ),
+    DoesNotWriteStorageOrCommitPersistence(
+        "boundary does not write storage or commit initial persistence",
+    ),
+    DoesNotCreateSessionsOrEnableUnlock(
+        "boundary does not create sessions or enable post-create unlock",
+    ),
+    DoesNotUseOsKeyringsPasswordManagersKeystoreSettingsFilesOrDatabases(
+        "boundary does not use OS keyrings, password managers, Android wrapping, Settings, files, or databases",
+    ),
+    DoesNotEnableVaultCreationPersistenceProviderSelectionOrMainnet(
+        "boundary does not enable vault creation, persistence, provider selection, or mainnet",
+    ),
+    RedactsCreationCryptoStorageCredentialPathAndSessionEvidence(
+        "boundary redacts creation, crypto, storage, credential, path, and session evidence",
+    ),
+}
+
+data class ProductionProviderCreationAuthorizationBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderCreationAuthorizationBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val blocksAllOperations: Boolean,
+    val doesNotAcceptPassphrases: Boolean,
+    val doesNotGenerateKeys: Boolean,
+    val doesNotRunKdf: Boolean,
+    val doesNotWriteStorage: Boolean,
+    val doesNotCreateSession: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1643,6 +1700,8 @@ data class ProductionProviderContainerManifestStorageContract(
         ProductionProviderSecureStorageAuthorizationBoundaryEvidence,
     val unlockAuthorizationBoundaryEvidence:
         ProductionProviderUnlockAuthorizationBoundaryEvidence,
+    val creationAuthorizationBoundaryEvidence:
+        ProductionProviderCreationAuthorizationBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -2174,6 +2233,49 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val unlockAuthorizationFailureVocabularyModeled: Boolean
         get() = unlockAuthorizationBoundaryEvidence.failureVocabularyModeled
+
+    val creationAuthorizationBoundaryPolicyId: String
+        get() = creationAuthorizationBoundaryEvidence.policyId
+
+    val creationAuthorizationBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = creationAuthorizationBoundaryEvidence.status
+
+    val creationAuthorizationBoundaryRules:
+        Set<ProductionProviderCreationAuthorizationBoundaryRule>
+        get() = creationAuthorizationBoundaryEvidence.rules
+
+    val creationAuthorizationBoundaryModeled: Boolean
+        get() = creationAuthorizationBoundaryEvidence.modeled
+
+    val creationAuthorizationStillDisabled: Boolean
+        get() = creationAuthorizationBoundaryEvidence.stillDisabled
+
+    val creationAuthorizationBlocksAllOperations: Boolean
+        get() = creationAuthorizationBoundaryEvidence.blocksAllOperations
+
+    val creationAuthorizationDoesNotAcceptPassphrases: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotAcceptPassphrases
+
+    val creationAuthorizationDoesNotGenerateKeys: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotGenerateKeys
+
+    val creationAuthorizationDoesNotRunKdf: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotRunKdf
+
+    val creationAuthorizationDoesNotWriteStorage: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotWriteStorage
+
+    val creationAuthorizationDoesNotCreateSession: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotCreateSession
+
+    val creationAuthorizationDoesNotEnablePersistence: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotEnablePersistence
+
+    val creationAuthorizationDoesNotEnableProviderSelection: Boolean
+        get() = creationAuthorizationBoundaryEvidence.doesNotEnableProviderSelection
+
+    val creationAuthorizationFailureVocabularyModeled: Boolean
+        get() = creationAuthorizationBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2519,6 +2621,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.SecureStorageAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.UnlockAuthorizationBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.CreationAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -3074,6 +3178,23 @@ data class ProductionProviderAcceptanceContract(
                             doesNotAcceptPassphrases = true,
                             doesNotRunKdf = true,
                             doesNotReadStorage = true,
+                            doesNotCreateSession = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    creationAuthorizationBoundaryEvidence =
+                        ProductionProviderCreationAuthorizationBoundaryEvidence(
+                            policyId = SkaldVaultV1CreationAuthorizationPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderCreationAuthorizationBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            blocksAllOperations = true,
+                            doesNotAcceptPassphrases = true,
+                            doesNotGenerateKeys = true,
+                            doesNotRunKdf = true,
+                            doesNotWriteStorage = true,
                             doesNotCreateSession = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,

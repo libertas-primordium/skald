@@ -12,6 +12,7 @@ import com.libertasprimordium.skald.security.ProductionProviderAcceptanceGate
 import com.libertasprimordium.skald.security.ProductionProviderAndroidTinkRawKeyFeasibilityStatus
 import com.libertasprimordium.skald.security.ProductionProviderCanonicalHeaderEncodingRule
 import com.libertasprimordium.skald.security.ProductionProviderClearWipeStrategyBoundaryRule
+import com.libertasprimordium.skald.security.ProductionProviderCreationAuthorizationBoundaryRule
 import com.libertasprimordium.skald.security.ProductionProviderConstructionContractStatus
 import com.libertasprimordium.skald.security.ProductionProviderDisabledStorageServiceFacadeRule
 import com.libertasprimordium.skald.security.ProductionProviderDeterministicKatVector
@@ -66,6 +67,7 @@ import com.libertasprimordium.skald.security.RuntimeRandomnessSourceKind
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idRootDerivation
 import com.libertasprimordium.skald.security.SkaldVaultV1Argon2idType
 import com.libertasprimordium.skald.security.SkaldVaultV1ClearWipeStrategyPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1CreationAuthorizationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1DisabledStorageServiceFacade
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxCustomRootValidationPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1LinuxRootResolutionPolicy
@@ -138,6 +140,41 @@ class ProductionProviderAcceptanceContractTest {
             ProductionProviderAcceptanceBlocker.ProductionPersistenceStillDisabled,
         )
         assertNotNull(assessment.userFacingWarning)
+    }
+
+    @Test
+    fun creationAuthorizationBoundaryEvidenceIsModeledAndStillDisabled() {
+        val evidence = ProductionProviderAcceptanceEvidence.currentDesignOnly()
+        val storageContract = contract.containerManifestStorageContract
+
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.CreationAuthorizationBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            SkaldVaultV1CreationAuthorizationPolicy.POLICY_ID,
+            storageContract.creationAuthorizationBoundaryPolicyId,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            storageContract.creationAuthorizationBoundaryStatus,
+        )
+        assertEquals(
+            ProductionProviderCreationAuthorizationBoundaryRule.entries.toSet(),
+            storageContract.creationAuthorizationBoundaryRules,
+        )
+        assertTrue(storageContract.creationAuthorizationBoundaryModeled)
+        assertTrue(storageContract.creationAuthorizationStillDisabled)
+        assertTrue(storageContract.creationAuthorizationBlocksAllOperations)
+        assertTrue(storageContract.creationAuthorizationDoesNotAcceptPassphrases)
+        assertTrue(storageContract.creationAuthorizationDoesNotGenerateKeys)
+        assertTrue(storageContract.creationAuthorizationDoesNotRunKdf)
+        assertTrue(storageContract.creationAuthorizationDoesNotWriteStorage)
+        assertTrue(storageContract.creationAuthorizationDoesNotCreateSession)
+        assertTrue(storageContract.creationAuthorizationDoesNotEnablePersistence)
+        assertTrue(storageContract.creationAuthorizationDoesNotEnableProviderSelection)
+        assertTrue(storageContract.creationAuthorizationFailureVocabularyModeled)
+        assertFalse(storageContract.vaultPersistenceImplemented)
     }
 
     @Test

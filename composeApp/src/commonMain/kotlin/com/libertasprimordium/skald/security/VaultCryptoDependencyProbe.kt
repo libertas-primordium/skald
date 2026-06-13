@@ -165,6 +165,12 @@ enum class VaultCryptoDependencyCapability(val label: String) {
     UnlockAuthorizationFailureVocabularyModeled(
         "vault unlock authorization failure vocabulary modeled",
     ),
+    CreationAuthorizationBoundaryImplementedTested(
+        "vault creation authorization boundary implemented and tested",
+    ),
+    CreationAuthorizationFailureVocabularyModeled(
+        "vault creation authorization failure vocabulary modeled",
+    ),
     OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
     PasswordManagerIntegrationRejected("password-manager integration rejected"),
     PassphraseFirstVaultAuthorityModeled("passphrase-first vault authority modeled"),
@@ -411,6 +417,11 @@ enum class VaultCryptoDependencyBlocker(val label: String) {
     ),
     UnlockAuthorizationRuntimeReviewMissing("runtime unlock authorization review missing"),
     UnlockAuthorizationTestsMissing("unlock authorization tests missing"),
+    CreationAuthorizationBoundaryStillDisabled(
+        "vault creation authorization boundary remains model-only",
+    ),
+    CreationAuthorizationRuntimeReviewMissing("runtime creation authorization review missing"),
+    CreationAuthorizationTestsMissing("creation authorization tests missing"),
     ProductionStorageReviewMissing("production storage review missing"),
     MainnetReleaseHardeningReviewMissing("mainnet release-hardening review missing"),
     VaultImplementationStillDisabled("vault implementation still disabled"),
@@ -532,6 +543,8 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyCapability.SecureStorageAuthorizationFailureVocabularyModeled,
                     VaultCryptoDependencyCapability.UnlockAuthorizationBoundaryImplementedTested,
                     VaultCryptoDependencyCapability.UnlockAuthorizationFailureVocabularyModeled,
+                    VaultCryptoDependencyCapability.CreationAuthorizationBoundaryImplementedTested,
+                    VaultCryptoDependencyCapability.CreationAuthorizationFailureVocabularyModeled,
                     VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected,
                     VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected,
                     VaultCryptoDependencyCapability.PassphraseFirstVaultAuthorityModeled,
@@ -639,6 +652,9 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyBlocker.UnlockAuthorizationBoundaryStillDisabled,
                     VaultCryptoDependencyBlocker.UnlockAuthorizationRuntimeReviewMissing,
                     VaultCryptoDependencyBlocker.UnlockAuthorizationTestsMissing,
+                    VaultCryptoDependencyBlocker.CreationAuthorizationBoundaryStillDisabled,
+                    VaultCryptoDependencyBlocker.CreationAuthorizationRuntimeReviewMissing,
+                    VaultCryptoDependencyBlocker.CreationAuthorizationTestsMissing,
                     VaultCryptoDependencyBlocker.ProductionStorageReviewMissing,
                     VaultCryptoDependencyBlocker.MainnetReleaseHardeningReviewMissing,
                     VaultCryptoDependencyBlocker.VaultImplementationStillDisabled,
