@@ -128,6 +128,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     KdfCalibrationAuthorizationBoundaryImplementedAndTested(
         "vault KDF calibration authorization boundary implemented and tested",
     ),
+    SecureStorageAuthorizationBoundaryImplementedAndTested(
+        "vault secure-storage authorization boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1378,6 +1381,52 @@ data class ProductionProviderKdfCalibrationAuthorizationBoundaryEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderSecureStorageAuthorizationBoundaryRule(val label: String) {
+    EvidenceOnly("secure-storage authorization boundary returns evidence only"),
+    DefaultDecisionBlocked("current secure-storage authorization decision remains blocked"),
+    OperationKindVocabularyModeled("boundary models secure-storage operation kinds"),
+    ValueKindVocabularyModeled("boundary models secure-storage value kinds"),
+    TargetKindVocabularyModeled("boundary models secure-storage target kinds"),
+    RequiredGateVocabularyModeled("boundary models required secure-storage authorization gates"),
+    BlocksAllOperations("boundary blocks all secure-storage operations"),
+    DoesNotAcceptRawSecretStorageOrProviderInputs(
+        "boundary does not accept raw secrets, storage bytes, provider handles, or platform handles",
+    ),
+    DoesNotStoreRetrieveDeleteSecretsOrMetadata(
+        "boundary does not store, retrieve, delete, export, import, migrate, or purge secure storage",
+    ),
+    DoesNotWrapOrUnwrapKeys("boundary does not wrap or unwrap keys"),
+    DoesNotUseOsKeyringsPasswordManagersKeystoreSettingsFilesOrDatabases(
+        "boundary does not use OS keyrings, password managers, Android wrapping, Settings, files, or databases",
+    ),
+    DoesNotRunProviderRandomnessKdfHkdfHmacOrAead(
+        "boundary does not run provider, randomness, KDF, HKDF, HMAC, or AEAD execution",
+    ),
+    DoesNotEnableUnlockPersistenceOrProviderSelection(
+        "boundary does not enable unlock, persistence, or provider selection",
+    ),
+    RedactsSecureStorageCryptoMetadataAndSecretEvidence(
+        "boundary redacts secure-storage, crypto, metadata, path, and secret evidence",
+    ),
+}
+
+data class ProductionProviderSecureStorageAuthorizationBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderSecureStorageAuthorizationBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val blocksAllOperations: Boolean,
+    val doesNotStoreSecrets: Boolean,
+    val doesNotUseOsKeyrings: Boolean,
+    val doesNotUsePasswordManagers: Boolean,
+    val doesNotUseSettingsStorage: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val failureVocabularyModeled: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -1542,6 +1591,8 @@ data class ProductionProviderContainerManifestStorageContract(
         ProductionProviderRuntimeRandomnessAuthorizationBoundaryEvidence,
     val kdfCalibrationAuthorizationBoundaryEvidence:
         ProductionProviderKdfCalibrationAuthorizationBoundaryEvidence,
+    val secureStorageAuthorizationBoundaryEvidence:
+        ProductionProviderSecureStorageAuthorizationBoundaryEvidence,
     val osKeyringPassphrasePolicyId: String,
     val passwordManagerPassphrasePolicyId: String,
     val passphraseFirstPolicyId: String,
@@ -1990,6 +2041,49 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val kdfCalibrationFailureVocabularyModeled: Boolean
         get() = kdfCalibrationAuthorizationBoundaryEvidence.failureVocabularyModeled
+
+    val secureStorageAuthorizationBoundaryPolicyId: String
+        get() = secureStorageAuthorizationBoundaryEvidence.policyId
+
+    val secureStorageAuthorizationBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = secureStorageAuthorizationBoundaryEvidence.status
+
+    val secureStorageAuthorizationBoundaryRules:
+        Set<ProductionProviderSecureStorageAuthorizationBoundaryRule>
+        get() = secureStorageAuthorizationBoundaryEvidence.rules
+
+    val secureStorageAuthorizationBoundaryModeled: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.modeled
+
+    val secureStorageAuthorizationStillDisabled: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.stillDisabled
+
+    val secureStorageAuthorizationBlocksAllOperations: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.blocksAllOperations
+
+    val secureStorageAuthorizationDoesNotStoreSecrets: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotStoreSecrets
+
+    val secureStorageAuthorizationDoesNotUseOsKeyrings: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotUseOsKeyrings
+
+    val secureStorageAuthorizationDoesNotUsePasswordManagers: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotUsePasswordManagers
+
+    val secureStorageAuthorizationDoesNotUseSettingsStorage: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotUseSettingsStorage
+
+    val secureStorageAuthorizationDoesNotEnableUnlock: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotEnableUnlock
+
+    val secureStorageAuthorizationDoesNotEnablePersistence: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotEnablePersistence
+
+    val secureStorageAuthorizationDoesNotEnableProviderSelection: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.doesNotEnableProviderSelection
+
+    val secureStorageFailureVocabularyModeled: Boolean
+        get() = secureStorageAuthorizationBoundaryEvidence.failureVocabularyModeled
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2331,6 +2425,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.RuntimeRandomnessAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.KdfCalibrationAuthorizationBoundaryImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.SecureStorageAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
@@ -2853,6 +2949,23 @@ data class ProductionProviderAcceptanceContract(
                             doesNotRunArgon2id = true,
                             doesNotRunCalibration = true,
                             doesNotApproveFinalParameters = true,
+                            doesNotEnableUnlock = true,
+                            doesNotEnablePersistence = true,
+                            doesNotEnableProviderSelection = true,
+                            failureVocabularyModeled = true,
+                        ),
+                    secureStorageAuthorizationBoundaryEvidence =
+                        ProductionProviderSecureStorageAuthorizationBoundaryEvidence(
+                            policyId = SkaldVaultV1SecureStorageAuthorizationPolicy.POLICY_ID,
+                            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+                            rules = ProductionProviderSecureStorageAuthorizationBoundaryRule.entries.toSet(),
+                            modeled = true,
+                            stillDisabled = true,
+                            blocksAllOperations = true,
+                            doesNotStoreSecrets = true,
+                            doesNotUseOsKeyrings = true,
+                            doesNotUsePasswordManagers = true,
+                            doesNotUseSettingsStorage = true,
                             doesNotEnableUnlock = true,
                             doesNotEnablePersistence = true,
                             doesNotEnableProviderSelection = true,
