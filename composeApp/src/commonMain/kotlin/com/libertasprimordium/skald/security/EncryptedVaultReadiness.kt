@@ -256,6 +256,9 @@ enum class EncryptedVaultRequirement(val label: String) {
     CreationAuthorizationBoundaryImplementedAndTested(
         "vault creation authorization boundary implemented and tested",
     ),
+    AuthorizationReadinessMatrixImplementedAndTested(
+        "vault authorization/readiness matrix implemented and tested",
+    ),
     OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
     PasswordManagerIntegrationRejected("password-manager integration rejected"),
     PassphraseFirstDefaultModeled("passphrase-first default modeled"),
@@ -452,6 +455,9 @@ enum class EncryptedVaultBlockingIssue(val label: String) {
     ),
     CreationAuthorizationBoundaryStillDisabled(
         "vault creation authorization boundary remains model-only",
+    ),
+    AuthorizationReadinessMatrixStillDisabled(
+        "vault authorization/readiness matrix remains model-only",
     ),
     PlatformStorageImplementationMissing("platform storage implementation missing"),
     AtomicWriteImplementationMissing("atomic write implementation missing"),
@@ -686,6 +692,10 @@ enum class EncryptedVaultCapability(
     ),
     CreationAuthorizationBoundaryBuildingBlock(
         "still-disabled vault creation authorization boundary building block",
+        enabledInProduction = false,
+    ),
+    AuthorizationReadinessMatrixBuildingBlock(
+        "still-disabled vault authorization/readiness matrix building block",
         enabledInProduction = false,
     ),
     OsKeyringPassphraseRejectionModel(
@@ -1151,6 +1161,10 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
         )
         put(
+            EncryptedVaultRequirement.AuthorizationReadinessMatrixImplementedAndTested,
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+        )
+        put(
             EncryptedVaultRequirement.OsKeyringPassphraseStorageRejected,
             EncryptedVaultRequirementStatus.CandidateReviewedOnly,
         )
@@ -1406,6 +1420,7 @@ fun commonDisabledEncryptedVaultReadiness(): EncryptedVaultReadiness {
             EncryptedVaultBlockingIssue.SecureStorageAuthorizationBoundaryStillDisabled,
             EncryptedVaultBlockingIssue.UnlockAuthorizationBoundaryStillDisabled,
             EncryptedVaultBlockingIssue.CreationAuthorizationBoundaryStillDisabled,
+            EncryptedVaultBlockingIssue.AuthorizationReadinessMatrixStillDisabled,
             EncryptedVaultBlockingIssue.PlatformStorageImplementationMissing,
             EncryptedVaultBlockingIssue.AtomicWriteImplementationMissing,
             EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing,
