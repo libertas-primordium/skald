@@ -77,6 +77,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.SecureStorageAuthorizationBoundaryStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.UnlockAuthorizationBoundaryStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CreationAuthorizationBoundaryStillDisabled)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderCandidatePackagingBoundaryStillDisabled)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.PlatformStorageImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.AtomicWriteImplementationMissing)
         assertContains(decision.blockers, EncryptedVaultBlockingIssue.CrashRecoveryImplementationMissing)
@@ -157,6 +158,7 @@ class EncryptedVaultReadinessPolicyTest {
         assertContains(readiness.capabilities, EncryptedVaultCapability.SecureStorageAuthorizationBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.UnlockAuthorizationBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.CreationAuthorizationBoundaryBuildingBlock)
+        assertContains(readiness.capabilities, EncryptedVaultCapability.ProviderCandidatePackagingBoundaryBuildingBlock)
         assertContains(readiness.capabilities, EncryptedVaultCapability.OsKeyringPassphraseRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PasswordManagerIntegrationRejectionModel)
         assertContains(readiness.capabilities, EncryptedVaultCapability.PassphraseFirstDefaultModel)
@@ -224,6 +226,12 @@ class EncryptedVaultReadinessPolicyTest {
             EncryptedVaultRequirementStatus.ImplementedStillDisabled,
             readiness.requirementStatuses[
                 EncryptedVaultRequirement.CreationAuthorizationBoundaryImplementedAndTested
+            ],
+        )
+        assertEquals(
+            EncryptedVaultRequirementStatus.ImplementedStillDisabled,
+            readiness.requirementStatuses[
+                EncryptedVaultRequirement.ProviderCandidatePackagingBoundaryImplementedAndTested
             ],
         )
         assertEquals(

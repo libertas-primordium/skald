@@ -38,6 +38,7 @@ import com.libertasprimordium.skald.security.ProductionProviderPlatformPathConst
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootSettingsRule
 import com.libertasprimordium.skald.security.ProductionProviderPlatformRootResolverRule
 import com.libertasprimordium.skald.security.ProductionProviderPrimitiveRole
+import com.libertasprimordium.skald.security.ProductionProviderCandidatePackagingBoundaryRule
 import com.libertasprimordium.skald.security.ProductionProviderRandomizedAeadBehavioralKatCheck
 import com.libertasprimordium.skald.security.ProductionProviderRedactionLeakageRule
 import com.libertasprimordium.skald.security.ProductionProviderAtomicWritePhase
@@ -77,6 +78,7 @@ import com.libertasprimordium.skald.security.SkaldVaultV1PassphrasePolicyGate
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformPathConstructionPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootResolverPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1PlatformRootSettingsPolicy
+import com.libertasprimordium.skald.security.SkaldVaultV1ProviderCandidatePackagingPolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1RedactionLeakagePolicy
 import com.libertasprimordium.skald.security.SkaldVaultV1StorageSafetyPreflightPolicy
 import com.libertasprimordium.skald.security.VaultCryptoProviderCandidateId
@@ -175,6 +177,41 @@ class ProductionProviderAcceptanceContractTest {
         assertTrue(storageContract.creationAuthorizationDoesNotEnableProviderSelection)
         assertTrue(storageContract.creationAuthorizationFailureVocabularyModeled)
         assertFalse(storageContract.vaultPersistenceImplemented)
+    }
+
+    @Test
+    fun providerCandidatePackagingBoundaryEvidenceIsModeledAndStillDisabled() {
+        val evidence = ProductionProviderAcceptanceEvidence.currentDesignOnly()
+        val storageContract = contract.containerManifestStorageContract
+
+        assertEquals(
+            ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+            evidence.stateFor(ProductionProviderAcceptanceGate.ProviderCandidatePackagingBoundaryImplementedAndTested),
+        )
+        assertEquals(
+            SkaldVaultV1ProviderCandidatePackagingPolicy.POLICY_ID,
+            storageContract.providerCandidatePackagingBoundaryPolicyId,
+        )
+        assertEquals(
+            ProductionProviderConstructionContractStatus.ImplementedTested,
+            storageContract.providerCandidatePackagingBoundaryStatus,
+        )
+        assertEquals(
+            ProductionProviderCandidatePackagingBoundaryRule.entries.toSet(),
+            storageContract.providerCandidatePackagingBoundaryRules,
+        )
+        assertTrue(storageContract.providerCandidatePackagingBoundaryModeled)
+        assertTrue(storageContract.providerCandidatePackagingStillDisabled)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotImplementProvider)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotActivateDependencies)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotEnableProviderSelection)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotRunCrypto)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotEnableCreation)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotEnableUnlock)
+        assertTrue(storageContract.providerCandidatePackagingDoesNotEnablePersistence)
+        assertFalse(storageContract.vaultPersistenceImplemented)
+        assertFalse(contract.assess().productionProviderSelectable)
+        assertFalse(contract.assess().productionPersistenceAllowed)
     }
 
     @Test

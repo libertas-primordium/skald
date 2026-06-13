@@ -177,6 +177,12 @@ enum class VaultCryptoDependencyCapability(val label: String) {
     AuthorizationReadinessMatrixFailureVocabularyModeled(
         "vault authorization/readiness matrix failure vocabulary modeled",
     ),
+    ProviderCandidatePackagingBoundaryImplementedTested(
+        "provider candidate packaging boundary implemented and tested",
+    ),
+    ProviderCandidatePackagingFailureVocabularyModeled(
+        "provider candidate packaging failure vocabulary modeled",
+    ),
     OsKeyringPassphraseStorageRejected("OS keyring passphrase storage rejected"),
     PasswordManagerIntegrationRejected("password-manager integration rejected"),
     PassphraseFirstVaultAuthorityModeled("passphrase-first vault authority modeled"),
@@ -435,6 +441,13 @@ enum class VaultCryptoDependencyBlocker(val label: String) {
         "runtime authorization/readiness matrix review missing",
     ),
     AuthorizationReadinessMatrixTestsMissing("authorization/readiness matrix tests missing"),
+    ProviderCandidatePackagingBoundaryStillDisabled(
+        "provider candidate packaging boundary remains model-only",
+    ),
+    ProviderCandidatePackagingRuntimeReviewMissing(
+        "runtime provider candidate packaging review missing",
+    ),
+    ProviderCandidatePackagingTestsMissing("provider candidate packaging tests missing"),
     ProductionStorageReviewMissing("production storage review missing"),
     MainnetReleaseHardeningReviewMissing("mainnet release-hardening review missing"),
     VaultImplementationStillDisabled("vault implementation still disabled"),
@@ -560,6 +573,8 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyCapability.CreationAuthorizationFailureVocabularyModeled,
                     VaultCryptoDependencyCapability.AuthorizationReadinessMatrixImplementedTested,
                     VaultCryptoDependencyCapability.AuthorizationReadinessMatrixFailureVocabularyModeled,
+                    VaultCryptoDependencyCapability.ProviderCandidatePackagingBoundaryImplementedTested,
+                    VaultCryptoDependencyCapability.ProviderCandidatePackagingFailureVocabularyModeled,
                     VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected,
                     VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected,
                     VaultCryptoDependencyCapability.PassphraseFirstVaultAuthorityModeled,
@@ -673,6 +688,9 @@ object VaultCryptoDependencyProbeCatalog {
                     VaultCryptoDependencyBlocker.AuthorizationReadinessMatrixStillDisabled,
                     VaultCryptoDependencyBlocker.AuthorizationReadinessMatrixRuntimeReviewMissing,
                     VaultCryptoDependencyBlocker.AuthorizationReadinessMatrixTestsMissing,
+                    VaultCryptoDependencyBlocker.ProviderCandidatePackagingBoundaryStillDisabled,
+                    VaultCryptoDependencyBlocker.ProviderCandidatePackagingRuntimeReviewMissing,
+                    VaultCryptoDependencyBlocker.ProviderCandidatePackagingTestsMissing,
                     VaultCryptoDependencyBlocker.ProductionStorageReviewMissing,
                     VaultCryptoDependencyBlocker.MainnetReleaseHardeningReviewMissing,
                     VaultCryptoDependencyBlocker.VaultImplementationStillDisabled,

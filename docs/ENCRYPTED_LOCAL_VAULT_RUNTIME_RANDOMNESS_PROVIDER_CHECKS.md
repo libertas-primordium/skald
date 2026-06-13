@@ -6,12 +6,15 @@ Skald Vault now has a Skald-owned runtime randomness/provider check model plus t
 
 This is design/model/test evidence only. It does not implement production entropy collection, production random-byte generation for vault records, key generation, platform key wrapping, calibration, provider-selectable KDF execution, executable provider crypto, AEAD execution, file-backed vault container read/write, secure secret storage, secure metadata persistence, unlock UI, production sync, backend clients, signing, broadcasting, Tor, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
 
+Provider candidate packaging evidence is now modeled separately and remains still-disabled. The packaging boundary can name future provider and OS-CSPRNG candidate families and the source-set/dependency reviews they require, but it does not run randomness checks, call `SecureRandom`, instantiate a provider, activate dependencies, run KDF/HKDF/HMAC/AEAD, run KATs, generate salts/nonces/keys, or make a provider selectable.
+
 The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) uses this runtime randomness policy as a prerequisite gate. It pins the review direction to OS SecureRandom, requires provider/algorithm evidence, rejects provider-wrapped or hybrid randomness for v1 unless separately reviewed, and keeps unknown or unavailable randomness state fail-closed.
 
 Runtime behavior remains fail-closed:
 
 - `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.
 - Tink plus Bouncy Castle remains a blocked future candidate, not a selectable production provider.
+- Provider candidate packaging remains evidence-only and cannot authorize runtime randomness or provider promotion.
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
 - Vault creation is not implemented.

@@ -125,6 +125,14 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.UnlockAuthorizationFailureVocabularyModeled)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.CreationAuthorizationBoundaryImplementedTested)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.CreationAuthorizationFailureVocabularyModeled)
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.ProviderCandidatePackagingBoundaryImplementedTested,
+        )
+        assertContains(
+            selected.capabilities,
+            VaultCryptoDependencyCapability.ProviderCandidatePackagingFailureVocabularyModeled,
+        )
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.OsKeyringPassphraseStorageRejected)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PasswordManagerIntegrationRejected)
         assertContains(selected.capabilities, VaultCryptoDependencyCapability.PassphraseFirstVaultAuthorityModeled)
@@ -284,6 +292,9 @@ class VaultCryptoDependencyProbeTest {
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.CreationAuthorizationBoundaryStillDisabled)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.CreationAuthorizationRuntimeReviewMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.CreationAuthorizationTestsMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProviderCandidatePackagingBoundaryStillDisabled)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProviderCandidatePackagingRuntimeReviewMissing)
+        assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProviderCandidatePackagingTestsMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.ProductionStorageReviewMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.MainnetReleaseHardeningReviewMissing)
         assertContains(selected.blockers, VaultCryptoDependencyBlocker.VaultImplementationStillDisabled)

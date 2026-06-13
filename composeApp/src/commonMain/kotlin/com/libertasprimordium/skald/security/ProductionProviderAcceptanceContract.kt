@@ -140,6 +140,9 @@ enum class ProductionProviderAcceptanceGate(val label: String) {
     AuthorizationReadinessMatrixImplementedAndTested(
         "vault authorization/readiness matrix implemented and tested",
     ),
+    ProviderCandidatePackagingBoundaryImplementedAndTested(
+        "provider candidate packaging boundary implemented and tested",
+    ),
     SafePathConstructionContractApproved("safe path-construction contract approved"),
     SymlinkTraversalContractApproved("symlink and filesystem traversal contract approved"),
     StoragePermissionOwnershipContractApproved("storage permission and ownership contract approved"),
@@ -1566,6 +1569,42 @@ data class ProductionProviderAuthorizationReadinessMatrixEvidence(
     val failureVocabularyModeled: Boolean,
 )
 
+enum class ProductionProviderCandidatePackagingBoundaryRule(val label: String) {
+    EvidenceOnly("provider candidate packaging boundary returns evidence only"),
+    DefaultDecisionBlocked("current provider candidate packaging decision remains blocked"),
+    CandidateFamilyVocabularyModeled("boundary models provider candidate families"),
+    DependencyCategoryVocabularyModeled("boundary models dependency categories"),
+    SourceSetPlacementVocabularyModeled("boundary models source-set placement categories"),
+    RequiredGateVocabularyModeled("boundary models provider candidate promotion gates"),
+    DoesNotImplementProvider("boundary does not implement a provider"),
+    DoesNotActivateDependencies("boundary does not add or activate dependencies"),
+    DoesNotInstantiateProviderCode("boundary does not instantiate provider code"),
+    DoesNotRunProviderOperationsKatsRandomnessOrCrypto(
+        "boundary does not run provider operations, KATs, randomness, KDF, AEAD, HKDF, or HMAC",
+    ),
+    DoesNotEnableProviderSelectionCreationUnlockPersistenceOrMainnet(
+        "boundary does not enable provider selection, creation, unlock, persistence, or mainnet",
+    ),
+    RedactsProviderCryptoDependencyAndSourceSetEvidence(
+        "boundary redacts provider, crypto, dependency, and source-set evidence",
+    ),
+}
+
+data class ProductionProviderCandidatePackagingBoundaryEvidence(
+    val policyId: String,
+    val status: ProductionProviderConstructionContractStatus,
+    val rules: Set<ProductionProviderCandidatePackagingBoundaryRule>,
+    val modeled: Boolean,
+    val stillDisabled: Boolean,
+    val doesNotImplementProvider: Boolean,
+    val doesNotActivateDependencies: Boolean,
+    val doesNotEnableProviderSelection: Boolean,
+    val doesNotRunCrypto: Boolean,
+    val doesNotEnableCreation: Boolean,
+    val doesNotEnableUnlock: Boolean,
+    val doesNotEnablePersistence: Boolean,
+)
+
 enum class ProductionProviderSafePathConstructionRule(val label: String) {
     ReviewedPlatformRootOnly("future path construction starts from a reviewed platform root"),
     ValidatedStorageNamespaceSegment("future path construction uses a validated storage namespace segment"),
@@ -2346,6 +2385,60 @@ data class ProductionProviderContainerManifestStorageContract(
 
     val authorizationReadinessMatrixFailureVocabularyModeled: Boolean
         get() = authorizationReadinessMatrixEvidence.failureVocabularyModeled
+
+    val providerCandidatePackagingBoundaryEvidence:
+        ProductionProviderCandidatePackagingBoundaryEvidence
+        get() = ProductionProviderCandidatePackagingBoundaryEvidence(
+            policyId = SkaldVaultV1ProviderCandidatePackagingPolicy.POLICY_ID,
+            status = ProductionProviderConstructionContractStatus.ImplementedTested,
+            rules = ProductionProviderCandidatePackagingBoundaryRule.entries.toSet(),
+            modeled = true,
+            stillDisabled = true,
+            doesNotImplementProvider = true,
+            doesNotActivateDependencies = true,
+            doesNotEnableProviderSelection = true,
+            doesNotRunCrypto = true,
+            doesNotEnableCreation = true,
+            doesNotEnableUnlock = true,
+            doesNotEnablePersistence = true,
+        )
+
+    val providerCandidatePackagingBoundaryPolicyId: String
+        get() = providerCandidatePackagingBoundaryEvidence.policyId
+
+    val providerCandidatePackagingBoundaryStatus: ProductionProviderConstructionContractStatus
+        get() = providerCandidatePackagingBoundaryEvidence.status
+
+    val providerCandidatePackagingBoundaryRules:
+        Set<ProductionProviderCandidatePackagingBoundaryRule>
+        get() = providerCandidatePackagingBoundaryEvidence.rules
+
+    val providerCandidatePackagingBoundaryModeled: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.modeled
+
+    val providerCandidatePackagingStillDisabled: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.stillDisabled
+
+    val providerCandidatePackagingDoesNotImplementProvider: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotImplementProvider
+
+    val providerCandidatePackagingDoesNotActivateDependencies: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotActivateDependencies
+
+    val providerCandidatePackagingDoesNotEnableProviderSelection: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotEnableProviderSelection
+
+    val providerCandidatePackagingDoesNotRunCrypto: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotRunCrypto
+
+    val providerCandidatePackagingDoesNotEnableCreation: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotEnableCreation
+
+    val providerCandidatePackagingDoesNotEnableUnlock: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotEnableUnlock
+
+    val providerCandidatePackagingDoesNotEnablePersistence: Boolean
+        get() = providerCandidatePackagingBoundaryEvidence.doesNotEnablePersistence
 }
 
 enum class ProductionProviderPassphraseForbiddenClass(val label: String) {
@@ -2695,6 +2788,8 @@ data class ProductionProviderAcceptanceEvidence(
                     ProductionProviderAcceptanceGate.CreationAuthorizationBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.AuthorizationReadinessMatrixImplementedAndTested to
+                        ProductionProviderAcceptanceEvidenceState.ImplementedTested,
+                    ProductionProviderAcceptanceGate.ProviderCandidatePackagingBoundaryImplementedAndTested to
                         ProductionProviderAcceptanceEvidenceState.ImplementedTested,
                     ProductionProviderAcceptanceGate.RedactionLeakageChecksPassed to
                         ProductionProviderAcceptanceEvidenceState.DocumentedModelOnly,
