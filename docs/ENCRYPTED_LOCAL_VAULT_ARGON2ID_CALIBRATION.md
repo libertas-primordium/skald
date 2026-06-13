@@ -236,6 +236,12 @@ This calibration branch does not enable:
 
 The boundary does not run Argon2id, run KDFs, run calibration, benchmark devices, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable unlock, enable persistence, make a provider selectable, or approve mainnet. Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, and mainnet KDF use remains blocked until release review.
 
+## Vault Unlock Authorization Boundary
+
+`SkaldVaultV1UnlockAuthorizationPolicy` now records the separate authorization gate that must be satisfied before any future branch can attempt vault unlock after KDF review. It models future unlock operation kinds, purposes, credential classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens, but it authorizes no unlock operation in this branch.
+
+Current unlock authorization is blocked/fail-closed because passphrase input is blocked, KDF calibration authorization is blocked, runtime randomness authorization is blocked, provider operations are unauthorized, secure-storage authorization is blocked, storage service operations are disabled, lock/session lifecycle is unavailable, persistence readiness is blocked, and `productionProviderSelectable` remains false. The boundary does not accept passphrases, PINs, or biometrics; normalize or encode passphrases; run Argon2id/KDF/HKDF/HMAC/AEAD; generate or consume salts, nonces, or random bytes; call provider operations; read secure storage, metadata storage, or encrypted vault storage; retrieve or unwrap wrapped keys; decrypt records; create active sessions; hold decrypted key material; persist unlock state; add UI; enable vault creation, unlock, persistence, provider selectability, or mainnet.
+
 ## Next Step
 
 The next focused branch should keep provider selection disabled unless the user explicitly approves provider-selectability work. Recommended next decision point: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, then decide whether final production calibration approval can move forward before any vault container or persistence implementation.

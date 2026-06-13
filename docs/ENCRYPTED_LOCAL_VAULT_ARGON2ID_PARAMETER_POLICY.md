@@ -187,6 +187,12 @@ This parameter-policy branch does not enable:
 
 The boundary does not run Argon2id, run KDFs, run calibration, run benchmarks, inspect real host/device details, approve final KDF parameters, normalize or encode real passphrases, generate or consume salts, call randomness APIs, run provider operations, run provider KATs, derive vault keys, enable unlock, enable persistence, make a provider selectable, or approve mainnet. Android and Linux calibration remain future-reviewed only, test-vector profiles do not authorize production runtime unlock, and mainnet KDF use remains blocked until release review.
 
+## Vault Unlock Authorization Boundary
+
+`SkaldVaultV1UnlockAuthorizationPolicy` now records the separate authorization gate that must be satisfied before any future Argon2id parameter set can be used in a vault unlock attempt. It models future unlock operation kinds, purposes, credential classes, required gates, blockers, warnings, disabled capabilities, and redacted policy tokens, but it authorizes no operation in this branch.
+
+Current unlock authorization is blocked/fail-closed because passphrase input is blocked, KDF calibration authorization is blocked, runtime randomness authorization is blocked, provider operations are unauthorized, secure-storage authorization is blocked, storage service operations are disabled, lock/session lifecycle is unavailable, persistence readiness is blocked, provider selection still selects only `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false. The boundary does not accept passphrases, PINs, or biometrics; normalize or encode passphrases; run Argon2id/KDF/HKDF/HMAC/AEAD; generate or consume salts, nonces, or random bytes; call provider operations; read secure storage, metadata storage, or encrypted vault storage; retrieve or unwrap wrapped keys; decrypt records; create active sessions; hold decrypted key material; persist unlock state; add UI; enable vault creation, unlock, persistence, provider selectability, or mainnet.
+
 ## Next Step
 
 The next focused branch should remain design/probe-only: review runtime provider/primitive/randomness availability evidence for supported Android and Linux paths, or capture optional additional Android calibration evidence for parameter/UX review. Do not proceed to file-backed vault container read/write or persistence from this policy pass.
