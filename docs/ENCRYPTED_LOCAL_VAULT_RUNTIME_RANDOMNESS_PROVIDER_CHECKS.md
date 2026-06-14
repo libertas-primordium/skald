@@ -8,6 +8,8 @@ This is design/model/test evidence only. It does not implement production entrop
 
 Provider candidate packaging evidence is now modeled separately and remains still-disabled. The packaging boundary can name future provider and OS-CSPRNG candidate families and the source-set/dependency reviews they require, but it does not run randomness checks, call `SecureRandom`, instantiate a provider, activate dependencies, run KDF/HKDF/HMAC/AEAD, run KATs, generate salts/nonces/keys, or make a provider selectable.
 
+Provider dependency build evidence is also modeled separately and remains still-disabled. The build boundary records the pre-existing platform-scoped Tink/Bouncy declarations as declared/resolvable build evidence only; this branch adds no new dependency. It does not call `SecureRandom`, instantiate a provider, import provider APIs in common production code, run randomness checks, run provider KATs, run KDF/HKDF/HMAC/AEAD, generate salts/nonces/keys, or authorize provider promotion.
+
 The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) uses this runtime randomness policy as a prerequisite gate. It pins the review direction to OS SecureRandom, requires provider/algorithm evidence, rejects provider-wrapped or hybrid randomness for v1 unless separately reviewed, and keeps unknown or unavailable randomness state fail-closed.
 
 Runtime behavior remains fail-closed:
@@ -15,6 +17,7 @@ Runtime behavior remains fail-closed:
 - `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.
 - Tink plus Bouncy Castle remains a blocked future candidate, not a selectable production provider.
 - Provider candidate packaging remains evidence-only and cannot authorize runtime randomness or provider promotion.
+- Provider dependency build evidence remains declared-only and cannot authorize runtime randomness or provider promotion.
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
 - Vault creation is not implemented.

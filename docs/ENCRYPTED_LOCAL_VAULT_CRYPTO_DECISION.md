@@ -10,6 +10,8 @@ The dependency spike now pins platform-scoped Tink and Bouncy Castle artifacts f
 
 The provider candidate packaging boundary now records how future provider candidates must be named, packaged, source-set isolated, dependency-reviewed, and kept non-selectable until later review. It is still-disabled model evidence only: it does not add dependencies, instantiate Tink, Bouncy Castle, Javax/JCA crypto, Android Keystore, or any provider runtime, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, generate or wrap keys, enable vault creation/unlock/persistence, or approve mainnet.
 
+The provider dependency build boundary now records the current build-only dependency spike. This branch adds no new dependency because the existing platform-scoped Tink and Bouncy Castle declarations already provide declared/resolvable build evidence and the selected direction is a split stack. The boundary does not activate dependencies, import provider APIs in common production code, instantiate provider runtime, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, add provider implementation or factory code, change provider selection, or enable vault creation/unlock/persistence/mainnet.
+
 Runtime behavior remains fail-closed:
 
 - `SecureSecretStorage` is disabled.
@@ -17,6 +19,7 @@ Runtime behavior remains fail-closed:
 - `EncryptedVaultReadinessPolicy` reports disabled/not implemented readiness.
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider.
 - Provider candidate packaging evidence cannot make a provider selectable; `productionProviderSelectable` remains false.
+- Provider dependency build evidence cannot activate dependencies or make a provider selectable.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
