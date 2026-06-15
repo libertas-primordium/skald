@@ -24,6 +24,8 @@ The provider selection promotion blocker boundary is additional evidence only. I
 
 The provider interface contract audit is additional evidence only. It audits provider-facing contracts for provider-neutral common boundaries, redaction, authorization requirements, promotion blockers, source-set safety, and rejection of runtime material. It does not add dependencies, implement a provider, add a factory, enable a registry, instantiate provider code, accept secrets or byte material, accept provider handles or crypto objects, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet.
 
+The non-selectable provider skeleton boundary is also evidence only. It models future provider skeleton identity, source-set placement, dependency visibility, disabled operation surfaces, diagnostics/redaction, acceptance gates, promotion blockers, and readiness-matrix interaction without implementing `VaultCryptoProvider`, adding a factory, enabling a registry, instantiating provider code, running provider operations or KATs, using randomness, running KDF/HKDF/HMAC/AEAD, wrapping keys, changing this registry, or making any provider selectable.
+
 ## Source Location
 
 Production-safe provider-selection models and registry:
@@ -36,6 +38,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderDependencyBuildBoundary.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderSelectionPromotionBlockers.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderInterfaceContractAudit.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1NonSelectableProviderSkeletonBoundary.kt
 ```
 
 Disabled provider boundary:
@@ -112,6 +115,7 @@ Selection tests:
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderSelectionTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderSelectionPromotionBlockersTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderInterfaceContractAuditTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultNonSelectableProviderSkeletonBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 ```
 
