@@ -12,6 +12,8 @@ Provider dependency build evidence is also modeled separately and remains still-
 
 Provider selection promotion blocker evidence is modeled separately and remains still-disabled. It records that dependency/build evidence, provider packaging evidence, runtime randomness evidence, KDF evidence, KAT evidence, and user/test/warning evidence cannot move a candidate into implementation, factory, registry, selectability, provider operation authorization, creation/unlock/persistence integration, release validation, or mainnet approval. It does not call `SecureRandom`, instantiate a provider, run randomness checks, run provider operations or KATs, run KDF/HKDF/HMAC/AEAD, generate salts/nonces/keys, make any provider selectable, or authorize provider promotion.
 
+Provider interface contract audit evidence is modeled separately and remains still-disabled. It records that provider-facing model contracts remain provider-neutral and cannot carry secrets, byte material, provider handles, crypto objects, platform crypto imports, executable operations, authorization bypasses, promotion bypasses, selectable provider state, or `productionProviderSelectable=true`. It does not call `SecureRandom`, instantiate a provider, run randomness checks, run provider operations or KATs, run KDF/HKDF/HMAC/AEAD, generate salts/nonces/keys, make any provider selectable, or authorize provider promotion.
+
 The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) uses this runtime randomness policy as a prerequisite gate. It pins the review direction to OS SecureRandom, requires provider/algorithm evidence, rejects provider-wrapped or hybrid randomness for v1 unless separately reviewed, and keeps unknown or unavailable randomness state fail-closed.
 
 Runtime behavior remains fail-closed:
@@ -21,6 +23,7 @@ Runtime behavior remains fail-closed:
 - Provider candidate packaging remains evidence-only and cannot authorize runtime randomness or provider promotion.
 - Provider dependency build evidence remains declared-only and cannot authorize runtime randomness or provider promotion.
 - Provider selection promotion blocker evidence remains model-only and cannot authorize runtime randomness, provider selectability, provider operations, KAT approval, or production promotion.
+- Provider interface contract audit evidence remains model-only and cannot authorize randomness, provider selectability, provider operations, KAT approval, provider promotion, or production runtime.
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
 - Vault creation is not implemented.
