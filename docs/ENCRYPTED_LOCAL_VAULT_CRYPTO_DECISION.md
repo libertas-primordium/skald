@@ -16,6 +16,8 @@ The provider selection promotion blocker boundary now records the still-disabled
 
 The provider interface contract audit now records the still-disabled contract-safety review for provider-facing model/evidence paths. It verifies that current provider-facing contracts remain provider-neutral, redacted, and authorization-gated; cannot accept secrets, byte material, provider handles, crypto objects, or platform crypto imports; cannot execute operations or bypass promotion/readiness gates; cannot make a provider selectable; and cannot set `productionProviderSelectable=true`. It does not add dependencies, implement a provider, add a factory, enable a registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, or enable vault creation/unlock/persistence/mainnet.
 
+The non-selectable provider skeleton boundary now records the still-disabled compile-time shape for a future provider skeleton. It models provider identity, family, source-set placement, dependency visibility, implementation/factory/registry/selectability status, disabled operation surfaces, diagnostics/redaction, acceptance gates, promotion blockers, and readiness-matrix interaction. It does not implement executable provider behavior, implement `VaultCryptoProvider`, add a factory, enable a registry, instantiate provider code, run provider operations or KATs, use randomness, run KDF/HKDF/HMAC/AEAD, wrap keys, change provider selection, or enable vault creation/unlock/persistence/mainnet.
+
 Runtime behavior remains fail-closed:
 
 - `SecureSecretStorage` is disabled.
@@ -26,6 +28,7 @@ Runtime behavior remains fail-closed:
 - Provider dependency build evidence cannot activate dependencies or make a provider selectable.
 - Provider selection promotion blocker evidence cannot add implementation, factory, registry, selectability, provider operation authorization, KAT readiness, creation/unlock/persistence integration, or mainnet readiness.
 - Provider interface contract audit evidence cannot accept runtime material, execute provider operations, bypass authorization, promote a provider, change provider selection, or set `productionProviderSelectable=true`.
+- Non-selectable provider skeleton evidence cannot implement a runtime provider, add a factory, enable a registry, make the skeleton selectable, instantiate provider code, execute operations, run KATs, use randomness, run KDF/HKDF/HMAC/AEAD, wrap keys, or enable vault creation/unlock/persistence/mainnet.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
