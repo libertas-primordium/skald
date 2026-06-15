@@ -12,6 +12,8 @@ The provider candidate packaging boundary now records how future provider candid
 
 The provider dependency build boundary now records the current build-only dependency spike. This branch adds no new dependency because the existing platform-scoped Tink and Bouncy Castle declarations already provide declared/resolvable build evidence and the selected direction is a split stack. The boundary does not activate dependencies, import provider APIs in common production code, instantiate provider runtime, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, add provider implementation or factory code, change provider selection, or enable vault creation/unlock/persistence/mainnet.
 
+The provider selection promotion blocker boundary now records the still-disabled promotion path from candidate description and dependency/build evidence through implementation, factory, registry, test selectability, production selectability, provider operation authorization, KAT approval, runtime randomness, KDF/AEAD/key-wrapping support, creation/unlock/persistence integration, release validation, and mainnet approval. It keeps every path beyond candidate description/build evidence blocked and does not add dependencies, implement a provider, add a factory, enable a registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, change provider selection, or enable vault creation/unlock/persistence/mainnet.
+
 Runtime behavior remains fail-closed:
 
 - `SecureSecretStorage` is disabled.
@@ -20,6 +22,7 @@ Runtime behavior remains fail-closed:
 - `VaultCryptoProviderSelectionRegistry` selects only the disabled provider.
 - Provider candidate packaging evidence cannot make a provider selectable; `productionProviderSelectable` remains false.
 - Provider dependency build evidence cannot activate dependencies or make a provider selectable.
+- Provider selection promotion blocker evidence cannot add implementation, factory, registry, selectability, provider operation authorization, KAT readiness, creation/unlock/persistence integration, or mainnet readiness.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 

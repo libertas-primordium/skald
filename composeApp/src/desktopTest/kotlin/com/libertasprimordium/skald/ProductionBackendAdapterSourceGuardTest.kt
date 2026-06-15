@@ -195,6 +195,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1AuthorizationReadinessMatrix.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderCandidatePackagingBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderDependencyBuildBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderSelectionPromotionBlockers.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -386,6 +387,68 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Provider dependency build boundary must remain build-evidence-only: $offenders",
+        )
+    }
+
+    @Test
+    fun providerSelectionPromotionBlockersDoNotImportProvidersExecuteCryptoOrEnableSelection() {
+        val root = repositoryRoot()
+        val file = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderSelectionPromotionBlockers.kt",
+        )
+        val forbiddenPatterns = listOf(
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+kotlin\.random"""),
+            Regex("""import\s+java\.util\.Random"""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\bSecureRandom\("""),
+            Regex("""\bSecretBytes\.randomBytes\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\bwrapKey\("""),
+            Regex("""\bunwrapKey\("""),
+            Regex("""\bcreateVault\("""),
+            Regex("""\bopenVault\("""),
+            Regex("""\bunlockVault\("""),
+            Regex("""\bpersistVault\("""),
+            Regex("""\bSelectableProductionVaultCryptoProvider\b"""),
+            Regex("""\bProductionVaultCryptoProvider\b"""),
+            Regex("""productionProviderSelectable\s*=\s*true"""),
+            Regex("""providerSelectable\s*=\s*true"""),
+            Regex("""class\s+\w*ProviderFactory\b"""),
+            Regex("""\bProviderFactory\("""),
+            Regex("""\bFile\("""),
+            Regex("""\bjava\.nio\.file\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bCredentialManager\b"""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\b"""),
+            Regex("""\bLogger\b"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(file.readText()) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Provider selection promotion blockers must remain model-only: $offenders",
         )
     }
 

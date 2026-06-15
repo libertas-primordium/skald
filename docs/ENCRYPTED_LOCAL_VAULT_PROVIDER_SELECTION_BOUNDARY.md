@@ -20,6 +20,8 @@ The still-disabled provider candidate packaging boundary is additional evidence 
 
 The provider dependency build boundary is also evidence only. No new dependency is added in this pass because Tink and Bouncy Castle are already declared in the platform source sets for build/probe evidence, and the current provider decision is a split stack rather than a single newly activated dependency. The boundary records those declarations as build-only, non-active, non-imported, non-executable, and non-selectable. It does not add provider implementation or factory code, instantiate Tink/Bouncy/JCA/Android provider APIs, run KATs or crypto, or change this registry.
 
+The provider selection promotion blocker boundary is additional evidence only. It describes future promotion stages between candidate description, dependency/build evidence, dependency review, source-set review, implementation, factory, registry, test selectability, production selectability, provider operation authorization, provider KAT approval, runtime randomness, KDF/AEAD/key-wrapping support, creation/unlock/persistence integration, release validation, and mainnet approval. Every promotion path beyond candidate description and build-only evidence remains blocked. It does not add dependencies, implement a provider, add a factory, enable a registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet. Warning-only evidence, user consent, and test-only evidence cannot authorize promotion.
+
 ## Source Location
 
 Production-safe provider-selection models and registry:
@@ -30,6 +32,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVa
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderCandidatePackagingBoundary.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderDependencyBuildBoundary.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderSelectionPromotionBlockers.kt
 ```
 
 Disabled provider boundary:
@@ -104,6 +107,7 @@ Selection tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderSelectionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderSelectionPromotionBlockersTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 ```
 
