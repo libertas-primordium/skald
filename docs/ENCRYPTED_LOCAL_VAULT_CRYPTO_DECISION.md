@@ -14,6 +14,8 @@ The provider dependency build boundary now records the current build-only depend
 
 The provider selection promotion blocker boundary now records the still-disabled promotion path from candidate description and dependency/build evidence through implementation, factory, registry, test selectability, production selectability, provider operation authorization, KAT approval, runtime randomness, KDF/AEAD/key-wrapping support, creation/unlock/persistence integration, release validation, and mainnet approval. It keeps every path beyond candidate description/build evidence blocked and does not add dependencies, implement a provider, add a factory, enable a registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, change provider selection, or enable vault creation/unlock/persistence/mainnet.
 
+The provider interface contract audit now records the still-disabled contract-safety review for provider-facing model/evidence paths. It verifies that current provider-facing contracts remain provider-neutral, redacted, and authorization-gated; cannot accept secrets, byte material, provider handles, crypto objects, or platform crypto imports; cannot execute operations or bypass promotion/readiness gates; cannot make a provider selectable; and cannot set `productionProviderSelectable=true`. It does not add dependencies, implement a provider, add a factory, enable a registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, or enable vault creation/unlock/persistence/mainnet.
+
 Runtime behavior remains fail-closed:
 
 - `SecureSecretStorage` is disabled.
@@ -23,6 +25,7 @@ Runtime behavior remains fail-closed:
 - Provider candidate packaging evidence cannot make a provider selectable; `productionProviderSelectable` remains false.
 - Provider dependency build evidence cannot activate dependencies or make a provider selectable.
 - Provider selection promotion blocker evidence cannot add implementation, factory, registry, selectability, provider operation authorization, KAT readiness, creation/unlock/persistence integration, or mainnet readiness.
+- Provider interface contract audit evidence cannot accept runtime material, execute provider operations, bypass authorization, promote a provider, change provider selection, or set `productionProviderSelectable=true`.
 - Production sync is disabled.
 - Production observation/address-index/UTXO persistence is disabled.
 
