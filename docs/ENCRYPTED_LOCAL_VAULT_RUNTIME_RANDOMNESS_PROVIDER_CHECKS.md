@@ -175,10 +175,13 @@ General-purpose PRNGs are forbidden for secrets, salts, nonces, and keys. Future
 
 Runtime randomness availability is one provider-selection gate, not provider approval.
 
+The provider factory isolation boundary is still-disabled model-only evidence for the same gate stack. Runtime randomness evidence cannot create a provider factory, reach a provider constructor, expose a provider handle or crypto object, instantiate provider code, add a non-disabled registry entry, make any provider selectable, or set `productionProviderSelectable=true`. Future factory introduction remains behind provider-operation authorization, runtime randomness authorization, KDF authorization, secure-storage authorization, creation/unlock authorization, promotion blockers, registry isolation, the authorization/readiness matrix, and an explicit later review branch.
+
 Even if a platform passes the test-only runtime randomness probe, production provider selection remains blocked because:
 
 - the v1 production-provider acceptance contract is not complete for production selectability,
 - no executable production provider exists,
+- no non-disabled provider factory or constructor exists,
 - production provider-level KATs have not passed,
 - calibration and provider-selectable KDF execution are disabled,
 - production AEAD execution is disabled,
