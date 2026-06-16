@@ -26,6 +26,8 @@ The provider interface contract audit is additional evidence only. It audits pro
 
 The non-selectable provider skeleton boundary is also evidence only. It models future provider skeleton identity, source-set placement, dependency visibility, disabled operation surfaces, diagnostics/redaction, acceptance gates, promotion blockers, and readiness-matrix interaction without implementing `VaultCryptoProvider`, adding a factory, enabling a registry, instantiating provider code, running provider operations or KATs, using randomness, running KDF/HKDF/HMAC/AEAD, wrapping keys, changing this registry, or making any provider selectable.
 
+The provider registry isolation guard is also evidence only. It models the current provider-selection registry as isolated to `DisabledVaultCryptoProvider` and records that non-selectable skeletons, candidate-packaging evidence, dependency/build evidence, interface-audit evidence, promotion-blocker evidence, authorization/readiness matrix evidence, provider-operation authorization evidence, runtime-randomness evidence, KDF-calibration evidence, secure-storage evidence, creation/unlock authorization evidence, warning-only evidence, user-consent evidence, test-only evidence, and release/mainnet evidence cannot become registry entries or provider-promotion authority. It does not add dependencies, implement a provider, add a factory, enable a non-disabled registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet.
+
 ## Source Location
 
 Production-safe provider-selection models and registry:
@@ -39,6 +41,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderSelectionPromotionBlockers.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderInterfaceContractAudit.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1NonSelectableProviderSkeletonBoundary.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderRegistryIsolationGuard.kt
 ```
 
 Disabled provider boundary:
@@ -116,6 +119,7 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProvide
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderSelectionPromotionBlockersTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderInterfaceContractAuditTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultNonSelectableProviderSkeletonBoundaryTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderRegistryIsolationGuardTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 ```
 
@@ -139,6 +143,16 @@ The registry models candidate state and evidence, but it does not instantiate a 
 | IonSpin KMP libsodium | Deferred | Metadata/POM inspection only; package/runtime/KAT behavior remains unverified. |
 
 No candidate is production-selectable.
+
+## Provider Registry Isolation Guard
+
+`SkaldVaultV1ProviderRegistryIsolationGuardPolicy` is a still-disabled, model-only guard for the current registry boundary. It proves the active selection path remains disabled-provider-only and that current evidence models cannot be promoted into registry entries.
+
+The guard covers the active provider-selection registry, disabled provider selection, non-selectable skeleton exclusion, candidate-packaging exclusion, dependency/build exclusion, interface-audit exclusion, promotion-blocker exclusion, authorization/readiness matrix exclusion, provider-operation authorization exclusion, runtime-randomness authorization exclusion, KDF-calibration authorization exclusion, secure-storage authorization exclusion, creation/unlock authorization exclusion, test-only evidence exclusion, warning-only evidence exclusion, user-consent exclusion, and release/mainnet future-review requirements.
+
+It rejects risks where the registry would reference the skeleton or candidate families, treat evidence as registry entries, reference a test-only provider from production selection, set `productionProviderSelectable=true`, set `providerSelectable=true`, contain a non-disabled provider id, create provider instances, expose provider handles or crypto objects, import platform crypto APIs, call provider operations, run KATs, reach randomness/KDF/AEAD/HKDF/HMAC, enable vault creation/unlock/persistence, or enable mainnet.
+
+The guard has no provider instance, factory, registry object, handle, crypto object, byte material, path/root value, storage identifier, or secret-bearing input/output. Its diagnostics are limited to policy ids, registry topic names, risk names, required-property names, blocker classes, and redacted tokens.
 
 ## Evidence Model
 

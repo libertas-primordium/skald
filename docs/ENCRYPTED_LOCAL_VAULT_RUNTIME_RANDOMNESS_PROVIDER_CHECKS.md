@@ -16,6 +16,8 @@ Provider interface contract audit evidence is modeled separately and remains sti
 
 Non-selectable provider skeleton evidence is modeled separately and remains still-disabled. It describes the future provider skeleton identity and disabled operation surfaces, including randomness checks, randomness requests, salt generation, nonce generation, and key generation, but every surface is disabled. It does not call `SecureRandom`, instantiate a provider, run randomness checks, run provider operations or KATs, run KDF/HKDF/HMAC/AEAD, generate salts/nonces/keys, make any provider selectable, or authorize provider promotion.
 
+Provider registry isolation evidence is modeled separately and remains still-disabled. It confirms the live provider-selection registry remains isolated to `DisabledVaultCryptoProvider` and that randomness evidence, dependency/build evidence, candidate-packaging evidence, interface-audit evidence, promotion-blocker evidence, non-selectable skeleton evidence, authorization/readiness matrix evidence, warning-only evidence, user consent, test-only evidence, and release/mainnet evidence cannot become non-disabled registry entries. It does not call `SecureRandom`, instantiate a provider, run randomness checks, run provider operations or KATs, run KDF/HKDF/HMAC/AEAD, generate salts/nonces/keys, make any provider selectable, or authorize provider promotion.
+
 The v1 production-provider acceptance contract in [`ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_PRODUCTION_PROVIDER_ACCEPTANCE_CONTRACT.md) uses this runtime randomness policy as a prerequisite gate. It pins the review direction to OS SecureRandom, requires provider/algorithm evidence, rejects provider-wrapped or hybrid randomness for v1 unless separately reviewed, and keeps unknown or unavailable randomness state fail-closed.
 
 Runtime behavior remains fail-closed:
@@ -27,6 +29,7 @@ Runtime behavior remains fail-closed:
 - Provider selection promotion blocker evidence remains model-only and cannot authorize runtime randomness, provider selectability, provider operations, KAT approval, or production promotion.
 - Provider interface contract audit evidence remains model-only and cannot authorize randomness, provider selectability, provider operations, KAT approval, provider promotion, or production runtime.
 - Non-selectable provider skeleton evidence remains model-only and cannot authorize randomness checks, randomness requests, salt generation, nonce generation, key generation, provider operations, KAT approval, provider selectability, provider promotion, or production runtime.
+- Provider registry isolation guard evidence remains model-only and cannot authorize non-disabled registry entries, provider factories, provider instantiation, randomness, provider operations, KAT approval, provider selectability, provider promotion, or production runtime.
 - `SecureSecretStorage` remains disabled.
 - `SecureWalletMetadataRepository` remains disabled.
 - Vault creation is not implemented.
