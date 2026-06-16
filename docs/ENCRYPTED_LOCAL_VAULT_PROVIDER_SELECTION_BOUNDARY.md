@@ -30,6 +30,8 @@ The provider registry isolation guard is also evidence only. It models the curre
 
 The provider factory isolation boundary is also evidence only. It models the current provider-factory surface as absent for non-disabled providers and records that no non-disabled provider factory or constructor is reachable from provider selection, registry isolation, non-selectable skeleton evidence, candidate-packaging evidence, dependency/build evidence, interface-audit evidence, promotion-blocker evidence, authorization/readiness matrix evidence, warning-only evidence, user-consent evidence, test-only evidence, or release/mainnet evidence. It does not add dependencies, implement a provider, add a provider factory, enable a non-disabled registry, instantiate provider code, expose provider handles or crypto objects, accept byte material, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet. Future factory introduction requires an explicit later branch and review.
 
+The provider operation dispatch isolation boundary is also evidence only. It models the current provider-operation dispatch surface as absent for non-disabled providers and records that no dispatcher is reachable from provider selection, registry isolation, factory isolation, non-selectable skeleton evidence, candidate-packaging evidence, dependency/build evidence, interface-audit evidence, promotion-blocker evidence, authorization/readiness matrix evidence, creation authorization, unlock authorization, secure-storage authorization, or persistence readiness. It does not add dependencies, implement a provider, add a provider factory, add a provider dispatcher, enable a non-disabled registry, instantiate provider code, expose provider handles or crypto objects, accept byte material, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, compute header commitments, encrypt/decrypt records, wrap/unwrap keys, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet. Future dispatcher introduction requires an explicit later branch and review.
+
 ## Source Location
 
 Production-safe provider-selection models and registry:
@@ -45,6 +47,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1NonSelectableProviderSkeletonBoundary.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderRegistryIsolationGuard.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderFactoryIsolationBoundary.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderOperationDispatchIsolationBoundary.kt
 ```
 
 Disabled provider boundary:
@@ -124,6 +127,7 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderInter
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultNonSelectableProviderSkeletonBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderRegistryIsolationGuardTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderFactoryIsolationBoundaryTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderOperationDispatchIsolationBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 ```
 
@@ -165,6 +169,14 @@ The guard has no provider instance, factory, registry object, handle, crypto obj
 The boundary covers active factory surface, disabled construction surface, non-disabled provider construction exclusion, skeleton and candidate construction exclusion, dependency/build construction exclusion, packaging/audit/promotion/matrix construction exclusion, registry construction exclusion, provider-operation/randomness/KDF/secure-storage/creation/unlock construction exclusion, test-only factory evidence exclusion, warning-only and user-consent exclusion, and release/mainnet future-review requirements.
 
 It rejects risks where a factory would create non-disabled, skeleton, or candidate providers; treat evidence models as construction authority; accept provider handles, crypto objects, byte material, or platform crypto APIs; import Tink/Bouncy/JCA APIs; call randomness, KATs, provider operations, KDF/AEAD/HKDF/HMAC, key wrapping, vault creation/unlock/persistence, or mainnet paths. It has no provider instance, factory object, registry object, handle, crypto object, byte material, path/root value, storage identifier, or secret-bearing input/output. Its diagnostics are limited to policy ids, factory topic names, risk names, required-property names, blocker classes, and redacted tokens.
+
+## Provider Operation Dispatch Isolation Boundary
+
+`SkaldVaultV1ProviderOperationDispatchIsolationPolicy` is a still-disabled, model-only boundary for the absent non-disabled provider-operation dispatcher surface. It proves that current selection, registry isolation, factory isolation, skeleton, candidate, dependency/build, interface-audit, promotion-blocker, authorization/readiness matrix, provider-operation, runtime-randomness, KDF, secure-storage, creation/unlock, persistence-readiness, warning-only, user-consent, test-only, and release/mainnet evidence cannot route requests into executable provider code.
+
+The boundary covers provider operation dispatch surface, disabled provider dispatch behavior, non-disabled provider dispatch exclusion, factory and registry dispatch exclusion, skeleton and candidate dispatch exclusion, dependency/build dispatch exclusion, packaging/audit/promotion/matrix dispatch exclusion, provider-operation/randomness/KDF/secure-storage/creation/unlock/persistence dispatch exclusion, test-only dispatch exclusion, warning-only and user-consent exclusion, and release/mainnet future-review requirements.
+
+It rejects risks where dispatch would invoke non-disabled, skeleton, or candidate providers; invoke a provider factory or registry; treat evidence models as executable operations; accept provider handles, crypto objects, byte material, or platform crypto APIs; import Tink/Bouncy/JCA APIs; call randomness, KATs, provider operations, KDF/AEAD/HKDF/HMAC, header commitment, record encryption/decryption, key wrapping, vault creation/unlock/persistence, or mainnet paths. It has no provider instance, dispatcher object, factory object, registry object, handle, crypto object, byte material, path/root value, storage identifier, or secret-bearing input/output. Its diagnostics are limited to policy ids, dispatch topic names, risk names, required-property names, blocker classes, and redacted tokens.
 
 ## Evidence Model
 
