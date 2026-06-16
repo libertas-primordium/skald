@@ -8,6 +8,8 @@ The passphrase policy validator, explicit-parameter Argon2id root derivation, Ar
 
 The provider operation dispatch isolation boundary now records that no non-disabled provider operation dispatcher can reach header commitment computation, header commitment verification, strict AAD work, record encryption/decryption, key wrapping, randomness, KDF/HKDF/HMAC/AEAD, factory/registry/skeleton/candidate paths, vault creation, unlock, persistence, or mainnet. It is model-only evidence and does not add dependencies, implement a provider, add a provider factory, add a provider dispatcher, instantiate provider code, make any provider selectable, or set `productionProviderSelectable=true`.
 
+The provider KAT execution isolation boundary now records that public non-wallet vector docs, canonical header/HKDF/HMAC vector docs, provider KAT contract evidence, and test-provider KAT harness concepts cannot become runtime header commitment, HKDF, HMAC, AAD, AEAD, record crypto, key wrapping, provider selection, or `productionProviderSelectable=true` authorization. It is model-only evidence and does not add dependencies, implement a provider, add a provider factory, add a provider dispatcher, add a provider KAT executor, instantiate provider code, run provider operations or KATs, compute header commitments, encrypt/decrypt records, wrap/unwrap keys, make any provider selectable, or enable vault creation/unlock/persistence/mainnet.
+
 Runtime behavior remains fail-closed:
 
 - `VaultCryptoProviderSelectionRegistry` selects only `DisabledVaultCryptoProvider`.

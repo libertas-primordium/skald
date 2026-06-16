@@ -201,6 +201,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderRegistryIsolationGuard.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderFactoryIsolationBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderOperationDispatchIsolationBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderKatExecutionIsolationBoundary.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -6801,6 +6802,216 @@ class ProductionBackendAdapterSourceGuardTest {
         )
     }
 
+    @Test
+    fun providerKatExecutionIsolationBoundaryStaysModelOnlyAndCannotRunProviderKats() {
+        val root = repositoryRoot()
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        ).filter { it.exists() }
+        val approvedPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderKatExecutionIsolationBoundary.kt"
+        val policyDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ProviderKatExecutionIsolationBoundary\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ProviderKatExecutionIsolationPolicy\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ProviderKatExecutionIsolationTopic\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ProviderKatExecutionIsolationRisk\b"""),
+            Regex("""\b(?:class|object|interface|enum class|sealed class|data class)\s+SkaldVaultV1ProviderKatExecutionIsolationCapability\b"""),
+        )
+        val misplacedDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedPolicyFile &&
+                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Provider KAT execution isolation definitions must stay in the exact approved file: $misplacedDefinitions",
+        )
+
+        val source = File(root, approvedPolicyFile).readText()
+        val forbiddenPatterns = listOf(
+            Regex("""^import\s+""", RegexOption.MULTILINE),
+            Regex(""":\s*VaultCryptoProvider\b"""),
+            Regex("""System\.getenv"""),
+            Regex("""System\.getProperty"""),
+            Regex("""\bjava\.io\.File\b"""),
+            Regex("""\bjava\.nio\.file\b"""),
+            Regex("""\bkotlin\.io\.path\b"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\.of\b"""),
+            Regex("""\bPaths\.get\b"""),
+            Regex("""\bFiles\."""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bBiometricPrompt\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""\bKeyGenParameterSpec\b"""),
+            Regex("""\bCredentialManager\s*\("""),
+            Regex("""\bKeyStore\s*\("""),
+            Regex("""\blibsecret\b"""),
+            Regex("""\bSecretService\b"""),
+            Regex("""\bKWallet\b"""),
+            Regex("""javax\.crypto"""),
+            Regex("""java\.security"""),
+            Regex("""java\.util\.Random"""),
+            Regex("""kotlin\.random"""),
+            Regex("""org\.bouncycastle"""),
+            Regex("""com\.google\.crypto"""),
+            Regex("""org\.bitcoindevkit"""),
+            Regex("""\bSecureRandom\s*\("""),
+            Regex("""\bRandom\.Default\b"""),
+            Regex("""\bMath\.random\b"""),
+            Regex("""\bSystem\.currentTimeMillis\("""),
+            Regex("""\bSystem\.nanoTime\("""),
+            Regex("""\bUUID\b"""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\bMac\.getInstance\("""),
+            Regex("""\bArgon2BytesGenerator\b"""),
+            Regex("""\bAeadConfig\b"""),
+            Regex("""\bXChaCha20Poly1305Key\b"""),
+            Regex("""\bKeysetHandle\b"""),
+            Regex("""\bCipher\("""),
+            Regex("""\bSecretKey\b"""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\.authenticate\("""),
+            Regex("""\.derive\("""),
+            Regex("""\bverifyTag\("""),
+            Regex("""\bgenerateNew\("""),
+            Regex("""\bByteArray\("""),
+            Regex("""\bCharArray\("""),
+            Regex("""\bProviderHandle\("""),
+            Regex("""\bCryptoObject\("""),
+            Regex("""\b(?:class|object|interface|data class)\s+\w*ProviderKatExecutor\b"""),
+            Regex("""\b(?:class|object|interface|data class)\s+\w*ProviderKATExecutor\b"""),
+            Regex("""\bProviderKatExecutor\s*\("""),
+            Regex("""\bProviderKATExecutor\s*\("""),
+            Regex("""\b(?:class|object|interface|data class)\s+\w*ProviderDispatcher\b"""),
+            Regex("""\bProviderDispatcher\s*\("""),
+            Regex("""\b(?:class|object|interface|data class)\s+\w*ProviderFactory\b"""),
+            Regex("""\bProviderFactory\s*\("""),
+            Regex("""\bProviderAdapter\b"""),
+            Regex("""\bselectableProvider\b"""),
+            Regex("""\bregisterProvider\("""),
+            Regex("""\bcreateProvider\("""),
+            Regex("""\bconstructProvider\("""),
+            Regex("""\bdispatchProviderOperation\("""),
+            Regex("""\bdispatchOperation\("""),
+            Regex("""VaultCryptoProviderSelectionRegistry\.select"""),
+            Regex("""\bproviderOperation\("""),
+            Regex("""\bvalidateKat\("""),
+            Regex("""\brunProviderKat\("""),
+            Regex("""\bexecuteProviderKat\("""),
+            Regex("""\bproviderSelfTest\("""),
+            Regex("""\bruntimeProviderCheck\("""),
+            Regex("""\bruntimeRandomnessCheck\("""),
+            Regex("""\brandomnessHealthCheck\("""),
+            Regex("""\bgenerateEntropy\("""),
+            Regex("""\bgenerateSalt\("""),
+            Regex("""\bgenerateNonce\("""),
+            Regex("""\bgenerateKey\("""),
+            Regex("""\bderiveKey\("""),
+            Regex("""\bcomputeHeaderCommitment\("""),
+            Regex("""\bverifyHeaderCommitment\("""),
+            Regex("""\bencryptRecord\("""),
+            Regex("""\bdecryptRecord\("""),
+            Regex("""\bwrapKey\("""),
+            Regex("""\bunwrapKey\("""),
+            Regex("""\bcreateVault\("""),
+            Regex("""\bcreateHeader\("""),
+            Regex("""\bcreateManifest\("""),
+            Regex("""\bcreateRecord\("""),
+            Regex("""\bcommitInitialPersistence\("""),
+            Regex("""\breadManifest\("""),
+            Regex("""\bwriteManifest\("""),
+            Regex("""\breadStorageIndex\("""),
+            Regex("""\bwriteStorageIndex\("""),
+            Regex("""\breadRecord\("""),
+            Regex("""\bwriteRecord\("""),
+            Regex("""\bcreateSession\("""),
+            Regex("""\bcreateActiveSession\("""),
+            Regex("""\bunlockVault\("""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bURL\("""),
+            Regex("""\bURI\("""),
+            Regex("""\bProcessBuilder\b"""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bLogger\b"""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\("""),
+            Regex("""providerKatExecutorAdded\s*=\s*true"""),
+            Regex("""providerKatExecutorExistsForNonDisabledProvider\s*=\s*true"""),
+            Regex("""providerKatExecutorReachableFromSelection\s*=\s*true"""),
+            Regex("""providerKatExecutorReachableFromRegistry\s*=\s*true"""),
+            Regex("""providerKatExecutorReachableFromFactory\s*=\s*true"""),
+            Regex("""providerKatExecutorReachableFromDispatch\s*=\s*true"""),
+            Regex("""providerKatExecutorCanInvokeSkeleton\s*=\s*true"""),
+            Regex("""providerKatExecutorCanInvokeCandidate\s*=\s*true"""),
+            Regex("""providerKatExecutorCanInvokeProviderRuntime\s*=\s*true"""),
+            Regex("""providerKatExecutorCanExposeProviderHandle\s*=\s*true"""),
+            Regex("""providerKatExecutorCanExposeCryptoObject\s*=\s*true"""),
+            Regex("""providerKatExecutorAcceptsByteMaterial\s*=\s*true"""),
+            Regex("""providerKatExecutorCanExecuteProviderOperations\s*=\s*true"""),
+            Regex("""providerKatExecutorCanUseRandomness\s*=\s*true"""),
+            Regex("""providerKatExecutorCanRunKdf\s*=\s*true"""),
+            Regex("""providerKatExecutorCanRunAead\s*=\s*true"""),
+            Regex("""providerKatExecutorCanComputeHeaderCommitment\s*=\s*true"""),
+            Regex("""providerKatExecutorCanEncryptRecords\s*=\s*true"""),
+            Regex("""providerKatExecutorCanDecryptRecords\s*=\s*true"""),
+            Regex("""providerKatExecutorCanWrapKeys\s*=\s*true"""),
+            Regex("""providerKatExecutorCanAuthorizeProviderSelection\s*=\s*true"""),
+            Regex("""providerKatExecutorCanAuthorizeProductionProviderSelectable\s*=\s*true"""),
+            Regex("""providerKatExecutorCanCreateVault\s*=\s*true"""),
+            Regex("""providerKatExecutorCanUnlockVault\s*=\s*true"""),
+            Regex("""providerKatExecutorCanPersistVault\s*=\s*true"""),
+            Regex("""providerKatExecutorCanEnableMainnet\s*=\s*true"""),
+            Regex("""providerOperationDispatcherAdded\s*=\s*true"""),
+            Regex("""providerFactoryAdded\s*=\s*true"""),
+            Regex("""providerFactoryExistsForNonDisabledProvider\s*=\s*true"""),
+            Regex("""providerRegistryContainsCandidate\s*=\s*true"""),
+            Regex("""providerRegistryContainsSkeleton\s*=\s*true"""),
+            Regex("""providerRegistryEnabled\s*=\s*true"""),
+            Regex("""providerRuntimeInstantiable\s*=\s*true"""),
+            Regex("""providerSelectable\s*=\s*true"""),
+            Regex("""productionProviderSelectable\s*=\s*true"""),
+            Regex("""providerOperationAuthorized\s*=\s*true"""),
+            Regex("""providerKatExecutionAvailable\s*=\s*true"""),
+            Regex("""runtimeRandomnessAvailable\s*=\s*true"""),
+            Regex("""kdfExecutionAvailable\s*=\s*true"""),
+            Regex("""aeadExecutionAvailable\s*=\s*true"""),
+            Regex("""hkdfHmacExecutionAvailable\s*=\s*true"""),
+            Regex("""headerCommitmentExecutionAvailable\s*=\s*true"""),
+            Regex("""recordCryptoExecutionAvailable\s*=\s*true"""),
+            Regex("""keyWrappingAvailable\s*=\s*true"""),
+            Regex("""vaultCreationAvailable\s*=\s*true"""),
+            Regex("""vaultUnlockAvailable\s*=\s*true"""),
+            Regex("""vaultPersistenceAvailable\s*=\s*true"""),
+            Regex("""mainnetAvailable\s*=\s*true"""),
+        )
+        val offenders = forbiddenPatterns
+            .filter { it.containsMatchIn(source) }
+            .map { it.pattern }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Provider KAT execution isolation boundary must not implement KAT executors/dispatchers/factories/providers, run KATs, register/select providers, use provider runtime, crypto, randomness, storage, platform, settings, BDK, network/process, logging, or readiness-success APIs: $offenders",
+        )
+    }
+
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/domain/onchain/BitcoinBackendAdapterModels.kt"),
@@ -6833,6 +7044,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderRegistryIsolationGuard.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderFactoryIsolationBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderOperationDispatchIsolationBoundary.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderKatExecutionIsolationBoundary.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCompatibilityPolicy.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/RuntimeRandomnessProviderChecks.kt"),
