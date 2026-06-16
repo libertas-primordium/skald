@@ -28,6 +28,8 @@ The non-selectable provider skeleton boundary is also evidence only. It models f
 
 The provider registry isolation guard is also evidence only. It models the current provider-selection registry as isolated to `DisabledVaultCryptoProvider` and records that non-selectable skeletons, candidate-packaging evidence, dependency/build evidence, interface-audit evidence, promotion-blocker evidence, authorization/readiness matrix evidence, provider-operation authorization evidence, runtime-randomness evidence, KDF-calibration evidence, secure-storage evidence, creation/unlock authorization evidence, warning-only evidence, user-consent evidence, test-only evidence, and release/mainnet evidence cannot become registry entries or provider-promotion authority. It does not add dependencies, implement a provider, add a factory, enable a non-disabled registry, instantiate provider code, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet.
 
+The provider factory isolation boundary is also evidence only. It models the current provider-factory surface as absent for non-disabled providers and records that no non-disabled provider factory or constructor is reachable from provider selection, registry isolation, non-selectable skeleton evidence, candidate-packaging evidence, dependency/build evidence, interface-audit evidence, promotion-blocker evidence, authorization/readiness matrix evidence, warning-only evidence, user-consent evidence, test-only evidence, or release/mainnet evidence. It does not add dependencies, implement a provider, add a provider factory, enable a non-disabled registry, instantiate provider code, expose provider handles or crypto objects, accept byte material, run provider operations or KATs, run randomness checks, run KDF/HKDF/HMAC/AEAD, make any provider selectable, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, or enable mainnet. Future factory introduction requires an explicit later branch and review.
+
 ## Source Location
 
 Production-safe provider-selection models and registry:
@@ -42,6 +44,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderInterfaceContractAudit.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1NonSelectableProviderSkeletonBoundary.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderRegistryIsolationGuard.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderFactoryIsolationBoundary.kt
 ```
 
 Disabled provider boundary:
@@ -120,6 +123,7 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderSelec
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderInterfaceContractAuditTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultNonSelectableProviderSkeletonBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderRegistryIsolationGuardTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderFactoryIsolationBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/RuntimeRandomnessProviderPolicyTest.kt
 ```
 
@@ -153,6 +157,14 @@ The guard covers the active provider-selection registry, disabled provider selec
 It rejects risks where the registry would reference the skeleton or candidate families, treat evidence as registry entries, reference a test-only provider from production selection, set `productionProviderSelectable=true`, set `providerSelectable=true`, contain a non-disabled provider id, create provider instances, expose provider handles or crypto objects, import platform crypto APIs, call provider operations, run KATs, reach randomness/KDF/AEAD/HKDF/HMAC, enable vault creation/unlock/persistence, or enable mainnet.
 
 The guard has no provider instance, factory, registry object, handle, crypto object, byte material, path/root value, storage identifier, or secret-bearing input/output. Its diagnostics are limited to policy ids, registry topic names, risk names, required-property names, blocker classes, and redacted tokens.
+
+## Provider Factory Isolation Boundary
+
+`SkaldVaultV1ProviderFactoryIsolationPolicy` is a still-disabled, model-only boundary for the absent non-disabled provider-factory surface. It proves that current selection, registry, skeleton, candidate, dependency/build, interface-audit, promotion-blocker, authorization/readiness matrix, provider-operation, runtime-randomness, KDF, secure-storage, creation/unlock, warning-only, user-consent, test-only, and release/mainnet evidence cannot construct, expose, return, register, or select a provider runtime object.
+
+The boundary covers active factory surface, disabled construction surface, non-disabled provider construction exclusion, skeleton and candidate construction exclusion, dependency/build construction exclusion, packaging/audit/promotion/matrix construction exclusion, registry construction exclusion, provider-operation/randomness/KDF/secure-storage/creation/unlock construction exclusion, test-only factory evidence exclusion, warning-only and user-consent exclusion, and release/mainnet future-review requirements.
+
+It rejects risks where a factory would create non-disabled, skeleton, or candidate providers; treat evidence models as construction authority; accept provider handles, crypto objects, byte material, or platform crypto APIs; import Tink/Bouncy/JCA APIs; call randomness, KATs, provider operations, KDF/AEAD/HKDF/HMAC, key wrapping, vault creation/unlock/persistence, or mainnet paths. It has no provider instance, factory object, registry object, handle, crypto object, byte material, path/root value, storage identifier, or secret-bearing input/output. Its diagnostics are limited to policy ids, factory topic names, risk names, required-property names, blocker classes, and redacted tokens.
 
 ## Evidence Model
 
