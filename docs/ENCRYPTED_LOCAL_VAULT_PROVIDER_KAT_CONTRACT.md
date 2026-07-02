@@ -34,6 +34,8 @@ This branch also adds a still-disabled integrated provider KAT harness in produc
 
 `SkaldVaultV1ProviderTestOnlyExecutableKatScopeDecisionPolicy` now exists as a still-disabled model-only scope decision for any future test-only executable provider KAT branch. It defines future source-set, operation, and material limits, permits a future test-only path only in principle, and keeps current KAT execution, production KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, and mainnet blocked. The detailed scope decision is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md).
 
+`SkaldVaultV1TestOnlyProviderKatExecutorContractPolicy` now exists as a still-disabled non-executable contract for any future test-only provider KAT executor. It defines allowed future label/reference inputs, forbidden input classes, future test-only operation categories, forbidden production operations, source-set constraints, redacted result policy, and authorization limits. It does not implement an executor, expose a runnable executor interface, authorize KAT execution now, authorize production provider selection, set `productionProviderSelectable=true`, enable vault lifecycle/persistence, enable production sync, or enable mainnet. The detailed contract is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md).
+
 Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The detailed v1 vault container, manifest, storage, stale-record, atomicity, crash-recovery, secure-storage boundary, and rollback-limitation contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). The selection registry treats dependency-level KATs, test-only provider KATs, randomized AEAD building-block tests, in-memory container/manifest/stale-record building-block tests, model-only storage contracts, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
 
 This is still-disabled integration and policy scaffolding only. It does not implement provider selectability, provider-selectable vault creation, production unlock, key generation, runtime random vault material generation, Tink keyset creation or storage, raw key material persistence, file-backed vault container read/write, manifest file/storage read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
@@ -74,6 +76,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatDecisionGate.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatPrerequisiteAudit.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderTestOnlyExecutableKatScopeDecision.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorContract.kt
 ```
 
 Common tests:
@@ -85,6 +88,7 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderKatEx
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatDecisionGateTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatPrerequisiteAuditTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderTestOnlyExecutableKatScopeDecisionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorContractTest.kt
 ```
 
 Test-only provider harnesses:
