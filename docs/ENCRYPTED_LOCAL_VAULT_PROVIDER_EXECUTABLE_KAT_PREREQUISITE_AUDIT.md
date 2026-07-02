@@ -113,6 +113,8 @@ A future branch may propose a test-only executable provider-level KAT path only 
 
 Even if such a future test-only executable KAT path exists, it still would not authorize production provider selection, `productionProviderSelectable=true`, vault creation, vault unlock, vault persistence, production sync, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet. Those require separate later production acceptance, storage readiness, lifecycle, release, and mainnet reviews.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md) records the still-disabled scope decision for that possible later test-only branch. It defines future source-set, operation, and material limits, but it does not implement a KAT executor and does not authorize current KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, or mainnet.
+
 ## Non-Goals
 
 This audit does not implement:
