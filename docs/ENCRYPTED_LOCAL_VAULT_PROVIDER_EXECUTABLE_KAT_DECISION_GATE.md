@@ -185,18 +185,23 @@ The decision gate exposes only policy ids, evidence class names, blocker labels,
 
 It must not accept or emit raw material, provider handles, crypto objects, diagnostic payloads, filesystem paths, backend handles, raw key material, raw nonces, ciphertext, plaintext, passphrases, salts, storage handles, platform crypto objects, or file paths.
 
+## Prerequisite Audit
+
+[`ENCRYPTED_LOCAL_VAULT_PROVIDER_EXECUTABLE_KAT_PREREQUISITE_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_EXECUTABLE_KAT_PREREQUISITE_AUDIT.md) records the still-disabled audit that maps this gate's prerequisites to current model, documentation, and test-only evidence. The audit is traceability evidence only: it does not authorize executable KAT introduction, provider selection, `productionProviderSelectable=true`, vault creation, vault unlock, vault persistence, production sync, or mainnet.
+
 ## Source And Tests
 
 Production model:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatDecisionGate.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatPrerequisiteAudit.kt
 ```
 
 Focused tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatDecisionGateTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatPrerequisiteAuditTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
-

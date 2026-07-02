@@ -30,6 +30,8 @@ This branch also adds a still-disabled integrated provider KAT harness in produc
 
 `SkaldVaultV1ProviderExecutableKatDecisionGatePolicy` now exists as a still-disabled model-only decision gate for future executable provider-level KAT work. It records the exact evidence that a later branch must satisfy before even a test-only executable provider KAT path may be proposed. It is not a KAT executor and does not implement a provider, factory, dispatcher, provider selection, provider operation execution, randomness, KDF/HKDF/HMAC/AEAD execution, vault creation/unlock/persistence, storage, production sync, or mainnet. The detailed gate is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_EXECUTABLE_KAT_DECISION_GATE.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_EXECUTABLE_KAT_DECISION_GATE.md).
 
+`SkaldVaultV1ProviderExecutableKatPrerequisiteAuditPolicy` now exists as a still-disabled model-only audit of the decision-gate prerequisites. It classifies current model, documentation, and test-only evidence without authorizing executable KAT introduction. It does not add a provider implementation, KAT executor, factory, dispatcher, provider operation execution, provider selection, `productionProviderSelectable=true`, vault creation/unlock/persistence, production sync, or mainnet. The detailed audit is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_EXECUTABLE_KAT_PREREQUISITE_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_EXECUTABLE_KAT_PREREQUISITE_AUDIT.md).
+
 Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The detailed v1 vault container, manifest, storage, stale-record, atomicity, crash-recovery, secure-storage boundary, and rollback-limitation contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). The selection registry treats dependency-level KATs, test-only provider KATs, randomized AEAD building-block tests, in-memory container/manifest/stale-record building-block tests, model-only storage contracts, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
 
 This is still-disabled integration and policy scaffolding only. It does not implement provider selectability, provider-selectable vault creation, production unlock, key generation, runtime random vault material generation, Tink keyset creation or storage, raw key material persistence, file-backed vault container read/write, manifest file/storage read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
@@ -68,6 +70,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryp
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderKatExecutionIsolationBoundary.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatDecisionGate.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatPrerequisiteAudit.kt
 ```
 
 Common tests:
@@ -77,6 +80,7 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProvide
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultCryptoProviderKatContractTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderKatExecutionIsolationBoundaryTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatDecisionGateTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatPrerequisiteAuditTest.kt
 ```
 
 Test-only provider harnesses:
