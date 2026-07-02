@@ -154,17 +154,23 @@ Vault persistence would still require encrypted vault storage implementation, st
 
 Mainnet would still require explicit user approval and release-hardening review.
 
+## Test-Only Executor Contract
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md) records the still-disabled non-executable contract that follows this scope decision. It defines the exact future input label/reference classes, forbidden input classes, future test-only operation categories, forbidden production operations, source-set contract, result redaction policy, and authorization limits a later executor branch must satisfy. It does not implement an executor, expose a runnable executor interface, authorize KAT execution now, authorize production provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, enable production sync, or enable mainnet.
+
 ## Source And Tests
 
 Production model:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderTestOnlyExecutableKatScopeDecision.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorContract.kt
 ```
 
 Focused tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderTestOnlyExecutableKatScopeDecisionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorContractTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```

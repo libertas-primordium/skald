@@ -115,6 +115,8 @@ Even if such a future test-only executable KAT path exists, it still would not a
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md) records the still-disabled scope decision for that possible later test-only branch. It defines future source-set, operation, and material limits, but it does not implement a KAT executor and does not authorize current KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, or mainnet.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md) records the still-disabled non-executable contract for any later test-only provider KAT executor. It defines future label/reference inputs, forbidden material classes, operation categories, source-set constraints, redacted result policy, and authorization limits, but it does not implement an executor, expose a runnable executor interface, authorize executable KAT introduction, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, or mainnet.
+
 ## Non-Goals
 
 This audit does not implement:

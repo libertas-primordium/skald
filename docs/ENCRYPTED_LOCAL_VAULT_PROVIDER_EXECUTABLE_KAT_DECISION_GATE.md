@@ -193,6 +193,10 @@ It must not accept or emit raw material, provider handles, crypto objects, diagn
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_KAT_SCOPE_DECISION.md) records the still-disabled scope decision for any later test-only executable provider KAT branch. It permits a future test-only path only in principle, defines future source-set and material limits, and keeps current KAT execution, production provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, and mainnet blocked.
 
+## Test-Only Executor Contract
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_CONTRACT.md) records the still-disabled non-executable contract for any future test-only provider KAT executor. It defines label/reference-only future inputs, forbidden material classes, future test-only operation categories, source-set constraints, redacted result policy, and authorization limits. It does not implement an executor, expose a runnable executor interface, authorize current KAT execution, authorize production provider selection, set `productionProviderSelectable=true`, enable vault lifecycle or persistence, enable production sync, or enable mainnet.
+
 ## Source And Tests
 
 Production model:
@@ -201,6 +205,7 @@ Production model:
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatDecisionGate.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderExecutableKatPrerequisiteAudit.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ProviderTestOnlyExecutableKatScopeDecision.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorContract.kt
 ```
 
 Focused tests:
@@ -209,5 +214,6 @@ Focused tests:
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatDecisionGateTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderExecutableKatPrerequisiteAuditTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderTestOnlyExecutableKatScopeDecisionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorContractTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
