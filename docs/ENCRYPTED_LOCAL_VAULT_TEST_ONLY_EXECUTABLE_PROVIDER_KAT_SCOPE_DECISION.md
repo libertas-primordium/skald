@@ -166,6 +166,10 @@ Mainnet would still require explicit user approval and release-hardening review.
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_READINESS_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_READINESS_GATE.md) records the still-disabled readiness gate that follows the vector catalog. It evaluates whether the prior decision, audit, scope, contract, and catalog evidence can authorize an executor implementation branch. It keeps executor implementation unauthorized now and does not expose a runnable executor interface, authorize KAT execution, authorize provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, enable production sync, or enable mainnet.
 
+## Test-Only Source-Set Confinement
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_SOURCE_SET_CONFINEMENT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_SOURCE_SET_CONFINEMENT.md) records the still-disabled source-set confinement boundary that follows the readiness gate. It defines production-forbidden, model-only, evidence-only, and future-review-required source-set categories, but current executor implementation remains unauthorized. It does not expose a runnable executor interface, authorize KAT execution, authorize provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, enable production sync, or enable mainnet.
+
 ## Source And Tests
 
 Production model:
@@ -175,6 +179,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorContract.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatVectorCatalog.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorReadinessGate.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatSourceSetConfinement.kt
 ```
 
 Focused tests:
@@ -184,5 +189,6 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultProviderTestO
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorContractTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatVectorCatalogTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorReadinessGateTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatSourceSetConfinementTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```

@@ -162,6 +162,10 @@ Even after a confined test-only executor exists, production provider selection w
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_READINESS_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_EXECUTOR_READINESS_GATE.md) records the still-disabled readiness gate that follows this catalog. It evaluates whether the prior decision, audit, scope, contract, and catalog evidence can authorize executor implementation. The current answer is no: executor implementation, runnable executor interfaces, KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, and mainnet remain blocked.
 
+## Test-Only Source-Set Confinement
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_SOURCE_SET_CONFINEMENT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_SOURCE_SET_CONFINEMENT.md) records the still-disabled source-set confinement boundary that follows the readiness gate. It keeps vector catalog evidence from becoming implementation approval, defines production-forbidden and future-review-required source-set categories, and keeps executor implementation, KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, and mainnet blocked.
+
 ## Source And Tests
 
 Production model:
@@ -169,6 +173,7 @@ Production model:
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatVectorCatalog.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorReadinessGate.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatSourceSetConfinement.kt
 ```
 
 Focused tests:
@@ -176,5 +181,6 @@ Focused tests:
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatVectorCatalogTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorReadinessGateTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatSourceSetConfinementTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```

@@ -126,6 +126,10 @@ A later branch would still be required before any actual test-only executor impl
 
 Even that future branch would not authorize production provider selection, `productionProviderSelectable=true`, vault lifecycle, vault persistence, production sync, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet. Those remain separate later production-readiness decisions.
 
+## Test-Only Source-Set Confinement
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_SOURCE_SET_CONFINEMENT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_KAT_SOURCE_SET_CONFINEMENT.md) records the still-disabled source-set confinement boundary that follows this readiness gate. It defines production-forbidden source sets, model-only common-test participation, evidence-only docs, future-review-required desktop and Android test source sets, and source guard requirements. The current answer remains no: executor implementation, runnable executor interfaces, KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, and mainnet remain blocked.
+
 ## Non-Goals
 
 This readiness gate does not add:
@@ -168,11 +172,13 @@ Production model:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorReadinessGate.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatSourceSetConfinement.kt
 ```
 
 Focused tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorReadinessGateTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatSourceSetConfinementTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
