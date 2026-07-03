@@ -44,6 +44,8 @@ This branch also adds a still-disabled integrated provider KAT harness in produc
 
 `SkaldVaultV1TestOnlyProviderIdentityDecisionPolicy` now exists as a still-disabled identity decision for any later test-only provider KAT executor branch. It models future test-only provider identity categories without implementing a provider, exposing an instantiable identity, exposing a registry-selectable identity, exposing an executor-targetable identity, authorizing KAT execution, authorizing production provider selection, setting `productionProviderSelectable=true`, enabling vault lifecycle/persistence, enabling production sync, or enabling mainnet. The detailed boundary is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md).
 
+`SkaldVaultV1TestOnlyProviderIdentityIsolationGuardPolicy` now exists as a still-disabled identity isolation guard for the modeled test-only identity categories. It keeps those categories label-only and absent from registry, factory, dispatcher, executor-target, vault-lifecycle, persistence, secure-storage, secure-metadata, production-sync, wallet-service, BDK, settings, UI, and mainnet paths. The detailed guard is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md).
+
 Provider selection is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). Runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md). The detailed v1 vault container, manifest, storage, stale-record, atomicity, crash-recovery, secure-storage boundary, and rollback-limitation contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). The selection registry treats dependency-level KATs, test-only provider KATs, randomized AEAD building-block tests, in-memory container/manifest/stale-record building-block tests, model-only storage contracts, and test-only runtime randomness probes as insufficient for production selection and returns only the disabled provider.
 
 This is still-disabled integration and policy scaffolding only. It does not implement provider selectability, provider-selectable vault creation, production unlock, key generation, runtime random vault material generation, Tink keyset creation or storage, raw key material persistence, file-backed vault container read/write, manifest file/storage read/write, passphrase/PIN/biometric unlock UI, secure secret storage success, secure metadata persistence success, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, Skald-operated infrastructure, or mainnet.
@@ -64,6 +66,7 @@ Runtime behavior remains fail-closed:
 - The test-only provider KAT executor readiness gate is modeled but cannot authorize executor implementation, add a runnable executor interface, authorize current KAT execution, authorize production provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, production sync, signing, broadcasting, or mainnet.
 - The test-only provider KAT source-set confinement boundary is modeled but cannot authorize executor implementation, add a runnable executor interface, authorize current KAT execution, authorize production provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, production sync, signing, broadcasting, or mainnet.
 - The test-only provider identity decision is modeled but cannot implement a provider, expose an instantiable identity, expose a registry-selectable identity, expose an executor-targetable identity, authorize current KAT execution, authorize production provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, production sync, signing, broadcasting, or mainnet.
+- The test-only provider identity isolation guard is modeled but cannot implement a provider, expose an instantiable identity, expose a registry-selectable identity, expose a factory/dispatcher/executor-target path, authorize current KAT execution, authorize production provider selection, set `productionProviderSelectable=true`, enable vault creation/unlock/persistence, production sync, signing, broadcasting, or mainnet.
 - Provider-level KAT requirements are modeled, test-only provider KATs execute in test source sets, and the still-disabled integrated harness executes the v1 deterministic and randomized AEAD provider-level KATs with fixed non-secret fixtures.
 - The still-disabled provider facade reports KAT/building-block evidence as metadata only; it does not make that evidence selectable.
 - The v1 provider-level KAT strategy is now explicit: deterministic vectors are required for passphrase, Argon2id, canonical header, HKDF, HMAC, and strict AAD; record AEAD is validated behaviorally because Tink chooses XChaCha20-Poly1305 nonces internally.
@@ -93,6 +96,7 @@ composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaul
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatExecutorReadinessGate.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatSourceSetConfinement.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityDecision.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityIsolationGuard.kt
 ```
 
 Common tests:
@@ -109,6 +113,7 @@ composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProvi
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatExecutorReadinessGateTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatSourceSetConfinementTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityDecisionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityIsolationGuardTest.kt
 ```
 
 Test-only provider harnesses:

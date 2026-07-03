@@ -138,6 +138,10 @@ Even that future branch would not authorize production provider selection, `prod
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md) records the still-disabled identity decision that follows this confinement boundary. It models future test-only provider identity categories and keeps every such identity unimplemented, non-instantiable, non-registry-selectable, non-factory-backed, non-dispatcher-backed, and non-executor-targetable. Source-set confinement evidence does not authorize provider implementation, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, or mainnet.
 
+## Test-Only Provider Identity Isolation Guard
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md) records the still-disabled isolation guard that follows the identity decision. It keeps modeled identity categories label-only and absent from registry, factory, dispatcher, executor target, vault lifecycle, persistence, secure-storage, secure-metadata, production-sync, wallet-service, BDK, settings, UI, and mainnet paths. Source-set confinement evidence and identity isolation evidence remain non-authorizing.
+
 ## Non-Goals
 
 This source-set confinement boundary does not add:
@@ -181,6 +185,7 @@ Production model:
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatSourceSetConfinement.kt
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityDecision.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityIsolationGuard.kt
 ```
 
 Focused tests:
@@ -188,5 +193,6 @@ Focused tests:
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatSourceSetConfinementTest.kt
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityDecisionTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityIsolationGuardTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
