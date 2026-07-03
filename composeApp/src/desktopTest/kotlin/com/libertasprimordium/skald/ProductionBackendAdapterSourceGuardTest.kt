@@ -220,6 +220,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGate.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationPromotionBlockers.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationSourceGuardCoverage.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -281,6 +282,38 @@ class ProductionBackendAdapterSourceGuardTest {
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Encrypted vault readiness must remain policy-only: $offenders")
+    }
+
+    @Test
+    fun identityImplementationModelBoundariesRemainCoveredBySourceGuard() {
+        val root = repositoryRoot()
+        val sourceGuard = File(
+            root,
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt",
+        )
+        val guardedFilesBlock = sourceGuard.readText()
+            .substringAfter("fun encryptedVaultReadinessModelsDoNotImplementCryptoOrStorage()")
+            .substringBefore("        val forbiddenPatterns")
+        val requiredGuardedPaths = listOf(
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityDecision.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityIsolationGuard.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespace.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentitySourceSetConfinement.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationDecision.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationPrerequisiteAudit.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationScopeDecision.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationContract.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGate.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationPromotionBlockers.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationSourceGuardCoverage.kt",
+        )
+        val missing = requiredGuardedPaths.filterNot { it in guardedFilesBlock }
+
+        assertTrue(
+            missing.isEmpty(),
+            "Identity implementation model boundaries must stay covered by the encrypted vault source guard: $missing",
+        )
     }
 
     @Test
