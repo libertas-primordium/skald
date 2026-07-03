@@ -22,6 +22,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SOURCE_GUARD_COVERAGE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SOURCE_GUARD_COVERAGE.md) records the separate still-disabled source-guard coverage boundary; prerequisite audit evidence, absence evidence, and guard coverage remain non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the separate still-disabled redaction boundary; prerequisite audit evidence, absence evidence, and safe-output evidence remain non-authorizing.
+
 ## Prerequisite Categories
 
 The audit models these categories: branch approval, prior evidence review, synthetic identity namespace, source-set placement, production source absence, runtime reachability absence, provider selection absence, registry absence, factory absence, dispatcher absence, executor target absence, provider KAT executor absence, provider operation absence, vault lifecycle absence, persistence absence, secure storage absence, secure metadata absence, backend client absence, BDK wallet state absence, settings codec absence, UI surface absence, signing and broadcasting absence, Tor and Nostr absence, public endpoint absence, mainnet absence, source guard coverage, redaction/leakage review, and future implementation review.

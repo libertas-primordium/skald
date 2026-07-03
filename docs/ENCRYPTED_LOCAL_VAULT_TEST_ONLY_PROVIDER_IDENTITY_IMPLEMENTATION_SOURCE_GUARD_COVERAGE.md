@@ -4,6 +4,8 @@ This document records still-disabled, model-only source-guard coverage evidence 
 
 The identity decision, identity isolation guard, synthetic namespace contract, source-set confinement boundary, implementation decision gate, prerequisite audit, scope decision, implementation contract, readiness gate, runtime linkage guard, promotion blockers, and source-guard coverage are separate boundaries. Earlier boundaries classify labels, keep them contained, constrain placement, block implementation approval, audit prerequisites, define future-review scope, record contract requirements, compose readiness evidence, prove runtime bridges are absent, and block promotion. Source-guard coverage separately records that those model-only boundaries are covered by guard/scanning evidence. Coverage evidence does not implement a provider identity and does not authorize provider selection.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the next separate still-disabled redaction boundary; source-guard coverage and safe-output evidence remain non-authorizing.
+
 Provider selection remains fail-closed to `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
 ## Modeled Boundaries
