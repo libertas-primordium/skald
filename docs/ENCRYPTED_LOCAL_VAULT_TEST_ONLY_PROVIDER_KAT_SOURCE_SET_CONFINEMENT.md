@@ -134,6 +134,10 @@ A later branch would still be required before any actual test-only executor impl
 
 Even that future branch would not authorize production provider selection, `productionProviderSelectable=true`, vault lifecycle, vault persistence, production sync, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet. Those remain separate later production-readiness decisions.
 
+## Test-Only Provider Identity Decision
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md) records the still-disabled identity decision that follows this confinement boundary. It models future test-only provider identity categories and keeps every such identity unimplemented, non-instantiable, non-registry-selectable, non-factory-backed, non-dispatcher-backed, and non-executor-targetable. Source-set confinement evidence does not authorize provider implementation, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, or mainnet.
+
 ## Non-Goals
 
 This source-set confinement boundary does not add:
@@ -176,11 +180,13 @@ Production model:
 
 ```text
 composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderKatSourceSetConfinement.kt
+composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityDecision.kt
 ```
 
 Focused tests:
 
 ```text
 composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderKatSourceSetConfinementTest.kt
+composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityDecisionTest.kt
 composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt
 ```
