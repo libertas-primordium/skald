@@ -6,6 +6,8 @@ It follows the test-only provider identity decision, identity isolation guard, a
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md) records the separate still-disabled future implementation decision gate; source-set placement evidence does not authorize implementation.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PREREQUISITE_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PREREQUISITE_AUDIT.md) records the separate still-disabled future implementation prerequisite audit; source-set placement evidence remains non-authorizing.
+
 ## Current State
 
 This branch does not implement a provider identity. It does not expose an instantiable identity, registry key, factory input, dispatcher input, executor target, KAT executor, provider operation, vault lifecycle hook, persistence path, secure storage success path, secure metadata success path, backend client, BDK wallet state, settings codec, UI entry point, signing path, broadcasting path, Tor transport, Nostr parsing path, public endpoint default, or mainnet authorization.

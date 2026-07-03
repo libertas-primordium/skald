@@ -10,6 +10,8 @@ The implementation decision is modeled and still disabled. Current outcomes are 
 
 This evidence does not implement a provider identity and does not authorize provider selection. Provider selection remains disabled-provider-only through `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PREREQUISITE_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PREREQUISITE_AUDIT.md) records the next separate still-disabled prerequisite audit boundary; this implementation decision evidence remains non-authorizing.
+
 ## Decision Gates
 
 Blocked current approval gates: `ExplicitFutureBranchApproval`, `SourceSetPlacementApproved`, `SyntheticSafeIdApproved`, `TestOnlyNamespaceApproved`, `NonProductionSourceSetPlacementApproved`, `RedactionAndLeakageReviewComplete`, `SourceGuardCoverageComplete`, and `FutureTestOnlyImplementationReviewComplete`.
