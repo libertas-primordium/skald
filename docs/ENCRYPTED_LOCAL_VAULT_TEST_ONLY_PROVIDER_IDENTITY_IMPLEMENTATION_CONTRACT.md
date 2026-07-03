@@ -10,6 +10,8 @@ The implementation contract is modeled and still disabled. Current outcomes are 
 
 This evidence does not implement a provider identity and does not authorize provider selection. Provider selection remains disabled-provider-only through `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_READINESS_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_READINESS_GATE.md) records the next separate still-disabled readiness boundary; contract evidence remains non-authorizing.
+
 ## Contract Sections
 
 The contract models these sections: `ModelOnlyContract`, `FutureReviewOnlyContract`, `IdentityLabelContract`, `SourceSetPlacementContract`, `ConstructionAbsenceContract`, `RuntimeReachabilityAbsenceContract`, `ProviderSelectionAbsenceContract`, `RegistryAbsenceContract`, `FactoryAbsenceContract`, `DispatcherAbsenceContract`, `ExecutorTargetAbsenceContract`, `ProviderKatExecutorAbsenceContract`, `ProviderOperationAbsenceContract`, `CryptoExecutionAbsenceContract`, `VaultLifecycleAbsenceContract`, `PersistenceAbsenceContract`, `SecureStorageAbsenceContract`, `SecureMetadataAbsenceContract`, `BackendClientAbsenceContract`, `BdkWalletStateAbsenceContract`, `SettingsCodecAbsenceContract`, `UiSurfaceAbsenceContract`, `SigningBroadcastingAbsenceContract`, `TorNostrAbsenceContract`, `PublicEndpointAbsenceContract`, `MainnetAbsenceContract`, `RedactionContract`, `SourceGuardContract`, and `FutureImplementationReviewContract`.
