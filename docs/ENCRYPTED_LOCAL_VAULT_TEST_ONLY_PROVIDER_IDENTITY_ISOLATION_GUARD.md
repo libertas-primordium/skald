@@ -17,6 +17,8 @@ The identity decision modeled future test-only provider identity categories. Thi
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SYNTHETIC_IDENTITY_NAMESPACE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SYNTHETIC_IDENTITY_NAMESPACE.md) records the separate still-disabled safe-label namespace contract that follows this isolation guard. It defines synthetic future-review labels only and does not expose an instantiable, registry-selectable, factory-reachable, dispatcher-reachable, or executor-targetable identity.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_SOURCE_SET_CONFINEMENT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_SOURCE_SET_CONFINEMENT.md) records the separate still-disabled placement boundary that keeps any future test-only provider identity implementation out of production source sets and runtime reachability paths.
+
 ## Current Decision
 
 The identity isolation guard is modeled.
