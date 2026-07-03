@@ -12,6 +12,8 @@ The identity decision, identity isolation guard, synthetic namespace contract, s
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the separate still-disabled redaction boundary; readiness evidence and safe-output evidence remain non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md) records the final current model-only admission boundary; readiness evidence remains non-authorizing and does not admit implementation.
+
 ## Current State
 
 The readiness gate is modeled and still disabled. Current outcomes are `CurrentReadinessBlocked`, `ReadinessReviewRequired`, `DependenciesIncomplete`, `ContractNotSatisfiedForImplementation`, `ImplementationNotAuthorized`, `ProductionPromotionNotAuthorized`, and `MainnetNotAuthorized`.
