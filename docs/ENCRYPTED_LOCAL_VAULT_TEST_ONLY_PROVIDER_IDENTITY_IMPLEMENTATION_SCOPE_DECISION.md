@@ -10,6 +10,8 @@ The scope decision is modeled and still disabled. Current outcomes are `CurrentS
 
 This evidence does not implement a provider identity and does not authorize provider selection. Provider selection remains disabled-provider-only through `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_CONTRACT.md) records the next separate still-disabled contract boundary; scope decision evidence remains non-authorizing.
+
 ## Scope Categories
 
 The scope decision models these categories: model-only scope, future test-only identity scope, source-set placement scope, synthetic namespace scope, non-runtime evidence scope, production-forbidden scope, runtime reachability forbidden scope, provider selection forbidden scope, registry/factory/dispatcher forbidden scope, executor-target forbidden scope, provider KAT executor forbidden scope, provider operation forbidden scope, vault lifecycle forbidden scope, persistence forbidden scope, secure storage forbidden scope, secure metadata forbidden scope, backend client forbidden scope, BDK wallet state forbidden scope, settings codec forbidden scope, UI surface forbidden scope, signing/broadcasting forbidden scope, Tor/Nostr forbidden scope, public endpoint forbidden scope, and mainnet forbidden scope.
