@@ -34,6 +34,8 @@ The source-set confinement boundary defines where a future test-only executor ma
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; current identity evidence cannot promote into implementation, provider selection, production identity, or mainnet.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SOURCE_GUARD_COVERAGE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SOURCE_GUARD_COVERAGE.md) records the separate still-disabled source-guard coverage boundary; current identity evidence and guard coverage remain non-authorizing.
+
 ## Current Decision
 
 The current branch only models provider identity categories. It does not implement a provider.

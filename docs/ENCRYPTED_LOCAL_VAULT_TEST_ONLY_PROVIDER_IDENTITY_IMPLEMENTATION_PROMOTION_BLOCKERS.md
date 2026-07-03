@@ -4,6 +4,8 @@ This document records the still-disabled, model-only Skald Vault v1 promotion bl
 
 The identity decision, identity isolation guard, synthetic namespace contract, source-set confinement boundary, implementation decision gate, prerequisite audit, scope decision, implementation contract, readiness gate, runtime linkage guard, and promotion blockers are separate boundaries. The earlier boundaries classify labels, keep them contained, constrain placement, block implementation approval, audit prerequisites, define future-review scope, record contract requirements, compose readiness evidence, and prove current runtime bridges are absent. These promotion blockers separately prove that none of that evidence can promote into production identity, provider selection, runtime reachability, vault persistence, production sync, public endpoints, or mainnet.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SOURCE_GUARD_COVERAGE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SOURCE_GUARD_COVERAGE.md) records the next separate still-disabled source-guard coverage boundary; promotion-blocker evidence and guard coverage remain non-authorizing.
+
 Current promotion blocker evidence does not implement a provider identity, does not instantiate a provider, and does not authorize provider selection. Provider selection remains fail-closed to `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
 ## Promotion Stages

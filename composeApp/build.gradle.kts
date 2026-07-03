@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -60,6 +61,26 @@ kotlin {
                 implementation(libs.androidx.test.ext.junit)
                 implementation(libs.androidx.test.runner)
             }
+        }
+    }
+}
+
+val packageDebJpackageTempDir = layout.buildDirectory.dir("compose/tmp/packageDeb-jpackage")
+
+tasks.withType<AbstractJPackageTask>().configureEach {
+    if (name == "packageDeb") {
+        freeArgs.addAll(
+            providers.provider {
+                listOf("--temp", packageDebJpackageTempDir.get().asFile.absolutePath)
+            },
+        )
+
+        doFirst {
+            val tempDir = packageDebJpackageTempDir.get().asFile
+            if (tempDir.exists()) {
+                tempDir.deleteRecursively()
+            }
+            tempDir.mkdirs()
         }
     }
 }
