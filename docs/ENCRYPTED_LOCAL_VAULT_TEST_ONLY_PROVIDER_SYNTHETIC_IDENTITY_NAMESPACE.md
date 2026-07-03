@@ -4,6 +4,8 @@ This document records the still-disabled, model-only namespace contract for futu
 
 The identity decision models future test-only provider identity categories. The identity isolation guard proves those categories remain label-only and unreachable from runtime paths. This namespace contract is a separate label-hygiene boundary: it defines the only synthetic prefix and family tokens that a later branch may use for candidate labels, and it rejects aliases that could be confused with production providers, dependency candidates, registry keys, factory inputs, dispatcher inputs, executor targets, endpoints, wallet descriptors, secret material, storage paths, BDK wallet state, signing or broadcasting paths, or mainnet authorization.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_SOURCE_SET_CONFINEMENT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_SOURCE_SET_CONFINEMENT.md) records the separate still-disabled placement boundary for where any future test-only provider identity implementation may and may not live.
+
 ## Current Status
 
 The namespace contract is modeled and still disabled.
