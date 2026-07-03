@@ -29,6 +29,8 @@ The identity decision modeled future test-only provider identity categories. Thi
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_READINESS_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_READINESS_GATE.md) records the separate still-disabled future implementation readiness gate; current isolation evidence remains non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; current isolation evidence remains disconnected from runtime provider surfaces.
+
 ## Current Decision
 
 The identity isolation guard is modeled.

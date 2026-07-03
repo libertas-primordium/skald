@@ -4,6 +4,8 @@ This document records the still-disabled, model-only Skald Vault v1 readiness ga
 
 The identity decision, identity isolation guard, synthetic namespace contract, source-set confinement boundary, implementation decision gate, prerequisite audit, scope decision, implementation contract, and readiness gate are separate boundaries. The identity decision classifies future categories. The isolation guard keeps them label-only and unreachable. The namespace contract constrains safe labels. The source-set confinement boundary constrains placement. The implementation decision gate says implementation is not authorized now. The prerequisite audit records incomplete prerequisites. The scope decision records future-review-only allowed scope and forbidden current scope. The implementation contract records future-review-only requirements. This readiness gate composes those prior boundaries and still reaches a blocked, non-authorizing decision.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the next separate still-disabled runtime containment boundary; readiness evidence remains non-authorizing.
+
 ## Current State
 
 The readiness gate is modeled and still disabled. Current outcomes are `CurrentReadinessBlocked`, `ReadinessReviewRequired`, `DependenciesIncomplete`, `ContractNotSatisfiedForImplementation`, `ImplementationNotAuthorized`, `ProductionPromotionNotAuthorized`, and `MainnetNotAuthorized`.
