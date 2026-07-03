@@ -18,6 +18,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; prerequisite audit evidence remains disconnected from runtime provider surfaces.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; prerequisite audit evidence cannot promote into implementation, provider selection, production identity, or mainnet.
+
 ## Prerequisite Categories
 
 The audit models these categories: branch approval, prior evidence review, synthetic identity namespace, source-set placement, production source absence, runtime reachability absence, provider selection absence, registry absence, factory absence, dispatcher absence, executor target absence, provider KAT executor absence, provider operation absence, vault lifecycle absence, persistence absence, secure storage absence, secure metadata absence, backend client absence, BDK wallet state absence, settings codec absence, UI surface absence, signing and broadcasting absence, Tor and Nostr absence, public endpoint absence, mainnet absence, source guard coverage, redaction/leakage review, and future implementation review.

@@ -16,6 +16,8 @@ It follows the test-only provider identity decision, identity isolation guard, a
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; source-set placement evidence remains disconnected from runtime provider surfaces.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; source-set placement evidence cannot promote into implementation, provider selection, production identity, or mainnet.
+
 ## Current State
 
 This branch does not implement a provider identity. It does not expose an instantiable identity, registry key, factory input, dispatcher input, executor target, KAT executor, provider operation, vault lifecycle hook, persistence path, secure storage success path, secure metadata success path, backend client, BDK wallet state, settings codec, UI entry point, signing path, broadcasting path, Tor transport, Nostr parsing path, public endpoint default, or mainnet authorization.
