@@ -8,6 +8,8 @@ The identity decision models future test-only provider identity categories. The 
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md) records the separate still-disabled future implementation decision gate; namespace labels and syntax acceptance do not authorize implementation.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PREREQUISITE_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PREREQUISITE_AUDIT.md) records the separate still-disabled future implementation prerequisite audit; namespace evidence remains non-authorizing.
+
 ## Current Status
 
 The namespace contract is modeled and still disabled.
