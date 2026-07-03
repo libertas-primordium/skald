@@ -16,6 +16,8 @@ The source-set confinement boundary defines where a future test-only executor ma
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md) records the still-disabled isolation guard that follows this identity decision. It keeps the modeled identity categories label-only and unreachable from registry, factory, dispatcher, executor-target, vault-lifecycle, persistence, secure-storage, secure-metadata, production-sync, wallet-service, BDK, settings, UI, and mainnet paths.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SYNTHETIC_IDENTITY_NAMESPACE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SYNTHETIC_IDENTITY_NAMESPACE.md) records a separate still-disabled namespace contract for future safe synthetic identity labels. It is label hygiene only and does not implement or authorize any provider identity.
+
 ## Current Decision
 
 The current branch only models provider identity categories. It does not implement a provider.
