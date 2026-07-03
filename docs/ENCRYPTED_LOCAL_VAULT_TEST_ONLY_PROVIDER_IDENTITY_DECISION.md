@@ -20,6 +20,8 @@ The source-set confinement boundary defines where a future test-only executor ma
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_SOURCE_SET_CONFINEMENT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_SOURCE_SET_CONFINEMENT.md) records a separate still-disabled placement boundary for where any future test-only provider identity implementation may and may not live.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md) records the separate still-disabled future implementation decision gate; current identity evidence does not authorize implementation.
+
 ## Current Decision
 
 The current branch only models provider identity categories. It does not implement a provider.

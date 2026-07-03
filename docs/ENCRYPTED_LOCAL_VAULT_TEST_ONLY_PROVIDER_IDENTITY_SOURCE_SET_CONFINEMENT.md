@@ -4,6 +4,8 @@ This document records the still-disabled, model-only Skald Vault v1 source-set c
 
 It follows the test-only provider identity decision, identity isolation guard, and synthetic identity namespace contract, but it is a separate boundary. The decision boundary classifies future identity categories, the isolation guard proves those labels cannot bridge into runtime surfaces, the namespace contract constrains safe labels, and this boundary constrains where implementation code may and may not be placed.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_DECISION.md) records the separate still-disabled future implementation decision gate; source-set placement evidence does not authorize implementation.
+
 ## Current State
 
 This branch does not implement a provider identity. It does not expose an instantiable identity, registry key, factory input, dispatcher input, executor target, KAT executor, provider operation, vault lifecycle hook, persistence path, secure storage success path, secure metadata success path, backend client, BDK wallet state, settings codec, UI entry point, signing path, broadcasting path, Tor transport, Nostr parsing path, public endpoint default, or mainnet authorization.
