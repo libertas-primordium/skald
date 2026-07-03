@@ -37,6 +37,8 @@ The identity decision modeled future test-only provider identity categories. Thi
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the separate still-disabled redaction boundary; current isolation evidence and safe-output evidence remain non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md) records the final current model-only admission boundary; current isolation evidence remains non-authorizing and does not admit implementation.
+
 ## Current Decision
 
 The identity isolation guard is modeled.

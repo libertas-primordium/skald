@@ -8,6 +8,8 @@ The identity decision, identity isolation guard, synthetic namespace contract, s
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the separate still-disabled redaction boundary; promotion-blocker evidence and safe-output evidence remain non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md) records the final current model-only admission boundary; promotion-blocker evidence remains non-authorizing and does not admit implementation.
+
 Current promotion blocker evidence does not implement a provider identity, does not instantiate a provider, and does not authorize provider selection. Provider selection remains fail-closed to `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
 ## Promotion Stages

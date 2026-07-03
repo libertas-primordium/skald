@@ -26,6 +26,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the separate still-disabled redaction boundary; implementation decision evidence and safe-output evidence remain non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md) records the final current model-only admission boundary; implementation decision evidence remains non-authorizing and does not admit implementation.
+
 ## Decision Gates
 
 Blocked current approval gates: `ExplicitFutureBranchApproval`, `SourceSetPlacementApproved`, `SyntheticSafeIdApproved`, `TestOnlyNamespaceApproved`, `NonProductionSourceSetPlacementApproved`, `RedactionAndLeakageReviewComplete`, `SourceGuardCoverageComplete`, and `FutureTestOnlyImplementationReviewComplete`.

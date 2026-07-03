@@ -20,6 +20,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_REDACTION_GUARD.md) records the separate still-disabled redaction boundary; contract evidence and safe-output evidence remain non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md) records the final current model-only admission boundary; contract evidence remains non-authorizing and does not admit implementation.
+
 ## Contract Sections
 
 The contract models these sections: `ModelOnlyContract`, `FutureReviewOnlyContract`, `IdentityLabelContract`, `SourceSetPlacementContract`, `ConstructionAbsenceContract`, `RuntimeReachabilityAbsenceContract`, `ProviderSelectionAbsenceContract`, `RegistryAbsenceContract`, `FactoryAbsenceContract`, `DispatcherAbsenceContract`, `ExecutorTargetAbsenceContract`, `ProviderKatExecutorAbsenceContract`, `ProviderOperationAbsenceContract`, `CryptoExecutionAbsenceContract`, `VaultLifecycleAbsenceContract`, `PersistenceAbsenceContract`, `SecureStorageAbsenceContract`, `SecureMetadataAbsenceContract`, `BackendClientAbsenceContract`, `BdkWalletStateAbsenceContract`, `SettingsCodecAbsenceContract`, `UiSurfaceAbsenceContract`, `SigningBroadcastingAbsenceContract`, `TorNostrAbsenceContract`, `PublicEndpointAbsenceContract`, `MainnetAbsenceContract`, `RedactionContract`, `SourceGuardContract`, and `FutureImplementationReviewContract`.
