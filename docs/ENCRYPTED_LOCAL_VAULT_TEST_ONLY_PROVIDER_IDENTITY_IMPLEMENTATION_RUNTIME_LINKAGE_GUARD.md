@@ -4,6 +4,8 @@ This document records the still-disabled, model-only runtime linkage guard for a
 
 The identity decision, identity isolation guard, synthetic namespace contract, source-set confinement boundary, implementation decision gate, prerequisite audit, scope decision, implementation contract, readiness gate, and runtime linkage guard are separate boundaries. The earlier boundaries classify labels, contain them, constrain placement, block implementation approval, audit prerequisites, define future-review scope, record contract requirements, and compose readiness evidence. This guard separately models runtime disconnection from production surfaces. None of those evidence layers authorizes implementation or provider selection.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the next separate still-disabled promotion containment boundary; runtime-linkage evidence cannot promote into implementation, provider selection, production identity, or mainnet.
+
 Current runtime linkage guard evidence does not implement a provider identity, does not instantiate a provider, and does not authorize provider selection. Provider selection remains fail-closed to the disabled provider only, and `productionProviderSelectable` remains false.
 
 ## Runtime Surfaces

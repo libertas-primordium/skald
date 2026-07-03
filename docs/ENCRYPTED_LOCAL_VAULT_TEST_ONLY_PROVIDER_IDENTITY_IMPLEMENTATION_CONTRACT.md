@@ -14,6 +14,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; contract evidence remains disconnected from runtime provider surfaces.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; contract evidence cannot promote into implementation, provider selection, production identity, or mainnet.
+
 ## Contract Sections
 
 The contract models these sections: `ModelOnlyContract`, `FutureReviewOnlyContract`, `IdentityLabelContract`, `SourceSetPlacementContract`, `ConstructionAbsenceContract`, `RuntimeReachabilityAbsenceContract`, `ProviderSelectionAbsenceContract`, `RegistryAbsenceContract`, `FactoryAbsenceContract`, `DispatcherAbsenceContract`, `ExecutorTargetAbsenceContract`, `ProviderKatExecutorAbsenceContract`, `ProviderOperationAbsenceContract`, `CryptoExecutionAbsenceContract`, `VaultLifecycleAbsenceContract`, `PersistenceAbsenceContract`, `SecureStorageAbsenceContract`, `SecureMetadataAbsenceContract`, `BackendClientAbsenceContract`, `BdkWalletStateAbsenceContract`, `SettingsCodecAbsenceContract`, `UiSurfaceAbsenceContract`, `SigningBroadcastingAbsenceContract`, `TorNostrAbsenceContract`, `PublicEndpointAbsenceContract`, `MainnetAbsenceContract`, `RedactionContract`, `SourceGuardContract`, and `FutureImplementationReviewContract`.

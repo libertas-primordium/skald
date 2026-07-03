@@ -16,6 +16,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; scope decision evidence remains disconnected from runtime provider surfaces.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; scope decision evidence and allowed future scope cannot promote into implementation, provider selection, production identity, or mainnet.
+
 ## Scope Categories
 
 The scope decision models these categories: model-only scope, future test-only identity scope, source-set placement scope, synthetic namespace scope, non-runtime evidence scope, production-forbidden scope, runtime reachability forbidden scope, provider selection forbidden scope, registry/factory/dispatcher forbidden scope, executor-target forbidden scope, provider KAT executor forbidden scope, provider operation forbidden scope, vault lifecycle forbidden scope, persistence forbidden scope, secure storage forbidden scope, secure metadata forbidden scope, backend client forbidden scope, BDK wallet state forbidden scope, settings codec forbidden scope, UI surface forbidden scope, signing/broadcasting forbidden scope, Tor/Nostr forbidden scope, public endpoint forbidden scope, and mainnet forbidden scope.

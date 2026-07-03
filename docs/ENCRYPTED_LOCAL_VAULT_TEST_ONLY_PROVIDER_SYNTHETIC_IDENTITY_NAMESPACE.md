@@ -18,6 +18,8 @@ The identity decision models future test-only provider identity categories. The 
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; namespace evidence remains disconnected from runtime provider surfaces.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; namespace evidence and safe-label syntax cannot promote into implementation, provider selection, production identity, or mainnet.
+
 ## Current Status
 
 The namespace contract is modeled and still disabled.

@@ -20,6 +20,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_RUNTIME_LINKAGE_GUARD.md) records the separate still-disabled runtime containment boundary; this implementation decision evidence remains disconnected from runtime provider surfaces.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PROMOTION_BLOCKERS.md) records the separate still-disabled promotion containment boundary; this implementation decision evidence cannot promote into implementation, provider selection, production identity, or mainnet.
+
 ## Decision Gates
 
 Blocked current approval gates: `ExplicitFutureBranchApproval`, `SourceSetPlacementApproved`, `SyntheticSafeIdApproved`, `TestOnlyNamespaceApproved`, `NonProductionSourceSetPlacementApproved`, `RedactionAndLeakageReviewComplete`, `SourceGuardCoverageComplete`, and `FutureTestOnlyImplementationReviewComplete`.

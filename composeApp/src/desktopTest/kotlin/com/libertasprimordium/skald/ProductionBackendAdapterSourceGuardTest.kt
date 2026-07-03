@@ -219,6 +219,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationContract.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGate.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationPromotionBlockers.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
