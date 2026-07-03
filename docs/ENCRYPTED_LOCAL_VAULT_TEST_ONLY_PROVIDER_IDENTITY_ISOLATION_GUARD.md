@@ -15,6 +15,8 @@ It follows the previous KAT gating work:
 
 The identity decision modeled future test-only provider identity categories. This isolation guard proves those modeled categories remain label-only and cannot leak into provider registry, factory, dispatcher, executor-target, vault lifecycle, persistence, secure storage, secure metadata, production sync, wallet services, BDK paths, settings codecs, app UI, or mainnet paths.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SYNTHETIC_IDENTITY_NAMESPACE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SYNTHETIC_IDENTITY_NAMESPACE.md) records the separate still-disabled safe-label namespace contract that follows this isolation guard. It defines synthetic future-review labels only and does not expose an instantiable, registry-selectable, factory-reachable, dispatcher-reachable, or executor-targetable identity.
+
 ## Current Decision
 
 The identity isolation guard is modeled.
