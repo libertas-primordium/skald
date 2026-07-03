@@ -8,6 +8,8 @@ The identity decision, identity isolation guard, synthetic namespace contract, s
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_ADMISSION_GATE.md) records the final current model-only admission boundary; source-guard coverage remains non-authorizing and does not admit implementation.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PLAN.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PLAN.md) records the next non-executable planning boundary; source-guard coverage remains non-authorizing.
+
 Provider selection remains fail-closed to `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
 
 ## Modeled Boundaries
