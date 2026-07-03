@@ -179,6 +179,10 @@ Vault persistence would still require encrypted vault storage implementation, st
 
 Mainnet would still require explicit user approval and release-hardening review.
 
+## Related Test-Only Identity Isolation
+
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md) records the still-disabled identity isolation guard that follows the test-only KAT scope, contract, vector catalog, readiness, source-set confinement, and identity decision boundaries. It keeps modeled test-only provider identity categories label-only and absent from registry, factory, dispatcher, executor-target, vault-lifecycle, persistence, secure-storage, secure-metadata, production-sync, wallet-service, BDK, settings, UI, and mainnet paths. It does not implement or select a provider and does not authorize current KAT execution, provider selection, `productionProviderSelectable=true`, vault lifecycle, persistence, production sync, or mainnet.
+
 ## Redaction
 
 The decision gate exposes only policy ids, evidence class names, blocker labels, statuses, enums, booleans, and redacted-safe identifiers.

@@ -125,6 +125,8 @@ Even if such a future test-only executable KAT path exists, it still would not a
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DECISION.md) records the still-disabled provider identity decision that follows source-set confinement. It models future test-only provider identity categories, but it does not implement a provider, expose an instantiable identity, expose a registry-selectable identity, expose an executor-targetable identity, authorize provider selection, set `productionProviderSelectable=true`, enable vault lifecycle/persistence, enable production sync, or enable mainnet.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md) records the still-disabled identity isolation guard that follows the identity decision. It keeps modeled identities label-only and absent from registry, factory, dispatcher, executor-target, vault-lifecycle, persistence, secure-storage, secure-metadata, production-sync, wallet-service, BDK, settings, UI, and mainnet paths. It does not implement a provider, expose an instantiable identity, expose a selectable identity, expose an executor-targetable identity, authorize executable KAT introduction, authorize provider selection, set `productionProviderSelectable=true`, enable vault lifecycle/persistence, enable production sync, or enable mainnet.
+
 ## Non-Goals
 
 This audit does not implement:

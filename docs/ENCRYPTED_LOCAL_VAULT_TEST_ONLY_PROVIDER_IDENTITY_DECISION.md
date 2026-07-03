@@ -14,6 +14,8 @@ It follows the existing chain of Skald Vault KAT boundaries:
 
 The source-set confinement boundary defines where a future test-only executor may and may not live. This identity decision defines what kind of provider identity such a future executor may reference in principle, without implementing any provider and without making any provider selectable.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_ISOLATION_GUARD.md) records the still-disabled isolation guard that follows this identity decision. It keeps the modeled identity categories label-only and unreachable from registry, factory, dispatcher, executor-target, vault-lifecycle, persistence, secure-storage, secure-metadata, production-sync, wallet-service, BDK, settings, UI, and mainnet paths.
+
 ## Current Decision
 
 The current branch only models provider identity categories. It does not implement a provider.
@@ -150,6 +152,12 @@ Identity decision evidence cannot authorize:
 
 User consent cannot promote a modeled identity. Warning-only evidence cannot promote a modeled identity. Test-only evidence cannot promote a production identity.
 
+## Identity Isolation Guard
+
+The identity isolation guard is the next still-disabled model-only boundary after this decision. It does not add a provider, provider constructor, registry entry, factory route, dispatcher route, executor target, vault lifecycle dependency, persistence dependency, secure-storage dependency, secure-metadata dependency, production-sync dependency, wallet-service dependency, BDK adapter path, settings state, UI state, or mainnet path.
+
+Identity decision evidence and identity isolation evidence remain non-authorizing. They cannot authorize provider selection, `productionProviderSelectable=true`, vault creation, vault unlock, vault persistence, secure storage success, secure metadata success, production sync, signing, broadcasting, or mainnet.
+
 ## Future Branch Requirement
 
 A later branch would be required before any actual test-only provider identity implementation is introduced. That branch would need an explicit test-only identity implementation decision, source-set placement review, synthetic safe provider ID review, non-registry-selectable proof, non-factory proof, non-dispatcher proof, executor target prohibition review, provider selection non-authorization review, vault lifecycle non-authorization review, production sync non-authorization review, and mainnet non-authorization review.
@@ -161,10 +169,12 @@ Even after a future test-only identity exists, its existence cannot by itself au
 Model source:
 
 - `composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityDecision.kt`
+- `composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityIsolationGuard.kt`
 
 Focused tests:
 
 - `composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityDecisionTest.kt`
+- `composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/VaultTestOnlyProviderIdentityIsolationGuardTest.kt`
 
 Source guards:
 
