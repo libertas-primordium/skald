@@ -14,6 +14,8 @@ This evidence does not implement a provider identity and does not authorize prov
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SCOPE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_SCOPE_DECISION.md) records the separate still-disabled future implementation scope boundary; this implementation decision evidence remains non-authorizing.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_CONTRACT.md) records the separate still-disabled future implementation contract; this implementation decision evidence remains non-authorizing.
+
 ## Decision Gates
 
 Blocked current approval gates: `ExplicitFutureBranchApproval`, `SourceSetPlacementApproved`, `SyntheticSafeIdApproved`, `TestOnlyNamespaceApproved`, `NonProductionSourceSetPlacementApproved`, `RedactionAndLeakageReviewComplete`, `SourceGuardCoverageComplete`, and `FutureTestOnlyImplementationReviewComplete`.
