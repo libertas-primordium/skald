@@ -4,7 +4,7 @@ This document records the seventeenth slower test-only implementation step for t
 
 The executable metadata KAT validation report exists only under `composeApp/src/commonTest`. It validates exactly one executable metadata KAT result and confirms `metadataKatEvaluated=true`, `metadataKatPassed=true`, one metadata case binding, and the expected synthetic identifiers.
 
-The commonTest-only executable metadata KAT suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md).
+The commonTest-only executable metadata KAT suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md), and the provider-operation KAT admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_KAT_ADMISSION.md).
 
 `metadataKatPassed=true` and `allValidationChecksPassed=true` are commonTest-only validation evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, provider/crypto KAT execution authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
 
