@@ -2,6 +2,8 @@
 
 This document records the eleventh slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only public non-secret test-only provider identity KAT vector fixture.
 
+The twelfth slower test-only step validates this single public non-secret text-only metadata vector row in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_VALIDATION.md).
+
 The public vector fixture exists only under `composeApp/src/commonTest`. It is built from the existing inert marker, KAT fixture catalog, KAT fixture validation report, and public-vector admission gate.
 
 The fixture contains exactly one public, non-secret, text-only metadata row. It validates inert identity metadata only.
