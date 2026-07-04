@@ -6,6 +6,8 @@ The fourth slower test-only step validates this profile with the inert marker an
 
 The fifth slower test-only step proves negative runtime/provider reachability for the marker, inventory, and profile chain in a commonTest-only report documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_REACHABILITY_PROOF.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_REACHABILITY_PROOF.md).
 
+The sixth slower test-only step summarizes all marker-chain capabilities as blocked in a commonTest-only inert capability matrix documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_CAPABILITY_MATRIX.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_CAPABILITY_MATRIX.md).
+
 The profile exists only under `composeApp/src/commonTest`. It is built from the inert inventory and exactly one inert marker, and it is not commonMain, AndroidMain, DesktopMain, UI, settings, backend, BDK, storage, or provider-selection runtime code.
 
 ## Profile
