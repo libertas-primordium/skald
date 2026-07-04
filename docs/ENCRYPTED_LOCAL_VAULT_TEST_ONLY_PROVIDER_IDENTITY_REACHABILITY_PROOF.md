@@ -8,6 +8,8 @@ The seventh slower test-only step defines commonTest-only KAT fixture metadata s
 
 The eighth slower test-only step records one metadata-only KAT fixture catalog row for this reachability chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md).
 
+The ninth slower test-only step validates that catalog as metadata-only evidence in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_VALIDATION.md).
+
 The reachability proof exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, and inert validation report. It does not add markers, inventory entries, profiles, provider implementations, runtime hooks, or authorization surfaces.
 
 Negative reachability proof passing is not production authorization, provider-selection authorization, registry/factory/dispatcher/executor authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
