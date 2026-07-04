@@ -10,7 +10,7 @@ The thirteenth slower test-only step binds the validated row into one non-execut
 
 The fourteenth slower test-only step validates that non-executable KAT case binding in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md).
 
-The fifteenth slower test-only step models executable KAT admission criteria without adding executable behavior in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md).
+The fifteenth slower test-only step models executable KAT admission criteria without adding executable behavior in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md). The sixteenth slower test-only step adds a commonTest-only executable metadata KAT in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT.md).
 
 ## Validation Inputs
 

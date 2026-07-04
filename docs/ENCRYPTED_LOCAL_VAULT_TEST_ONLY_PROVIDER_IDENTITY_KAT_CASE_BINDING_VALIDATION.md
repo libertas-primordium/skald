@@ -2,7 +2,7 @@
 
 This document records the fourteenth slower test-only implementation step for the Skald Vault v1 provider identity KAT chain: a commonTest-only non-executable test-only provider identity KAT case-binding validation report.
 
-The fifteenth slower test-only step models executable KAT admission criteria without adding executable behavior in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md).
+The fifteenth slower test-only step models executable KAT admission criteria without adding executable behavior in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md). The sixteenth slower test-only step adds a commonTest-only executable metadata KAT in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT.md).
 
 The KAT case-binding validation report exists only under `composeApp/src/commonTest`. It is built from the existing KAT case binding, public vector validation report, public vector fixture, KAT fixture validation report, KAT fixture catalog, KAT fixture scope, marker, and capability matrix.
 
