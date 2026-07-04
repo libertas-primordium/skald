@@ -8,6 +8,8 @@ The sixth slower test-only step summarizes all marker-chain capabilities as bloc
 
 The seventh slower test-only step defines commonTest-only KAT fixture metadata scope for this validation chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md).
 
+The eighth slower test-only step records one metadata-only KAT fixture catalog row for this validation chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md).
+
 The validation report exists only under `composeApp/src/commonTest`. It is built from the existing inert marker, inert inventory, and inert profile; it does not add new markers, inventory entries, profiles, provider implementations, or runtime reachability.
 
 Validation passing is not production authorization, provider-selection authorization, registry/factory/dispatcher/executor authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, or mainnet authorization.

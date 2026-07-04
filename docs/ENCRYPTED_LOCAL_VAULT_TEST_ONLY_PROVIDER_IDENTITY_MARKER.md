@@ -14,6 +14,8 @@ The sixth slower test-only step summarizes all marker-chain capabilities as bloc
 
 The seventh slower test-only step defines commonTest-only KAT fixture metadata scope for this marker chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md).
 
+The eighth slower test-only step records one metadata-only KAT fixture catalog row for this marker chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md).
+
 The marker exists only under `composeApp/src/commonTest`. It is not commonMain, AndroidMain, DesktopMain, UI, settings, backend, BDK, storage, or provider-selection runtime code.
 
 ## Marker
