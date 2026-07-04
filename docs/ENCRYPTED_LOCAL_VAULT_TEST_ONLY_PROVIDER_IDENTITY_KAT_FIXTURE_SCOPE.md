@@ -2,6 +2,8 @@
 
 This document records the seventh slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only inert test-only provider identity KAT fixture scope.
 
+The eighth slower test-only step records one metadata-only KAT fixture catalog row for this scoped chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_CATALOG.md).
+
 The KAT fixture scope exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, validation report, reachability proof, and capability matrix. It defines metadata scope for future KAT fixture names, purposes, placement, redaction, and source-guard evidence only.
 
 KAT fixture scope passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
