@@ -4,6 +4,8 @@ This document records the thirteenth slower test-only implementation step for th
 
 The fourteenth slower test-only step validates this single non-executable metadata case binding in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md).
 
+The fifteenth slower test-only step models executable KAT admission criteria without adding executable behavior in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md).
+
 The KAT case binding exists only under `composeApp/src/commonTest`. It is built from the existing inert marker, KAT fixture catalog, KAT fixture validation report, public-vector admission gate, public vector fixture, public vector validation report, and capability matrix.
 
 The binding contains exactly one non-executable metadata case. It references the existing marker safe ID, fixture ID, and public vector ID through safe wrappers, and uses the case ID listed below. KAT case binding passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
