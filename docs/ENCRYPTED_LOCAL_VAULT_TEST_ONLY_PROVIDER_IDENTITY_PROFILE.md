@@ -2,6 +2,8 @@
 
 This document records the third slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only inert test-only provider identity profile.
 
+The fourth slower test-only step validates this profile with the inert marker and inventory in a commonTest-only report documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROFILE_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROFILE_VALIDATION.md).
+
 The profile exists only under `composeApp/src/commonTest`. It is built from the inert inventory and exactly one inert marker, and it is not commonMain, AndroidMain, DesktopMain, UI, settings, backend, BDK, storage, or provider-selection runtime code.
 
 ## Profile
