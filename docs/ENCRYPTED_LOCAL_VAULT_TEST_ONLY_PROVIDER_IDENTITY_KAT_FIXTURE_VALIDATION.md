@@ -4,6 +4,8 @@ This document records the ninth slower test-only implementation step for the Ska
 
 The tenth slower test-only step models public-vector admission without admitting current vector material in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_ADMISSION.md).
 
+The eleventh slower test-only step adds one commonTest-only public non-secret text-only metadata vector row in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_FIXTURE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_FIXTURE.md).
+
 The KAT fixture validation report exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, profile validation report, reachability proof, capability matrix, KAT fixture scope, and KAT fixture catalog. It validates that the catalog contains exactly one metadata-only fixture row.
 
 KAT fixture validation passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
