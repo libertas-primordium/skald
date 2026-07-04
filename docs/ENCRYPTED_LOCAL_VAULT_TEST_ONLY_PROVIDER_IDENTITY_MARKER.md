@@ -2,6 +2,8 @@
 
 This document records the first slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only inert test-only provider identity marker.
 
+The second slower test-only step wraps this marker in a commonTest-only inert inventory documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md).
+
 The marker exists only under `composeApp/src/commonTest`. It is not commonMain, AndroidMain, DesktopMain, UI, settings, backend, BDK, storage, or provider-selection runtime code.
 
 ## Marker
