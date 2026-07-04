@@ -4,6 +4,8 @@ This document records the fifth slower test-only implementation step for the Ska
 
 The sixth slower test-only step summarizes all marker-chain capabilities as blocked in a commonTest-only inert capability matrix documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_CAPABILITY_MATRIX.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_CAPABILITY_MATRIX.md).
 
+The seventh slower test-only step defines commonTest-only KAT fixture metadata scope for this reachability chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md).
+
 The reachability proof exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, and inert validation report. It does not add markers, inventory entries, profiles, provider implementations, runtime hooks, or authorization surfaces.
 
 Negative reachability proof passing is not production authorization, provider-selection authorization, registry/factory/dispatcher/executor authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
