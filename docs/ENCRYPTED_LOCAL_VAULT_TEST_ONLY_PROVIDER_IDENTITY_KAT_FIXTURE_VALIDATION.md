@@ -6,6 +6,8 @@ The tenth slower test-only step models public-vector admission without admitting
 
 The eleventh slower test-only step adds one commonTest-only public non-secret text-only metadata vector row in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_FIXTURE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_FIXTURE.md).
 
+The twelfth slower test-only step validates that public vector row in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_VALIDATION.md).
+
 The KAT fixture validation report exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, profile validation report, reachability proof, capability matrix, KAT fixture scope, and KAT fixture catalog. It validates that the catalog contains exactly one metadata-only fixture row.
 
 KAT fixture validation passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
