@@ -2,7 +2,7 @@
 
 This document records still-disabled, non-executable implementation planning evidence for the Skald Vault v1 test-only provider identity implementation chain.
 
-This is the last fast planning pass before slower test-only implementation work. It defines the narrow future plan only; current plan evidence does not implement a provider identity, does not authorize provider selection, and does not admit current implementation. The first slower test-only implementation step has begun separately as an inert commonTest-only marker documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER.md).
+This is the last fast planning pass before slower test-only implementation work. It defines the narrow future plan only; current plan evidence does not implement a provider identity, does not authorize provider selection, and does not admit current implementation. The first slower test-only implementation step has begun separately as an inert commonTest-only marker documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER.md), followed by an inert commonTest-only inventory documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md).
 
 The identity decision, identity isolation guard, synthetic namespace contract, source-set confinement boundary, implementation decision gate, prerequisite audit, scope decision, implementation contract, readiness gate, runtime linkage guard, promotion blockers, source-guard coverage, redaction guard, admission gate, and implementation plan are separate boundaries. Earlier boundaries classify, contain, constrain, deny authorization, compose readiness, prove runtime bridges absent, block promotion, record source-guard coverage, require safe output, and deny admission. This plan separately records what a future approved test-only branch may attempt and what remains forbidden now.
 
@@ -12,7 +12,7 @@ Provider selection remains fail-closed to `DisabledVaultCryptoProvider`, and `pr
 
 Future-only planned artifacts are `TestOnlyProviderIdentityClassOrObject`, `TestOnlySyntheticSafeIdConstant`, `TestOnlyNamespaceMarker`, `TestOnlySourceSetPlacement`, `TestOnlyNonProductionFixture`, `TestOnlyNoProviderSelectionProof`, `TestOnlyNoRegistryProof`, `TestOnlyNoFactoryProof`, `TestOnlyNoDispatcherProof`, `TestOnlyNoExecutorTargetProof`, `TestOnlyNoKatExecutorProof`, `TestOnlyNoProviderOperationProof`, `TestOnlyNoCryptoExecutionProof`, `TestOnlyNoVaultPersistenceProof`, `TestOnlyNoProductionSyncProof`, `TestOnlyNoSigningBroadcastingProof`, `TestOnlyNoMainnetProof`, `TestOnlyRedactionProof`, and `TestOnlySourceGuardProof`.
 
-Except for the separate commonTest-only inert marker, these artifacts remain future-only and do not authorize current implementation.
+Except for the separate commonTest-only inert marker and inert inventory, these artifacts remain future-only and do not authorize current implementation.
 
 ## Forbidden Current Artifacts
 
