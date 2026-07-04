@@ -4,7 +4,7 @@ This document records the sixteenth slower test-only implementation step for the
 
 The executable metadata KAT exists only under `composeApp/src/commonTest`. It evaluates exactly one non-executable metadata KAT case binding by comparing the existing marker safe ID, fixture ID, public vector ID, case ID, case-binding validation report, and executable KAT admission criteria against their expected metadata values.
 
-The commonTest-only executable metadata KAT validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_VALIDATION.md).
+The commonTest-only executable metadata KAT validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_VALIDATION.md), and the suite report that composes the result and validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md).
 
 This pass evaluates no crypto, no provider operations, no KDF/HKDF/HMAC/AEAD, no randomness, no key generation, no keyset storage, no vault lifecycle, no persistence, no sync, no settings, no UI, no backend, no BDK, no signing/broadcasting, no public endpoint, and no mainnet behavior.
 
