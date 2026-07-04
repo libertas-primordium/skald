@@ -2,6 +2,8 @@
 
 This document records the sixth slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only inert test-only provider identity capability matrix.
 
+The seventh slower test-only step defines commonTest-only KAT fixture metadata scope for this capability chain in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_SCOPE.md).
+
 The capability matrix exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, validation report, and reachability proof. It does not add markers, inventory entries, profiles, provider implementations, runtime hooks, selectors, registries, factories, dispatchers, executors, or authorization surfaces.
 
 `everyCapabilityBlocked=true` is commonTest evidence only. It is not production authorization, provider-selection authorization, registry/factory/dispatcher/executor authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
