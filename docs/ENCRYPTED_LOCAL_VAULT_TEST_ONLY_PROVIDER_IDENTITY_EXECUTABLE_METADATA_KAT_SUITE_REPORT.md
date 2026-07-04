@@ -4,6 +4,8 @@ This document records the eighteenth slower test-only implementation step for th
 
 The executable metadata KAT suite report exists only under `composeApp/src/commonTest`. It composes exactly one executable metadata KAT result and one executable metadata KAT validation report, confirms the single metadata-only executable KAT passed, and keeps that result non-authorizing.
 
+The commonTest-only provider-operation KAT admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_KAT_ADMISSION.md).
+
 `metadataKatPassed=true`, `allValidationChecksPassed=true`, and `suitePassed=true` are commonTest-only report evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, provider/crypto KAT execution authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
 
 No KAT executor or KAT runner is added. No provider operations, crypto operations, KDF/HKDF/HMAC/AEAD, randomness, key generation, keyset storage, vault lifecycle, persistence, sync, signing/broadcasting, UI, backend, BDK, public endpoint, or mainnet behavior is executed.

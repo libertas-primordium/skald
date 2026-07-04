@@ -6,6 +6,8 @@ The admission gate exists only under `composeApp/src/commonTest`. It is built fr
 
 This pass does not add an executable KAT. It does not add a KAT runner or KAT executor. A future executable KAT requires a separate explicitly approved branch. The next approved step adds a commonTest-only executable metadata KAT in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT.md) without adding crypto, provider-operation, vault, runner, or executor behavior; its validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_VALIDATION.md), and its suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_METADATA_KAT_SUITE_REPORT.md).
 
+The later provider-operation KAT admission pass is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_KAT_ADMISSION.md); it remains non-executable and does not add provider-operation execution.
+
 Executable KAT admission passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
 
 ## Admission Inputs
