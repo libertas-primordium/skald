@@ -4,6 +4,8 @@ This document records the twenty-first slower test-only implementation step for 
 
 The validation report exists only under `composeApp/src/commonTest`. It validates exactly one provider-operation metadata KAT result and confirms `metadataKatSuitePassed=true`, `providerOperationAdmissionModeled=true`, `providerOperationMetadataKatEvaluated=true`, `providerOperationMetadataKatPassed=true`, one provider-operation-shaped metadata case, and the expected synthetic identifiers.
 
+The commonTest-only provider-operation metadata KAT suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_SUITE_REPORT.md).
+
 This pass validates provider-operation shape only. It does not validate provider-operation execution. It does not validate crypto execution, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `providerOperationMetadataKatPassed=true` and `allValidationChecksPassed=true` are commonTest-only validation evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.

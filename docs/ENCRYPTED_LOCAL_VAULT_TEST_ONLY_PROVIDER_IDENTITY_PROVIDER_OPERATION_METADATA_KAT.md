@@ -4,7 +4,7 @@ This document records the twentieth slower test-only implementation step for the
 
 The provider-operation metadata KAT exists only under `composeApp/src/commonTest`. It evaluates deterministic IDs, labels, shape enums, counts, and Boolean evidence over the existing provider-operation KAT admission gate and executable metadata KAT suite report.
 
-The commonTest-only provider-operation metadata KAT validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_VALIDATION.md).
+The commonTest-only provider-operation metadata KAT validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_VALIDATION.md), and the provider-operation metadata KAT suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT_SUITE_REPORT.md).
 
 This pass does not execute provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
