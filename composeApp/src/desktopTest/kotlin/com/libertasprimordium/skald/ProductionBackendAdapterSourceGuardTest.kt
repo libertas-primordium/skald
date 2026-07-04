@@ -385,6 +385,37 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityProfileDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val runtimeRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityProfile",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+        )
+        val offenders = runtimeRoots
+            .filter { it.exists() }
+            .flatMap { runtimeRoot ->
+                runtimeRoot.walkTopDown()
+                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
+                    .toList()
+            }
+            .filter { file ->
+                val text = file.readText()
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest inert provider identity profile must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun disabledVaultCryptoProviderBoundaryDoesNotImportProvidersOrStorage() {
         val root = repositoryRoot()
         val files = listOf(
