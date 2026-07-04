@@ -6,6 +6,8 @@ The provider-operation KAT admission gate exists only under `composeApp/src/comm
 
 This pass does not add provider-operation execution. It does not add crypto execution, a KAT runner, or a KAT executor. A future provider-operation KAT requires a separate explicitly approved branch.
 
+The commonTest-only provider-operation-shaped metadata KAT is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_METADATA_KAT.md). That metadata KAT still does not execute provider operations.
+
 Provider-operation KAT admission passing is not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
 
 ## Admission Inputs
