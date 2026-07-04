@@ -2,6 +2,8 @@
 
 This document records the fourth slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only inert test-only provider identity profile validation report.
 
+The fifth slower test-only step proves negative runtime/provider reachability for this validation chain in a commonTest-only report documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_REACHABILITY_PROOF.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_REACHABILITY_PROOF.md).
+
 The validation report exists only under `composeApp/src/commonTest`. It is built from the existing inert marker, inert inventory, and inert profile; it does not add new markers, inventory entries, profiles, provider implementations, or runtime reachability.
 
 Validation passing is not production authorization, provider-selection authorization, registry/factory/dispatcher/executor authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, or mainnet authorization.
