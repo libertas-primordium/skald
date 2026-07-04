@@ -770,6 +770,40 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityExecutableKatAdmissionDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val runtimeRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityExecutableKatAdmission",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
+        )
+        val offenders = runtimeRoots
+            .filter { it.exists() }
+            .flatMap { runtimeRoot ->
+                runtimeRoot.walkTopDown()
+                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
+                    .toList()
+            }
+            .filter { file ->
+                val text = file.readText()
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest provider identity executable KAT admission gate must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun disabledVaultCryptoProviderBoundaryDoesNotImportProvidersOrStorage() {
         val root = repositoryRoot()
         val files = listOf(

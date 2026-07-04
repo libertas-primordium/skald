@@ -2,6 +2,8 @@
 
 This document records the fourteenth slower test-only implementation step for the Skald Vault v1 provider identity KAT chain: a commonTest-only non-executable test-only provider identity KAT case-binding validation report.
 
+The fifteenth slower test-only step models executable KAT admission criteria without adding executable behavior in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_KAT_ADMISSION.md).
+
 The KAT case-binding validation report exists only under `composeApp/src/commonTest`. It is built from the existing KAT case binding, public vector validation report, public vector fixture, KAT fixture validation report, KAT fixture catalog, KAT fixture scope, marker, and capability matrix.
 
 The report validates exactly one non-executable metadata case binding. The binding references the exact marker safe ID, fixture ID, vector ID, and case ID listed below. KAT case-binding validation passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
