@@ -6,6 +6,8 @@ The eighth slower test-only step records one metadata-only KAT fixture catalog r
 
 The ninth slower test-only step validates that catalog as metadata-only evidence in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_FIXTURE_VALIDATION.md).
 
+The tenth slower test-only step models public-vector admission without admitting current vector material in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_PUBLIC_VECTOR_ADMISSION.md).
+
 The KAT fixture scope exists only under `composeApp/src/commonTest`. It is built from the inert marker, inert inventory, inert profile, validation report, reachability proof, and capability matrix. It defines metadata scope for future KAT fixture names, purposes, placement, redaction, and source-guard evidence only.
 
 KAT fixture scope passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
