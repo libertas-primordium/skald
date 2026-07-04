@@ -8,6 +8,8 @@ The validation report confirms that the public vector fixture contains exactly o
 
 The thirteenth slower test-only step binds the validated row into one non-executable metadata KAT case in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING.md).
 
+The fourteenth slower test-only step validates that non-executable KAT case binding in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md).
+
 ## Validation Inputs
 
 - Marker safe ID: `skald-test-only-provider-identity-v1-deterministic-kat-inert-marker`

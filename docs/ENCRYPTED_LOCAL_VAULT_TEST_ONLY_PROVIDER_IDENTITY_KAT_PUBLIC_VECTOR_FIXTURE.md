@@ -6,6 +6,8 @@ The twelfth slower test-only step validates this single public non-secret text-o
 
 The thirteenth slower test-only step binds this row into one non-executable metadata KAT case in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING.md).
 
+The fourteenth slower test-only step validates that non-executable KAT case binding in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING_VALIDATION.md).
+
 The public vector fixture exists only under `composeApp/src/commonTest`. It is built from the existing inert marker, KAT fixture catalog, KAT fixture validation report, and public-vector admission gate.
 
 The fixture contains exactly one public, non-secret, text-only metadata row. It validates inert identity metadata only.
