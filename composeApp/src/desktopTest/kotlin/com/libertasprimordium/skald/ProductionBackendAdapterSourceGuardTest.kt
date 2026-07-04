@@ -946,6 +946,45 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityProviderOperationMetadataKatDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val runtimeRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKat",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationKatAdmission",
+            "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatValidation",
+            "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKat",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
+        )
+        val offenders = runtimeRoots
+            .filter { it.exists() }
+            .flatMap { runtimeRoot ->
+                runtimeRoot.walkTopDown()
+                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
+                    .toList()
+            }
+            .filter { file ->
+                val text = file.readText()
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest provider identity provider-operation metadata KAT must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun disabledVaultCryptoProviderBoundaryDoesNotImportProvidersOrStorage() {
         val root = repositoryRoot()
         val files = listOf(
