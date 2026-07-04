@@ -6,6 +6,8 @@ The public vector validation report exists only under `composeApp/src/commonTest
 
 The validation report confirms that the public vector fixture contains exactly one public, non-secret, text-only metadata row. Validation passing is not production authorization, provider-selection authorization, KAT execution authorization, crypto authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, public-endpoint authorization, or mainnet authorization.
 
+The thirteenth slower test-only step binds the validated row into one non-executable metadata KAT case in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_KAT_CASE_BINDING.md).
+
 ## Validation Inputs
 
 - Marker safe ID: `skald-test-only-provider-identity-v1-deterministic-kat-inert-marker`
