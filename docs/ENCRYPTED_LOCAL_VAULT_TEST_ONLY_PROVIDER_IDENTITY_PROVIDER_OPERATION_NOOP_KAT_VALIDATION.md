@@ -4,6 +4,8 @@ This document records the twenty-fifth slower test-only implementation step for 
 
 The validation report exists only under `composeApp/src/commonTest`. It validates exactly one no-op provider-operation KAT result, confirms one fixed synthetic no-op result, and checks the expected synthetic identifiers.
 
+The commonTest-only no-op provider-operation KAT suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_KAT_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_KAT_SUITE_REPORT.md). It reports only the fixed synthetic no-op result and does not report real provider-operation execution.
+
 The report validates only a fixed synthetic no-op result. It does not validate real provider-operation execution. It does not validate crypto execution, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `providerOperationNoopKatPassed=true`, `syntheticNoopResultPresent=true`, and `allValidationChecksPassed=true` are commonTest-only validation evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
