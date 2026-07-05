@@ -1229,6 +1229,47 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityProviderOperationNoopExecutionBoundaryDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val runtimeRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        )
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundary",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatValidation",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKat",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatAdmission",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-v1-inert-identity",
+        )
+        val offenders = runtimeRoots
+            .filter { it.exists() }
+            .flatMap { runtimeRoot ->
+                runtimeRoot.walkTopDown()
+                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
+                    .toList()
+            }
+            .filter { file ->
+                val text = file.readText()
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest provider identity no-op provider-operation execution boundary must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun disabledVaultCryptoProviderBoundaryDoesNotImportProvidersOrStorage() {
         val root = repositoryRoot()
         val files = listOf(
