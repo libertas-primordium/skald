@@ -4,6 +4,8 @@ This document records the twenty-fourth slower test-only implementation step for
 
 The no-op provider-operation KAT exists only under `composeApp/src/commonTest`. It reads the existing no-op provider-operation KAT admission gate, provider-operation metadata KAT suite report, provider-operation metadata KAT validation report, provider-operation metadata KAT result, provider-operation KAT admission gate, executable metadata KAT suite report, marker, and capability matrix.
 
+The commonTest-only no-op provider-operation KAT validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_KAT_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_KAT_VALIDATION.md). It validates only the fixed synthetic no-op result and does not validate real provider-operation execution.
+
 The only produced result is a fixed synthetic no-op result. `providerOperationNoopKatPassed=true` and `syntheticNoopResultPresent=true` are commonTest-only test evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
 
 This pass does not execute real provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
