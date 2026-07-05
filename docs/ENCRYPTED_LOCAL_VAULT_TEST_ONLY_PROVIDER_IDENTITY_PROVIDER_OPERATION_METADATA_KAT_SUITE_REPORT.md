@@ -4,6 +4,8 @@ This document records the twenty-second slower test-only implementation step for
 
 The provider-operation metadata KAT suite report exists only under `composeApp/src/commonTest`. It composes exactly one provider-operation metadata KAT result and one provider-operation metadata KAT validation report, confirms the single provider-operation-shaped metadata KAT passed, and keeps that result non-authorizing.
 
+The commonTest-only provider-operation no-op KAT admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_KAT_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_KAT_ADMISSION.md). That admission gate remains non-executable and does not add no-op provider-operation execution.
+
 This pass reports provider-operation shape only. It does not report provider-operation execution. It does not report crypto execution, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `providerOperationMetadataKatSuitePassed=true` is commonTest-only suite evidence. It is not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
