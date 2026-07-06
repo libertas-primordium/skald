@@ -4,6 +4,8 @@ This document records the thirtieth slower test-only implementation step for the
 
 The admission gate exists only under `composeApp/src/commonTest`. It models criteria for a future branch only. This pass does not create a synthetic trace, does not create trace payloads, and does not execute real provider operations.
 
+The commonTest-only synthetic provider-operation trace artifact is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE.md). It is payload-free metadata only and does not create trace payloads.
+
 The admission gate reads the existing no-op provider-operation execution-boundary suite report and upstream no-op KAT chain to preserve the current boundary: only reading and reporting the fixed synthetic no-op result is permitted. Real provider-operation execution, crypto execution, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, and mainnet behavior remain blocked. This pass does not add a KAT runner or KAT executor.
 
 `futureSyntheticTraceCriteriaModeled=true` is commonTest-only admission evidence. It is not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.

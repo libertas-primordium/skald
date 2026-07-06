@@ -6,6 +6,8 @@ The suite report exists only under `composeApp/src/commonTest`. It composes the 
 
 The commonTest-only synthetic provider-operation trace admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_ADMISSION.md). It remains admission-only and does not create a synthetic trace.
 
+The commonTest-only synthetic provider-operation trace artifact is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE.md). It is payload-free metadata only.
+
 This pass does not report real provider-operation execution. It does not report crypto execution, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `noopExecutionBoundarySuitePassed=true` is commonTest-only boundary suite evidence. It is not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
