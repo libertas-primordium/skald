@@ -4,6 +4,8 @@ This document records the thirty-first slower test-only implementation step for 
 
 The trace artifact exists only under `composeApp/src/commonTest`. It records the already validated fixed synthetic no-op provider-operation path as payload-free metadata only. The trace uses only safe labels, enum labels, integer counts, and Boolean evidence.
 
+The commonTest-only synthetic provider-operation trace validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_VALIDATION.md). It validates the existing payload-free trace artifact only and does not create a second trace or trace payloads.
+
 This pass creates no trace payloads. It does not execute real provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `syntheticTraceCreated=true` is commonTest-only payload-free trace evidence. It is not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
