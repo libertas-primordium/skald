@@ -10,6 +10,8 @@ The commonTest-only no-op provider-operation execution-boundary suite report is 
 
 The commonTest-only synthetic provider-operation trace admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_ADMISSION.md). It preserves the same synthetic no-op boundary and does not create a synthetic trace.
 
+The commonTest-only synthetic provider-operation trace artifact is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE.md). It is payload-free metadata only.
+
 This pass does not execute real provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `noopExecutionBoundaryModeled=true` and `syntheticNoopEvaluationPermitted=true` are commonTest-only boundary evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
