@@ -6,6 +6,8 @@ The suite report exists only under `composeApp/src/commonTest`. It composes the 
 
 The commonTest-only no-op provider-operation execution boundary is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY.md). It still permits only reading and reporting the fixed synthetic no-op result.
 
+The commonTest-only no-op provider-operation execution-boundary validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY_VALIDATION.md). It validates only the synthetic no-op boundary and does not validate real provider-operation execution.
+
 The report covers only a fixed synthetic no-op result. It does not report real provider-operation execution. It does not report crypto execution, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `providerOperationNoopKatSuitePassed=true` is commonTest-only suite evidence. It is not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.

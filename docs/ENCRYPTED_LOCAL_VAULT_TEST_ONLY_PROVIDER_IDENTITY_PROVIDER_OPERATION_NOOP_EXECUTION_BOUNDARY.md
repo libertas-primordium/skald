@@ -4,6 +4,8 @@ This document records the twenty-seventh slower test-only implementation step fo
 
 The boundary exists only under `composeApp/src/commonTest`. The only permitted evaluation is reading and reporting the existing fixed synthetic no-op result from the no-op provider-operation KAT suite report.
 
+The commonTest-only no-op provider-operation execution-boundary validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY_VALIDATION.md). It validates only this synthetic no-op boundary evidence.
+
 This pass does not execute real provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, public endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor.
 
 `noopExecutionBoundaryModeled=true` and `syntheticNoopEvaluationPermitted=true` are commonTest-only boundary evidence. They are not production authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
