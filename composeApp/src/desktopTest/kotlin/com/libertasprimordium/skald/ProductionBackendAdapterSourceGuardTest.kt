@@ -377,6 +377,34 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityMarkerSuiteReportDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityMarkerSuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityMarkerSuiteReportKind",
+            "currentProviderIdentityMarkerSuiteReport",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "markerSuiteReportPassed",
+            "markerValidationPassedIsValidationEvidenceOnly",
+            "markerCreatedIsInertMarkerEvidenceOnly",
+            "implementationMarkerPresentIsInertMarkerEvidenceOnly",
+            "MARKER_SUITE_REPORT_ONLY",
+            "NOT_AUTHORIZATION",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest inert provider identity marker suite report must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(
