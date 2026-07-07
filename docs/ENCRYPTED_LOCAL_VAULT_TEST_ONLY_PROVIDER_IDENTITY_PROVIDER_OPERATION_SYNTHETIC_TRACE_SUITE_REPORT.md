@@ -4,6 +4,8 @@ This document records the thirty-third slower test-only implementation step: a c
 
 The suite report exists only under `composeApp/src/commonTest`. It reads existing admission, trace, validation, and prior no-op execution-boundary suite evidence. It does not create a new trace, does not create trace payloads, and records only safe labels, enum labels, counts, and Boolean evidence.
 
+The commonTest-only synthetic provider-operation trace completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_COMPLETION_AUDIT.md). It reads existing admission, trace, validation, suite-report, and no-op execution-boundary suite evidence only and does not create a second trace or trace payloads.
+
 This pass does not execute real provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, production sync, settings, UI, backend, BDK, signing/broadcasting, endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor. It does not add a provider implementation, registry, factory, dispatcher, or executor reachability.
 
 `syntheticTraceSuitePassed=true` is commonTest-only suite evidence. It is not authorization for production, provider selection, provider operations, crypto, KAT runner usage, KAT executor usage, vault persistence, sync, signing/broadcasting, UI, endpoint use, or mainnet.

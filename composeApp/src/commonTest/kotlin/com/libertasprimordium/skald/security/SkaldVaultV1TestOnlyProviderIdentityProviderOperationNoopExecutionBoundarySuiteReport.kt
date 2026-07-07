@@ -119,7 +119,16 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundar
     private const val EXPECTED_PROVIDER_OPERATION_NOOP_EXECUTION_BOUNDARY_SUITE_REPORT_ID: String =
         "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity"
 
+    private val currentSuiteReport:
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport by lazy {
+            buildProviderOperationNoopExecutionBoundarySuiteReport()
+        }
+
     fun currentProviderOperationNoopExecutionBoundarySuiteReport():
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport =
+        currentSuiteReport
+
+    private fun buildProviderOperationNoopExecutionBoundarySuiteReport():
         SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport {
         val marker = SkaldVaultV1TestOnlyProviderIdentityMarkerPolicy.currentMarker()
         val capabilityMatrix =
