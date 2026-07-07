@@ -195,7 +195,16 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSu
 }
 
 object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReportPolicy {
+    private val currentSuiteReport:
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReport by lazy {
+            buildProviderOperationSyntheticTraceSuiteReport()
+        }
+
     fun currentProviderOperationSyntheticTraceSuiteReport():
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReport =
+        currentSuiteReport
+
+    private fun buildProviderOperationSyntheticTraceSuiteReport():
         SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReport {
         val admission =
             SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmissionPolicy

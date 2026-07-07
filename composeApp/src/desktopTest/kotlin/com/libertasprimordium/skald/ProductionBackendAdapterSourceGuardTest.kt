@@ -24,7 +24,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bServerSocket\("""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Production backend boundary must remain BDK/client/process free: $offenders")
@@ -33,7 +33,7 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun endpointPolicyDoesNotAcceptCredentialFixtureStringsOrPublicDefaults() {
         val root = repositoryRoot()
-        val combined = boundaryFiles(root).joinToString("\n") { it.readText() }
+        val combined = boundaryFiles(root).joinToString("\n") { sourceGuardText(it) }
         val forbiddenLiteralPatterns = listOf(
             Regex("""(?i)DEMO_VALUE_DO_NOT_USE"""),
             Regex("""(?i)password\s*="""),
@@ -76,7 +76,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val offenders = commonMain
             .walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .toList()
 
@@ -104,7 +104,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bServerSocket\("""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Disabled sync status UI must remain BDK/client/process free: $offenders")
@@ -136,7 +136,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\breadText\("""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Recovery/Privacy sync status files must remain BDK/client/process/persistence free: $offenders")
@@ -164,7 +164,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bjava\.io\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Secure metadata boundary must remain disabled and persistence/client free: $offenders")
@@ -281,7 +281,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bjava\.io\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Encrypted vault readiness must remain policy-only: $offenders")
@@ -294,7 +294,7 @@ class ProductionBackendAdapterSourceGuardTest {
             root,
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/ProductionBackendAdapterSourceGuardTest.kt",
         )
-        val guardedFilesBlock = sourceGuard.readText()
+        val guardedFilesBlock = sourceGuardText(sourceGuard)
             .substringAfter("fun encryptedVaultReadinessModelsDoNotImplementCryptoOrStorage()")
             .substringBefore("        val forbiddenPatterns")
         val requiredGuardedPaths = listOf(
@@ -325,24 +325,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityMarkerDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityMarker",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -356,24 +345,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityInventory",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -387,24 +365,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProfileDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProfile",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -418,24 +385,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProfileValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProfileValidation",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -449,24 +405,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityReachabilityProofDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityReachabilityProof",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -480,24 +425,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityCapabilityMatrixDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityCapabilityMatrix",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -511,24 +445,13 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatFixtureScopeDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatFixtureScope",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -542,25 +465,14 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatFixtureCatalogDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatFixtureCatalog",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
             "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -574,25 +486,14 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatFixtureValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatFixtureValidation",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
             "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -606,25 +507,14 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatPublicVectorAdmissionDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatPublicVectorAdmission",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
             "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -638,26 +528,15 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatPublicVectorFixtureDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatPublicVectorFixture",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
             "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -671,26 +550,15 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatPublicVectorValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatPublicVectorValidation",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
             "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -704,11 +572,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatCaseBindingDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatCaseBinding",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
@@ -716,15 +579,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -738,11 +595,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityKatCaseBindingValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityKatCaseBindingValidation",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
@@ -750,15 +602,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -772,11 +618,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityExecutableKatAdmissionDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityExecutableKatAdmission",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
@@ -784,15 +625,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -806,11 +641,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityExecutableMetadataKatDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKat",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
@@ -818,15 +648,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -840,11 +664,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityExecutableMetadataKatValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatValidation",
             "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKat",
@@ -853,15 +672,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -875,11 +688,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityExecutableMetadataKatSuiteReportDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReport",
             "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatValidation",
@@ -889,15 +697,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -911,11 +713,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationKatAdmissionDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationKatAdmission",
             "SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReport",
@@ -926,15 +723,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -948,11 +739,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationMetadataKatDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKat",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationKatAdmission",
@@ -965,15 +751,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -987,11 +767,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationMetadataKatValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatValidation",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKat",
@@ -1005,15 +780,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1027,11 +796,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationMetadataKatSuiteReportDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatSuiteReport",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatValidation",
@@ -1046,15 +810,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1068,11 +826,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopKatAdmissionDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatAdmission",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatSuiteReport",
@@ -1086,15 +839,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1108,11 +855,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopKatDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKat",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatAdmission",
@@ -1126,15 +868,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1148,11 +884,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopKatValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatValidation",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKat",
@@ -1167,15 +898,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1189,11 +914,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopKatSuiteReportDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteReport",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatValidation",
@@ -1209,15 +929,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1231,11 +945,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopExecutionBoundaryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundary",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteReport",
@@ -1250,15 +959,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1272,11 +975,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopExecutionBoundaryValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundaryValidation",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundary",
@@ -1292,15 +990,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1314,11 +1006,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReportDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundaryValidation",
@@ -1335,15 +1022,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1357,11 +1038,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationSyntheticTraceAdmissionDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmission",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport",
@@ -1377,15 +1053,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1399,11 +1069,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationSyntheticTraceDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmission",
@@ -1420,15 +1085,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1442,11 +1101,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationSyntheticTraceValidationDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidation",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace",
@@ -1467,15 +1121,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1489,11 +1137,6 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun testOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReportDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
-        val runtimeRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        )
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReport",
             "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidation",
@@ -1515,15 +1158,9 @@ class ProductionBackendAdapterSourceGuardTest {
             "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
             "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity",
         )
-        val offenders = runtimeRoots
-            .filter { it.exists() }
-            .flatMap { runtimeRoot ->
-                runtimeRoot.walkTopDown()
-                    .filter { file -> file.isFile && file.extension in setOf("kt", "kts") }
-                    .toList()
-            }
+        val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
-                val text = file.readText()
+                val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
@@ -1531,6 +1168,45 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "The commonTest provider identity synthetic provider-operation trace suite report must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
+    fun testOnlyProviderIdentityProviderOperationSyntheticTraceCompletionAuditDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceCompletionAudit",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidation",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmission",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundaryValidation",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundary",
+            "syntheticTraceCompletionAuditPassed",
+            "PAYLOAD_FREE_SYNTHETIC_TRACE_COMPLETION_AUDIT_COMMON_TEST_ONLY",
+            "PAYLOAD_FREE_SYNTHETIC_TRACE_COMPLETION_AUDIT",
+            "syntheticTraceSuitePassed",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest provider identity synthetic provider-operation trace completion audit must stay absent from production runtime roots: $offenders",
         )
     }
 
@@ -1600,7 +1276,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bjava\.io\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Disabled vault crypto provider boundary must stay provider/storage free: $offenders")
@@ -1656,7 +1332,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bLogger\b"""),
         )
         val offenders = forbiddenPatterns
-            .filter { it.containsMatchIn(file.readText()) }
+            .filter { it.containsMatchIn(sourceGuardText(file)) }
             .map { it.pattern }
 
         assertTrue(
@@ -1718,7 +1394,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bLogger\b"""),
         )
         val offenders = forbiddenPatterns
-            .filter { it.containsMatchIn(file.readText()) }
+            .filter { it.containsMatchIn(sourceGuardText(file)) }
             .map { it.pattern }
 
         assertTrue(
@@ -1797,7 +1473,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bStrongBoxUnavailableException\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Argon2id calibration policy must stay provider/storage free: $offenders")
@@ -1806,8 +1482,8 @@ class ProductionBackendAdapterSourceGuardTest {
     @Test
     fun vaultCryptoDependenciesArePinnedAndScopedToPlatformProbes() {
         val root = repositoryRoot()
-        val catalog = File(root, "gradle/libs.versions.toml").readText()
-        val build = File(root, "composeApp/build.gradle.kts").readText()
+        val catalog = sourceGuardText(File(root, "gradle/libs.versions.toml"))
+        val build = sourceGuardText(File(root, "composeApp/build.gradle.kts"))
         val commonMainBlock = build.substringAfter("val commonMain by getting")
             .substringBefore("val androidMain by getting")
 
@@ -1868,7 +1544,7 @@ class ProductionBackendAdapterSourceGuardTest {
             .filter { it.isFile && it.extension == "kt" }
             .filter { file ->
                 val relative = file.relativeTo(root).invariantSeparatorsPath
-                relative !in allowedFiles && cryptoImportPattern.containsMatchIn(file.readText())
+                relative !in allowedFiles && cryptoImportPattern.containsMatchIn(sourceGuardText(file))
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .toList()
@@ -1911,7 +1587,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative !in allowedFiles &&
-                            tinkAeadPatterns.any { it.containsMatchIn(file.readText()) }
+                            tinkAeadPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -1965,7 +1641,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bsetIsStrongBoxBacked\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(
@@ -2002,7 +1678,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bgetDeclared"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(
@@ -2046,7 +1722,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val offenders = commonMain
             .walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .toList()
 
@@ -2091,7 +1767,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative !in allowedFiles &&
-                            forbiddenPatterns.any { it.containsMatchIn(file.readText()) }
+                            forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2134,7 +1810,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative !in allowedFiles &&
-                            forbiddenPatterns.any { it.containsMatchIn(file.readText()) }
+                            forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2174,7 +1850,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative !in allowedFiles &&
-                            forbiddenPatterns.any { it.containsMatchIn(file.readText()) }
+                            forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2221,7 +1897,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bsetIsStrongBoxBacked\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(
@@ -2277,7 +1953,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bsetIsStrongBoxBacked\b"""),
         )
         val offenders = forbiddenPatterns
-            .filter { it.containsMatchIn(file.readText()) }
+            .filter { it.containsMatchIn(sourceGuardText(file)) }
             .map { it.pattern }
 
         assertTrue(
@@ -2346,7 +2022,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bsetIsStrongBoxBacked\b"""),
         )
         val offenders = forbiddenPatterns
-            .filter { it.containsMatchIn(file.readText()) }
+            .filter { it.containsMatchIn(sourceGuardText(file)) }
             .map { it.pattern }
 
         assertTrue(
@@ -2362,7 +2038,7 @@ class ProductionBackendAdapterSourceGuardTest {
             root,
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoProviderSelection.kt",
         )
-        val source = file.readText()
+        val source = sourceGuardText(file)
 
         assertFalse(source.contains("SkaldVaultV1StillDisabledProviderFacade"))
         assertFalse(source.contains("StillDisabledProviderFacade"))
@@ -2385,7 +2061,7 @@ class ProductionBackendAdapterSourceGuardTest {
             .filter { it.isFile && it.extension == "kt" }
             .filter { file ->
                 val relative = file.relativeTo(root).invariantSeparatorsPath
-                relative !in allowedFiles && importPattern.containsMatchIn(file.readText())
+                relative !in allowedFiles && importPattern.containsMatchIn(sourceGuardText(file))
             }
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .toList()
@@ -2410,7 +2086,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val offenders = securityRoot
             .walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .toList()
 
@@ -2484,7 +2160,7 @@ class ProductionBackendAdapterSourceGuardTest {
             .flatMap { sourceRoot ->
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
-                    .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+                    .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
             }
@@ -2623,7 +2299,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\bStrongBoxUnavailableException\b"""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(
@@ -2656,7 +2332,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedParserWriterFile &&
-                            parserWriterPatterns.any { it.containsMatchIn(file.readText()) }
+                            parserWriterPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2667,7 +2343,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Container parser/writer types must stay in the exact approved file: $misplacedParserWriter",
         )
 
-        val source = File(root, approvedParserWriterFile).readText()
+        val source = sourceGuardText(File(root, approvedParserWriterFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -2754,7 +2430,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedParserWriterFile &&
-                            parserWriterPatterns.any { it.containsMatchIn(file.readText()) }
+                            parserWriterPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2765,7 +2441,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Manifest parser/writer types must stay in the exact approved file: $misplacedParserWriter",
         )
 
-        val source = File(root, approvedParserWriterFile).readText()
+        val source = sourceGuardText(File(root, approvedParserWriterFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -2852,7 +2528,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedSimulatorFile &&
-                            simulatorPatterns.any { it.containsMatchIn(file.readText()) }
+                            simulatorPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2863,7 +2539,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "In-memory storage atomicity simulator types must stay in the exact approved test file: $misplacedSimulator",
         )
 
-        val source = File(root, approvedSimulatorFile).readText()
+        val source = sourceGuardText(File(root, approvedSimulatorFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -2957,7 +2633,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -2968,7 +2644,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Storage namespace/path policy definitions must stay in the exact approved file: $misplacedPolicyDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -3060,7 +2736,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedLayoutFile &&
-                            layoutDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            layoutDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3071,7 +2747,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Storage layout plan definitions must stay in the exact approved file: $misplacedLayoutDefinitions",
         )
 
-        val source = File(root, approvedLayoutFile).readText()
+        val source = sourceGuardText(File(root, approvedLayoutFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -3187,7 +2863,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPlannerFile &&
-                            plannerDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            plannerDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3198,7 +2874,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Path-containment planner definitions must stay in the exact approved file: $misplacedPlannerDefinitions",
         )
 
-        val source = File(root, approvedPlannerFile).readText()
+        val source = sourceGuardText(File(root, approvedPlannerFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -3390,7 +3066,7 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""\buserConsentOverridesDurabilityFailure\("""),
         )
         val offenders = files
-            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(file.readText()) } }
+            .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(
@@ -3419,7 +3095,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3430,7 +3106,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Platform root settings policy definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -3532,7 +3208,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3543,7 +3219,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Linux custom-root validation definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
             Regex("""import\s+java\.nio"""),
@@ -3648,7 +3324,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3659,7 +3335,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Linux root-resolution policy definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -3764,7 +3440,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3775,7 +3451,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Platform root resolver boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -3886,7 +3562,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3897,7 +3573,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Platform path-construction boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4004,7 +3680,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4015,7 +3691,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Storage safety preflight boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4124,7 +3800,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4135,7 +3811,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Disabled storage service facade definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4272,7 +3948,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4283,7 +3959,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Persistence readiness gate definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4401,7 +4077,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4412,7 +4088,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Lock/session lifecycle boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4560,7 +4236,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4571,7 +4247,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Redaction/leakage boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4735,7 +4411,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4746,7 +4422,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Passphrase policy boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -4906,7 +4582,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4917,7 +4593,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Clear/wipe strategy boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -5090,7 +4766,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -5101,7 +4777,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Migration/corruption boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -5285,7 +4961,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -5296,7 +4972,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider operation authorization boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -5499,7 +5175,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -5510,7 +5186,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Runtime randomness authorization boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -5723,7 +5399,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -5734,7 +5410,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "KDF calibration authorization boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -5958,7 +5634,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -5969,7 +5645,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Secure-storage authorization boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -6197,7 +5873,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -6208,7 +5884,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Unlock authorization boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -6441,7 +6117,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -6452,7 +6128,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Creation authorization boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -6711,7 +6387,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -6722,7 +6398,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Authorization/readiness matrix definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -6925,7 +6601,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -6936,7 +6612,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider candidate packaging boundary definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -7136,7 +6812,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -7147,7 +6823,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider interface contract audit definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""System\.getenv"""),
             Regex("""System\.getProperty"""),
@@ -7347,7 +7023,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -7358,7 +7034,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Non-selectable provider skeleton definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -7525,7 +7201,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -7536,7 +7212,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider registry isolation guard definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -7707,7 +7383,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -7718,7 +7394,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider factory isolation definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -7895,7 +7571,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -7906,7 +7582,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider operation dispatch isolation definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -8095,7 +7771,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -8106,7 +7782,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider KAT execution isolation definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -8305,7 +7981,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -8316,7 +7992,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider executable KAT decision-gate definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -8513,7 +8189,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -8524,7 +8200,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Provider executable KAT prerequisite audit definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -8707,7 +8383,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -8718,7 +8394,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only executable KAT scope decision definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex(""":\s*VaultCryptoProvider\b"""),
@@ -8908,7 +8584,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -8919,7 +8595,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only provider KAT executor contract definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex("""System\.getenv"""),
@@ -9091,7 +8767,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -9102,7 +8778,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only provider KAT vector catalog definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex("""System\.getenv"""),
@@ -9279,7 +8955,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -9290,7 +8966,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only provider KAT executor readiness gate definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex("""System\.getenv"""),
@@ -9476,7 +9152,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -9487,7 +9163,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only provider KAT source-set confinement definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex("""System\.getenv"""),
@@ -9678,7 +9354,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -9689,7 +9365,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only provider identity decision definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex("""System\.getenv"""),
@@ -9880,7 +9556,7 @@ class ProductionBackendAdapterSourceGuardTest {
                     .filter { file ->
                         val relative = file.relativeTo(root).invariantSeparatorsPath
                         relative != approvedPolicyFile &&
-                            policyDefinitionPatterns.any { it.containsMatchIn(file.readText()) }
+                            policyDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -9891,7 +9567,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "Test-only provider identity isolation guard definitions must stay in the exact approved file: $misplacedDefinitions",
         )
 
-        val source = File(root, approvedPolicyFile).readText()
+        val source = sourceGuardText(File(root, approvedPolicyFile))
         val forbiddenPatterns = listOf(
             Regex("""^import\s+""", RegexOption.MULTILINE),
             Regex("""System\.getenv"""),
@@ -10112,6 +9788,17 @@ class ProductionBackendAdapterSourceGuardTest {
         )
 
     private fun repositoryRoot(): File =
-        generateSequence(File(".").absoluteFile) { file -> file.parentFile }
-            .first { candidate -> File(candidate, "settings.gradle.kts").exists() }
+        SourceGuardCorpus.repositoryRoot
+
+    private fun sourceGuardText(file: File): String =
+        SourceGuardCorpus.text(file)
+
+    private fun sourceGuardRelativePath(file: File): String =
+        SourceGuardCorpus.relativePath(file)
+
+    private fun commonMainKotlinFiles(): List<File> =
+        SourceGuardCorpus.commonMainFiles
+
+    private fun productionRuntimeKotlinFiles(): List<File> =
+        SourceGuardCorpus.productionRuntimeSourceFiles
 }

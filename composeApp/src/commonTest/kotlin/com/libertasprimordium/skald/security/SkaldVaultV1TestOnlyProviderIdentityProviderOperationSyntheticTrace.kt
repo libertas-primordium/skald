@@ -155,7 +155,16 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTracePolicy
     private const val EXPECTED_PROVIDER_OPERATION_SYNTHETIC_TRACE_ID: String =
         "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity"
 
+    private val currentTrace:
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace by lazy {
+            buildProviderOperationSyntheticTrace()
+        }
+
     fun currentProviderOperationSyntheticTrace():
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace =
+        currentTrace
+
+    private fun buildProviderOperationSyntheticTrace():
         SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace {
         val marker = SkaldVaultV1TestOnlyProviderIdentityMarkerPolicy.currentMarker()
         val capabilityMatrix =

@@ -6,6 +6,8 @@ The validation report exists only under `composeApp/src/commonTest`. It validate
 
 The commonTest-only synthetic provider-operation trace suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_SUITE_REPORT.md). It composes existing admission, trace, validation, and no-op execution-boundary suite evidence only.
 
+The commonTest-only synthetic provider-operation trace completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROVIDER_OPERATION_SYNTHETIC_TRACE_COMPLETION_AUDIT.md). It reads existing admission, trace, validation, suite-report, and no-op execution-boundary suite evidence only and remains audit-only.
+
 This pass does not execute real provider operations. It does not execute crypto, KDF/HKDF/HMAC/AEAD, randomness, key generation, vault lifecycle, persistence, sync, settings, UI, backend, BDK, signing/broadcasting, endpoint, or mainnet behavior. It does not add a KAT runner or KAT executor. It does not add a provider implementation, registry, factory, dispatcher, or executor reachability.
 
 `syntheticTraceValidationPassed=true` is commonTest-only validation evidence. It is not authorization for production, provider selection, provider operations, crypto, KAT executor usage, vault persistence, sync, signing/broadcasting, UI, endpoint use, or mainnet.

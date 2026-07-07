@@ -1,5 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -81,6 +83,41 @@ tasks.withType<AbstractJPackageTask>().configureEach {
                 tempDir.deleteRecursively()
             }
             tempDir.mkdirs()
+        }
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    val configuredForks = providers
+        .gradleProperty("skald.test.maxParallelForks")
+        .map { it.toIntOrNull() ?: 1 }
+        .orElse(1)
+    val diagnosticsEnabled = providers
+        .gradleProperty("skald.test.diagnostics.enabled")
+        .map { it.equals("true", ignoreCase = true) }
+        .orElse(false)
+
+    maxParallelForks = configuredForks.get().coerceAtLeast(1)
+
+    providers.gradleProperty("skald.test.diagnostics.enabled").orNull?.let { enabled ->
+        systemProperty("skald.test.diagnostics.enabled", enabled)
+    }
+    providers.gradleProperty("skald.test.timingFile").orNull?.takeIf { it.isNotBlank() }?.let { timingFile ->
+        systemProperty("skald.test.timingFile", timingFile)
+    }
+    testLogging {
+        showStandardStreams = providers
+            .gradleProperty("skald.test.showStandardStreams")
+            .map { it.equals("true", ignoreCase = true) }
+            .orElse(false)
+            .get()
+        if (diagnosticsEnabled.get()) {
+            events(
+                TestLogEvent.STARTED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.FAILED,
+            )
         }
     }
 }

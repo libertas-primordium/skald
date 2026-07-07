@@ -179,7 +179,16 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceVa
 }
 
 object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidationPolicy {
+    private val currentValidationReport:
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidationReport by lazy {
+            buildProviderOperationSyntheticTraceValidationReport()
+        }
+
     fun currentProviderOperationSyntheticTraceValidationReport():
+        SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidationReport =
+        currentValidationReport
+
+    private fun buildProviderOperationSyntheticTraceValidationReport():
         SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidationReport {
         val sourceTrace =
             SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTracePolicy
