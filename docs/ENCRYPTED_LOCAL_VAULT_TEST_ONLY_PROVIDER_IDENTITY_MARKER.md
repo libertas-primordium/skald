@@ -6,6 +6,8 @@ After the implementation transition gate, the user explicitly authorized this ex
 
 This marker is the first actual test-only provider identity implementation artifact. It remains inert implementation-marker evidence only.
 
+A later commonTest-only marker validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_VALIDATION.md). That validation keeps `markerValidationPassed=true` as validation evidence only and does not authorize provider implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+
 The second slower test-only step wraps this marker in a commonTest-only inert inventory documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md).
 
 The third slower test-only step composes this marker and inventory into a commonTest-only inert profile documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROFILE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROFILE.md).
