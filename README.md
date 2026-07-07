@@ -14,6 +14,8 @@ Current test-only provider identity status also includes a common-test-only iner
 
 Current test-only provider identity status also includes a common-test-only inert provider identity marker suite report; `markerSuiteReportPassed=true` is suite-report evidence only and does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
+Current test-only provider identity status also includes a common-test-only inert provider identity marker completion audit; `markerCompletionAuditPassed=true` is completion-audit evidence only and does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK
