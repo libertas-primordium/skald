@@ -1211,6 +1211,88 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityImplementationTransitionGateDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityImplementationTransitionGate",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceCompletionAudit",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValidation",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmission",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundarySuiteReport",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundaryValidation",
+            "SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundary",
+            "reviewReadyForHumanDecision",
+            "implementationAuthorized",
+            "providerImplementationAuthorized",
+            "providerOperationExecutionAuthorized",
+            "cryptoExecutionAuthorized",
+            "katExecutorAuthorized",
+            "mainnetAuthorized",
+            "TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_TRANSITION_GATE_COMMON_TEST_ONLY",
+            "IMPLEMENTATION_TRANSITION_GATE_HUMAN_REVIEW_READY_NOT_AUTHORIZATION",
+            "syntheticTraceCompletionAuditPassed",
+            "syntheticTraceSuitePassed",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "skald-test-only-provider-identity-kat-fixture-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-public-vector-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-kat-case-v1-inert-identity-metadata",
+            "skald-test-only-provider-identity-provider-operation-metadata-kat-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-kat-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-noop-execution-boundary-suite-report-v1-inert-identity",
+            "skald-test-only-provider-identity-provider-operation-synthetic-trace-v1-inert-identity",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest provider identity implementation transition gate must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
+    fun sourceGuardCorpusKeepsBuildHistoryAndPlanningDocsOutOfNormalSourceMaterialCorpora() {
+        val normalCorpusPaths =
+            (
+                SourceGuardCorpus.productionRuntimeSourceFiles +
+                    SourceGuardCorpus.testSourceFiles +
+                    SourceGuardCorpus.buildConfigFiles
+                ).map { file -> SourceGuardCorpus.relativePath(file) }
+        val docsCorpusPaths = SourceGuardCorpus.docsFiles.map { file -> SourceGuardCorpus.relativePath(file) }
+        val forbiddenNormalCorpusPaths = setOf(
+            "BUILD_HISTORY.md",
+            "AGENTS.md",
+            "DESIGN_INTENT.md",
+            "ROADMAP.md",
+            "README.md",
+        )
+
+        assertTrue(
+            normalCorpusPaths.none { path ->
+                path in forbiddenNormalCorpusPaths || path.startsWith("docs/")
+            },
+            "Normal source/material guard corpora must not scan BUILD_HISTORY, planning docs, README, or docs: $normalCorpusPaths",
+        )
+        assertTrue(
+            docsCorpusPaths.all { path -> path == "README.md" || path.startsWith("docs/") },
+            "Documentation corpus must stay limited to README and tracked docs: $docsCorpusPaths",
+        )
+        assertTrue("README.md" in docsCorpusPaths)
+        assertTrue(docsCorpusPaths.any { path -> path.startsWith("docs/") })
+        assertTrue("BUILD_HISTORY.md" !in docsCorpusPaths)
+        assertTrue("AGENTS.md" !in docsCorpusPaths)
+        assertTrue("DESIGN_INTENT.md" !in docsCorpusPaths)
+        assertTrue("ROADMAP.md" !in docsCorpusPaths)
+    }
+
+    @Test
     fun disabledVaultCryptoProviderBoundaryDoesNotImportProvidersOrStorage() {
         val root = repositoryRoot()
         val files = listOf(

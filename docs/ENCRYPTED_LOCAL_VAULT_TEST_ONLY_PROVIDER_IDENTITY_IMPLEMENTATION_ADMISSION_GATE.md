@@ -8,6 +8,8 @@ Admission gate evidence denies current implementation admission. It does not imp
 
 [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PLAN.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_PLAN.md) records the next non-executable planning boundary; admission evidence remains non-authorizing and does not admit implementation.
 
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_TRANSITION_GATE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_IMPLEMENTATION_TRANSITION_GATE.md) records the later commonTest-only transition gate over the completed prerequisite chain. It marks human-review readiness only and still does not admit implementation.
+
 ## Admission Sections
 
 Admission sections are `ModelOnlyAdmission`, `PriorEvidenceAdmission`, `DecisionGateAdmission`, `PrerequisiteAuditAdmission`, `ScopeDecisionAdmission`, `ImplementationContractAdmission`, `ReadinessGateAdmission`, `RuntimeLinkageAdmission`, `PromotionBlockerAdmission`, `SourceGuardCoverageAdmission`, `RedactionGuardAdmission`, `ProviderSelectionAdmission`, `ProductionPromotionAdmission`, `VaultPersistenceAdmission`, `SyncSigningBroadcastingAdmission`, and `MainnetAdmission`.

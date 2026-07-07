@@ -6,6 +6,8 @@ Current status: initial Kotlin Multiplatform / Compose Multiplatform scaffold wi
 
 Current test-only provider identity status also includes a common-test-only synthetic provider-operation trace admission gate, a common-test-only synthetic provider-operation trace artifact, a common-test-only synthetic provider-operation trace validation report, a common-test-only synthetic provider-operation trace suite report, and a common-test-only synthetic provider-operation trace completion audit for the test-only provider identity chain. The trace artifact is payload-free metadata only, and the validation, suite, and audit reports do not create trace payloads or a second trace.
 
+Current test-only provider identity status also includes a common-test-only implementation transition gate that records `reviewReadyForHumanDecision=true` for human review only; it does not authorize implementation, provider selection, provider-operation execution, crypto execution, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK
