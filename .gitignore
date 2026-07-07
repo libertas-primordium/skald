@@ -73,6 +73,9 @@ crashlytics-build.properties
 hs_err_pid*
 replay_pid*
 
+# Local Skald agent/build artifacts and durable diagnostics
+.skald-local/
+
 # Android / Gradle
 .gradle/
 build/
