@@ -327,7 +327,14 @@ class ProductionBackendAdapterSourceGuardTest {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(
             "SkaldVaultV1TestOnlyProviderIdentityMarker",
+            "SkaldVaultV1TestOnlyProviderIdentityMarkerKind",
+            "currentImplementationMarker",
             "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "markerCreated",
+            "implementationMarkerPresent",
+            "userApprovedInertMarkerPass",
+            "INERT_MARKER_ONLY",
+            "NOT_AUTHORIZATION",
         )
         val offenders = productionRuntimeKotlinFiles()
             .filter { file ->
