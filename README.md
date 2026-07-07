@@ -10,6 +10,8 @@ Current test-only provider identity status also includes a common-test-only impl
 
 Current test-only provider identity status also includes a human-approved common-test-only inert provider identity implementation marker; `markerCreated=true` is marker evidence only and does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
+Current test-only provider identity status also includes a common-test-only inert provider identity marker validation report; `markerValidationPassed=true` is validation evidence only and does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK
