@@ -122,6 +122,7 @@ object SourceGuardCorpus {
             "/.git/",
             "/.gradle/",
             "/.idea/",
+            "/.skald-local/",
             "/build/",
             "/.kotlin/",
             "/out/",

@@ -6,6 +6,8 @@ The validation reads the inert marker documented in [`ENCRYPTED_LOCAL_VAULT_TEST
 
 A later commonTest-only marker suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_SUITE_REPORT.md). That suite report keeps `markerSuiteReportPassed=true` as suite-report evidence only and does not authorize provider implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
 
+A later commonTest-only marker completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_COMPLETION_AUDIT.md). That completion audit keeps `markerCompletionAuditPassed=true` as completion-audit evidence only and does not authorize provider implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+
 ## Scope
 
 - Source-set placement: `composeApp/src/commonTest`.

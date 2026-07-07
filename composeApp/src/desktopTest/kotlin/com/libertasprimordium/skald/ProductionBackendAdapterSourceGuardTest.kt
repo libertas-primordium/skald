@@ -405,6 +405,35 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityMarkerCompletionAuditDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityMarkerCompletionAudit",
+            "SkaldVaultV1TestOnlyProviderIdentityMarkerCompletionAuditKind",
+            "currentProviderIdentityMarkerCompletionAudit",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "markerCompletionAuditPassed",
+            "markerSuiteReportPassedIsSuiteReportEvidenceOnly",
+            "markerValidationPassedIsValidationEvidenceOnly",
+            "markerCreatedIsInertMarkerEvidenceOnly",
+            "implementationMarkerPresentIsInertMarkerEvidenceOnly",
+            "MARKER_COMPLETION_AUDIT_ONLY",
+            "NOT_AUTHORIZATION",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest inert provider identity marker completion audit must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(
@@ -1338,9 +1367,9 @@ class ProductionBackendAdapterSourceGuardTest {
 
         assertTrue(
             normalCorpusPaths.none { path ->
-                path in forbiddenNormalCorpusPaths || path.startsWith("docs/")
+                path in forbiddenNormalCorpusPaths || path.startsWith("docs/") || path.startsWith(".skald-local/")
             },
-            "Normal source/material guard corpora must not scan BUILD_HISTORY, planning docs, README, or docs: $normalCorpusPaths",
+            "Normal source/material guard corpora must not scan BUILD_HISTORY, planning docs, README, docs, or .skald-local: $normalCorpusPaths",
         )
         assertTrue(
             docsCorpusPaths.all { path -> path == "README.md" || path.startsWith("docs/") },
@@ -1352,6 +1381,8 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue("AGENTS.md" !in docsCorpusPaths)
         assertTrue("DESIGN_INTENT.md" !in docsCorpusPaths)
         assertTrue("ROADMAP.md" !in docsCorpusPaths)
+        assertTrue(normalCorpusPaths.none { path -> path.startsWith(".skald-local/") })
+        assertTrue(docsCorpusPaths.none { path -> path.startsWith(".skald-local/") })
     }
 
     @Test

@@ -4,6 +4,8 @@ This document records a commonTest-only marker-suite-report-only pass for the in
 
 The suite report aggregates the implementation transition gate, the inert marker, and the marker validation report. It confirms that the marker chain is present, internally consistent, commonTest-only, deterministic, inert, safe-label-only, and redacted.
 
+A later commonTest-only marker completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER_COMPLETION_AUDIT.md). That completion audit keeps `markerCompletionAuditPassed=true` as completion-audit evidence only and does not authorize provider implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+
 ## Scope
 
 - Source-set placement: `composeApp/src/commonTest`.
