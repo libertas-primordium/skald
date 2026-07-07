@@ -8,6 +8,8 @@ Current test-only provider identity status also includes a common-test-only synt
 
 Current test-only provider identity status also includes a common-test-only implementation transition gate that records `reviewReadyForHumanDecision=true` for human review only; it does not authorize implementation, provider selection, provider-operation execution, crypto execution, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
+Current test-only provider identity status also includes a human-approved common-test-only inert provider identity implementation marker; `markerCreated=true` is marker evidence only and does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK

@@ -2,6 +2,10 @@
 
 This document records the first slower test-only implementation step for the Skald Vault v1 provider identity chain: a commonTest-only inert test-only provider identity marker.
 
+After the implementation transition gate, the user explicitly authorized this exact inert-marker pass. That authorization is scoped only to the commonTest-only inert implementation marker recorded here. It does not authorize a provider implementation, `VaultCryptoProvider` implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+
+This marker is the first actual test-only provider identity implementation artifact. It remains inert implementation-marker evidence only.
+
 The second slower test-only step wraps this marker in a commonTest-only inert inventory documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_INVENTORY.md).
 
 The third slower test-only step composes this marker and inventory into a commonTest-only inert profile documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROFILE.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_PROFILE.md).
@@ -27,8 +31,15 @@ The marker exists only under `composeApp/src/commonTest`. It is not commonMain, 
 - Namespace: synthetic test-only provider identity v1.
 - Family: `deterministic-kat`.
 - Purpose: `inert-marker`.
+- `markerCreated=true` is commonTest-only inert marker evidence only.
 
 The marker does not implement `VaultCryptoProvider`, does not hold a provider instance, does not expose provider handles or crypto objects, and redacts its safe ID from `toString`.
+
+## Scoped Approval
+
+The human approval for this pass permits only this inert commonTest-only marker. It does not broaden the earlier transition gate and does not turn `reviewReadyForHumanDecision=true` into implementation authorization.
+
+`markerCreated=true` is not provider implementation authorization, provider-selection authorization, provider-operation authorization, crypto authorization, KAT-runner authorization, KAT-executor authorization, vault-persistence authorization, sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
 
 ## Blocked Capabilities
 
@@ -41,5 +52,7 @@ It cannot execute provider operations, execute crypto, participate in vault life
 Production implementation remains out of scope. It requires later review after test-only implementation proves out and can be verified against the same expected behavior.
 
 No provider, executor, KAT execution, crypto operation, storage operation, wallet operation, settings persistence, UI entry point, backend client, signing/broadcasting path, public endpoint, or mainnet behavior is implemented.
+
+Provider selection remains `DisabledVaultCryptoProvider` only. `productionProviderSelectable` remains false.
 
 Skald constraints remain intact: no Skald-operated infrastructure, no Skald-managed default backend, no real funds, no secrets, no live wallet data, no production crypto provider, no production vault persistence, no signing/broadcasting, and mainnet remains disabled.

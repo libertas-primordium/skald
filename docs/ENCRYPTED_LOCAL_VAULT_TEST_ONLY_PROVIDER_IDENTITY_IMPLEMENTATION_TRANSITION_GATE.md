@@ -6,6 +6,8 @@ The transition gate is transition-gate-only. It reads existing prerequisite evid
 
 The transition gate records `reviewReadyForHumanDecision=true` only as commonTest evidence that the chain is ready for human review of a later possible commonTest-only implementation branch.
 
+After this transition gate, the user authorized only the commonTest-only inert provider identity implementation marker documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_MARKER.md). That marker pass is marker-only. It does not broaden this transition gate and does not authorize provider implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+
 It does not authorize implementation. It does not authorize a provider implementation, provider selection, provider-operation execution, crypto execution, KAT runner, KAT executor, vault persistence, sync, signing, broadcasting, UI, endpoint behavior, or mainnet.
 
 This pass creates no trace payloads. It executes no provider operations and executes no crypto. It adds no provider implementation, registry, factory, dispatcher, executor target, KAT runner, KAT executor, vault persistence, production sync, signing, broadcasting, endpoint, UI, or mainnet behavior.
