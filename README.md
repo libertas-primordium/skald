@@ -18,6 +18,8 @@ Current test-only provider identity status also includes a common-test-only iner
 
 Current test-only provider identity status also includes a common-test-only inert provider identity descriptor; `descriptorCreated=true` and `providerCapabilitiesDeclared=true` are descriptor evidence only, every executable capability is false, and this does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
+Current test-only provider identity status also includes a common-test-only inert provider identity descriptor validation report; `descriptorValidationPassed=true` is descriptor-validation evidence only, `descriptorCreated=true` and `providerCapabilitiesDeclared=true` remain descriptor evidence only, every executable capability remains false, and this does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK

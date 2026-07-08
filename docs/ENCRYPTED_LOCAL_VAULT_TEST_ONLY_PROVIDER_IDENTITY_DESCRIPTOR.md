@@ -4,6 +4,8 @@ This document records a commonTest-only provider-identity-descriptor-only pass f
 
 The descriptor aggregates the implementation transition gate, the inert provider identity marker, marker validation, marker suite report, and marker completion audit. It describes only an inert test-only provider identity descriptor and capability manifest using safe fixed labels, enums, counts, and booleans.
 
+The descriptor validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_VALIDATION.md). It reads this descriptor and records `descriptorValidationPassed=true` as commonTest-only descriptor-validation evidence only; `descriptorCreated=true` and `providerCapabilitiesDeclared=true` remain descriptor evidence only.
+
 ## Scope
 
 - Source-set placement: `composeApp/src/commonTest`.
