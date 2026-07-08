@@ -171,7 +171,7 @@ class VaultCryptoAndroidProviderLevelKatExecutionTest {
     }
 }
 
-private class AndroidProviderLevelPublicKatVaultCryptoProvider : VaultCryptoProvider {
+internal class AndroidProviderLevelPublicKatVaultCryptoProvider : VaultCryptoProvider {
     private val disabledProvider = DisabledVaultCryptoProvider()
 
     override val statusReport: VaultCryptoProviderStatusReport =
