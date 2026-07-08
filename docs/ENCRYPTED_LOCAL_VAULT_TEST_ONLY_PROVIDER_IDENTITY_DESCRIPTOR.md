@@ -8,6 +8,8 @@ The descriptor validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_O
 
 The descriptor suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md). It aggregates this descriptor and descriptor validation, records `descriptorSuiteReportPassed=true` as commonTest-only descriptor-suite-report evidence only, and keeps every executable provider capability false.
 
+The descriptor completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT.md). It aggregates the descriptor suite report and records `descriptorCompletionAuditPassed=true` as commonTest-only descriptor-completion-audit evidence only; descriptor-created and capability-declared evidence remain descriptor evidence only.
+
 ## Scope
 
 - Source-set placement: `composeApp/src/commonTest`.

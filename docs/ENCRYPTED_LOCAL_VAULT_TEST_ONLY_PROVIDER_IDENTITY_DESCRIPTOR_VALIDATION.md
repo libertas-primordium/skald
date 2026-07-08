@@ -6,6 +6,8 @@ The validation report aggregates the implementation transition gate, inert provi
 
 The descriptor suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md). It reads this validation report and records `descriptorSuiteReportPassed=true` as commonTest-only descriptor-suite-report evidence only; `descriptorValidationPassed=true` remains descriptor-validation evidence only.
 
+The descriptor completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT.md). It reads the descriptor suite report and records `descriptorCompletionAuditPassed=true` as commonTest-only descriptor-completion-audit evidence only; `descriptorValidationPassed=true` remains descriptor-validation evidence only.
+
 ## Scope
 
 - Source-set placement: `composeApp/src/commonTest`.
