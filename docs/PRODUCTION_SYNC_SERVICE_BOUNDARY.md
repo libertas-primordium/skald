@@ -10,6 +10,8 @@ The facade and UI surface are disabled and fail-closed. They do not enable produ
 
 Manual Android Argon2id calibration evidence capture is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_CALIBRATION_CAPTURE.md), Android compatibility/entropy policy is documented in [`ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md`](ENCRYPTED_LOCAL_VAULT_ANDROID_COMPATIBILITY_ENTROPY_POLICY.md), runtime randomness/provider checks are documented in [`ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md`](ENCRYPTED_LOCAL_VAULT_RUNTIME_RANDOMNESS_PROVIDER_CHECKS.md), and the future vault container/manifest/storage contract is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_MANIFEST_STORAGE_CONTRACT.md). They do not change sync readiness: runtime provider/randomness checks remain required before vault creation, secure storage and secure metadata persistence remain disabled, manifest/storage conflict handling remains unimplemented, and production sync remains unavailable.
 
+The encrypted vault storage readiness decision is documented in [`ENCRYPTED_LOCAL_VAULT_STORAGE_READINESS_DECISION.md`](ENCRYPTED_LOCAL_VAULT_STORAGE_READINESS_DECISION.md). It does not change this facade: production sync remains blocked, no production backend client is added, no observation/address-index/UTXO/wallet-history persistence is added, and future production sync still requires a separate branch after encrypted vault storage and secure metadata success paths are approved.
+
 ## Source Location
 
 Production-safe common models:

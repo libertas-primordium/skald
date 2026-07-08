@@ -21,6 +21,7 @@ This document records a test-source/commonTest-only provider-selection-validatio
 - `selectedProviderAeadPublicKatPassed=true` is not production AEAD authorization.
 - Future production provider selection requires a separate branch.
 - Future vault persistence requires a separate branch.
+- The next encrypted vault storage readiness decision is documented in [`ENCRYPTED_LOCAL_VAULT_STORAGE_READINESS_DECISION.md`](ENCRYPTED_LOCAL_VAULT_STORAGE_READINESS_DECISION.md); it remains admission-only and does not authorize storage, provider selection, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
 ## Results
 

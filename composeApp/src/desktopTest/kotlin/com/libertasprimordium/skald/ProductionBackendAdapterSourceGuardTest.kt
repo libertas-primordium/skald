@@ -224,6 +224,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationRedactionGuard.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationAdmissionGate.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationPlan.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStorageReadinessDecision.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -285,6 +286,77 @@ class ProductionBackendAdapterSourceGuardTest {
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
         assertTrue(offenders.isEmpty(), "Encrypted vault readiness must remain policy-only: $offenders")
+    }
+
+    @Test
+    fun encryptedVaultStorageReadinessDecisionStaysPolicyOnlyAndCannotEnableStorage() {
+        val root = repositoryRoot()
+        val decisionFile = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStorageReadinessDecision.kt",
+        )
+        val decisionSource = sourceGuardText(decisionFile)
+        val misplacedDefinitions = productionRuntimeKotlinFiles()
+            .filterNot { file -> sourceGuardRelativePath(file) == sourceGuardRelativePath(decisionFile) }
+            .filter { file ->
+                val text = sourceGuardText(file)
+                "EncryptedVaultStorageReadinessDecision" in text ||
+                    "ENCRYPTED_LOCAL_VAULT_STORAGE_READINESS_DECISION" in text ||
+                    "skald-encrypted-vault-storage-readiness-decision-v1" in text
+            }
+            .map(::sourceGuardRelativePath)
+        val forbiddenDecisionPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+android\.content"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\("""),
+            Regex("""\bUri\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bJsonKeysetWriter\b"""),
+            Regex("""\bBinaryKeysetWriter\b"""),
+            Regex("""\bJsonKeysetReader\b"""),
+            Regex("""\bBinaryKeysetReader\b"""),
+            Regex("""\bKeysetHandle\."""),
+            Regex("""\bCipher\("""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\bSecureRandom\("""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""secureSecretStorageSuccessPathPresent\s*=\s*true"""),
+            Regex("""secureMetadataStorageSuccessPathPresent\s*=\s*true"""),
+            Regex("""encryptedVaultRepositorySuccessPresent\s*=\s*true"""),
+            Regex("""vaultContainerImplementationPresent\s*=\s*true"""),
+            Regex("""encryptedVaultFileFormatImplemented\s*=\s*true"""),
+            Regex("""productionObservationPersistencePresent\s*=\s*true"""),
+            Regex("""productionAddressIndexPersistencePresent\s*=\s*true"""),
+            Regex("""productionUtxoPersistencePresent\s*=\s*true"""),
+            Regex("""productionWalletHistoryPersistencePresent\s*=\s*true"""),
+            Regex("""productionSyncPresent\s*=\s*true"""),
+            Regex("""productionBackendClientPresent\s*=\s*true"""),
+            Regex("""productionProviderSelectionEnabled\s*=\s*true"""),
+            Regex("""productionProviderSelectable\s*=\s*true"""),
+            Regex("""providerChoicePersisted\s*=\s*true"""),
+            Regex("""providerSelectionUiPresent\s*=\s*true"""),
+            Regex("""uiActionEnablementPresent\s*=\s*true"""),
+            Regex("""endpointPresent\s*=\s*true"""),
+            Regex("""mainnetPresent\s*=\s*true"""),
+        )
+        val offenders = forbiddenDecisionPatterns
+            .filter { pattern -> pattern.containsMatchIn(decisionSource) }
+            .map { pattern -> pattern.pattern }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Storage readiness decision definitions must stay in commonMain policy file only: $misplacedDefinitions",
+        )
+        assertTrue(
+            offenders.isEmpty(),
+            "Storage readiness decision must remain policy-only and cannot add storage/sync/provider-selection success: $offenders",
+        )
     }
 
     @Test
@@ -696,7 +768,10 @@ class ProductionBackendAdapterSourceGuardTest {
             "futureProductionProviderSelectionRequiresSeparatePass",
             "futureVaultPersistenceRequiresSeparatePass",
         )
+        val storageReadinessDecisionPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStorageReadinessDecision.kt"
         val offenders = productionRuntimeKotlinFiles()
+            .filterNot { file -> sourceGuardRelativePath(file) == storageReadinessDecisionPolicyFile }
             .filter { file ->
                 val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
@@ -729,7 +804,10 @@ class ProductionBackendAdapterSourceGuardTest {
             "selectedProviderKatSuccessIsNotProductionProviderImplementationAuthorization",
             "selectedProviderKatOutputLogged",
         )
+        val storageReadinessDecisionPolicyFile =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStorageReadinessDecision.kt"
         val offenders = productionRuntimeKotlinFiles()
+            .filterNot { file -> sourceGuardRelativePath(file) == storageReadinessDecisionPolicyFile }
             .filter { file ->
                 val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
