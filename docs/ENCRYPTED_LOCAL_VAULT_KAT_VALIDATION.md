@@ -166,4 +166,6 @@ This KAT validation does not enable:
 
 ## Next Step
 
-The next focused branch should remain design/probe-only unless explicitly narrowed otherwise: review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a disabled production-provider skeleton with no storage before any vault container work. A production vault implementation is still not approved by this Android runtime KAT result, by Android compatibility/entropy policy modeling, by runtime randomness availability probes, or by the test-only provider KAT harness.
+The test-source-only executable provider implementation pass is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_IMPLEMENTATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_IMPLEMENTATION.md). Provider-level public KDF/AEAD KAT execution for that provider remains a later branch on desktop and Android before any provider selection enablement.
+
+A production vault implementation is still not approved by this Android runtime KAT result, by Android compatibility/entropy policy modeling, by runtime randomness availability probes, by the test-only provider KAT harness, or by the test-source-only provider implementation surface.

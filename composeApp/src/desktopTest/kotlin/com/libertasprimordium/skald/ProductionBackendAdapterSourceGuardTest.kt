@@ -590,6 +590,42 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyExecutableVaultCryptoProviderImplementationDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyExecutableProviderIdentity",
+            "SkaldVaultV1TestOnlyExecutableProviderKind",
+            "SkaldVaultV1TestOnlyExecutableProviderSourceScope",
+            "currentTestOnlyExecutableProviderIdentity",
+            "DesktopTestOnlyVaultCryptoProvider",
+            "DesktopTestOnlyVaultCryptoProviderExecutionMode",
+            "DesktopTestOnlyVaultCryptoProviderImplementationReport",
+            "skald-test-only-executable-vault-crypto-provider-implementation-v1",
+            "TEST_ONLY_EXECUTABLE_PUBLIC_KAT_PROVIDER",
+            "TEST_SOURCE_ONLY",
+            "canCoverKdfPublicKat",
+            "canCoverAeadPublicKat",
+            "publicKatScopeOnly",
+            "providerLevelKatExecutedInThisBranch",
+            "kdfExecutedInThisBranch",
+            "aeadExecutedInThisBranch",
+            "providerOperationsEnabled",
+            "providerLevelKatExecutionEnabled",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The test-source-only executable provider implementation must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(
