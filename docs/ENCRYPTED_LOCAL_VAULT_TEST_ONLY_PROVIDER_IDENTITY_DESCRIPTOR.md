@@ -6,6 +6,8 @@ The descriptor aggregates the implementation transition gate, the inert provider
 
 The descriptor validation report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_VALIDATION.md). It reads this descriptor and records `descriptorValidationPassed=true` as commonTest-only descriptor-validation evidence only; `descriptorCreated=true` and `providerCapabilitiesDeclared=true` remain descriptor evidence only.
 
+The descriptor suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md). It aggregates this descriptor and descriptor validation, records `descriptorSuiteReportPassed=true` as commonTest-only descriptor-suite-report evidence only, and keeps every executable provider capability false.
+
 ## Scope
 
 - Source-set placement: `composeApp/src/commonTest`.

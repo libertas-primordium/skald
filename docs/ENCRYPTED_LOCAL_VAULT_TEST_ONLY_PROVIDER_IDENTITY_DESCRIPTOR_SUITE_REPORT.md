@@ -1,10 +1,8 @@
-# Encrypted Local Vault: Test-Only Provider Identity Descriptor Validation
+# Encrypted Local Vault: Test-Only Provider Identity Descriptor Suite Report
 
-This document records a commonTest-only provider-identity-descriptor-validation-only pass for the inert test-only provider identity chain.
+This document records a commonTest-only provider-identity-descriptor-suite-report-only pass for the inert test-only provider identity chain.
 
-The validation report aggregates the implementation transition gate, inert provider identity marker, marker validation, marker suite report, marker completion audit, and inert provider identity descriptor. It validates only safe fixed labels, enums, counts, and booleans.
-
-The descriptor suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_SUITE_REPORT.md). It reads this validation report and records `descriptorSuiteReportPassed=true` as commonTest-only descriptor-suite-report evidence only; `descriptorValidationPassed=true` remains descriptor-validation evidence only.
+The suite report aggregates the implementation transition gate, inert provider identity marker, marker validation, marker suite report, marker completion audit, inert provider identity descriptor, and descriptor validation. It confirms only safe fixed labels, enums, counts, and booleans.
 
 ## Scope
 
@@ -18,11 +16,12 @@ The descriptor suite report is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_P
 - `descriptorCreated=true` is commonTest-only descriptor evidence only.
 - `providerCapabilitiesDeclared=true` is commonTest-only inert descriptor evidence only.
 - `descriptorValidationPassed=true` is commonTest-only descriptor-validation evidence only.
+- `descriptorSuiteReportPassed=true` is commonTest-only descriptor-suite-report evidence only.
 - User approval remains scoped only to the inert commonTest-only provider identity chain.
 
-## Capability Validation
+## Capability Suite Checks
 
-The validation report verifies that the descriptor's inert capability manifest exists and that every executable provider capability remains false:
+The suite report confirms that the descriptor's inert capability manifest exists and that every executable provider capability remains false:
 
 - `canDeriveKdf=false`
 - `canEncrypt=false`
@@ -42,13 +41,13 @@ The validation report verifies that the descriptor's inert capability manifest e
 
 ## Non-Authorization
 
-`descriptorValidationPassed=true` does not authorize provider implementation, `VaultCryptoProvider` implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+`descriptorSuiteReportPassed=true` does not authorize provider implementation, `VaultCryptoProvider` implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
 
-The validation report does not implement `VaultCryptoProvider`, does not expose a provider instance, does not expose provider handles, and does not add registry/factory/dispatcher/executor reachability.
+The suite report does not implement `VaultCryptoProvider`, does not expose a provider instance, does not expose provider handles, and does not add registry/factory/dispatcher/executor reachability.
 
 ## Blocked Runtime Surfaces
 
-The validation report creates no trace payloads, executes no provider operations, executes no crypto, and adds no KAT runner or KAT executor.
+The suite report creates no trace payloads, executes no provider operations, executes no crypto, and adds no KAT runner or KAT executor.
 
 It adds no vault lifecycle path, vault persistence path, secure secret storage success path, secure metadata storage success path, production sync path, signing/broadcasting path, UI path, endpoint path, or mainnet path.
 
