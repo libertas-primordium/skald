@@ -46,6 +46,8 @@ Provider selection is documented separately in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_
 
 Test-source-only provider-selection validation is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md). It selects the test-only executable provider only through explicit test validation harnesses for public KDF/AEAD KAT scope. It does not modify production provider selection, does not make the provider production-selectable, does not persist a provider choice, does not add provider-selection UI, and does not add vault persistence, secure storage success, secure metadata success, production sync, signing/broadcasting, endpoint, UI, or mainnet behavior.
 
+The test-source/commonTest provider-selection validation completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION_COMPLETION_AUDIT.md). It is audit evidence only and does not authorize production provider selection, provider choice persistence, vault persistence, secure storage, secure metadata, sync, signing/broadcasting, endpoint, UI, or mainnet behavior.
+
 Runtime behavior remains fail-closed:
 
 - `DisabledVaultCryptoProvider` rejects every modeled provider operation.
