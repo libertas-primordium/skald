@@ -34,6 +34,8 @@ Current test-only provider status also includes test-source-only provider-select
 
 Current test-only provider status also includes a common-test/test-source-only provider-selection validation completion audit; audit success is evidence only and does not authorize production provider selection, provider choice persistence, vault persistence, storage, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
+Current encrypted local vault status also includes a commonMain storage readiness decision; `encryptedVaultStorageImplementationPathAdmitted=true` admits only a later separate storage design/implementation branch, and no vault container parser/writer, secure storage success path, secure metadata success path, production persistence, sync, provider selection, signing/broadcasting, UI, endpoint, or mainnet behavior is added.
+
 ## Targets
 
 - Android APK
