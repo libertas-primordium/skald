@@ -665,6 +665,51 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderSelectionValidationDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderSelectionValidation",
+            "SkaldVaultV1TestOnlyProviderSelectionValidationKind",
+            "currentProviderSelectionValidation",
+            "DesktopTestOnlyVaultCryptoProviderSelector",
+            "DesktopTestOnlyProviderSelectionValidationScope",
+            "DesktopTestOnlySelectedProviderPublicKatHarness",
+            "VaultTestOnlySelectedProviderPublicKatExecutionTest",
+            "VaultCryptoAndroidSelectedProviderKatExecutionTest",
+            "AndroidTestOnlyVaultCryptoProviderSelector",
+            "AndroidTestOnlySelectedProviderPublicKatHarness",
+            "skald-test-only-provider-selection-validation-v1",
+            "TEST_ONLY_PROVIDER_SELECTION_VALIDATION",
+            "PROVIDER_SELECTION_VALIDATION_ONLY",
+            "SELECTED_PROVIDER_PUBLIC_KAT_ONLY",
+            "testOnlyProviderSelectionValidationPassed",
+            "testOnlyProviderSelectionForValidationEnabled",
+            "testOnlyProviderSelectedForPublicKat",
+            "desktopTestOnlyProviderSelected",
+            "androidTestOnlyProviderSelected",
+            "selectedProviderKdfPublicKatPassed",
+            "selectedProviderAeadPublicKatPassed",
+            "productionProviderSelectionEnabled",
+            "productionSelectionStillDisabledProviderOnly",
+            "providerChoicePersisted",
+            "providerSelectionUiPresent",
+            "futureProductionProviderSelectionRequiresSeparatePass",
+            "futureVaultPersistenceRequiresSeparatePass",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The test-only provider-selection validation harness must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(

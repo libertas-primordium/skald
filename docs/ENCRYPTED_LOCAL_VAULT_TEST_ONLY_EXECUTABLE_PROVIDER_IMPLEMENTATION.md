@@ -6,6 +6,8 @@ The branch adds a named test-source-only executable `VaultCryptoProvider` implem
 
 Follow-on provider-level public KDF/AEAD KAT execution is recorded separately in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md). That result is test-source-only public-vector evidence and still does not authorize provider selection or production provider implementation.
 
+Follow-on test-only provider-selection validation is recorded separately in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md). It selects the test-only provider only from test source for public-KAT validation and still does not authorize production provider selection, provider choice persistence, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Scope
 
 - Test-source-only.
@@ -34,4 +36,4 @@ Follow-on provider-level public KDF/AEAD KAT execution is recorded separately in
 
 ## Next Required Branch
 
-The provider-level public KDF/AEAD KAT execution follow-on is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md). Later provider selection work still requires a separate branch and remains test-only validation scope unless a separate future branch explicitly broadens authorization.
+The provider-level public KDF/AEAD KAT execution follow-on is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md). Test-only provider-selection validation is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md). Production provider selection still requires a separate future branch and explicit authorization.

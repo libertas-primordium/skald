@@ -11,7 +11,8 @@ This document records a test-source-only provider-level-public-KAT-execution-onl
 - AEAD public KAT execution runs through the test-only provider.
 - `testOnlyProviderLevelKatExecutionPassed=true` is test-source-only provider-level public-KAT evidence only.
 - `providerLevelKatExecuted=true`, `kdfProviderKatPassed=true`, and `aeadProviderKatPassed=true` are public-KAT evidence only.
-- Future provider-selection enablement requires a separate branch.
+- Test-only provider-selection validation for public KAT scope is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION.md).
+- Future production provider selection still requires a separate branch.
 
 ## Results
 
