@@ -20,6 +20,8 @@ This document records the encrypted-vault-storage-readiness-decision-only pass f
 - Future production sync requires a separate branch.
 - Future production provider selection requires a separate branch.
 
+The container-format v1 decision is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAINER_FORMAT_V1_DECISION.md`](ENCRYPTED_LOCAL_VAULT_CONTAINER_FORMAT_V1_DECISION.md). It consumes this readiness decision as evidence and admits only model labels plus later separate parser, writer, repository, secure-storage, secure-metadata, production-sync, and production-provider-selection branches.
+
 ## Evidence
 
 - Provider-level public KDF/AEAD KATs passed as test-source-only public-vector evidence.
