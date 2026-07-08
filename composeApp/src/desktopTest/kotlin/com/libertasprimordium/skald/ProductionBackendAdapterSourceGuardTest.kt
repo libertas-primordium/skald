@@ -626,6 +626,45 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderLevelPublicKatExecutionDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1ProviderLevelPublicKatEvidence",
+            "SkaldVaultV1ProviderLevelPublicKatExecutionKind",
+            "currentProviderLevelPublicKatEvidence",
+            "VaultTestOnlyProviderLevelPublicKatExecutionTest",
+            "VaultCryptoAndroidProviderLevelKatExecutionTest",
+            "AndroidProviderLevelPublicKatVaultCryptoProvider",
+            "ProviderLevelPublicKatExecution",
+            "skald-test-only-provider-level-public-kat-execution-v1",
+            "TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION",
+            "PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION_ONLY",
+            "providerLevelKatExecutionVersion",
+            "desktopProviderLevelKatExecuted",
+            "androidProviderLevelKatExecuted",
+            "kdfProviderKatPassed",
+            "aeadProviderKatPassed",
+            "testOnlyProviderLevelKatExecutionPassed",
+            "productionProviderImplementationPresent",
+            "productionProviderRegistryEntryPresent",
+            "productionProviderFactoryPresent",
+            "productionProviderDispatcherPresent",
+            "productionExecutorTargetPresent",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The test-source-only provider-level public KAT execution evidence must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(
@@ -1893,6 +1932,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidRecordAeadBuildingBlockTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTinkRawKeyFeasibilityProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt",
+            "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidProviderLevelKatExecutionTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
@@ -1902,6 +1942,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTinkRawKeyFeasibilityProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoTestProviderKatHarnessTest.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopTestOnlyVaultCryptoProvider.kt",
         )
         val cryptoImportPattern = Regex(
             """import\s+(com\.google\.crypto\.tink|com\.goterl\.lazysodium|org\.bouncycastle|javax\.crypto|java\.security\.KeyStore)""",

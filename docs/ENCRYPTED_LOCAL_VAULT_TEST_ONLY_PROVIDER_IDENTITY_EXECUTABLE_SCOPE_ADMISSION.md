@@ -47,3 +47,5 @@ The scoped admission labels are commonTest-only admission evidence. They are not
 ## Follow-On Implementation
 
 The follow-on test-source-only implementation pass is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_IMPLEMENTATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_IMPLEMENTATION.md). That pass adds a test-source-only provider implementation surface and capability labels only; provider-level public KDF/AEAD KAT execution, provider selection enablement, vault persistence, sync, signing/broadcasting, UI, endpoints, and mainnet remain deferred.
+
+The follow-on provider-level public KDF/AEAD KAT execution pass is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_LEVEL_PUBLIC_KAT_EXECUTION.md). It is test-source-only public-KAT evidence and still does not authorize provider selection, production provider implementation, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.

@@ -26,7 +26,9 @@ Current test-only provider identity status also includes a common-test-only iner
 
 Current test-only provider identity status also includes a common-test-only executable-scope admission gate; `testOnlyExecutableProviderImplementationAdmitted=true` admits only a later test-source-only public-KAT provider implementation branch, and this pass adds no executable provider, KDF/AEAD execution, provider selection, storage, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
-Current test-only provider status also includes a test-source-only executable vault crypto provider implementation surface; `implementationPresent=true`, `canCoverKdfPublicKat=true`, and `canCoverAeadPublicKat=true` are scoped test-source capability evidence only, provider-level public KDF/AEAD KAT execution is deferred to the next branch, and production selection remains `DisabledVaultCryptoProvider` only with `productionProviderSelectable=false`.
+Current test-only provider status also includes a test-source-only executable vault crypto provider implementation surface; `implementationPresent=true`, `canCoverKdfPublicKat=true`, and `canCoverAeadPublicKat=true` are scoped test-source capability evidence only, and production selection remains `DisabledVaultCryptoProvider` only with `productionProviderSelectable=false`.
+
+Current test-only provider status also includes test-source-only provider-level public KDF/AEAD KAT execution through that test-only provider; KAT success is public-vector evidence only, provider selection remains disabled, production selection remains `DisabledVaultCryptoProvider` only, and `productionProviderSelectable=false`.
 
 ## Targets
 
