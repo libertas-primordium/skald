@@ -43,3 +43,7 @@ Later executable provider work must remain test-source-only unless a future bran
 Production provider selection remains `DisabledVaultCryptoProvider` only. `productionProviderSelectable` remains false.
 
 The scoped admission labels are commonTest-only admission evidence. They are not provider execution evidence, provider implementation evidence, production authorization, provider selection authorization, KAT execution authorization for this branch, vault persistence authorization, production sync authorization, signing/broadcasting authorization, UI authorization, endpoint authorization, or mainnet authorization.
+
+## Follow-On Implementation
+
+The follow-on test-source-only implementation pass is recorded in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_IMPLEMENTATION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_EXECUTABLE_PROVIDER_IMPLEMENTATION.md). That pass adds a test-source-only provider implementation surface and capability labels only; provider-level public KDF/AEAD KAT execution, provider selection enablement, vault persistence, sync, signing/broadcasting, UI, endpoints, and mainnet remain deferred.
