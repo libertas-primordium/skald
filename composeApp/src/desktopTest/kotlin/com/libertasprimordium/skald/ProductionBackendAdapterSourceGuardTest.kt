@@ -710,6 +710,39 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderSelectionValidationCompletionAuditDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderSelectionValidationCompletionAudit",
+            "SkaldVaultV1TestOnlyProviderSelectionValidationCompletionAuditKind",
+            "currentProviderSelectionValidationCompletionAudit",
+            "VaultTestOnlyProviderSelectionValidationCompletionAuditTest",
+            "skald-test-only-provider-selection-validation-completion-audit-v1",
+            "TEST_ONLY_PROVIDER_SELECTION_VALIDATION_COMPLETION_AUDIT",
+            "PROVIDER_SELECTION_VALIDATION_COMPLETION_AUDIT_ONLY",
+            "testOnlyProviderSelectionValidationCompletionAuditPassed",
+            "desktopSelectedProviderKdfPublicKatPassed",
+            "desktopSelectedProviderAeadPublicKatPassed",
+            "androidSelectedProviderKdfPublicKatPassed",
+            "androidSelectedProviderAeadPublicKatPassed",
+            "selectedProviderKatSuccessIsNotVaultPersistenceAuthorization",
+            "selectedProviderKatSuccessIsNotProductionProviderImplementationAuthorization",
+            "selectedProviderKatOutputLogged",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The test-only provider-selection validation completion audit must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(

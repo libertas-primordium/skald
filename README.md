@@ -32,6 +32,8 @@ Current test-only provider status also includes test-source-only provider-level 
 
 Current test-only provider status also includes test-source-only provider-selection validation for public KAT scope only; selected-provider public KDF/AEAD KAT success is validation evidence only, production selection remains `DisabledVaultCryptoProvider` only, no provider choice is persisted, and `productionProviderSelectable=false`.
 
+Current test-only provider status also includes a common-test/test-source-only provider-selection validation completion audit; audit success is evidence only and does not authorize production provider selection, provider choice persistence, vault persistence, storage, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK

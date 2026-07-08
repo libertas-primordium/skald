@@ -17,6 +17,8 @@ This document records a test-source-only provider-selection-validation-only pass
 - Future production provider selection requires a separate branch.
 - Future vault persistence requires a separate branch.
 
+The completion audit for this validation chain is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_SELECTION_VALIDATION_COMPLETION_AUDIT.md). `testOnlyProviderSelectionValidationCompletionAuditPassed=true` is test-source/commonTest audit evidence only and does not authorize production provider selection or vault persistence.
+
 ## Results
 
 - Desktop selected-provider KDF public KAT result: passed through the explicit test-only selector and selected-provider harness in `VaultTestOnlySelectedProviderPublicKatExecutionTest`.
