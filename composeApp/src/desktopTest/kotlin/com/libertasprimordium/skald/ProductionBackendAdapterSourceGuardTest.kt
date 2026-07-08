@@ -523,6 +523,37 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityDescriptorCompletionAuditDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityDescriptorCompletionAudit",
+            "SkaldVaultV1TestOnlyProviderIdentityDescriptorCompletionAuditKind",
+            "currentProviderIdentityDescriptorCompletionAudit",
+            "skald-test-only-provider-identity-v1-deterministic-kat-inert-marker",
+            "descriptorCompletionAuditPassed",
+            "descriptorCompletionAuditPassedIsCommonTestOnlyEvidence",
+            "descriptorSuiteReportPassedIsSuiteReportEvidenceOnly",
+            "descriptorValidationPassedIsValidationEvidenceOnly",
+            "descriptorCreatedIsDescriptorEvidenceOnly",
+            "providerCapabilitiesDeclaredIsDescriptorEvidenceOnly",
+            "PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT_ONLY",
+            "ALL_EXECUTABLE_CAPABILITIES_FALSE",
+            "NOT_AUTHORIZATION",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest inert provider identity descriptor completion audit must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(

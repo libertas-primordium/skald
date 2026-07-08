@@ -22,6 +22,8 @@ Current test-only provider identity status also includes a common-test-only iner
 
 Current test-only provider identity status also includes a common-test-only inert provider identity descriptor suite report; `descriptorSuiteReportPassed=true` is descriptor-suite-report evidence only, `descriptorValidationPassed=true` remains descriptor-validation evidence only, `descriptorCreated=true` and `providerCapabilitiesDeclared=true` remain descriptor evidence only, every executable capability remains false, and this does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
 
+Current test-only provider identity status also includes a common-test-only inert provider identity descriptor completion audit; `descriptorCompletionAuditPassed=true` is descriptor-completion-audit evidence only, descriptor suite/validation/created/capability evidence remains scoped, every executable capability remains false, and this does not authorize provider implementation, provider selection, provider operations, crypto, KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoints, or mainnet.
+
 ## Targets
 
 - Android APK

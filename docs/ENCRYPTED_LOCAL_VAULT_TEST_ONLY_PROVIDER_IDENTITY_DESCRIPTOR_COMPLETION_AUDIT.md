@@ -1,10 +1,8 @@
-# Encrypted Local Vault: Test-Only Provider Identity Descriptor Suite Report
+# Encrypted Local Vault: Test-Only Provider Identity Descriptor Completion Audit
 
-This document records a commonTest-only provider-identity-descriptor-suite-report-only pass for the inert test-only provider identity chain.
+This document records a commonTest-only provider-identity-descriptor-completion-audit-only pass for the inert test-only provider identity chain.
 
-The suite report aggregates the implementation transition gate, inert provider identity marker, marker validation, marker suite report, marker completion audit, inert provider identity descriptor, and descriptor validation. It confirms only safe fixed labels, enums, counts, and booleans.
-
-The descriptor completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_DESCRIPTOR_COMPLETION_AUDIT.md). It reads this suite report and records `descriptorCompletionAuditPassed=true` as commonTest-only descriptor-completion-audit evidence only; `descriptorSuiteReportPassed=true` remains descriptor-suite-report evidence only.
+The completion audit aggregates the implementation transition gate, inert provider identity marker, marker validation, marker suite report, marker completion audit, inert provider identity descriptor, descriptor validation, and descriptor suite report. It confirms only safe fixed labels, enums, counts, and booleans.
 
 ## Scope
 
@@ -19,11 +17,12 @@ The descriptor completion audit is documented in [`ENCRYPTED_LOCAL_VAULT_TEST_ON
 - `providerCapabilitiesDeclared=true` is commonTest-only inert descriptor evidence only.
 - `descriptorValidationPassed=true` is commonTest-only descriptor-validation evidence only.
 - `descriptorSuiteReportPassed=true` is commonTest-only descriptor-suite-report evidence only.
+- `descriptorCompletionAuditPassed=true` is commonTest-only descriptor-completion-audit evidence only.
 - User approval remains scoped only to the inert commonTest-only provider identity chain.
 
-## Capability Suite Checks
+## Capability Completion Checks
 
-The suite report confirms that the descriptor's inert capability manifest exists and that every executable provider capability remains false:
+The completion audit confirms that the descriptor's inert capability manifest exists and that every executable provider capability remains false:
 
 - `canDeriveKdf=false`
 - `canEncrypt=false`
@@ -43,13 +42,13 @@ The suite report confirms that the descriptor's inert capability manifest exists
 
 ## Non-Authorization
 
-`descriptorSuiteReportPassed=true` does not authorize provider implementation, `VaultCryptoProvider` implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
+`descriptorCompletionAuditPassed=true` does not authorize provider implementation, `VaultCryptoProvider` implementation, provider selection, provider-operation execution, crypto execution, KAT runner or KAT executor work, vault persistence, sync, signing/broadcasting, UI, endpoint behavior, or mainnet.
 
-The suite report does not implement `VaultCryptoProvider`, does not expose a provider instance, does not expose provider handles, and does not add registry/factory/dispatcher/executor reachability.
+The completion audit does not implement `VaultCryptoProvider`, does not expose a provider instance, does not expose provider handles, and does not add registry/factory/dispatcher/executor reachability.
 
 ## Blocked Runtime Surfaces
 
-The suite report creates no trace payloads, executes no provider operations, executes no crypto, and adds no KAT runner or KAT executor.
+The completion audit creates no trace payloads, executes no provider operations, executes no crypto, and adds no KAT runner or KAT executor.
 
 It adds no vault lifecycle path, vault persistence path, secure secret storage success path, secure metadata storage success path, production sync path, signing/broadcasting path, UI path, endpoint path, or mainnet path.
 
