@@ -554,6 +554,42 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun testOnlyProviderIdentityExecutableScopeAdmissionDoesNotAppearInProductionRuntimeRoots() {
+        val root = repositoryRoot()
+        val forbiddenTokens = listOf(
+            "SkaldVaultV1TestOnlyProviderIdentityExecutableScopeAdmission",
+            "SkaldVaultV1TestOnlyProviderIdentityExecutableScopeAdmissionKind",
+            "currentProviderIdentityExecutableScopeAdmission",
+            "testOnlyExecutableProviderImplementationAdmitted",
+            "publicKatProviderImplementationScopeAdmitted",
+            "plannedExecutableProviderCanCoverKdf",
+            "plannedExecutableProviderCanCoverAead",
+            "plannedExecutableProviderScopeIsPublicKatOnly",
+            "plannedProviderImplementationMustRemainTestSourceOnly",
+            "futureProviderLevelKatExecutionRequiresSeparatePass",
+            "futureProviderSelectionEnablementRequiresSeparatePass",
+            "executableScopeAdmissionPassed",
+            "EXECUTABLE_SCOPE_ADMISSION_ONLY",
+            "PUBLIC_KAT_SCOPE_ONLY",
+            "FUTURE_TEST_SOURCE_ONLY",
+            "NO_PROVIDER_IMPLEMENTATION",
+            "NO_KDF_AEAD_EXECUTION",
+            "NO_PROVIDER_SELECTION",
+        )
+        val offenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                forbiddenTokens.any { token -> token in text }
+            }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "The commonTest executable-scope admission gate must stay absent from production runtime roots: $offenders",
+        )
+    }
+
+    @Test
     fun testOnlyProviderIdentityInventoryDoesNotAppearInProductionRuntimeRoots() {
         val root = repositoryRoot()
         val forbiddenTokens = listOf(

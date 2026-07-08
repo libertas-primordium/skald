@@ -53,3 +53,9 @@ The completion audit creates no trace payloads, executes no provider operations,
 It adds no vault lifecycle path, vault persistence path, secure secret storage success path, secure metadata storage success path, production sync path, signing/broadcasting path, UI path, endpoint path, or mainnet path.
 
 Provider selection remains `DisabledVaultCryptoProvider` only. `productionProviderSelectable` remains false.
+
+## Follow-On Admission
+
+The follow-on executable-scope admission gate is documented in
+[`ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_SCOPE_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_TEST_ONLY_PROVIDER_IDENTITY_EXECUTABLE_SCOPE_ADMISSION.md).
+That admission is commonTest-only and admits only a later test-source-only public-KAT provider implementation branch. It does not implement an executable provider, execute KDF/AEAD, execute provider operations, create a KAT executor, enable provider selection, or add vault persistence, sync, signing/broadcasting, UI, endpoint, or mainnet behavior.
