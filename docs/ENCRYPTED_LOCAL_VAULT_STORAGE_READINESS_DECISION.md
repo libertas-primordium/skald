@@ -24,6 +24,8 @@ The container-format v1 decision is documented in [`ENCRYPTED_LOCAL_VAULT_CONTAI
 
 The storage path/session lifecycle decision is documented in [`ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION.md). It consumes this readiness decision and the container-format v1 decision as evidence, but remains decision-only: no storage path implementation, directory creation, file read/write/delete, lock/unlock/session handling, secure-storage success, secure-metadata success, production sync, provider selection, UI, endpoints, or mainnet behavior is added.
 
+The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md). It consumes this readiness decision, the container-format v1 decision, and the storage path/session lifecycle decision as evidence, but remains decision-only: no migration execution, corruption detection or repair, backup creation, rollback, atomic replace, partial-write detection, file I/O, parser/writer, secure-storage success, secure-metadata success, production sync, provider selection, UI, endpoints, or mainnet behavior is added.
+
 ## Evidence
 
 - Provider-level public KDF/AEAD KATs passed as test-source-only public-vector evidence.

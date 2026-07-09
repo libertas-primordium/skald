@@ -38,6 +38,8 @@ Current encrypted local vault status also includes a commonMain storage readines
 
 Current encrypted local vault status also includes a commonMain storage path/session lifecycle decision; `vaultStoragePathSessionLifecycleDecisionAdmitted=true` admits only later separate branches, Android/Linux storage policy labels are not implementations, and no directory/file I/O, lock/unlock/session handling, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
 
+Current encrypted local vault status also includes a commonMain migration/corruption policy decision; `vaultMigrationCorruptionPolicyDecisionAdmitted=true` admits only later separate branches, and no migration execution, corruption detection/repair, backup, rollback, atomic replace, file I/O, parser/writer, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Targets
 
 - Android APK

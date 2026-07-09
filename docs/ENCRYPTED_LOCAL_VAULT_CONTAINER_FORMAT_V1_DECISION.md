@@ -20,6 +20,8 @@ This document records the encrypted-vault-container-format-v1-decision-only pass
 
 The storage path/session lifecycle decision is documented in [`ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION.md). It consumes this container-format decision as evidence and admits only future storage-path and lock/session policy labels; it does not add directory creation, file read/write/delete behavior, lock/unlock/session implementation, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
 
+The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md). It consumes this container-format decision as evidence and admits only future migration/corruption policy labels; it does not add parser/writer implementation, migration execution, corruption detection or repair, backup creation, rollback, atomic replace, file I/O, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:
