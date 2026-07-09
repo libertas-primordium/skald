@@ -36,6 +36,8 @@ Current test-only provider status also includes a common-test/test-source-only p
 
 Current encrypted local vault status also includes a commonMain storage readiness decision; `encryptedVaultStorageImplementationPathAdmitted=true` admits only a later separate storage design/implementation branch, and no vault container parser/writer, secure storage success path, secure metadata success path, production persistence, sync, provider selection, signing/broadcasting, UI, endpoint, or mainnet behavior is added.
 
+Current encrypted local vault status also includes a commonMain storage path/session lifecycle decision; `vaultStoragePathSessionLifecycleDecisionAdmitted=true` admits only later separate branches, Android/Linux storage policy labels are not implementations, and no directory/file I/O, lock/unlock/session handling, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Targets
 
 - Android APK
