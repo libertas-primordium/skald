@@ -18,6 +18,8 @@ This document records the encrypted-vault-container-format-v1-decision-only pass
 - `vaultMigrationCorruptionPolicyAdmitted=true` is not migration execution.
 - `vaultBackupExportSeparationPolicyAdmitted=true` is not backup/export implementation.
 
+The storage path/session lifecycle decision is documented in [`ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION.md). It consumes this container-format decision as evidence and admits only future storage-path and lock/session policy labels; it does not add directory creation, file read/write/delete behavior, lock/unlock/session implementation, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:

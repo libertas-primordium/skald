@@ -226,6 +226,7 @@ class ProductionBackendAdapterSourceGuardTest {
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1TestOnlyProviderIdentityImplementationPlan.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStorageReadinessDecision.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultContainerFormatV1Decision.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStoragePathSessionLifecycleDecision.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""import\s+org\.bitcoindevkit"""),
@@ -299,6 +300,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val allowedPolicyFiles = setOf(
             sourceGuardRelativePath(decisionFile),
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultContainerFormatV1Decision.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStoragePathSessionLifecycleDecision.kt",
         )
         val decisionSource = sourceGuardText(decisionFile)
         val misplacedDefinitions = productionRuntimeKotlinFiles()
@@ -371,9 +373,13 @@ class ProductionBackendAdapterSourceGuardTest {
             root,
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultContainerFormatV1Decision.kt",
         )
+        val allowedPolicyFiles = setOf(
+            sourceGuardRelativePath(decisionFile),
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStoragePathSessionLifecycleDecision.kt",
+        )
         val decisionSource = sourceGuardText(decisionFile)
         val misplacedDefinitions = productionRuntimeKotlinFiles()
-            .filterNot { file -> sourceGuardRelativePath(file) == sourceGuardRelativePath(decisionFile) }
+            .filterNot { file -> sourceGuardRelativePath(file) in allowedPolicyFiles }
             .filter { file ->
                 val text = sourceGuardText(file)
                 "EncryptedVaultContainerFormatV1Decision" in text ||
@@ -445,6 +451,103 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             offenders.isEmpty(),
             "Container format v1 decision must remain policy-only and cannot add parser/writer/storage/sync/provider-selection success: $offenders",
+        )
+    }
+
+    @Test
+    fun encryptedVaultStoragePathSessionLifecycleDecisionStaysPolicyOnlyAndCannotEnableStorage() {
+        val root = repositoryRoot()
+        val decisionFile = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStoragePathSessionLifecycleDecision.kt",
+        )
+        val decisionSource = sourceGuardText(decisionFile)
+        val misplacedDefinitions = productionRuntimeKotlinFiles()
+            .filterNot { file -> sourceGuardRelativePath(file) == sourceGuardRelativePath(decisionFile) }
+            .filter { file ->
+                val text = sourceGuardText(file)
+                "EncryptedVaultStoragePathSessionLifecycleDecision" in text ||
+                    "ENCRYPTED_LOCAL_VAULT_STORAGE_PATH_SESSION_LIFECYCLE_DECISION" in text ||
+                    "skald-encrypted-local-vault-storage-path-session-lifecycle-decision-v1" in text
+            }
+            .map(::sourceGuardRelativePath)
+        val forbiddenDecisionPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+android\.content"""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security\.KeyStore"""),
+            Regex("""import\s+java\.security\.SecureRandom"""),
+            Regex("""import\s+kotlin\.random"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\("""),
+            Regex("""\bUri\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bwriteBytes\("""),
+            Regex("""\breadBytes\("""),
+            Regex("""\bmkdir"""),
+            Regex("""\bdelete\("""),
+            Regex("""\bJsonKeysetWriter\b"""),
+            Regex("""\bBinaryKeysetWriter\b"""),
+            Regex("""\bJsonKeysetReader\b"""),
+            Regex("""\bBinaryKeysetReader\b"""),
+            Regex("""\bKeysetHandle\."""),
+            Regex("""\bCipher\("""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\bSecureRandom\("""),
+            Regex("""\bMac\("""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\bAndroidKeyStore\b"""),
+            Regex("""vaultStoragePathImplementationPresent\s*=\s*true"""),
+            Regex("""vaultDirectoryCreated\s*=\s*true"""),
+            Regex("""vaultFileReadPresent\s*=\s*true"""),
+            Regex("""vaultFileWritePresent\s*=\s*true"""),
+            Regex("""vaultFileDeletePresent\s*=\s*true"""),
+            Regex("""vaultContainerParserPresent\s*=\s*true"""),
+            Regex("""vaultContainerWriterPresent\s*=\s*true"""),
+            Regex("""vaultContainerSerializationPresent\s*=\s*true"""),
+            Regex("""vaultContainerParsingPresent\s*=\s*true"""),
+            Regex("""vaultContainerBytesProduced\s*=\s*true"""),
+            Regex("""encryptedVaultFileFormatImplemented\s*=\s*true"""),
+            Regex("""encryptedVaultRepositorySuccessPresent\s*=\s*true"""),
+            Regex("""lockSessionImplementationPresent\s*=\s*true"""),
+            Regex("""unlockImplementationPresent\s*=\s*true"""),
+            Regex("""runtimeSessionKeyPresent\s*=\s*true"""),
+            Regex("""sessionKeyCached\s*=\s*true"""),
+            Regex("""plaintextCachePresent\s*=\s*true"""),
+            Regex("""nonSecretSettingsVaultStoragePresent\s*=\s*true"""),
+            Regex("""sharedPreferencesVaultStoragePresent\s*=\s*true"""),
+            Regex("""desktopConfigVaultStoragePresent\s*=\s*true"""),
+            Regex("""secureSecretStorageSuccessPathPresent\s*=\s*true"""),
+            Regex("""secureMetadataStorageSuccessPathPresent\s*=\s*true"""),
+            Regex("""productionObservationPersistencePresent\s*=\s*true"""),
+            Regex("""productionAddressIndexPersistencePresent\s*=\s*true"""),
+            Regex("""productionUtxoPersistencePresent\s*=\s*true"""),
+            Regex("""productionWalletHistoryPersistencePresent\s*=\s*true"""),
+            Regex("""productionSyncPresent\s*=\s*true"""),
+            Regex("""productionBackendClientPresent\s*=\s*true"""),
+            Regex("""productionProviderSelectionEnabled\s*=\s*true"""),
+            Regex("""productionProviderSelectable\s*=\s*true"""),
+            Regex("""uiActionEnablementPresent\s*=\s*true"""),
+            Regex("""endpointPresent\s*=\s*true"""),
+            Regex("""mainnetPresent\s*=\s*true"""),
+        )
+        val offenders = forbiddenDecisionPatterns
+            .filter { pattern -> pattern.containsMatchIn(decisionSource) }
+            .map { pattern -> pattern.pattern }
+
+        assertTrue(
+            misplacedDefinitions.isEmpty(),
+            "Storage path/session lifecycle decision definitions must stay in commonMain policy file only: $misplacedDefinitions",
+        )
+        assertTrue(
+            offenders.isEmpty(),
+            "Storage path/session lifecycle decision must remain policy-only and cannot add storage/file/session/sync/provider-selection success: $offenders",
         )
     }
 
@@ -860,6 +963,7 @@ class ProductionBackendAdapterSourceGuardTest {
         val allowedReadinessPolicyFiles = setOf(
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStorageReadinessDecision.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultContainerFormatV1Decision.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultStoragePathSessionLifecycleDecision.kt",
         )
         val offenders = productionRuntimeKotlinFiles()
             .filterNot { file -> sourceGuardRelativePath(file) in allowedReadinessPolicyFiles }
