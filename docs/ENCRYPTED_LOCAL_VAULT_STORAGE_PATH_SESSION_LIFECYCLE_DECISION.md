@@ -15,6 +15,8 @@ This document records the encrypted-vault-storage-path-session-lifecycle-decisio
 - `sessionKeyMemoryHandlingPolicyAdmitted=true` is not runtime session-key handling.
 - `platformWrappingPolicyReferenceAdmitted=true` is not Android Keystore or Linux keyring implementation.
 
+The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md). It consumes this storage path/session lifecycle decision as evidence and admits only future migration/corruption policy labels; it does not add migration execution, corruption detection or repair, backup creation, rollback, atomic replace, partial-write detection, directory creation, file read/write/delete behavior, lock/unlock/session implementation, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
+
 ## Storage Path Policy
 
 - Future Android vault storage must use app-private storage only.
