@@ -44,6 +44,8 @@ Current encrypted local vault status also includes a commonMain parser/writer ad
 
 Current encrypted local vault status also includes a commonMain parser/writer test-vector admission; `parserWriterTestVectorAdmissionPassed=true` admits only later separate synthetic test-vector/parser/writer branches, and no vectors, parser/writer, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
 
+Current encrypted local vault status also includes a commonMain parser/writer implementation scaffold; `parserWriterImplementationScaffoldPresent=true` is scaffold evidence only, disabled parser/writer scaffolds reject without consuming or producing bytes, no test-source synthetic bytes were created, and no working parser/writer, production vector bytes, production parser inputs or writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Targets
 
 - Android APK

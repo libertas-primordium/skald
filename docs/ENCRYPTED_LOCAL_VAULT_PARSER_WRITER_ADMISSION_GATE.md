@@ -19,6 +19,8 @@ This document records the encrypted-vault-parser-writer-admission-gate-only pass
 
 The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md). It consumes this admission gate as evidence and admits only later separate synthetic vector, parser, writer, and parser/writer KAT branches; it does not create vectors, parser inputs, writer outputs, serialized vault bytes, parser/writer implementation, serialization/parsing, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
 
+The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this gate and the test-vector admission as evidence and adds only disabled parser/writer scaffold surfaces; it does not add a working parser or writer, production vector bytes, production parser inputs, production writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.

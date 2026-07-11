@@ -15,6 +15,8 @@ This document records the encrypted-vault-parser-writer-test-vector-admission-on
 - `futureNegativeVectorCoverageAdmitted=true` is not negative-vector execution.
 - `futureRedactedVectorDiagnosticsAdmitted=true` is not diagnostics implementation.
 
+The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this admission as evidence and adds only commonMain interfaces, request/result/blocker models, redacted diagnostics, and disabled fail-closed parser/writer scaffolds; it creates no synthetic bytes, executes no vectors, implements no working parser/writer, serializes or parses nothing, produces or consumes no vault bytes, performs no file I/O or crypto execution, and enables no storage, sync, provider selection, UI, endpoint, or mainnet behavior.
+
 ## Test Vector Admission Policy
 
 - Future parser/writer implementation may create synthetic in-memory vector bytes only in test source sets after a separate implementation branch.
