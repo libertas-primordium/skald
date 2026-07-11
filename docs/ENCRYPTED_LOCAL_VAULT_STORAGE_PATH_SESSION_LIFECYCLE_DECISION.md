@@ -19,6 +19,8 @@ The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAUL
 
 The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md). It consumes this storage path/session lifecycle decision as evidence and admits only future parser, writer, and parser/writer KAT branches; it does not add parser/writer implementation, serialization/parsing, vault bytes, directory creation, file read/write/delete behavior, lock/unlock/session implementation, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
 
+The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md). It consumes this storage path/session lifecycle decision as evidence and admits only future synthetic parser/writer vector branches; it does not create vectors, add parser/writer implementation, serialize or parse containers, produce or consume vault bytes, create directories, read/write/delete files, implement lock/unlock/session handling, enable storage success, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Storage Path Policy
 
 - Future Android vault storage must use app-private storage only.

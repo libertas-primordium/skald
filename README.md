@@ -42,6 +42,8 @@ Current encrypted local vault status also includes a commonMain migration/corrup
 
 Current encrypted local vault status also includes a commonMain parser/writer admission gate; `vaultParserWriterAdmissionGatePassed=true` admits only later separate parser, writer, and parser/writer KAT branches, and no parser/writer, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, Tink keysets, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
 
+Current encrypted local vault status also includes a commonMain parser/writer test-vector admission; `parserWriterTestVectorAdmissionPassed=true` admits only later separate synthetic test-vector/parser/writer branches, and no vectors, parser/writer, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Targets
 
 - Android APK
