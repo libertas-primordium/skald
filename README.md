@@ -40,6 +40,8 @@ Current encrypted local vault status also includes a commonMain storage path/ses
 
 Current encrypted local vault status also includes a commonMain migration/corruption policy decision; `vaultMigrationCorruptionPolicyDecisionAdmitted=true` admits only later separate branches, and no migration execution, corruption detection/repair, backup, rollback, atomic replace, file I/O, parser/writer, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
 
+Current encrypted local vault status also includes a commonMain parser/writer admission gate; `vaultParserWriterAdmissionGatePassed=true` admits only later separate parser, writer, and parser/writer KAT branches, and no parser/writer, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, Tink keysets, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Targets
 
 - Android APK

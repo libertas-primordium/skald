@@ -18,6 +18,8 @@ This document records the encrypted-vault-migration-corruption-policy-decision-o
 - `atomicReplacePolicyReferenceAdmitted=true` is not file write implementation.
 - `partialWriteDetectionPolicyAdmitted=true` is not partial-write detection implementation.
 
+The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md). It consumes this migration/corruption policy decision as evidence and admits only future parser, writer, and parser/writer KAT branches; it does not add parser/writer implementation, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, Tink keyset creation/persistence, migration execution, corruption detection/repair, backup creation, rollback, atomic replace, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
+
 ## Migration Policy
 
 - Future migration must authenticate the source vault before reading or transforming records.

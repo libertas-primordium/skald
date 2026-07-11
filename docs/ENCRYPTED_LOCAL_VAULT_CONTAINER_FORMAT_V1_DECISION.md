@@ -22,6 +22,8 @@ The storage path/session lifecycle decision is documented in [`ENCRYPTED_LOCAL_V
 
 The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md). It consumes this container-format decision as evidence and admits only future migration/corruption policy labels; it does not add parser/writer implementation, migration execution, corruption detection or repair, backup creation, rollback, atomic replace, file I/O, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
 
+The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md). It consumes this container-format decision as evidence and admits only future parser, writer, and parser/writer KAT branches; it does not add parser/writer implementation, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:
