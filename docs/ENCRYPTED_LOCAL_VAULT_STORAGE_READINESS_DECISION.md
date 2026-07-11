@@ -30,6 +30,8 @@ The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER
 
 The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md). It consumes this readiness decision and the later parser/writer admission gate as evidence, but remains admission-only: no vectors, parser/writer implementation, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, Tink keyset creation/persistence, storage success, production sync, provider selection, UI, endpoints, or mainnet behavior is added.
 
+The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this readiness decision and later parser/writer admissions as evidence, but remains scaffold-only: no working parser/writer, test-source synthetic bytes, production vector bytes, production parser inputs or writer outputs, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, Tink keyset creation/persistence, storage success, production sync, provider selection, UI, endpoints, or mainnet behavior is added.
+
 ## Evidence
 
 - Provider-level public KDF/AEAD KATs passed as test-source-only public-vector evidence.

@@ -26,6 +26,8 @@ The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER
 
 The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md). It consumes this container-format decision and the parser/writer admission gate as evidence and admits only future synthetic test-vector coverage branches; it does not create vectors, implement parser/writer behavior, serialize or parse containers, produce or consume vault bytes, read/write/delete files, execute crypto, enable storage success, enable production sync, enable provider selection, or enable mainnet.
 
+The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this container-format decision as evidence and adds only interfaces, request/result/blocker models, redacted diagnostics, and disabled parser/writer scaffolds; it does not add a working parser or writer, production vector bytes, production parser inputs or writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, or mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:
