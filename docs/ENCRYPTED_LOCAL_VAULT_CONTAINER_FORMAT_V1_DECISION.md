@@ -24,6 +24,8 @@ The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAUL
 
 The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md). It consumes this container-format decision as evidence and admits only future parser, writer, and parser/writer KAT branches; it does not add parser/writer implementation, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, storage success, production sync, production provider selection, UI, endpoints, or mainnet.
 
+The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md). It consumes this container-format decision and the parser/writer admission gate as evidence and admits only future synthetic test-vector coverage branches; it does not create vectors, implement parser/writer behavior, serialize or parse containers, produce or consume vault bytes, read/write/delete files, execute crypto, enable storage success, enable production sync, enable provider selection, or enable mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:

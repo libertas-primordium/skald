@@ -17,6 +17,8 @@ This document records the encrypted-vault-parser-writer-admission-gate-only pass
 - `parserKatRequirementAdmitted=true` is not parser KAT execution.
 - `writerKatRequirementAdmitted=true` is not writer KAT execution.
 
+The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_TEST_VECTOR_ADMISSION.md). It consumes this admission gate as evidence and admits only later separate synthetic vector, parser, writer, and parser/writer KAT branches; it does not create vectors, parser inputs, writer outputs, serialized vault bytes, parser/writer implementation, serialization/parsing, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.
