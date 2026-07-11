@@ -26,6 +26,8 @@ The storage path/session lifecycle decision is documented in [`ENCRYPTED_LOCAL_V
 
 The migration/corruption policy decision is documented in [`ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md`](ENCRYPTED_LOCAL_VAULT_MIGRATION_CORRUPTION_POLICY_DECISION.md). It consumes this readiness decision, the container-format v1 decision, and the storage path/session lifecycle decision as evidence, but remains decision-only: no migration execution, corruption detection or repair, backup creation, rollback, atomic replace, partial-write detection, file I/O, parser/writer, secure-storage success, secure-metadata success, production sync, provider selection, UI, endpoints, or mainnet behavior is added.
 
+The parser/writer admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_ADMISSION_GATE.md). It consumes this readiness decision and later decision evidence, but remains admission-only: no parser/writer implementation, serialization/parsing, vault bytes, file I/O, KDF/AEAD/encryption/decryption, key/nonce generation, Tink keyset creation/persistence, migration execution, corruption detection/repair, secure-storage success, secure-metadata success, production sync, provider selection, UI, endpoints, or mainnet behavior is added.
+
 ## Evidence
 
 - Provider-level public KDF/AEAD KATs passed as test-source-only public-vector evidence.
