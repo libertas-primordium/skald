@@ -39,6 +39,8 @@ The later working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT
 
 The later working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It adds a minimal in-memory parser for test-source synthetic vectors only while keeping the writer disabled/separate, production vectors absent, production parser inputs/writer outputs absent, production vault bytes absent, file I/O absent, crypto/authentication execution absent, storage success absent, sync absent, provider selection absent, UI/endpoints absent, and mainnet disabled.
 
+The follow-on [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) is commonTest-only and does not change this scaffold or add a writer. It reports exact-match and parser-display blockers while serialization, writer execution, storage, crypto, sync, provider selection, and mainnet remain absent.
+
 ## Non-Authorization
 
 - No working parser implementation is added.

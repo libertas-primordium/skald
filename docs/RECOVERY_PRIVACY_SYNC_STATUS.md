@@ -20,6 +20,8 @@ The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKI
 
 The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It does not change Recovery/Privacy persistence: parser execution is limited to test-source synthetic in-memory bytes, no writer, production vectors, production parser inputs/writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, provider selection, UI, endpoint, or mainnet behavior is added, and observation metadata, address index state, UTXO state, wallet history, Recovery status, and Privacy Analyzer persistence remain blocked.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) changes no Recovery/Privacy behavior. Exact-marker and parser-display blockers keep the audit incomplete; real-wallet parsing, production persistence, sync, provider selection, and Recovery/Privacy state storage remain disabled.
+
 ## Source Location
 
 Recovery status models:

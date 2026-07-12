@@ -23,6 +23,8 @@ The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKI
 
 The working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It is the scoped parser execution pass for test-source synthetic vectors only and does not authorize writer implementation, production vector bytes, production parser inputs or writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) reuses the admitted catalog, derives additional negatives at test runtime only, and leaves validation incomplete because suffixed and concatenated markers do not fail closed and the parser object is not explicitly redacted.
+
 ## Test Vector Admission Policy
 
 - Future parser/writer implementation may create synthetic in-memory vector bytes only in test source sets after a separate implementation branch.

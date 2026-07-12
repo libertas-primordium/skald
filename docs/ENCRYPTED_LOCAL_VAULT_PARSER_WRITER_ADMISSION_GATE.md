@@ -27,6 +27,8 @@ The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKI
 
 The working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It adds only the minimal in-memory parser and synthetic test-source vector execution path; writer implementation, production vectors, production parser inputs/writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, and mainnet remain blocked.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) adds validation only. It changes no parser semantics, adds no writer, and records unresolved exact-marker and parser-object redaction blockers while all production capabilities remain blocked.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.

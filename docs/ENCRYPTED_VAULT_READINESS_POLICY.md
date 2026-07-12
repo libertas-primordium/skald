@@ -204,6 +204,8 @@ Tests cover:
 
 The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It is limited to a minimal commonMain in-memory parser for test-source synthetic vectors and does not add writer implementation, production vector bytes, production parser inputs or writer outputs, production vault bytes, file I/O, KDF/AEAD/encryption/decryption/authentication, key or nonce generation, Tink keyset creation/persistence, secure-storage success, secure-metadata success, production persistence, sync, provider selection, signing/broadcasting, UI, endpoints, or mainnet.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) is commonTest-only and currently reports `parserValidationCompletionAuditPassed=false`. Catalog behavior and payload/input-ownership checks pass, but exact suffixed/concatenated marker rejection and explicit parser-object redaction remain unresolved; no readiness or production authorization changes.
+
 This readiness policy does not enable:
 
 - encrypted vault implementation,

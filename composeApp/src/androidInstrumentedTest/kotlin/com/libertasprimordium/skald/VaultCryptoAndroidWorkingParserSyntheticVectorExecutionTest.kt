@@ -33,15 +33,29 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
                     EncryptedVaultWorkingParserSyntheticClassification.SyntheticKdfSection,
                 sectionCount = 2,
             ),
+            AndroidParserCase(
+                marker = "skv-env-c",
+                classification =
+                    EncryptedVaultWorkingParserSyntheticClassification.SyntheticDirectory,
+                sectionCount = 3,
+            ),
         )
 
         cases.forEach { case ->
             val material = case.marker.encodeToByteArray()
+            val beforeParse = material.copyOf()
             val request = EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(material)
             val result = EncryptedVaultWorkingParser.parse(request)
+            val repeated = EncryptedVaultWorkingParser.parse(
+                EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(
+                    case.marker.encodeToByteArray(),
+                ),
+            )
             val rendered = listOf(request.toString(), result.toString(), result.diagnostics.toString())
                 .joinToString(separator = " ")
 
+            assertTrue(material.contentEquals(beforeParse))
+            assertEquals(result, repeated)
             assertEquals(EncryptedVaultWorkingParserStatus.ParsedSyntheticVector, result.status)
             assertTrue(result.accepted)
             assertEquals(case.classification, result.classification)
@@ -70,7 +84,16 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
     fun androidWorkingParserFailsClosedForUnsupportedVersionAndTruncatedHeader() {
         val cases = listOf(
             AndroidParserFailure("skv-ver-f", EncryptedVaultWorkingParserBlocker.UnsupportedVersion),
+            AndroidParserFailure(
+                "skv-crit-g",
+                EncryptedVaultWorkingParserBlocker.UnsupportedCriticalFeature,
+            ),
             AndroidParserFailure("skv-cut-h", EncryptedVaultWorkingParserBlocker.TruncatedHeader),
+            AndroidParserFailure("skv-mig-k", EncryptedVaultWorkingParserBlocker.MigrationRequired),
+            AndroidParserFailure(
+                "skv-cor-l",
+                EncryptedVaultWorkingParserBlocker.CorruptionSuspected,
+            ),
         )
 
         cases.forEach { case ->
@@ -102,6 +125,50 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
             assertFalse(rendered.contains(case.marker))
             assertFalse(rendered.contains(material.decodeToString()))
         }
+    }
+
+    @Test
+    fun androidWorkingParserRejectsEmptyUnknownAndPrefixedInputsButReportsSuffixGap() {
+        val valid = "skv-min-a".encodeToByteArray()
+        val empty = valid.copyOf(0)
+        val unknown = valid.copyOf(2).also { candidate ->
+            candidate[0] = (candidate[0].toInt() xor 1).toByte()
+        }
+        val prefixed = valid.copyOf(valid.size + 1).also { candidate ->
+            valid.copyInto(candidate, destinationOffset = 1)
+            candidate[0] = valid.last()
+        }
+        val suffixed = valid.copyOf(valid.size + 1).also { candidate ->
+            candidate[candidate.lastIndex] = valid.first()
+        }
+
+        val emptyResult = parse(empty)
+        val unknownResult = parse(unknown)
+        val prefixedResult = parse(prefixed)
+        val suffixedResult = parse(suffixed)
+
+        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, emptyResult.status)
+        assertTrue(emptyResult.blockers.contains(EncryptedVaultWorkingParserBlocker.EmptyInput))
+        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, unknownResult.status)
+        assertTrue(
+            unknownResult.blockers.contains(
+                EncryptedVaultWorkingParserBlocker.UnrecognizedSyntheticVector,
+            ),
+        )
+        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, prefixedResult.status)
+        assertTrue(
+            prefixedResult.blockers.contains(
+                EncryptedVaultWorkingParserBlocker.UnrecognizedSyntheticVector,
+            ),
+        )
+
+        // Validation-only blocker: the existing parser accepts a suffixed marker.
+        assertEquals(EncryptedVaultWorkingParserStatus.ParsedSyntheticVector, suffixedResult.status)
+        assertTrue(suffixedResult.accepted)
+        assertEquals(
+            EncryptedVaultWorkingParserSyntheticClassification.SyntheticHeaderOnly,
+            suffixedResult.classification,
+        )
     }
 
     @Test
@@ -166,4 +233,9 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
         val marker: String,
         val blocker: EncryptedVaultWorkingParserBlocker,
     )
+
+    private fun parse(material: ByteArray) =
+        EncryptedVaultWorkingParser.parse(
+            EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(material),
+        )
 }

@@ -2,6 +2,7 @@ package com.libertasprimordium.skald
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -1439,11 +1440,6 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
         )
         val approvedParserFile = sourceGuardRelativePath(parserFile)
-        val productionRoots = listOf(
-            File(root, "composeApp/src/commonMain"),
-            File(root, "composeApp/src/androidMain"),
-            File(root, "composeApp/src/desktopMain"),
-        ).filter { it.exists() }
         val parserDefinitionPatterns = listOf(
             Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParser\b"""),
             Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParserRequest\b"""),
@@ -1466,18 +1462,13 @@ class ProductionBackendAdapterSourceGuardTest {
             "skv-mig-k",
             "skv-cor-l",
         )
-        val misplacedParserDefinitions = productionRoots
-            .flatMap { sourceRoot ->
-                sourceRoot.walkTopDown()
-                    .filter { it.isFile && it.extension == "kt" }
-                    .filter { file ->
-                        val relative = file.relativeTo(root).invariantSeparatorsPath
-                        relative != approvedParserFile &&
-                            parserDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
-                    }
-                    .map { it.relativeTo(root).invariantSeparatorsPath }
-                    .toList()
+        val misplacedParserDefinitions = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val relative = sourceGuardRelativePath(file)
+                relative != approvedParserFile &&
+                    parserDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
             }
+            .map(::sourceGuardRelativePath)
         val parserSource = sourceGuardText(parserFile)
         val productionMarkerOffenders = productionRuntimeKotlinFiles()
             .filter { file ->
@@ -1638,6 +1629,120 @@ class ProductionBackendAdapterSourceGuardTest {
             Regex("""syntheticVectorParserExecutionSupported\s*=\s*true""").containsMatchIn(parserSource),
             "Synthetic parser execution evidence must be scoped to the approved parser file.",
         )
+    }
+
+    @Test
+    fun encryptedVaultWorkingParserValidationAuditStaysTestOnlyPayloadFreeAndUnreachableFromProduction() {
+        val root = repositoryRoot()
+        val parserPath =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt"
+        val auditPath =
+            "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParserValidationCompletionAudit.kt"
+        val auditTestPath =
+            "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/EncryptedVaultWorkingParserValidationCompletionAuditTest.kt"
+        val androidValidationPath =
+            "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest.kt"
+        val catalogPath =
+            "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/security/EncryptedVaultParserWriterSyntheticVectorCatalog.kt"
+        val auditFile = File(root, auditPath)
+        val auditTestFile = File(root, auditTestPath)
+        val androidValidationFile = File(root, androidValidationPath)
+        val auditSource = sourceGuardText(auditFile)
+        val auditReportDeclaration = auditSource
+            .substringAfter("data class EncryptedVaultWorkingParserValidationCompletionAuditReport(")
+            .substringBefore(") {")
+        val parserSource = sourceGuardText(File(root, parserPath))
+        val parserResultDeclaration = parserSource
+            .substringAfter("data class EncryptedVaultWorkingParserResult(")
+            .substringBefore(") {")
+        val diagnosticsDeclaration = parserSource
+            .substringAfter("data class EncryptedVaultWorkingParserRedactedDiagnostics(")
+            .substringBefore(") {")
+        val productionOutsideParser = productionRuntimeKotlinFiles()
+            .filterNot { sourceGuardRelativePath(it) == parserPath }
+        val productionCallPatterns = listOf(
+            Regex("""EncryptedVaultWorkingParser\s*\.\s*parse\s*\("""),
+            Regex("""EncryptedVaultWorkingParserRequest\s*\.\s*testSourceSyntheticVector\s*\("""),
+            Regex("""\bEncryptedVaultWorkingParserRequest\s*\("""),
+        )
+        val productionIntegrationPatterns = listOf(
+            Regex("""\bEncryptedVaultWorkingParserRegistry\b"""),
+            Regex("""\bEncryptedVaultWorkingParserFactory\b"""),
+            Regex("""\bEncryptedVaultWorkingParserDispatcher\b"""),
+            Regex("""\bEncryptedVaultWorkingParserService\b"""),
+            Regex("""\bEncryptedVaultWorkingParserRepository\b"""),
+            Regex("""\bEncryptedVaultWorkingParserStorage(?:Adapter|Integration)\b"""),
+            Regex("""\bEncryptedVaultWorkingParserUi(?:Action|Integration)\b"""),
+        )
+        val productionCallOffenders = productionOutsideParser
+            .filter { file ->
+                productionCallPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+            }
+            .map(::sourceGuardRelativePath)
+        val productionIntegrationOffenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                productionIntegrationPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+            }
+            .map(::sourceGuardRelativePath)
+        val auditDefinitionTokens = listOf(
+            "EncryptedVaultWorkingParserValidationCompletionAuditReport",
+            "EncryptedVaultWorkingParserValidationCompletionAuditKind",
+            "EncryptedVaultWorkingParserValidationCompletionAuditSourceSet",
+            "EncryptedVaultWorkingParserValidationCompletionAuditBlocker",
+            "object EncryptedVaultWorkingParserValidationCompletionAudit",
+        )
+        val productionAuditOffenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                auditDefinitionTokens.any { it in text }
+            }
+            .map(::sourceGuardRelativePath)
+        val reportDefinitionFiles = SourceGuardCorpus.testSourceFiles
+            .filter { file ->
+                sourceGuardRelativePath(file).startsWith("composeApp/src/commonTest/")
+            }
+            .filter { file ->
+                "data class EncryptedVaultWorkingParserValidationCompletionAuditReport" in
+                    sourceGuardText(file)
+            }
+            .map(::sourceGuardRelativePath)
+        val catalogDefinitionFiles = SourceGuardCorpus.testSourceFiles
+            .filter { file ->
+                sourceGuardRelativePath(file).startsWith("composeApp/src/commonTest/")
+            }
+            .filter { file ->
+                Regex(
+                    """\bobject\s+EncryptedVaultParserWriterSyntheticVectorCatalog\b""",
+                ).containsMatchIn(sourceGuardText(file))
+            }
+            .map(::sourceGuardRelativePath)
+        val productionMarkers = productionRuntimeKotlinFiles()
+            .filter { file -> "skv-" in sourceGuardText(file) }
+            .map(::sourceGuardRelativePath)
+
+        assertTrue(auditFile.isFile, "CommonTest validation audit producer must exist.")
+        assertTrue(auditTestFile.isFile, "CommonTest validation audit test must exist.")
+        assertTrue(androidValidationFile.isFile, "Android validation must remain instrumented-test-only.")
+        assertEquals(listOf(auditPath), reportDefinitionFiles)
+        assertEquals(listOf(catalogPath), catalogDefinitionFiles)
+        assertTrue(productionAuditOffenders.isEmpty(), "Audit models must stay out of production: $productionAuditOffenders")
+        assertTrue(productionCallOffenders.isEmpty(), "Production parser call sites must remain absent: $productionCallOffenders")
+        assertTrue(
+            productionIntegrationOffenders.isEmpty(),
+            "Production parser registry/factory/dispatcher/service/repository/storage/UI integration must remain absent: $productionIntegrationOffenders",
+        )
+        assertTrue(productionMarkers.isEmpty(), "Synthetic vector markers must stay out of production: $productionMarkers")
+        assertFalse(Regex(""":\s*(?:U?ByteArray)\b""").containsMatchIn(auditReportDeclaration))
+        assertFalse("EncryptedVaultWorkingParserRequest" in auditReportDeclaration)
+        assertFalse(Regex(""":\s*(?:U?ByteArray)\b""").containsMatchIn(parserResultDeclaration))
+        assertFalse("EncryptedVaultWorkingParserRequest" in parserResultDeclaration)
+        assertFalse(Regex(""":\s*(?:U?ByteArray)\b""").containsMatchIn(diagnosticsDeclaration))
+        assertFalse("skv-" in auditSource)
+        assertTrue("COMMON_TEST_VALIDATION_ONLY" in auditSource)
+        assertTrue("parserValidationCompletionAuditPassed" in auditSource)
+        assertTrue(SourceGuardCorpus.productionRuntimeSourceFiles.none { sourceGuardRelativePath(it) == auditPath })
+        assertTrue(SourceGuardCorpus.productionRuntimeSourceFiles.none { sourceGuardRelativePath(it) == auditTestPath })
+        assertTrue(SourceGuardCorpus.testSourceFiles.any { sourceGuardRelativePath(it) == androidValidationPath })
     }
 
     @Test

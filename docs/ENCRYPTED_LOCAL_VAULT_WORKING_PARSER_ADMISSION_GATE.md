@@ -24,6 +24,8 @@ This document records the encrypted-vault-working-parser-admission-gate-only pas
 
 The later working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It adds only a minimal commonMain in-memory parser for test-source synthetic vectors; it does not add a writer, production vector bytes, production parser inputs or writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
 
+The follow-on [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) changes no parser semantics. It confirms all catalog outcomes but reports unresolved suffixed-marker, concatenated-marker, and parser-object `toString()` blockers; production parser call sites and real vault parsing remain absent.
+
 ## Non-Authorization
 
 - No working parser implementation is added.
