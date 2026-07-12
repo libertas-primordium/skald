@@ -310,3 +310,7 @@ Every factory-capable path remains rejected. The boundary records blockers for n
 ## Next Step
 
 The next focused pass should review runtime provider/primitive/randomness check evidence for supported Android and Linux paths, then decide whether final Argon2id calibration approval can proceed before provider selectability. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA variant-resolution work remain separate replacement-stack probes if needed. Do not add production entropy collection, key generation, production persistence, production sync, backend clients, signing, broadcasting, Tor transport, Nostr parsing, public endpoints, or mainnet as part of that work.
+
+## Repository reconciliation status (2026-07-12)
+
+The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) distinguishes disabled app/provider/storage readiness from production compilation and callability. Earlier byte-format/direct-crypto building blocks and a KAT harness exist, but no app persistence or selectable provider does. Readiness remains blocked while canonical ownership and security mismatches await human decision.
