@@ -210,3 +210,7 @@ The authorization/readiness matrix does not enable metadata persistence or any o
 ## Next Step
 
 The next focused pass should continue with a still-disabled provider or vault-readiness gate that does not run randomness, provider crypto, storage, production sync, or observation persistence. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA conflict strategy work remain separate replacement-stack probes if needed. Do not select a non-disabled provider, add plaintext observation storage, production backend clients, address persistence, signing, broadcasting, public endpoints, or mainnet as part of that work.
+
+## Repository reconciliation status (2026-07-12)
+
+The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) records that the earlier standalone and embedded manifests serialize identifiers, references, counters, tombstones, and crash metadata as plaintext without manifest authentication or encryption. No persistence path currently writes them. Their confidentiality/integrity treatment requires human decision; secure metadata remains disabled.

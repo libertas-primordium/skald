@@ -80,3 +80,7 @@ The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING
 ## Material Boundary
 
 The commonMain parser contains parser code, safe fixed labels, enums, booleans, counts, an input wrapper, and redacted result models only. Production source does not contain synthetic vector byte fixtures, public vector bytes, KAT bytes, salts, nonces, ciphertext, tags, MACs, hashes, key material, Tink keysets, real parser input fixtures, writer output bytes, serialized production vault bytes, file paths, directory paths, storage keys, database names, trace payloads, provider-operation payloads, wallet material, descriptors, addresses, txids, PSBT strings, transaction hex, Nostr nsec values, Lightning credentials, Cashu proofs, backend credentials, provider handles, source locations, stack traces, analytics payloads, crash-report payloads, or support-export payloads.
+
+## Repository reconciliation status (2026-07-12)
+
+The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) confirms this parser remains a payload-free synthetic classifier with no production call site, but documents separate earlier production-compiled container/manifest parsers, serializers, fixtures, and direct crypto. Those earlier bytes do not overlap this catalog. No architecture is selected.

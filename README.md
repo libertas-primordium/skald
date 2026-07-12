@@ -54,6 +54,8 @@ The admitted minimal parser now exists in commonMain and is compiled into app ar
 
 The initial [`working-parser validation completion audit`](docs/ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) correctly recorded three blockers: suffixed-marker acceptance, concatenated-marker acceptance, and missing parser-singleton redaction. The separate [`strict-match/redaction correction`](docs/ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) keeps the parser/catalog at v1, adds exact full-input matching and an explicitly redacted singleton `toString()`, and allows the same narrow audit to pass. Production parser call sites, real vault parsing, writer, serialization, file I/O, crypto/authentication, storage success, sync, provider selection, and mainnet remain absent.
 
+Current repository-wide inventory is recorded in the [`v1 format/parser/crypto reconciliation audit`](docs/ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md). It preserves the historical pass statements while documenting both the earlier production-compiled container/manifest/direct-crypto line and the newer synthetic parser line. No app/storage/UI parser call site or selectable production provider exists; canonical v1 ownership and the listed security/design mismatches require human decision.
+
 ## Targets
 
 - Android APK

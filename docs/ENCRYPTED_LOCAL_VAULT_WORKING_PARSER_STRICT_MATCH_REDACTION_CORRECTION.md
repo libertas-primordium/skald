@@ -33,3 +33,7 @@ Production selection remains `DisabledVaultCryptoProvider` only and `productionP
 ## Separate Future Decisions
 
 The canonical binary layout remains unresolved. Production input-size and streaming policy remain unresolved. Authenticated parsing remains unresolved. Writer admission/implementation, parser/writer round-trip execution, encrypted repository success, secure secret storage success, secure metadata storage success, production sync, and production provider selection remain separately authorized future passes.
+
+## Repository reconciliation status (2026-07-12)
+
+The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) preserves this correction’s narrow history and confirms the synthetic classifier remains exact and redacted. It separately inventories the earlier production-compiled v1 container/manifest/direct-crypto line. “Canonical layout unresolved” now means ownership between those lines is unresolved; no architecture is selected here.

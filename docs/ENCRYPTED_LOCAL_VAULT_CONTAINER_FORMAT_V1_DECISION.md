@@ -98,3 +98,7 @@ These labels are not file bytes, magic bytes, serialized bytes, storage paths, h
 ## Material Boundary
 
 The decision model contains safe fixed labels, enums, booleans, counts, and safe failure labels only. It does not contain raw bytes, hex strings, KAT vector bytes, KAT vector hex, public vector bytes, public vector hex, salts, nonces, ciphertext, tags, MACs, hashes, key material, Tink keysets, trace payloads, provider-operation payloads, wallet material, descriptors, addresses, txids, PSBT strings, transaction hex, Nostr nsec values, Lightning credentials, Cashu proofs, backend credentials, provider handles, filesystem paths, source locations, stack traces, diagnostics payloads, analytics payloads, crash-report payloads, or support-export payloads.
+
+## Repository reconciliation status (2026-07-12)
+
+The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) preserves this pass as a conceptual decision while recording that a separate, earlier production-compiled v1 container/manifest/direct-crypto implementation line also exists. The two meanings of v1 do not share accepted bytes. Canonical ownership and key-envelope policy require human decision.

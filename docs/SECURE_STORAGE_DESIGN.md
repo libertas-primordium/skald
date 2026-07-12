@@ -622,3 +622,7 @@ OS keyrings remain rejected as primary storage and for Skald-managed vault passp
 `SkaldVaultV1AuthorizationReadinessMatrixPolicy` is a still-disabled v1 model for traceability across secure-storage and vault-readiness gates. It records which existing boundary blocks each future capability, including secure secret storage, secure metadata storage, encrypted local vault storage, vault creation, vault unlock, active sessions, persistence, manifest/storage-index/record read/write, atomic write, crash recovery, platform gates, provider work, randomness, KDF, wallet work, and mainnet.
 
 The matrix does not enable secure storage or persistence. Every production/runtime capability remains blocked, warning-only evidence cannot authorize production use, user consent cannot override missing hard gates, test-only evidence cannot authorize production runtime, mainnet remains disabled, provider selection still selects only `DisabledVaultCryptoProvider`, and `productionProviderSelectable` remains false.
+
+## Repository reconciliation status (2026-07-12)
+
+The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) inventories production-compiled earlier v1 format/crypto building blocks and the newer synthetic parser without enabling storage. No file I/O, repository, secure-storage success, or app parser call site exists. Manifest protection, key hierarchy, provider routing, limits, and array/redaction policy require human review before persistence work.
