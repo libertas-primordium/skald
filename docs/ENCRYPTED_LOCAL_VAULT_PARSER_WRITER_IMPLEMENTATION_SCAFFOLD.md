@@ -35,6 +35,8 @@ This document records the encrypted-vault-parser-writer-implementation-scaffold-
 
 The later test-source synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It creates short synthetic bytes only in test source sets and proves disabled parser/writer rejection; it does not add production vector bytes, production parser inputs or writer outputs, a working parser/writer, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
 
+The later working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It consumes the scaffold and synthetic-vector catalog as evidence for a future separate in-memory parser branch only; it adds no working parser, parser execution, writer implementation, serialization/parsing, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
+
 ## Non-Authorization
 
 - No working parser implementation is added.
