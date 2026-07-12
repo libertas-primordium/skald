@@ -37,6 +37,101 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
     }
 
     @Test
+    fun historicalAuditRecordsTheSeparateHumanResolutionWithoutChangingItsOutcome() {
+        val audit = docsSource(AUDIT_DOCUMENT_PATH)
+
+        assertTrue(audit.contains(AUDIT_STATUS))
+        assertTrue(audit.contains(CANONICAL_DECISION_DOCUMENT_NAME))
+        assertTrue(audit.contains(CANONICAL_DECISION_STATUS))
+        assertTrue(audit.contains("human", ignoreCase = true))
+        assertTrue(audit.contains("resolved", ignoreCase = true))
+    }
+
+    @Test
+    fun canonicalArchitectureDecisionIsOneCommonMainPolicySurfaceWithoutExecutionOrMaterial() {
+        val definitionFiles = SourceGuardCorpus.productionRuntimeSourceFiles.filter { file ->
+            CANONICAL_DECISION_POLICY_DECLARATION.containsMatchIn(SourceGuardCorpus.text(file))
+        }
+        assertEquals(
+            listOf(CANONICAL_DECISION_PATH),
+            definitionFiles.map(SourceGuardCorpus::relativePath),
+        )
+
+        val source = productionSource(CANONICAL_DECISION_PATH)
+        val forbiddenPatterns = linkedMapOf(
+            "raw byte-array type" to Regex("""\bU?ByteArray\b"""),
+            "byte-array fixture construction" to Regex("""\b(?:u?byteArrayOf|encodeToByteArray|decodeToString)\s*\("""),
+            "hex fixture" to Regex("""\b[0-9a-fA-F]{64,}\b"""),
+            "hex byte literal" to Regex("""\b0[xX][0-9a-fA-F]{2,}\b"""),
+            "field-id table" to Regex("""\b(?:FIELD_ID_|fieldIds?\s*=|numericFieldIds?\s*=)"""),
+            "file or path API" to Regex("""\b(?:File|Path|Paths|pathOf)\s*\("""),
+            "file operation" to Regex("""\.(?:readBytes|writeBytes|readText|writeText|delete|mkdirs?)\s*\("""),
+            "parser or serializer declaration" to Regex("""\bfun\s+(?:parse|serialize|deserialize|encode|decode)\s*\("""),
+            "crypto execution declaration" to Regex("""\bfun\s+(?:derive|wrap|unwrap|encrypt|decrypt|authenticate|generate)\w*\s*\("""),
+            "prototype call" to Regex("""\bSkaldVaultV1(?:ContainerFormat|ManifestFormat|HeaderCommitment|RecordAead)\s*\."""),
+            "synthetic parser call" to Regex("""\bEncryptedVaultWorkingParser\s*\."""),
+            "provider selection call" to Regex("""\bVaultCryptoProviderSelectionRegistry\s*\.\s*select\s*\("""),
+            "provider operation call" to Regex("""\bVaultCryptoProvider\s*\."""),
+            "registry, factory, dispatcher, service, repository, adapter, or UI declaration" to
+                Regex("""\b(?:class|object|interface)\s+\w*(?:Registry|Factory|Dispatcher|Service|Repository|Adapter|UiAction)\b"""),
+        )
+        forbiddenPatterns.forEach { (description, pattern) ->
+            assertFalse(pattern.containsMatchIn(source), "Canonical decision source contains $description.")
+        }
+
+        val forbiddenImports = listOf(
+            "java.io",
+            "java.nio",
+            "kotlin.io",
+            "android.",
+            "androidx.",
+            "com.google.crypto.tink",
+            "org.bouncycastle",
+            "javax.crypto",
+            "java.security",
+            "org.bitcoindevkit",
+            "bdk",
+        )
+        forbiddenImports.forEach { forbidden ->
+            assertFalse(
+                Regex("""(?m)^\s*import\s+.*${Regex.escape(forbidden)}""").containsMatchIn(source),
+                "Canonical decision source imports forbidden execution dependency: $forbidden",
+            )
+        }
+
+        val stringLiterals = KOTLIN_STRING_LITERAL.findAll(source).map { match -> match.groupValues[1] }.toList()
+        assertTrue(stringLiterals.none { literal ->
+            literal.contains('/') ||
+                literal.contains('\\') ||
+                Regex("""(?i)\.(?:bin|dat|db|json|cbor|vault|tmp|bak)$""").containsMatchIn(literal)
+        }, "Canonical decision source must not define concrete file names or paths.")
+    }
+
+    @Test
+    fun canonicalArchitectureDecisionHasNoExternalProductionCallSite() {
+        val references = SourceGuardCorpus.productionRuntimeSourceFiles.filter { file ->
+            SourceGuardCorpus.relativePath(file) != CANONICAL_DECISION_PATH &&
+                SourceGuardCorpus.text(file).contains(CANONICAL_DECISION_PRODUCER_CALL)
+        }
+        assertTrue(references.isEmpty(), "Canonical decision producer must not become a production call site.")
+
+        val protectedProductionPaths = listOf(
+            CONTAINER_FORMAT_PATH,
+            MANIFEST_FORMAT_PATH,
+            HEADER_COMMITMENT_PATH,
+            RECORD_AEAD_PATH,
+            WORKING_PARSER_PATH,
+            PROVIDER_SELECTION_PATH,
+        )
+        protectedProductionPaths.forEach { path ->
+            assertFalse(
+                productionSource(path).contains("EncryptedVaultV1CanonicalArchitecture"),
+                "$path must remain unchanged and independent of the architecture policy model.",
+            )
+        }
+    }
+
+    @Test
     fun productionCompiledParserSerializerAndSyntheticClassifierCountsAreExact() {
         val container = productionSource(CONTAINER_FORMAT_PATH)
         val manifest = productionSource(MANIFEST_FORMAT_PATH)
@@ -283,6 +378,10 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
         const val AUDIT_DOCUMENT_NAME =
             "ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md"
         const val AUDIT_DOCUMENT_PATH = "docs/$AUDIT_DOCUMENT_NAME"
+        const val CANONICAL_DECISION_DOCUMENT_NAME =
+            "ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md"
+        const val CANONICAL_DECISION_STATUS =
+            "CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED"
 
         const val SECURITY_ROOT =
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security"
@@ -298,6 +397,8 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
         const val WORKING_PARSER_PATH = "$SECURITY_ROOT/EncryptedVaultWorkingParser.kt"
         const val PROVIDER_SELECTION_PATH = "$SECURITY_ROOT/VaultCryptoProviderSelection.kt"
         const val KAT_HARNESS_PATH = "$SECURITY_ROOT/SkaldVaultV1StillDisabledProviderKatHarness.kt"
+        const val CANONICAL_DECISION_PATH =
+            "$SECURITY_ROOT/EncryptedVaultV1CanonicalArchitectureDecision.kt"
         const val SYNTHETIC_CATALOG_PATH =
             "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/security/" +
                 "EncryptedVaultParserWriterSyntheticVectorCatalog.kt"
@@ -313,6 +414,11 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
             Regex("""(?m)^[ \t]*fun[ \t]+serialize[ \t]*\(""")
         val CATALOG_DECLARATION =
             Regex("""(?m)^[ \t]*object[ \t]+EncryptedVaultParserWriterSyntheticVectorCatalog[ \t]*\{""")
+        val CANONICAL_DECISION_POLICY_DECLARATION =
+            Regex("""(?m)^[ \t]*object[ \t]+EncryptedVaultV1CanonicalArchitecturePolicy[ \t]*\{""")
+        const val CANONICAL_DECISION_PRODUCER_CALL =
+            "EncryptedVaultV1CanonicalArchitecturePolicy.currentDecision"
+        val KOTLIN_STRING_LITERAL = Regex("""\"([^\"\\]*(?:\\.[^\"\\]*)*)\"""")
 
         val EXPECTED_PRODUCTION_OBJECT_DECLARATIONS = linkedMapOf(
             "SkaldVaultV1ContainerFormat" to CONTAINER_FORMAT_PATH,

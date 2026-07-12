@@ -117,3 +117,7 @@ The later [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PA
 ## Material Boundary
 
 The admission model contains safe fixed labels, enums, booleans, counts, and safe failure labels only. It does not contain raw bytes, hex strings, KAT vector bytes, KAT vector hex, public vector bytes, public vector hex, salts, nonces, ciphertext, tags, MACs, hashes, key material, Tink keysets, file paths, directory paths, filesystem paths, SharedPreferences keys, settings storage keys, database names, trace payloads, provider-operation payloads, wallet material, descriptors, addresses, txids, PSBT strings, transaction hex, Nostr nsec values, Lightning credentials, Cashu proofs, backend credentials, provider handles, source locations, stack traces, diagnostics payloads, analytics payloads, crash-report payloads, or support-export payloads.
+
+## Canonical architecture status — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) selects the strict v1 codec policy but does not satisfy this gate with an implementation. The earlier prototype P0 parsers/serializers are noncanonical, and `EncryptedVaultWorkingParser` is synthetic-test-contract-only. A canonical codec, parser, writer, vectors, and round-trip execution each remain separate passes.

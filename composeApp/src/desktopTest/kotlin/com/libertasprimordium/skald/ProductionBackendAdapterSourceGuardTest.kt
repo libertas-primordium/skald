@@ -2088,6 +2088,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "NO_PROVIDER_SELECTION",
         )
         val offenders = productionRuntimeKotlinFiles()
+            .filterNot(::isCanonicalArchitectureDecisionPolicy)
             .filter { file ->
                 val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
@@ -2124,6 +2125,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "providerLevelKatExecutionEnabled",
         )
         val offenders = productionRuntimeKotlinFiles()
+            .filterNot(::isCanonicalArchitectureDecisionPolicy)
             .filter { file ->
                 val text = sourceGuardText(file)
                 forbiddenTokens.any { token -> token in text }
@@ -2217,6 +2219,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultParserWriterScaffold.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParserAdmissionGate.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
+            CANONICAL_ARCHITECTURE_DECISION_POLICY_PATH,
         )
         val offenders = productionRuntimeKotlinFiles()
             .filterNot { file -> sourceGuardRelativePath(file) in allowedReadinessPolicyFiles }
@@ -11813,4 +11816,16 @@ class ProductionBackendAdapterSourceGuardTest {
 
     private fun productionRuntimeKotlinFiles(): List<File> =
         SourceGuardCorpus.productionRuntimeSourceFiles
+
+    // This policy intentionally records required test-source fixture and disabled-provider labels.
+    // EncryptedVaultV1FormatParserCryptoReconciliationAuditTest guards the whole file against
+    // executable provider/test-harness declarations and calls.
+    private fun isCanonicalArchitectureDecisionPolicy(file: File): Boolean =
+        sourceGuardRelativePath(file) == CANONICAL_ARCHITECTURE_DECISION_POLICY_PATH
+
+    private companion object {
+        const val CANONICAL_ARCHITECTURE_DECISION_POLICY_PATH =
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/" +
+                "EncryptedVaultV1CanonicalArchitectureDecision.kt"
+    }
 }

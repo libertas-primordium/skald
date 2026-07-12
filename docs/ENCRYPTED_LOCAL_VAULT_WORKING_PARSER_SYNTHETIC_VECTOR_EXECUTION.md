@@ -84,3 +84,7 @@ The commonMain parser contains parser code, safe fixed labels, enums, booleans, 
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) confirms this parser remains a payload-free synthetic classifier with no production call site, but documents separate earlier production-compiled container/manifest parsers, serializers, fixtures, and direct crypto. Those earlier bytes do not overlap this catalog. No architecture is selected.
+
+## Canonical architecture disposition — 2026-07-12
+
+The human-approved [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) classifies `EncryptedVaultWorkingParser` as `SYNTHETIC_TEST_CONTRACT_CLASSIFIER_ONLY`. Its narrow synthetic audit remains valid, but it is not the canonical vault parser and is not approved for production vault bytes or real-wallet data. Future relocation or removal requires a separate pass; this branch does not modify it.

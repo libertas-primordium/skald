@@ -102,3 +102,9 @@ The decision model contains safe fixed labels, enums, booleans, counts, and safe
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) preserves this pass as a conceptual decision while recording that a separate, earlier production-compiled v1 container/manifest/direct-crypto implementation line also exists. The two meanings of v1 do not share accepted bytes. Canonical ownership and key-envelope policy require human decision.
+
+## Canonical architecture resolution — 2026-07-12
+
+The conceptual section model is incorporated where applicable into the human-approved [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md). Canonical persisted format version remains 1, but the earlier `SkaldVaultV1*` bytes are unsupported prototype P0 and the synthetic parser is not the canonical parser.
+
+Exact magic, numeric field identifiers, byte framing, header-AAD byte construction, passphrase normalization, and record-envelope overhead remain separate decisions. No canonical parser, writer, codec, provider, storage, or file I/O is implemented by the architecture decision.

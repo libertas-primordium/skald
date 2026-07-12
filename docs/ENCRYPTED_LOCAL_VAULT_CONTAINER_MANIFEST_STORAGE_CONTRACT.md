@@ -2,6 +2,8 @@
 
 ## Status
 
+> **Current status — 2026-07-12:** the byte formats, models, fixtures, and direct crypto graph described in this historical prototype contract are `PRE_RELEASE_PROTOTYPE_P0_UNSUPPORTED`. Their bytes are not canonical v1 persisted bytes; no compatibility or migration promise exists, and no production call site currently integrates them. The approved replacement architecture is recorded in [`ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md). This note does not delete or rewrite the prototype's technical history.
+
 This document defines the Skald Vault v1 vault container, manifest, storage, stale-record, atomicity, crash-recovery, and secure-storage boundary contract before persistence implementation.
 
 The in-memory v1 container parser/writer now exists as a still-disabled byte-level building block:
@@ -978,3 +980,9 @@ The matrix does not implement or approve storage. Every production/runtime capab
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) confirms that this document’s container and manifest parser/serializer building blocks are production-compiled and callable, while remaining unconnected to file/storage/app paths. It also records their overlap and contradictions with the newer synthetic-parser decision chain. Inventory is complete; canonical ownership and manifest/crypto/security decisions require human review.
+
+## Canonical replacement status — 2026-07-12
+
+The approved architecture uses a multi-artifact app-controlled directory with one minimal public header/wrapped-root envelope, one authoritative encrypted manifest, independent encrypted records, temporary staging, and quarantine/recovery roles. There is no plaintext standalone or duplicated embedded manifest. Existing prototype bytes receive no compatibility or migration path; developer prototype data must be recreated.
+
+No prototype source, fixture, parser, serializer, crypto behavior, or resource limit is changed here. The canonical binary layout, codec, provider, file I/O, storage, persistence, and migration behavior remain unimplemented.

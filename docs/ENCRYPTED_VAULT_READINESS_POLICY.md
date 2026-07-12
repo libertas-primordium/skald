@@ -314,3 +314,7 @@ The next focused pass should review runtime provider/primitive/randomness check 
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) distinguishes disabled app/provider/storage readiness from production compilation and callability. Earlier byte-format/direct-crypto building blocks and a KAT harness exist, but no app persistence or selectable provider does. Readiness remains blocked while canonical ownership and security mismatches await human decision.
+
+## Canonical architecture status — 2026-07-12
+
+Architecture selection is complete under the [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md), with status `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`. Decision completion does not change implementation readiness: exact layout, provider implementation and selection, codec, lock/session, storage, secure storage/metadata success, persistence, sync, release hardening, and mainnet review remain blocked. Production selection remains `DisabledVaultCryptoProvider` only and `productionProviderSelectable=false`.

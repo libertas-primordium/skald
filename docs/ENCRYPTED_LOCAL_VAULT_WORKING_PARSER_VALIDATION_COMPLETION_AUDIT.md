@@ -82,3 +82,7 @@ This resolution does not add a real vault-format parser, canonical binary layout
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) does not rewrite this audit’s initial failure or later narrow success. It records that this report’s “no real parser/serialization/canonical layout” fields describe only the newer synthetic-parser evidence chain and are not a whole-repository inventory: an earlier production-compiled v1 container/manifest/direct-crypto line exists separately. Canonical ownership requires human decision.
+
+## Canonical architecture disposition — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) preserves both this audit's initial blocker history and its later narrow passing result. It classifies the audited parser as synthetic-test-contract-only, not the canonical vault parser. No production parser call site, canonical codec, storage integration, or real-wallet parsing is authorized, and future relocation/removal remains a separate pass.

@@ -381,3 +381,9 @@ Future provider crypto cannot participate in vault creation until passphrase pol
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) confirms disabled provider selection while documenting that earlier production-compiled Argon2id, HKDF/HMAC, record-AEAD, and KAT paths call platform primitives directly without this provider/selection boundary. No app integration calls those paths. Whether direct crypto remains permissible requires human decision.
+
+## Canonical routing resolution — 2026-07-12
+
+The human-approved [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) requires every canonical production cryptographic operation to route through the selected Skald-owned `VaultCryptoProvider`. Canonical code may not directly call Bouncy Castle, Tink, JCA/JCE crypto, platform randomness, or the prototype `SkaldVaultV1*` crypto graph.
+
+Existing direct prototype crypto remains present, noncanonical, and unchanged pending a separate quarantine/cleanup pass. No production provider exists, selection remains `DisabledVaultCryptoProvider` only, `productionProviderSelectable=false`, and no crypto execution or production authorization is introduced by the architecture decision.

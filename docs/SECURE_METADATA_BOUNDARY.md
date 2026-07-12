@@ -214,3 +214,7 @@ The next focused pass should continue with a still-disabled provider or vault-re
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) records that the earlier standalone and embedded manifests serialize identifiers, references, counters, tombstones, and crash metadata as plaintext without manifest authentication or encryption. No persistence path currently writes them. Their confidentiality/integrity treatment requires human decision; secure metadata remains disabled.
+
+## Canonical architecture status — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) requires exactly one encrypted and authenticated authoritative manifest and prohibits plaintext standalone or duplicated embedded manifests. This resolves policy but adds no implementation: secure metadata storage remains disabled, with no manifest codec, encryption, persistence, repository success, production observation/address-index/UTXO/history persistence, or sync.

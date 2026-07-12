@@ -101,3 +101,7 @@ The later [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PA
 ## Material Boundary
 
 The scaffold production model contains safe fixed labels, enums, booleans, counts, interfaces, disabled results, blocker labels, and redacted diagnostics only. It does not contain raw bytes, hex strings, KAT vector bytes, KAT vector hex, public vector bytes, public vector hex, salts, nonces, ciphertext, tags, MACs, hashes, key material, Tink keysets, parser input bytes, writer output bytes, serialized vault bytes, file paths, directory paths, filesystem paths, SharedPreferences keys, settings storage keys, database names, trace payloads, provider-operation payloads, wallet material, descriptors, addresses, txids, PSBT strings, transaction hex, Nostr nsec values, Lightning credentials, Cashu proofs, backend credentials, provider handles, source locations, stack traces, diagnostics payloads, analytics payloads, crash-report payloads, or support-export payloads.
+
+## Canonical architecture status — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) does not promote this disabled scaffold into the canonical implementation. No canonical parser, writer, codec, vector execution, provider, file I/O, or storage integration exists. The working synthetic classifier remains separate and noncanonical.
