@@ -499,3 +499,9 @@ The outcome remains `INVENTORY_COMPLETE_DESIGN_DECISION_REQUIRED`.
 - No file I/O, persistence, secure-storage success, secure-metadata success, production sync, provider selection, signing, broadcasting, endpoint, or mainnet path was added.
 - The production provider remains `DisabledVaultCryptoProvider` only and `productionProviderSelectable=false`.
 - All overlaps, contradictions, safety gaps, and naming/version questions above require human review before further format, parser, writer, crypto, storage, or persistence work.
+
+## Human resolution — 2026-07-12
+
+The historical audit outcome remains `INVENTORY_COMPLETE_DESIGN_DECISION_REQUIRED`. This audit itself did not select an architecture: production behavior was not changed, and no canonical architecture was selected in the audit pass.
+
+The audit's requested human decision is now resolved by [`ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md), with status `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`. That later decision classifies the earlier `SkaldVaultV1*` line as unsupported prototype P0, the working parser as synthetic-test-contract-only, and neither line as the canonical storage implementation. It records the approved architecture without changing any audited production artifact or authorizing implementation.

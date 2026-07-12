@@ -756,3 +756,9 @@ The KAT execution isolation boundary does not add dependencies, implement execut
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) preserves the historical design/pass statements and inventories the earlier production-compiled container/manifest/direct-crypto line alongside the newer synthetic parser line. No production app/storage/UI parser call site or selectable provider is enabled. Canonical ownership, key hierarchy, manifest protection, provider routing, fixture placement, limits, and redaction/ownership require human decision.
+
+## Canonical architecture resolution — 2026-07-12
+
+The human-approved [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) resolves those architecture questions with status `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`. It selects canonical format version 1, a multi-artifact app-controlled directory, one authoritative encrypted manifest, wrapped-root AEAD header authentication without a separate persisted header HMAC, a random wrapped vault root with HKDF-separated roots and per-record keys, mandatory `VaultCryptoProvider` routing, strict bounded encoding, and explicit ownership/redaction and fixture-confinement policies.
+
+Architecture selection does not change readiness. Prototype P0 and synthetic-classifier artifacts remain present but noncanonical; exact layout details, provider implementation, codec, storage, lock/session, secure storage and metadata success, persistence, sync, signing/broadcasting, UI, endpoints, and mainnet remain blocked behind separate passes.

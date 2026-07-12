@@ -70,3 +70,7 @@ The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAU
 ## Material Boundary
 
 The decision model contains safe fixed labels, enums, booleans, counts, and safe failure labels only. It does not contain raw bytes, hex strings, KAT vector bytes, public vector bytes, public vector hex, trace payloads, provider-operation payloads, wallet material, descriptors, addresses, txids, PSBT strings, transaction hex, Nostr nsec values, Lightning credentials, Cashu proofs, backend credentials, provider handles, filesystem paths, source locations, stack traces, diagnostics payloads, analytics payloads, crash-report payloads, or support-export payloads.
+
+## Canonical architecture status — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) completes architecture selection with status `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`. It selects the multi-artifact topology, encrypted authoritative manifest, wrapped-root hierarchy, provider routing, strict limits, and atomic commit policy. Storage readiness remains blocked: no path, directory, file I/O, codec, provider, storage, repository, persistence, or production authorization exists.

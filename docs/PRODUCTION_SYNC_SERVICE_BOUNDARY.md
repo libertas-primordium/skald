@@ -257,3 +257,7 @@ The source guard includes the sync facade, status UI files, and secure metadata 
 ## Next Step
 
 The next focused pass should review runtime provider/primitive/randomness checks for supported Android and Linux paths or design a still-disabled production-provider skeleton with no storage. IonSpin KMP libsodium packaging/KAT mapping and Lazysodium/JNA conflict strategy work remain separate replacement-stack probes if needed. Production backend clients and observation persistence should remain deferred until encrypted vault readiness, provider-selection gates, secure storage, secure metadata persistence, recovery integration, and backend trust boundaries are reviewed.
+
+## Canonical architecture status — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) completes architecture selection but does not change this boundary. No provider, canonical codec, storage, secure metadata success, production persistence, backend client, or sync implementation exists. Production sync remains disabled and requires its own later pass after the preceding gates are implemented and approved.

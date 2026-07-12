@@ -626,3 +626,7 @@ The matrix does not enable secure storage or persistence. Every production/runti
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) inventories production-compiled earlier v1 format/crypto building blocks and the newer synthetic parser without enabling storage. No file I/O, repository, secure-storage success, or app parser call site exists. Manifest protection, key hierarchy, provider routing, limits, and array/redaction policy require human review before persistence work.
+
+## Canonical architecture status — 2026-07-12
+
+The human-approved [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) now selects one encrypted authoritative manifest, wrapped random vault-root hierarchy, mandatory provider routing, strict limits, atomic commit ordering, and owned/redacted sensitive-array policy. Secure storage remains disabled: no canonical codec, file I/O, repository, provider implementation, secure-secret success path, or persistence exists. Prototype P0 artifacts remain unsupported and unchanged.

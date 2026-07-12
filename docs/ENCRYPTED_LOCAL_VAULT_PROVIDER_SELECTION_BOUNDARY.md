@@ -453,3 +453,9 @@ OS keyrings remain rejected as primary storage and for Skald-managed vault passp
 Provider selection now also treats `SkaldVaultV1AuthorizationReadinessMatrixPolicy` as still-disabled model-only traceability evidence. The matrix summarizes all current blockers for future provider selectability, provider operations, randomness, KDF, secure storage, creation, unlock, active sessions, persistence, storage, lifecycle, platform gates, wallet work, and mainnet, but it cannot make a provider selectable and does not change registry behavior.
 
 Every production/runtime capability remains blocked. Warning-only evidence cannot authorize production use, user consent cannot override missing hard gates, test-only evidence cannot authorize production runtime, mainnet remains disabled, the registry still selects only `DisabledVaultCryptoProvider`, Tink plus Bouncy Castle remains a blocked future candidate only, and `productionProviderSelectable` remains false.
+
+## Canonical routing resolution — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) selects mandatory routing through a selected Skald-owned `VaultCryptoProvider` for canonical vault create/open/encrypt/decrypt operations. A disabled selection must block all such operations, and the existing direct prototype crypto graph is explicitly noncanonical.
+
+This policy does not select or implement a provider. Registry behavior is unchanged: production selection remains `DisabledVaultCryptoProvider` only, `productionProviderSelectable=false`, and provider implementation/acceptance/selection enablement require separate passes.

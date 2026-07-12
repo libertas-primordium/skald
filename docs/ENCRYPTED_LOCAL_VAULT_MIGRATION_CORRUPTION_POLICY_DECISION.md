@@ -99,3 +99,7 @@ The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT
 ## Material Boundary
 
 The decision model contains safe fixed labels, enums, booleans, counts, and safe failure labels only. It does not contain raw bytes, hex strings, KAT vector bytes, KAT vector hex, public vector bytes, public vector hex, salts, nonces, ciphertext, tags, MACs, hashes, key material, Tink keysets, file paths, directory paths, filesystem paths, SharedPreferences keys, settings storage keys, database names, trace payloads, provider-operation payloads, wallet material, descriptors, addresses, txids, PSBT strings, transaction hex, Nostr nsec values, Lightning credentials, Cashu proofs, backend credentials, provider handles, source locations, stack traces, diagnostics payloads, analytics payloads, crash-report payloads, or support-export payloads.
+
+## Canonical architecture status — 2026-07-12
+
+The [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) records the authoritative-manifest commit point, generation counter, previous-manifest commitment evidence, quarantine role, and the limitation that a fully consistent old snapshot cannot be detected without an external monotonic anchor. Prototype P0 bytes have no migration promise. No migration, repair, quarantine, rollback detection, atomic replace, or file I/O is implemented.

@@ -37,3 +37,7 @@ The canonical binary layout remains unresolved. Production input-size and stream
 ## Repository reconciliation status (2026-07-12)
 
 The [`v1 format/parser/crypto reconciliation audit`](ENCRYPTED_LOCAL_VAULT_V1_FORMAT_PARSER_CRYPTO_RECONCILIATION_AUDIT.md) preserves this correction’s narrow history and confirms the synthetic classifier remains exact and redacted. It separately inventories the earlier production-compiled v1 container/manifest/direct-crypto line. “Canonical layout unresolved” now means ownership between those lines is unresolved; no architecture is selected here.
+
+## Canonical architecture disposition — 2026-07-12
+
+The later [`v1 canonical architecture decision`](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) resolves ownership without changing this correction: `EncryptedVaultWorkingParser` remains `SYNTHETIC_TEST_CONTRACT_CLASSIFIER_ONLY`, not the canonical vault parser. Future relocation/removal requires a separate pass. Exact canonical magic, field identifiers, framing, AAD bytes, passphrase normalization, and record-envelope overhead remain separate decisions.
