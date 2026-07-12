@@ -22,6 +22,8 @@ The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) changes no Recovery/Privacy behavior. Exact-marker and parser-display blockers keep the audit incomplete; real-wallet parsing, production persistence, sync, provider selection, and Recovery/Privacy state storage remain disabled.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves the narrow parser audit blockers without changing Recovery/Privacy behavior. Real-wallet parsing, production persistence, sync, provider selection, and Recovery/Privacy state storage remain disabled.
+
 ## Source Location
 
 Recovery status models:

@@ -206,6 +206,8 @@ The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) is commonTest-only and currently reports `parserValidationCompletionAuditPassed=false`. Catalog behavior and payload/input-ownership checks pass, but exact suffixed/concatenated marker rejection and explicit parser-object redaction remain unresolved; no readiness or production authorization changes.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves those current-contract defects and the same audit now derives `parserValidationCompletionAuditPassed=true` with zero current-contract blockers. This does not change encrypted-vault readiness: real format parsing, authenticated parsing, writer/storage success, sync, provider selection, and mainnet remain blocked.
+
 This readiness policy does not enable:
 
 - encrypted vault implementation,

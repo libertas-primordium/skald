@@ -26,6 +26,8 @@ The later working-parser synthetic-vector execution branch is documented in [`EN
 
 The follow-on [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) changes no parser semantics. It confirms all catalog outcomes but reports unresolved suffixed-marker, concatenated-marker, and parser-object `toString()` blockers; production parser call sites and real vault parsing remain absent.
 
+The later [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves those three narrow v1 parser defects only. Exact synthetic matching and redacted singleton display now pass the existing audit; writer, real vault parsing, storage, crypto, sync, provider selection, and mainnet remain separate and disabled.
+
 ## Non-Authorization
 
 - No working parser implementation is added.

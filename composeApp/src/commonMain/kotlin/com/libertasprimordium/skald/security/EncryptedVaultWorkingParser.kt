@@ -262,6 +262,10 @@ data class EncryptedVaultWorkingParserEvidence(
 }
 
 object EncryptedVaultWorkingParser {
+    override fun toString(): String =
+        "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+            "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
+
     fun currentParserEvidence(): EncryptedVaultWorkingParserEvidence =
         EncryptedVaultWorkingParserEvidence(
             parserId = EncryptedVaultWorkingParserPolicyLabel.WorkingParser.safeLabel,
@@ -427,30 +431,61 @@ object EncryptedVaultWorkingParser {
             )
         }
 
-        val suffix = codeAt(material, material.lastIndex)
         return when {
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_M, LOWER_I, LOWER_N) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_A,
+                LOWER_M,
+                LOWER_I,
+                LOWER_N,
+            ) ->
                 parsed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.SyntheticHeaderOnly,
                     sectionCount = 1,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_K, LOWER_D, LOWER_F) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_B,
+                LOWER_K,
+                LOWER_D,
+                LOWER_F,
+            ) ->
                 parsed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.SyntheticKdfSection,
                     sectionCount = 2,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_E, LOWER_N, LOWER_V) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_C,
+                LOWER_E,
+                LOWER_N,
+                LOWER_V,
+            ) ->
                 parsed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.SyntheticDirectory,
                     sectionCount = 3,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_O, LOWER_N, LOWER_E) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_D,
+                LOWER_O,
+                LOWER_N,
+                LOWER_E,
+            ) ->
                 parsed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification
@@ -458,7 +493,16 @@ object EncryptedVaultWorkingParser {
                     sectionCount = 4,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_M, LOWER_A, LOWER_N, LOWER_Y) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_E,
+                LOWER_M,
+                LOWER_A,
+                LOWER_N,
+                LOWER_Y,
+            ) ->
                 parsed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification
@@ -466,51 +510,106 @@ object EncryptedVaultWorkingParser {
                     sectionCount = 5,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_V, LOWER_E, LOWER_R) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_F,
+                LOWER_V,
+                LOWER_E,
+                LOWER_R,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
                     blocker = EncryptedVaultWorkingParserBlocker.UnsupportedVersion,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_C, LOWER_R, LOWER_I, LOWER_T) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_G,
+                LOWER_C,
+                LOWER_R,
+                LOWER_I,
+                LOWER_T,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
                     blocker = EncryptedVaultWorkingParserBlocker.UnsupportedCriticalFeature,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_C, LOWER_U, LOWER_T) &&
-                suffix == LOWER_H ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_H,
+                LOWER_C,
+                LOWER_U,
+                LOWER_T,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
                     blocker = EncryptedVaultWorkingParserBlocker.TruncatedHeader,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_C, LOWER_U, LOWER_T) &&
-                suffix == LOWER_I ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_I,
+                LOWER_C,
+                LOWER_U,
+                LOWER_T,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
                     blocker = EncryptedVaultWorkingParserBlocker.TruncatedRecordEnvelope,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_R, LOWER_E, LOWER_D) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_J,
+                LOWER_R,
+                LOWER_E,
+                LOWER_D,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.RedactedDiagnosticsOnly,
                     blocker = EncryptedVaultWorkingParserBlocker.RedactedDiagnosticsOnly,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_M, LOWER_I, LOWER_G) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_K,
+                LOWER_M,
+                LOWER_I,
+                LOWER_G,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
                     blocker = EncryptedVaultWorkingParserBlocker.MigrationRequired,
                     consumedByteCount = material.size,
                 )
-            tokenMatches(material, tokenStart, tokenEnd, LOWER_C, LOWER_O, LOWER_R) ->
+            exactMarkerMatches(
+                material,
+                tokenStart,
+                tokenEnd,
+                LOWER_L,
+                LOWER_C,
+                LOWER_O,
+                LOWER_R,
+            ) ->
                 failed(
                     classification =
                         EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
@@ -627,6 +726,18 @@ object EncryptedVaultWorkingParser {
         return true
     }
 
+    private fun exactMarkerMatches(
+        material: ByteArray,
+        tokenStart: Int,
+        tokenEnd: Int,
+        expectedDiscriminator: Int,
+        vararg expectedToken: Int,
+    ): Boolean =
+        tokenMatches(material, tokenStart, tokenEnd, *expectedToken) &&
+            material.size == tokenEnd + 2 &&
+            codeAt(material, tokenEnd) == SEPARATOR &&
+            codeAt(material, tokenEnd + 1) == expectedDiscriminator
+
     private fun codeAt(material: ByteArray, index: Int): Int =
         material[index].toInt() and BYTE_MASK
 
@@ -635,6 +746,7 @@ object EncryptedVaultWorkingParser {
     private const val SYNTHETIC_MIN_SIZE = 6
     private const val SYNTHETIC_TOKEN_START_INDEX = 4
     private const val LOWER_A = 97
+    private const val LOWER_B = 98
     private const val LOWER_C = 99
     private const val LOWER_D = 100
     private const val LOWER_E = 101
@@ -642,7 +754,9 @@ object EncryptedVaultWorkingParser {
     private const val LOWER_G = 103
     private const val LOWER_H = 104
     private const val LOWER_I = 105
+    private const val LOWER_J = 106
     private const val LOWER_K = 107
+    private const val LOWER_L = 108
     private const val LOWER_M = 109
     private const val LOWER_N = 110
     private const val LOWER_O = 111

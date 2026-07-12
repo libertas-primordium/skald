@@ -52,7 +52,7 @@ Current encrypted local vault status also includes a commonMain working-parser a
 
 The admitted minimal parser now exists in commonMain and is compiled into app artifacts, but its executed validation inputs remain test-source-only synthetic vectors. There is no production parser call site, registry, factory, dispatcher, service, repository, storage integration, UI integration, production vault-file parsing, or real-wallet data parsing.
 
-The [`working-parser validation completion audit`](docs/ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) is validation-only and currently blocked: all twelve catalog vectors match their expected classifications/blockers, but suffixed and concatenated markers are accepted and the parser object does not provide an explicitly redacted `toString()`. Parser semantics were not changed; writer, serialization, file I/O, crypto/authentication, storage success, sync, provider selection, and mainnet remain absent.
+The initial [`working-parser validation completion audit`](docs/ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) correctly recorded three blockers: suffixed-marker acceptance, concatenated-marker acceptance, and missing parser-singleton redaction. The separate [`strict-match/redaction correction`](docs/ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) keeps the parser/catalog at v1, adds exact full-input matching and an explicitly redacted singleton `toString()`, and allows the same narrow audit to pass. Production parser call sites, real vault parsing, writer, serialization, file I/O, crypto/authentication, storage success, sync, provider selection, and mainnet remain absent.
 
 ## Targets
 

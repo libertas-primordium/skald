@@ -29,6 +29,8 @@ The working-parser synthetic-vector execution branch is documented in [`ENCRYPTE
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) adds validation only. It changes no parser semantics, adds no writer, and records unresolved exact-marker and parser-object redaction blockers while all production capabilities remain blocked.
 
+The later [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves only the authorized exact-marker and singleton-redaction defects in the existing v1 synthetic parser. It does not authorize authenticated parsing, canonical serialization, a writer, storage, crypto, sync, provider selection, or mainnet.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.

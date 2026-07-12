@@ -20,6 +20,8 @@ The later working-parser synthetic-vector execution branch is documented in [`EN
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) reuses this catalog and creates no second catalog or persistent negative fixture set. All twelve catalog outcomes match; exact-match validation remains blocked for suffixed and concatenated runtime-derived inputs, with no parser semantic change.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) keeps this catalog and all marker values at v1. Runtime-derived suffix, concatenation, case, prefix, removal, replacement, and discriminator mutations now fail closed; no second catalog or persistent negative fixture set was added.
+
 ## Synthetic Vector Status
 
 - Synthetic vector bytes were created only in test source sets.

@@ -70,3 +70,11 @@ Parser validation completion does not mean a real vault-format parser exists or 
 - production provider selection.
 
 No validation completion claim may be made until the three recorded blockers are resolved by an explicitly authorized semantic parser pass and this audit is rerun.
+
+## Resolution Status — 2026-07-12
+
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolved the three current-contract blockers without rewriting the initial audit history above. The existing v1 parser now requires exact full-input token/discriminator matching, rejects suffixed and concatenated markers, and provides an explicitly redacted singleton `toString()`.
+
+The same commonTest audit was rerun rather than replaced. All twelve existing catalog outcomes, runtime-derived exact-match checks, input-ownership checks, result/diagnostic payload checks, and production-call-site absence checks passed. The current derived result is `parserValidationCompletionAuditPassed=true`, `syntheticTestVectorExecutionValidated=true`, and `blockerCount=0` for the narrow synthetic-parser contract only.
+
+This resolution does not add a real vault-format parser, canonical binary layout, production input-size/streaming policy, authenticated parsing, writer, serialization, file I/O, storage success, production persistence, sync, provider selection, UI, endpoints, or mainnet.

@@ -39,6 +39,20 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
                     EncryptedVaultWorkingParserSyntheticClassification.SyntheticDirectory,
                 sectionCount = 3,
             ),
+            AndroidParserCase(
+                marker = "skv-one-d",
+                classification =
+                    EncryptedVaultWorkingParserSyntheticClassification
+                        .SyntheticSingleRecordEnvelope,
+                sectionCount = 4,
+            ),
+            AndroidParserCase(
+                marker = "skv-many-e",
+                classification =
+                    EncryptedVaultWorkingParserSyntheticClassification
+                        .SyntheticMultiRecordDirectory,
+                sectionCount = 5,
+            ),
         )
 
         cases.forEach { case ->
@@ -89,6 +103,16 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
                 EncryptedVaultWorkingParserBlocker.UnsupportedCriticalFeature,
             ),
             AndroidParserFailure("skv-cut-h", EncryptedVaultWorkingParserBlocker.TruncatedHeader),
+            AndroidParserFailure(
+                "skv-cut-i",
+                EncryptedVaultWorkingParserBlocker.TruncatedRecordEnvelope,
+            ),
+            AndroidParserFailure(
+                marker = "skv-red-j",
+                blocker = EncryptedVaultWorkingParserBlocker.RedactedDiagnosticsOnly,
+                classification =
+                    EncryptedVaultWorkingParserSyntheticClassification.RedactedDiagnosticsOnly,
+            ),
             AndroidParserFailure("skv-mig-k", EncryptedVaultWorkingParserBlocker.MigrationRequired),
             AndroidParserFailure(
                 "skv-cor-l",
@@ -106,6 +130,7 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
 
             assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, result.status)
             assertFalse(result.accepted)
+            assertEquals(case.classification, result.classification)
             assertTrue(result.blockers.contains(case.blocker))
             assertEquals(1, result.blockerCount)
             assertEquals(material.size, result.consumedByteCount)
@@ -128,8 +153,9 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
     }
 
     @Test
-    fun androidWorkingParserRejectsEmptyUnknownAndPrefixedInputsButReportsSuffixGap() {
+    fun androidWorkingParserRejectsRuntimeDerivedNonExactInputs() {
         val valid = "skv-min-a".encodeToByteArray()
+        val otherValid = "skv-kdf-b".encodeToByteArray()
         val empty = valid.copyOf(0)
         val unknown = valid.copyOf(2).also { candidate ->
             candidate[0] = (candidate[0].toInt() xor 1).toByte()
@@ -141,34 +167,51 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
         val suffixed = valid.copyOf(valid.size + 1).also { candidate ->
             candidate[candidate.lastIndex] = valid.first()
         }
+        val concatenated = valid + otherValid
+        val caseAltered = valid.copyOf().also { candidate ->
+            candidate[0] = (candidate[0].toInt() xor ASCII_CASE_BIT).toByte()
+        }
 
         val emptyResult = parse(empty)
         val unknownResult = parse(unknown)
         val prefixedResult = parse(prefixed)
         val suffixedResult = parse(suffixed)
+        val concatenatedResult = parse(concatenated)
+        val caseAlteredResult = parse(caseAltered)
 
-        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, emptyResult.status)
-        assertTrue(emptyResult.blockers.contains(EncryptedVaultWorkingParserBlocker.EmptyInput))
-        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, unknownResult.status)
-        assertTrue(
-            unknownResult.blockers.contains(
+        assertRejected(emptyResult, EncryptedVaultWorkingParserBlocker.EmptyInput)
+        listOf(
+            unknownResult,
+            prefixedResult,
+            suffixedResult,
+            concatenatedResult,
+            caseAlteredResult,
+        ).forEach { result ->
+            assertRejected(
+                result,
                 EncryptedVaultWorkingParserBlocker.UnrecognizedSyntheticVector,
-            ),
-        )
-        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, prefixedResult.status)
-        assertTrue(
-            prefixedResult.blockers.contains(
-                EncryptedVaultWorkingParserBlocker.UnrecognizedSyntheticVector,
-            ),
-        )
+            )
+        }
 
-        // Validation-only blocker: the existing parser accepts a suffixed marker.
-        assertEquals(EncryptedVaultWorkingParserStatus.ParsedSyntheticVector, suffixedResult.status)
-        assertTrue(suffixedResult.accepted)
-        assertEquals(
-            EncryptedVaultWorkingParserSyntheticClassification.SyntheticHeaderOnly,
-            suffixedResult.classification,
-        )
+        listOf(
+            valid,
+            otherValid,
+            empty,
+            unknown,
+            prefixed,
+            suffixed,
+            concatenated,
+            caseAltered,
+        ).forEach { it.fill(0) }
+    }
+
+    @Test
+    fun androidWorkingParserSingletonDisplayIsExactlyRedacted() {
+        val rendered = EncryptedVaultWorkingParser.toString()
+
+        assertEquals(EXPECTED_PARSER_DISPLAY, rendered)
+        assertFalse(rendered.contains('@'))
+        assertFalse(rendered.contains("skv-"))
     }
 
     @Test
@@ -232,10 +275,43 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
     private data class AndroidParserFailure(
         val marker: String,
         val blocker: EncryptedVaultWorkingParserBlocker,
+        val classification: EncryptedVaultWorkingParserSyntheticClassification =
+            EncryptedVaultWorkingParserSyntheticClassification.NotClassified,
     )
 
     private fun parse(material: ByteArray) =
         EncryptedVaultWorkingParser.parse(
             EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(material),
         )
+
+    private fun assertRejected(
+        result: com.libertasprimordium.skald.security.EncryptedVaultWorkingParserResult,
+        blocker: EncryptedVaultWorkingParserBlocker,
+    ) {
+        assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, result.status)
+        assertFalse(result.accepted)
+        assertEquals(EncryptedVaultWorkingParserSyntheticClassification.NotClassified, result.classification)
+        assertEquals(listOf(blocker), result.blockers)
+        assertEquals(0, result.sectionCount)
+        assertEquals(0, result.producedByteCount)
+        assertFalse(result.inputBytesExposed)
+        assertFalse(result.inputBytesCopiedToResult)
+        assertFalse(result.sectionBytesExposed)
+        assertFalse(result.parsedPayloadByteArraysCreated)
+        assertFalse(result.repositoryObjectCreated)
+        assertFalse(result.storageStateCreated)
+        assertFalse(result.writerObjectCreated)
+        assertFalse(result.fileIoUsed)
+        assertFalse(result.cryptoAuthenticationExecuted)
+        assertTrue(result.diagnostics.safeLabelsOnly)
+        assertTrue(result.diagnostics.payloadFree)
+        assertTrue(result.diagnostics.rawBytesFree)
+    }
+
+    private companion object {
+        const val ASCII_CASE_BIT = 0x20
+        const val EXPECTED_PARSER_DISPLAY =
+            "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+                "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
+    }
 }

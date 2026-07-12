@@ -41,6 +41,8 @@ The later working-parser synthetic-vector execution branch is documented in [`EN
 
 The follow-on [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) is commonTest-only and does not change this scaffold or add a writer. It reports exact-match and parser-display blockers while serialization, writer execution, storage, crypto, sync, provider selection, and mainnet remain absent.
 
+The later [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves only those existing parser blockers and leaves this disabled scaffold unchanged. It adds no writer, serialization, storage, crypto, sync, provider selection, or mainnet behavior.
+
 ## Non-Authorization
 
 - No working parser implementation is added.

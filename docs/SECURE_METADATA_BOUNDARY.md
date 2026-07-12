@@ -20,6 +20,8 @@ The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) remains commonTest-only and changes no metadata boundary. Its exact-marker and parser-display blockers do not enable production parsing, secure metadata success, observation/address-index/UTXO/history persistence, or sync.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves those narrow parser blockers while leaving this boundary unchanged. Secure metadata success, observation/address-index/UTXO/history persistence, real-wallet parsing, and sync remain disabled.
+
 The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this disabled metadata repository as a blocker for production provider selection and selects only the disabled provider.
 
 ## Source Location

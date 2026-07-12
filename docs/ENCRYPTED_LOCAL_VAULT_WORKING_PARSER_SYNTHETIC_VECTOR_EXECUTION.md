@@ -17,6 +17,8 @@ This document records the encrypted-vault-working-parser-synthetic-vector-execut
 
 The follow-on [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) reused all twelve existing catalog vectors without changing parser semantics. Catalog classifications/blockers, input ownership, result payload absence, and production-call-site absence passed, but the audit remains blocked because suffixed and concatenated markers are accepted and the parser object lacks an explicitly redacted `toString()`. The parser remains commonMain/compiled, while production vault-file parsing and real-wallet data parsing remain disabled.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) preserves that initial audit history and the v1 parser/catalog contract. It adds exact full-input discriminator/length checks and explicit singleton redaction, so the same audit now passes with no current-contract blockers; production parsing and all future capabilities remain disabled.
+
 ## Parser Behavior
 
 - Positive synthetic test vectors classify only safe synthetic structure labels.
