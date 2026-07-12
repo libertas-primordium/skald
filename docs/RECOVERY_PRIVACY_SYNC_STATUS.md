@@ -14,6 +14,8 @@ The encrypted vault storage readiness decision is documented in [`ENCRYPTED_LOCA
 
 The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It does not change Recovery/Privacy persistence: disabled parser/writer scaffolds reject without bytes, no test-source synthetic bytes were created, and observation metadata, address index state, UTXO state, wallet history, Recovery status, and Privacy Analyzer persistence remain blocked with no production vector bytes, serialization/parsing, file I/O, crypto execution, storage success, provider selection, UI, endpoint, or mainnet behavior added.
 
+The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It does not change Recovery/Privacy persistence: synthetic bytes exist only in test source sets, disabled parser/writer scaffolds reject without production bytes, and observation metadata, address index state, UTXO state, wallet history, Recovery status, and Privacy Analyzer persistence remain blocked with no production vector bytes, serialization/parsing, file I/O, crypto execution, storage success, provider selection, UI, endpoint, or mainnet behavior added.
+
 ## Source Location
 
 Recovery status models:

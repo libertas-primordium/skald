@@ -33,6 +33,8 @@ This document records the encrypted-vault-parser-writer-implementation-scaffold-
 - Future test-source synthetic bytes remain non-wallet, non-secret, non-network, and separate-branch-only.
 - Future test-source synthetic bytes are not production vault bytes, parser execution, writer execution, serialization, parsing, storage, sync, provider-selection, or mainnet authorization.
 
+The later test-source synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It creates short synthetic bytes only in test source sets and proves disabled parser/writer rejection; it does not add production vector bytes, production parser inputs or writer outputs, a working parser/writer, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Non-Authorization
 
 - No working parser implementation is added.

@@ -12,6 +12,8 @@ The encrypted vault storage readiness decision is documented in [`ENCRYPTED_LOCA
 
 The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It does not change this boundary: secure metadata storage still has no success path, disabled parser/writer scaffolds produce and consume no vault bytes, no test-source synthetic bytes were created, no serialization/parsing or file I/O exists, and production observation/address-index/UTXO/wallet-history persistence remains blocked.
 
+The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It does not change this boundary: secure metadata storage still has no success path, synthetic bytes exist only in test source sets, disabled parser/writer scaffolds expose no bytes, no production serialization/parsing or file I/O exists, and production observation/address-index/UTXO/wallet-history persistence remains blocked.
+
 The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this disabled metadata repository as a blocker for production provider selection and selects only the disabled provider.
 
 ## Source Location
