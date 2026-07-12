@@ -21,6 +21,8 @@ The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT
 
 The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this gate and the test-vector admission as evidence and adds only disabled parser/writer scaffold surfaces; it does not add a working parser or writer, production vector bytes, production parser inputs, production writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
 
+The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It is test-source-only catalog evidence with short synthetic bytes and disabled rejection checks; it does not add production vector bytes, parser/writer implementation, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.

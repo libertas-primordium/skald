@@ -14,6 +14,8 @@ The encrypted vault storage readiness decision is documented in [`ENCRYPTED_LOCA
 
 The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It does not change this facade: production sync remains blocked, no production backend client is added, disabled parser/writer scaffolds reject without bytes, no test-source synthetic bytes were created, and no production vector bytes, production parser inputs, production writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, persistence, provider selection, UI, endpoint, or mainnet behavior is added.
 
+The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It does not change this facade: production sync remains blocked, no production backend client is added, synthetic bytes exist only in test source sets, disabled parser/writer scaffolds reject without production bytes, and no production vector bytes, production parser inputs, production writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, persistence, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Source Location
 
 Production-safe common models:

@@ -28,6 +28,8 @@ The parser/writer test-vector admission is documented in [`ENCRYPTED_LOCAL_VAULT
 
 The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this container-format decision as evidence and adds only interfaces, request/result/blocker models, redacted diagnostics, and disabled parser/writer scaffolds; it does not add a working parser or writer, production vector bytes, production parser inputs or writer outputs, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, or mainnet.
 
+The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It creates short synthetic bytes only in test source sets and proves disabled scaffold rejection; it does not add production vector bytes, production parser inputs or writer outputs, working parser/writer behavior, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, or mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:

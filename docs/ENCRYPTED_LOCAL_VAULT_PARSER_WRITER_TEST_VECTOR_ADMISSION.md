@@ -17,6 +17,8 @@ This document records the encrypted-vault-parser-writer-test-vector-admission-on
 
 The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_IMPLEMENTATION_SCAFFOLD.md). It consumes this admission as evidence and adds only commonMain interfaces, request/result/blocker models, redacted diagnostics, and disabled fail-closed parser/writer scaffolds; it creates no synthetic bytes, executes no vectors, implements no working parser/writer, serializes or parses nothing, produces or consumes no vault bytes, performs no file I/O or crypto execution, and enables no storage, sync, provider selection, UI, endpoint, or mainnet behavior.
 
+The test-source synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It creates short synthetic bytes only in test source sets and uses them only to prove disabled parser/writer rejection through safe request counts/flags; it does not add production vector bytes, parser inputs, writer outputs, working parser/writer implementation, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior.
+
 ## Test Vector Admission Policy
 
 - Future parser/writer implementation may create synthetic in-memory vector bytes only in test source sets after a separate implementation branch.
