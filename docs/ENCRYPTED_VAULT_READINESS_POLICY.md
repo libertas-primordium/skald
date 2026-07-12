@@ -202,6 +202,8 @@ Tests cover:
 
 ## Explicit Non-Capabilities
 
+The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It is limited to a minimal commonMain in-memory parser for test-source synthetic vectors and does not add writer implementation, production vector bytes, production parser inputs or writer outputs, production vault bytes, file I/O, KDF/AEAD/encryption/decryption/authentication, key or nonce generation, Tink keyset creation/persistence, secure-storage success, secure-metadata success, production persistence, sync, provider selection, signing/broadcasting, UI, endpoints, or mainnet.
+
 This readiness policy does not enable:
 
 - encrypted vault implementation,

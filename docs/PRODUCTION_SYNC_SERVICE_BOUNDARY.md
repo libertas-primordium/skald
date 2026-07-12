@@ -18,6 +18,8 @@ The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VA
 
 The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It does not change this facade: production sync remains blocked, no production backend client is added, no parser execution or production parsing exists, and no vault bytes, file I/O, crypto/authentication execution, persistence, provider selection, UI, endpoint, or mainnet behavior is added.
 
+The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It does not change this facade: production sync remains blocked, no production backend client is added, parser execution is limited to test-source synthetic in-memory bytes, and no writer, production vectors, production parser inputs/writer outputs, production vault bytes, file I/O, crypto/authentication execution, persistence, provider selection, UI, endpoint, or mainnet behavior is added.
+
 ## Source Location
 
 Production-safe common models:

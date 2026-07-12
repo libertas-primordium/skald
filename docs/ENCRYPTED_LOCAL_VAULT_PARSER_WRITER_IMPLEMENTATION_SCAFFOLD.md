@@ -37,6 +37,8 @@ The later test-source synthetic vector catalog is documented in [`ENCRYPTED_LOCA
 
 The later working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It consumes the scaffold and synthetic-vector catalog as evidence for a future separate in-memory parser branch only; it adds no working parser, parser execution, writer implementation, serialization/parsing, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
 
+The later working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It adds a minimal in-memory parser for test-source synthetic vectors only while keeping the writer disabled/separate, production vectors absent, production parser inputs/writer outputs absent, production vault bytes absent, file I/O absent, crypto/authentication execution absent, storage success absent, sync absent, provider selection absent, UI/endpoints absent, and mainnet disabled.
+
 ## Non-Authorization
 
 - No working parser implementation is added.
