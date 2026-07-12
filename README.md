@@ -50,6 +50,10 @@ Current encrypted local vault status also includes a test-source-only parser/wri
 
 Current encrypted local vault status also includes a commonMain working-parser admission gate; `workingParserAdmissionGatePassed=true` admits only a later in-memory synthetic-vector parser branch, keeps writer scope separate, and adds no working parser/writer, parser execution, serialization/parsing, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior.
 
+The admitted minimal parser now exists in commonMain and is compiled into app artifacts, but its executed validation inputs remain test-source-only synthetic vectors. There is no production parser call site, registry, factory, dispatcher, service, repository, storage integration, UI integration, production vault-file parsing, or real-wallet data parsing.
+
+The [`working-parser validation completion audit`](docs/ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) is validation-only and currently blocked: all twelve catalog vectors match their expected classifications/blockers, but suffixed and concatenated markers are accepted and the parser object does not provide an explicitly redacted `toString()`. Parser semantics were not changed; writer, serialization, file I/O, crypto/authentication, storage success, sync, provider selection, and mainnet remain absent.
+
 ## Targets
 
 - Android APK

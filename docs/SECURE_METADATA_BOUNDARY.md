@@ -18,6 +18,8 @@ The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKI
 
 The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It does not change this boundary: secure metadata storage remains disabled and has no success path, parser execution is limited to test-source synthetic in-memory bytes, no production parsing or file I/O exists, no crypto/authentication executes, and production observation/address-index/UTXO/wallet-history persistence remains blocked.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) remains commonTest-only and changes no metadata boundary. Its exact-marker and parser-display blockers do not enable production parsing, secure metadata success, observation/address-index/UTXO/history persistence, or sync.
+
 The disabled provider-selection boundary is documented in [`ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md`](ENCRYPTED_LOCAL_VAULT_PROVIDER_SELECTION_BOUNDARY.md). It treats this disabled metadata repository as a blocker for production provider selection and selects only the disabled provider.
 
 ## Source Location

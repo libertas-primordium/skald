@@ -34,6 +34,8 @@ The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKI
 
 The working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It reflects this container-format decision through safe synthetic classifications only; it does not serialize or parse production vault containers, create production vectors, add file I/O, run crypto/authentication, add a writer, enable storage success, sync, provider selection, UI, endpoints, or mainnet.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) confirms that this is still not a canonical binary layout or real vault-format parser. Exact marker matching remains blocked for suffixed and concatenated synthetic inputs; production size/streaming policy and authenticated parsing remain separate decisions.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:

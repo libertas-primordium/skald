@@ -20,6 +20,8 @@ The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKI
 
 The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It does not change this facade: production sync remains blocked, no production backend client is added, parser execution is limited to test-source synthetic in-memory bytes, and no writer, production vectors, production parser inputs/writer outputs, production vault bytes, file I/O, crypto/authentication execution, persistence, provider selection, UI, endpoint, or mainnet behavior is added.
 
+The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) changes no sync boundary. Production parser call sites remain absent, the audit is blocked on exact-marker/parser-display findings, and no backend client, persistence, provider selection, or production sync path was added.
+
 ## Source Location
 
 Production-safe common models:
