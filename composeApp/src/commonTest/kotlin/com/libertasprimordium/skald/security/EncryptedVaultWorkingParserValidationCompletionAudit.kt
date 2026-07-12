@@ -208,7 +208,7 @@ object EncryptedVaultWorkingParserValidationCompletionAudit {
         val diagnosticsToStringRedacted =
             fixtureObservations.all { it.diagnosticsToStringRedacted }
         val parserToStringRedacted =
-            EncryptedVaultWorkingParser.toString().contains("REDACTED")
+            EncryptedVaultWorkingParser.toString() == EXPECTED_PARSER_DISPLAY
         val redactedDiagnosticsVectorTreatedAsValidContainer =
             fixtureObservations.single {
                 it.vectorClass ==
@@ -521,52 +521,63 @@ object EncryptedVaultWorkingParserValidationCompletionAudit {
     }
 
     private fun observeRuntimeNegativeInputs(): RuntimeNegativeObservation {
-        val first = EncryptedVaultParserWriterSyntheticVectorCatalog.fixtures.first()
-        val second = EncryptedVaultParserWriterSyntheticVectorCatalog.fixtures[1]
-        val valid = first.bytesForDisabledScaffoldRequestOnly()
-        val otherValid = second.bytesForDisabledScaffoldRequestOnly()
-
-        val empty = valid.copyOf(0)
-        val unknown = valid.copyOf(2).also { candidate -> candidate[0] = (candidate[0].toInt() xor 1).toByte() }
-        val prefixed = valid.copyOf(valid.size + 1).also { candidate ->
-            valid.copyInto(candidate, destinationOffset = 1)
-            candidate[0] = valid.last()
+        val acceptedFixtures =
+            EncryptedVaultParserWriterSyntheticVectorCatalog.fixtures.filter { fixture ->
+                fixture.vectorClass in acceptedExpectations().keys
+            }
+        val validInputs = acceptedFixtures.map { it.bytesForDisabledScaffoldRequestOnly() }
+        val first = validInputs.first()
+        val empty = first.copyOf(0)
+        val unknown = first.copyOf(2).also { candidate ->
+            candidate[0] = (candidate[0].toInt() xor 1).toByte()
         }
-        val suffixed = valid.copyOf(valid.size + 1).also { candidate ->
-            candidate[candidate.lastIndex] = valid.first()
+        val prefixed = validInputs.map { valid ->
+            valid.copyOf(valid.size + 1).also { candidate ->
+                valid.copyInto(candidate, destinationOffset = 1)
+                candidate[0] = valid.last()
+            }
         }
-        val caseAltered = valid.copyOf().also { candidate ->
-            candidate[0] = (candidate[0].toInt() xor ASCII_CASE_BIT).toByte()
+        val suffixed = validInputs.map { valid ->
+            valid.copyOf(valid.size + 1).also { candidate ->
+                candidate[candidate.lastIndex] = valid.first()
+            }
         }
-        val concatenated = valid + otherValid
-        val removed = valid.copyOf(valid.size - 1)
-        val replaced = valid.copyOf().also { candidate ->
-            candidate[SYNTHETIC_TOKEN_INDEX] =
-                (candidate[SYNTHETIC_TOKEN_INDEX].toInt() xor 1).toByte()
+        val caseAltered = validInputs.map { valid ->
+            valid.copyOf().also { candidate ->
+                candidate[0] = (candidate[0].toInt() xor ASCII_CASE_BIT).toByte()
+            }
+        }
+        val concatenated = validInputs.mapIndexed { index, valid ->
+            valid + validInputs[(index + 1) % validInputs.size]
+        }
+        val removed = validInputs.map { valid -> valid.copyOf(valid.size - 1) }
+        val replaced = validInputs.map { valid ->
+            valid.copyOf().also { candidate ->
+                candidate[SYNTHETIC_TOKEN_INDEX] =
+                    (candidate[SYNTHETIC_TOKEN_INDEX].toInt() xor 1).toByte()
+            }
         }
 
         val observation = RuntimeNegativeObservation(
             emptyInputRejected = parseRejected(empty),
             unknownInputRejected = parseRejected(unknown),
-            prefixedMarkerRejected = parseRejected(prefixed),
-            suffixedMarkerRejected = parseRejected(suffixed),
-            caseAlteredMarkerRejected = parseRejected(caseAltered),
-            concatenatedMarkersRejected = parseRejected(concatenated),
-            removedByteMarkerRejected = parseRejected(removed),
-            replacedByteMarkerRejected = parseRejected(replaced),
+            prefixedMarkerRejected = prefixed.all(::parseRejected),
+            suffixedMarkerRejected = suffixed.all(::parseRejected),
+            caseAlteredMarkerRejected = caseAltered.all(::parseRejected),
+            concatenatedMarkersRejected = concatenated.all(::parseRejected),
+            removedByteMarkerRejected = removed.all(::parseRejected),
+            replacedByteMarkerRejected = replaced.all(::parseRejected),
         )
 
-        listOf(
-            valid,
-            otherValid,
-            empty,
-            unknown,
-            prefixed,
-            suffixed,
-            caseAltered,
-            concatenated,
-            removed,
-            replaced,
+        (
+            validInputs +
+                listOf(empty, unknown) +
+                prefixed +
+                suffixed +
+                caseAltered +
+                concatenated +
+                removed +
+                replaced
         ).forEach { it.fill(0) }
         return observation
     }
@@ -722,4 +733,7 @@ object EncryptedVaultWorkingParserValidationCompletionAudit {
 
     private const val ASCII_CASE_BIT = 0x20
     private const val SYNTHETIC_TOKEN_INDEX = 4
+    private const val EXPECTED_PARSER_DISPLAY =
+        "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+            "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
 }

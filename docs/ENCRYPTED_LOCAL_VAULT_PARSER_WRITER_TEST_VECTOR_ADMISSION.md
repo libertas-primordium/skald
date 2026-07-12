@@ -25,6 +25,8 @@ The working-parser synthetic-vector execution branch is documented in [`ENCRYPTE
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) reuses the admitted catalog, derives additional negatives at test runtime only, and leaves validation incomplete because suffixed and concatenated markers do not fail closed and the parser object is not explicitly redacted.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves those three v1 defects. The same catalog and audit are reused, additional negative inputs remain runtime-derived only, and no writer or production authorization is added.
+
 ## Test Vector Admission Policy
 
 - Future parser/writer implementation may create synthetic in-memory vector bytes only in test source sets after a separate implementation branch.

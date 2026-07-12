@@ -4,7 +4,6 @@ import com.libertasprimordium.skald.security.EncryptedVaultParserWriterSynthetic
 import com.libertasprimordium.skald.security.EncryptedVaultWorkingParserBlocker
 import com.libertasprimordium.skald.security.EncryptedVaultWorkingParserSyntheticClassification
 import com.libertasprimordium.skald.security.EncryptedVaultWorkingParserValidationCompletionAudit
-import com.libertasprimordium.skald.security.EncryptedVaultWorkingParserValidationCompletionAuditBlocker
 import com.libertasprimordium.skald.security.EncryptedVaultWorkingParserValidationCompletionAuditKind
 import com.libertasprimordium.skald.security.EncryptedVaultWorkingParserValidationCompletionAuditSourceSet
 import kotlin.test.Test
@@ -44,7 +43,7 @@ class EncryptedVaultWorkingParserValidationCompletionAuditTest {
         assertTrue(report.commonMainInMemoryParserPresent)
         assertTrue(report.parserCompiledIntoProductionArtifacts)
         assertTrue(report.syntheticTestVectorExecutionPresent)
-        assertFalse(report.syntheticTestVectorExecutionValidated)
+        assertTrue(report.syntheticTestVectorExecutionValidated)
         assertTrue(report.existingCatalogReused)
         assertTrue(report.noSecondCatalogCreated)
         assertTrue(report.noNewPersistentVectorFixturesCreated)
@@ -86,27 +85,19 @@ class EncryptedVaultWorkingParserValidationCompletionAuditTest {
     }
 
     @Test
-    fun runtimeOnlyNegativeInputsExposeTheExistingExactMatchBlockers() {
+    fun runtimeOnlyNegativeInputsMeetTheExactMatchContract() {
         val report = report()
 
         assertTrue(report.emptyInputRejected)
         assertTrue(report.unknownInputRejected)
-        assertFalse(report.exactMarkerMatchRequired)
+        assertTrue(report.exactMarkerMatchRequired)
         assertTrue(report.prefixedMarkerRejected)
-        assertFalse(report.suffixedMarkerRejected)
+        assertTrue(report.suffixedMarkerRejected)
         assertTrue(report.caseAlteredMarkerRejected)
-        assertFalse(report.concatenatedMarkersRejected)
+        assertTrue(report.concatenatedMarkersRejected)
         assertTrue(report.removedByteMarkerRejected)
         assertTrue(report.replacedByteMarkerRejected)
-        assertContains(
-            report.blockers,
-            EncryptedVaultWorkingParserValidationCompletionAuditBlocker.SuffixedMarkerAccepted,
-        )
-        assertContains(
-            report.blockers,
-            EncryptedVaultWorkingParserValidationCompletionAuditBlocker
-                .ConcatenatedMarkersAccepted,
-        )
+        assertTrue(report.blockers.isEmpty())
     }
 
     @Test
@@ -127,17 +118,13 @@ class EncryptedVaultWorkingParserValidationCompletionAuditTest {
     }
 
     @Test
-    fun parserObjectToStringGapIsReportedWithoutChangingParserSemantics() {
+    fun parserObjectToStringIsRedactedAndCurrentContractAuditPasses() {
         val report = report()
 
-        assertFalse(report.parserToStringRedacted)
-        assertContains(
-            report.blockers,
-            EncryptedVaultWorkingParserValidationCompletionAuditBlocker
-                .ParserToStringNotExplicitlyRedacted,
-        )
-        assertFalse(report.parserValidationCompletionAuditPassed)
-        assertEquals(3, report.blockerCount)
+        assertTrue(report.parserToStringRedacted)
+        assertTrue(report.parserValidationCompletionAuditPassed)
+        assertTrue(report.blockers.isEmpty())
+        assertEquals(0, report.blockerCount)
         assertEquals(0, report.warningCount)
     }
 

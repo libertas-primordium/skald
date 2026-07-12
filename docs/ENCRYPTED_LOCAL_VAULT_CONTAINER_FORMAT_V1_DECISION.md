@@ -36,6 +36,8 @@ The working-parser synthetic-vector execution branch is documented in [`ENCRYPTE
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) confirms that this is still not a canonical binary layout or real vault-format parser. Exact marker matching remains blocked for suffixed and concatenated synthetic inputs; production size/streaming policy and authenticated parsing remain separate decisions.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves exact matching for the existing synthetic v1 markers only. It does not define the canonical binary layout, production size/streaming policy, authenticated parsing, serialization, or storage.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:

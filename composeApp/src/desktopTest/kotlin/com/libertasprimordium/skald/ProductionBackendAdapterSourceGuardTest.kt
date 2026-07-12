@@ -1470,6 +1470,12 @@ class ProductionBackendAdapterSourceGuardTest {
             }
             .map(::sourceGuardRelativePath)
         val parserSource = sourceGuardText(parserFile)
+        val parserClassificationSource = parserSource
+            .substringAfter("private fun parseSyntheticMaterial(material: ByteArray)")
+            .substringBefore("    private fun parsed(")
+        val exactMarkerHelperSource = parserSource
+            .substringAfter("    private fun exactMarkerMatches(")
+            .substringBefore("    private fun codeAt(")
         val productionMarkerOffenders = productionRuntimeKotlinFiles()
             .filter { file ->
                 val text = sourceGuardText(file)
@@ -1607,6 +1613,23 @@ class ProductionBackendAdapterSourceGuardTest {
         val parserOffenders = forbiddenParserPatterns
             .filter { pattern -> pattern.containsMatchIn(parserSource) }
             .map { pattern -> pattern.pattern }
+        val forbiddenMatchingPatterns = listOf(
+            Regex("""\bString\s*\("""),
+            Regex("""\bRegex\s*\("""),
+            Regex("""\.toRegex\s*\("""),
+            Regex("""\.substring(?:After|Before)?\s*\("""),
+            Regex("""\.contains\s*\("""),
+            Regex("""\.startsWith\s*\("""),
+            Regex("""\.endsWith\s*\("""),
+            Regex("""\.trim(?:Start|End)?\s*\("""),
+            Regex("""\.split\s*\("""),
+            Regex("""\.lowercase\s*\("""),
+            Regex("""\.uppercase\s*\("""),
+            Regex("""ignoreCase\s*=\s*true"""),
+        )
+        val matchingOffenders = forbiddenMatchingPatterns
+            .filter { pattern -> pattern.containsMatchIn(parserClassificationSource) }
+            .map { pattern -> pattern.pattern }
 
         assertTrue(parserFile.isFile, "Working parser file must exist.")
         assertTrue(
@@ -1620,6 +1643,36 @@ class ProductionBackendAdapterSourceGuardTest {
         assertTrue(
             parserOffenders.isEmpty(),
             "Working parser must remain in-memory, synthetic-only, writer-free, storage-free, crypto-free, provider-selection-free, and mainnet-disabled: $parserOffenders",
+        )
+        assertTrue(
+            matchingOffenders.isEmpty(),
+            "Working parser matching must not decode, normalize, split, regex-match, substring-match, or fuzzy-match input: $matchingOffenders",
+        )
+        assertEquals(
+            12,
+            Regex("""\bexactMarkerMatches\s*\(""")
+                .findAll(parserClassificationSource)
+                .count(),
+            "Every existing v1 catalog classification branch must use exact marker matching.",
+        )
+        assertFalse(
+            Regex("""\btokenMatches\s*\(""").containsMatchIn(parserClassificationSource),
+            "Classification branches must not bypass exact discriminator and length checks.",
+        )
+        assertTrue("tokenMatches(material, tokenStart, tokenEnd, *expectedToken)" in exactMarkerHelperSource)
+        assertTrue("material.size == tokenEnd + 2" in exactMarkerHelperSource)
+        assertTrue("codeAt(material, tokenEnd) == SEPARATOR" in exactMarkerHelperSource)
+        assertTrue(
+            "codeAt(material, tokenEnd + 1) == expectedDiscriminator" in exactMarkerHelperSource,
+        )
+        assertTrue("override fun toString(): String" in parserSource)
+        assertTrue(
+            "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " in
+                parserSource,
+        )
+        assertTrue(
+            "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)" in
+                parserSource,
         )
         assertTrue(
             Regex("""workingParserImplementationPresent\s*=\s*true""").containsMatchIn(parserSource),

@@ -137,6 +137,114 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
     }
 
     @Test
+    fun parserRequiresExactFullInputForEveryAcceptedCatalogMarker() {
+        val accepted = fixtures().filter { it.vectorClass in acceptedVectorClasses }
+        val first = accepted.first().bytesForDisabledScaffoldRequestOnly()
+        val empty = first.copyOf(0)
+        val unknown = first.copyOf(2).also { candidate ->
+            candidate[0] = (candidate[0].toInt() xor 1).toByte()
+        }
+
+        assertClosed(
+            EncryptedVaultWorkingParser.parse(
+                EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(empty),
+            ),
+            EncryptedVaultWorkingParserBlocker.EmptyInput,
+        )
+        assertClosed(
+            EncryptedVaultWorkingParser.parse(
+                EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(unknown),
+            ),
+            EncryptedVaultWorkingParserBlocker.UnrecognizedSyntheticVector,
+        )
+
+        accepted.forEachIndexed { index, fixture ->
+            val material = fixture.bytesForDisabledScaffoldRequestOnly()
+            val next = accepted[(index + 1) % accepted.size]
+                .bytesForDisabledScaffoldRequestOnly()
+            val prefixed = material.copyOf(material.size + 1).also { candidate ->
+                material.copyInto(candidate, destinationOffset = 1)
+                candidate[0] = material.last()
+            }
+            val suffixed = material.copyOf(material.size + 1).also { candidate ->
+                candidate[candidate.lastIndex] = material.first()
+            }
+            val caseAltered = material.copyOf().also { candidate ->
+                candidate[0] = (candidate[0].toInt() xor ASCII_CASE_BIT).toByte()
+            }
+            val concatenated = material + next
+            val removed = material.copyOf(material.size - 1)
+            val nonSeparatorReplaced = material.copyOf().also { candidate ->
+                candidate[SYNTHETIC_TOKEN_START_INDEX] =
+                    (candidate[SYNTHETIC_TOKEN_START_INDEX].toInt() xor 1).toByte()
+            }
+            val discriminatorReplaced = material.copyOf().also { candidate ->
+                candidate[candidate.lastIndex] =
+                    (candidate[candidate.lastIndex].toInt() xor 1).toByte()
+            }
+            val recognizedTokenWithWrongDiscriminator = material.copyOf().also { candidate ->
+                candidate[candidate.lastIndex] =
+                    (candidate[candidate.lastIndex].toInt() xor 2).toByte()
+            }
+            val twoDiscriminators = material.copyOf(material.size + 1).also { candidate ->
+                candidate[candidate.lastIndex] = material.last()
+            }
+            val discriminatorThenExtraSeparator =
+                material.copyOf(material.size + 1).also { candidate ->
+                    candidate[candidate.lastIndex] = SYNTHETIC_SEPARATOR
+                }
+
+            listOf(
+                prefixed,
+                suffixed,
+                caseAltered,
+                concatenated,
+                nonSeparatorReplaced,
+                discriminatorReplaced,
+                recognizedTokenWithWrongDiscriminator,
+                twoDiscriminators,
+                discriminatorThenExtraSeparator,
+            ).forEach { negative ->
+                assertClosed(
+                    EncryptedVaultWorkingParser.parse(
+                        EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(negative),
+                    ),
+                    EncryptedVaultWorkingParserBlocker.UnrecognizedSyntheticVector,
+                )
+                negative.fill(0)
+            }
+            assertClosed(
+                EncryptedVaultWorkingParser.parse(
+                    EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(removed),
+                ),
+                EncryptedVaultWorkingParserBlocker.MalformedSyntheticSectionOrder,
+            )
+
+            material.fill(0)
+            next.fill(0)
+            removed.fill(0)
+        }
+
+        first.fill(0)
+        empty.fill(0)
+        unknown.fill(0)
+    }
+
+    @Test
+    fun parserSingletonDisplayIsExactlyRedactedAndIdentityFree() {
+        val rendered = EncryptedVaultWorkingParser.toString()
+
+        assertEquals(EXPECTED_PARSER_DISPLAY, rendered)
+        assertFalse('@' in rendered)
+        fixtures().forEach { fixture ->
+            assertFalse(rendered.contains(fixture.markerForTestSourceConfinementAssertionOnly()))
+        }
+        forbiddenOutputText.forEach { forbidden ->
+            assertFalse(forbidden in rendered.lowercase())
+        }
+    }
+
+    @Test
     fun parserFailsClosedForEmptyUnknownMalformedAndProductionLikeRequests() {
         val empty = EncryptedVaultWorkingParser.parse(
             EncryptedVaultWorkingParserRequest.testSourceSyntheticVector(ByteArray(0)),
@@ -378,6 +486,18 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
         assertTrue(result.blockers.isEmpty())
         assertEquals(0, result.blockerCount)
         assertEquals(0, result.warningCount)
+        assertFalse(result.inputBytesExposed)
+        assertFalse(result.inputBytesCopiedToResult)
+        assertFalse(result.sectionBytesExposed)
+        assertFalse(result.parsedPayloadByteArraysCreated)
+        assertFalse(result.repositoryObjectCreated)
+        assertFalse(result.storageStateCreated)
+        assertFalse(result.writerObjectCreated)
+        assertFalse(result.fileIoUsed)
+        assertFalse(result.cryptoAuthenticationExecuted)
+        assertTrue(result.diagnostics.safeLabelsOnly)
+        assertTrue(result.diagnostics.payloadFree)
+        assertTrue(result.diagnostics.rawBytesFree)
     }
 
     private fun assertFailsClosed(
@@ -404,7 +524,7 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
         assertEquals(EncryptedVaultWorkingParserStatus.FailedClosed, result.status)
         assertFalse(result.accepted)
         assertEquals(0, result.sectionCount)
-        assertContains(result.blockers, expectedBlocker)
+        assertEquals(listOf(expectedBlocker), result.blockers)
         assertEquals(1, result.blockerCount)
         assertEquals(0, result.warningCount)
         assertEquals(0, result.producedByteCount)
@@ -437,6 +557,21 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
     }
 
     private companion object {
+        const val ASCII_CASE_BIT = 0x20
+        const val SYNTHETIC_TOKEN_START_INDEX = 4
+        val SYNTHETIC_SEPARATOR = '-'.code.toByte()
+        const val EXPECTED_PARSER_DISPLAY =
+            "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+                "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
+
+        val acceptedVectorClasses = setOf(
+            EncryptedVaultParserWriterSyntheticVectorCatalogClass.MinimalHeaderOnlySyntheticVector,
+            EncryptedVaultParserWriterSyntheticVectorCatalogClass.HeaderAndKdfSectionSyntheticVector,
+            EncryptedVaultParserWriterSyntheticVectorCatalogClass.HeaderKeyEnvelopeDirectorySyntheticVector,
+            EncryptedVaultParserWriterSyntheticVectorCatalogClass.SingleRecordEnvelopeSyntheticVector,
+            EncryptedVaultParserWriterSyntheticVectorCatalogClass.MultiRecordDirectorySyntheticVector,
+        )
+
         val forbiddenLabelText = listOf(
             "nsec",
             "psbt",

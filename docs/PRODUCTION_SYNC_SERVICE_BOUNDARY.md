@@ -22,6 +22,8 @@ The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_
 
 The [`working-parser validation completion audit`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_VALIDATION_COMPLETION_AUDIT.md) changes no sync boundary. Production parser call sites remain absent, the audit is blocked on exact-marker/parser-display findings, and no backend client, persistence, provider selection, or production sync path was added.
 
+The separate [`strict-match/redaction correction`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_STRICT_MATCH_REDACTION_CORRECTION.md) resolves the audit's narrow parser findings without changing this sync boundary. Production parser call sites, backend clients, persistence, provider selection, and production sync remain absent.
+
 ## Source Location
 
 Production-safe common models:
