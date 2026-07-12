@@ -18,6 +18,8 @@ The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VA
 
 The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It does not change Recovery/Privacy persistence: no parser execution or production parsing exists, and observation metadata, address index state, UTXO state, wallet history, Recovery status, and Privacy Analyzer persistence remain blocked with no vault bytes, file I/O, crypto/authentication execution, storage success, provider selection, UI, endpoint, or mainnet behavior added.
 
+The working-parser synthetic-vector execution pass is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It does not change Recovery/Privacy persistence: parser execution is limited to test-source synthetic in-memory bytes, no writer, production vectors, production parser inputs/writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, provider selection, UI, endpoint, or mainnet behavior is added, and observation metadata, address index state, UTXO state, wallet history, Recovery status, and Privacy Analyzer persistence remain blocked.
+
 ## Source Location
 
 Recovery status models:

@@ -16,6 +16,8 @@ This document records the encrypted-vault-parser-writer-synthetic-vector-catalog
 
 The later working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It admits only a future commonMain in-memory parser branch for synthetic test-source vector execution; it does not add a working parser, parser execution, serialization/parsing, production vector bytes, vault bytes, file I/O, crypto/authentication execution, storage success, writer implementation, production sync, provider selection, UI, endpoints, or mainnet.
 
+The later working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It consumes these test-source synthetic bytes only through a minimal in-memory parser and returns redacted Skald-owned results; it does not add production vector bytes, production parser inputs or writer outputs, a writer, production vault bytes, file I/O, crypto/authentication execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Synthetic Vector Status
 
 - Synthetic vector bytes were created only in test source sets.

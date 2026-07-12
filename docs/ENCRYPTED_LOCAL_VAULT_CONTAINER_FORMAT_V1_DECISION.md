@@ -32,6 +32,8 @@ The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VA
 
 The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It consumes the container-format decision as evidence for a later in-memory parser branch only; it does not add parser execution, serialization/parsing, production vector bytes, vault bytes, file I/O, crypto/authentication execution, storage success, writer behavior, sync, provider selection, UI, endpoints, or mainnet.
 
+The working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It reflects this container-format decision through safe synthetic classifications only; it does not serialize or parse production vault containers, create production vectors, add file I/O, run crypto/authentication, add a writer, enable storage success, sync, provider selection, UI, endpoints, or mainnet.
+
 ## Conceptual Sections
 
 The v1 decision models these future sections as safe labels only:

@@ -1432,6 +1432,215 @@ class ProductionBackendAdapterSourceGuardTest {
     }
 
     @Test
+    fun encryptedVaultWorkingParserStaysInMemorySyntheticOnlyAndCannotEnableWriterStorageCryptoOrMainnet() {
+        val root = repositoryRoot()
+        val parserFile = File(
+            root,
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
+        )
+        val approvedParserFile = sourceGuardRelativePath(parserFile)
+        val productionRoots = listOf(
+            File(root, "composeApp/src/commonMain"),
+            File(root, "composeApp/src/androidMain"),
+            File(root, "composeApp/src/desktopMain"),
+        ).filter { it.exists() }
+        val parserDefinitionPatterns = listOf(
+            Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParser\b"""),
+            Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParserRequest\b"""),
+            Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParserResult\b"""),
+            Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParserEvidence\b"""),
+            Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParserRedactedDiagnostics\b"""),
+            Regex("""\b(?:class|object|interface|enum class|data class)\s+EncryptedVaultWorkingParserSyntheticClassification\b"""),
+        )
+        val syntheticMarkers = listOf(
+            "skv-min-a",
+            "skv-kdf-b",
+            "skv-env-c",
+            "skv-one-d",
+            "skv-many-e",
+            "skv-ver-f",
+            "skv-crit-g",
+            "skv-cut-h",
+            "skv-cut-i",
+            "skv-red-j",
+            "skv-mig-k",
+            "skv-cor-l",
+        )
+        val misplacedParserDefinitions = productionRoots
+            .flatMap { sourceRoot ->
+                sourceRoot.walkTopDown()
+                    .filter { it.isFile && it.extension == "kt" }
+                    .filter { file ->
+                        val relative = file.relativeTo(root).invariantSeparatorsPath
+                        relative != approvedParserFile &&
+                            parserDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                    }
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+        val parserSource = sourceGuardText(parserFile)
+        val productionMarkerOffenders = productionRuntimeKotlinFiles()
+            .filter { file ->
+                val text = sourceGuardText(file)
+                syntheticMarkers.any { marker -> marker in text }
+            }
+            .map(::sourceGuardRelativePath)
+        val forbiddenParserPatterns = listOf(
+            Regex("""import\s+java\.io"""),
+            Regex("""import\s+java\.nio"""),
+            Regex("""import\s+android\."""),
+            Regex("""import\s+javax\.crypto"""),
+            Regex("""import\s+java\.security"""),
+            Regex("""import\s+kotlin\.random"""),
+            Regex("""import\s+java\.util\.Random"""),
+            Regex("""import\s+java\.util\.UUID"""),
+            Regex("""import\s+com\.google\.crypto"""),
+            Regex("""import\s+org\.bouncycastle"""),
+            Regex("""import\s+org\.bitcoindevkit"""),
+            Regex("""\bbyteArrayOf\("""),
+            Regex("""\bencodeToByteArray\("""),
+            Regex("""\bdecodeToString\("""),
+            Regex("""\bSharedPreferences\b"""),
+            Regex("""\bSettingsStorageKey\b"""),
+            Regex("""\bFile\("""),
+            Regex("""\bPath\("""),
+            Regex("""\bUri\b"""),
+            Regex("""\bwriteText\("""),
+            Regex("""\breadText\("""),
+            Regex("""\bwriteBytes\("""),
+            Regex("""\breadBytes\("""),
+            Regex("""\bmkdir"""),
+            Regex("""\bdelete\("""),
+            Regex("""\bSocket\("""),
+            Regex("""\bServerSocket\("""),
+            Regex("""\bHttpClient\b"""),
+            Regex("""\bURL\("""),
+            Regex("""\bURI\("""),
+            Regex("""\bElectrumClient\b"""),
+            Regex("""\bEsploraClient\b"""),
+            Regex("""\bRpcClient\b"""),
+            Regex("""\bJsonKeysetWriter\b"""),
+            Regex("""\bBinaryKeysetWriter\b"""),
+            Regex("""\bJsonKeysetReader\b"""),
+            Regex("""\bBinaryKeysetReader\b"""),
+            Regex("""\bKeysetHandle\."""),
+            Regex("""\bCipher\("""),
+            Regex("""\bKeyGenerator\b"""),
+            Regex("""\bSecureRandom\("""),
+            Regex("""\bMac\("""),
+            Regex("""\bMessageDigest\b"""),
+            Regex("""\.encrypt\("""),
+            Regex("""\.decrypt\("""),
+            Regex("""\.authenticate\("""),
+            Regex("""\.derive\("""),
+            Regex("""\bgenerateKey\("""),
+            Regex("""\bgenerateNonce\("""),
+            Regex("""\bprintln\("""),
+            Regex("""\bprintStackTrace\("""),
+            Regex("""EncryptedVaultParserWriterSyntheticVectorCatalog"""),
+            Regex("""workingWriterImplementationPresent\s*=\s*true"""),
+            Regex("""productionVectorBytesPresent\s*=\s*true"""),
+            Regex("""productionParserInputBytesPresent\s*=\s*true"""),
+            Regex("""productionWriterOutputBytesPresent\s*=\s*true"""),
+            Regex("""productionVaultBytesPresent\s*=\s*true"""),
+            Regex("""vaultContainerSerializationPresent\s*=\s*true"""),
+            Regex("""vaultFileReadPresent\s*=\s*true"""),
+            Regex("""vaultFileWritePresent\s*=\s*true"""),
+            Regex("""vaultFileDeletePresent\s*=\s*true"""),
+            Regex("""vaultDirectoryCreated\s*=\s*true"""),
+            Regex("""atomicReplaceImplementationPresent\s*=\s*true"""),
+            Regex("""backupCreationPresent\s*=\s*true"""),
+            Regex("""rollbackImplementationPresent\s*=\s*true"""),
+            Regex("""migrationImplementationPresent\s*=\s*true"""),
+            Regex("""migrationExecutionPresent\s*=\s*true"""),
+            Regex("""corruptionRepairImplementationPresent\s*=\s*true"""),
+            Regex("""kdfExecutionPresent\s*=\s*true"""),
+            Regex("""aeadExecutionPresent\s*=\s*true"""),
+            Regex("""encryptionExecutionPresent\s*=\s*true"""),
+            Regex("""decryptionExecutionPresent\s*=\s*true"""),
+            Regex("""authenticationExecutionPresent\s*=\s*true"""),
+            Regex("""keyGenerationPresent\s*=\s*true"""),
+            Regex("""nonceGenerationPresent\s*=\s*true"""),
+            Regex("""tinkKeysetCreationPresent\s*=\s*true"""),
+            Regex("""tinkKeysetPersistencePresent\s*=\s*true"""),
+            Regex("""vaultStoragePathImplementationPresent\s*=\s*true"""),
+            Regex("""encryptedVaultRepositorySuccessPresent\s*=\s*true"""),
+            Regex("""lockSessionImplementationPresent\s*=\s*true"""),
+            Regex("""unlockImplementationPresent\s*=\s*true"""),
+            Regex("""runtimeSessionKeyPresent\s*=\s*true"""),
+            Regex("""sessionKeyCached\s*=\s*true"""),
+            Regex("""plaintextCachePresent\s*=\s*true"""),
+            Regex("""secureSecretStorageSuccessPathPresent\s*=\s*true"""),
+            Regex("""secureMetadataStorageSuccessPathPresent\s*=\s*true"""),
+            Regex("""productionObservationPersistencePresent\s*=\s*true"""),
+            Regex("""productionAddressIndexPersistencePresent\s*=\s*true"""),
+            Regex("""productionUtxoPersistencePresent\s*=\s*true"""),
+            Regex("""productionWalletHistoryPersistencePresent\s*=\s*true"""),
+            Regex("""productionSyncPresent\s*=\s*true"""),
+            Regex("""productionBackendClientPresent\s*=\s*true"""),
+            Regex("""productionProviderSelectionEnabled\s*=\s*true"""),
+            Regex("""productionProviderSelectable\s*=\s*true"""),
+            Regex("""signingBroadcastingPresent\s*=\s*true"""),
+            Regex("""uiActionEnablementPresent\s*=\s*true"""),
+            Regex("""endpointPresent\s*=\s*true"""),
+            Regex("""mainnetPresent\s*=\s*true"""),
+            Regex("""workingWriterImplementationAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionVectorCreationAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionParserInputAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionWriterOutputAuthorizationPresent\s*=\s*true"""),
+            Regex("""vaultContainerSerializationAuthorizationPresent\s*=\s*true"""),
+            Regex("""vaultFileReadAuthorizationPresent\s*=\s*true"""),
+            Regex("""vaultFileWriteAuthorizationPresent\s*=\s*true"""),
+            Regex("""vaultFileDeleteAuthorizationPresent\s*=\s*true"""),
+            Regex("""vaultDirectoryCreationAuthorizationPresent\s*=\s*true"""),
+            Regex("""kdfExecutionAuthorizationPresent\s*=\s*true"""),
+            Regex("""aeadExecutionAuthorizationPresent\s*=\s*true"""),
+            Regex("""encryptionAuthorizationPresent\s*=\s*true"""),
+            Regex("""decryptionAuthorizationPresent\s*=\s*true"""),
+            Regex("""authenticationAuthorizationPresent\s*=\s*true"""),
+            Regex("""keyGenerationAuthorizationPresent\s*=\s*true"""),
+            Regex("""nonceGenerationAuthorizationPresent\s*=\s*true"""),
+            Regex("""tinkKeysetCreationAuthorizationPresent\s*=\s*true"""),
+            Regex("""tinkKeysetPersistenceAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionStorageAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionSecretStorageAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionMetadataStorageAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionSyncAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionProviderSelectionAuthorizationPresent\s*=\s*true"""),
+            Regex("""productionProviderImplementationAuthorizationPresent\s*=\s*true"""),
+            Regex("""signingBroadcastingAuthorizationPresent\s*=\s*true"""),
+            Regex("""uiAuthorizationPresent\s*=\s*true"""),
+            Regex("""endpointAuthorizationPresent\s*=\s*true"""),
+            Regex("""mainnetAuthorizationPresent\s*=\s*true"""),
+        )
+        val parserOffenders = forbiddenParserPatterns
+            .filter { pattern -> pattern.containsMatchIn(parserSource) }
+            .map { pattern -> pattern.pattern }
+
+        assertTrue(parserFile.isFile, "Working parser file must exist.")
+        assertTrue(
+            misplacedParserDefinitions.isEmpty(),
+            "Working parser definitions must stay in the approved commonMain parser file: $misplacedParserDefinitions",
+        )
+        assertTrue(
+            productionMarkerOffenders.isEmpty(),
+            "Synthetic vector byte markers must stay absent from production runtime source: $productionMarkerOffenders",
+        )
+        assertTrue(
+            parserOffenders.isEmpty(),
+            "Working parser must remain in-memory, synthetic-only, writer-free, storage-free, crypto-free, provider-selection-free, and mainnet-disabled: $parserOffenders",
+        )
+        assertTrue(
+            Regex("""workingParserImplementationPresent\s*=\s*true""").containsMatchIn(parserSource),
+            "Working parser evidence must be scoped to the approved parser file.",
+        )
+        assertTrue(
+            Regex("""syntheticVectorParserExecutionSupported\s*=\s*true""").containsMatchIn(parserSource),
+            "Synthetic parser execution evidence must be scoped to the approved parser file.",
+        )
+    }
+
+    @Test
     fun identityImplementationModelBoundariesRemainCoveredBySourceGuard() {
         val root = repositoryRoot()
         val sourceGuard = File(
@@ -1849,6 +2058,7 @@ class ProductionBackendAdapterSourceGuardTest {
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultParserWriterTestVectorAdmission.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultParserWriterScaffold.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParserAdmissionGate.kt",
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
         )
         val offenders = productionRuntimeKotlinFiles()
             .filterNot { file -> sourceGuardRelativePath(file) in allowedReadinessPolicyFiles }

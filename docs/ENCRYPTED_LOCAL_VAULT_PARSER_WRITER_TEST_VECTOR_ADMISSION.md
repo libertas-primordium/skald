@@ -21,6 +21,8 @@ The test-source synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAUL
 
 The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It admits only a later commonMain in-memory parser branch that may use synthetic test-source vectors after separate authorization; it does not add parser execution, a working parser, a working writer, serialization/parsing, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior.
 
+The working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It is the scoped parser execution pass for test-source synthetic vectors only and does not authorize writer implementation, production vector bytes, production parser inputs or writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
+
 ## Test Vector Admission Policy
 
 - Future parser/writer implementation may create synthetic in-memory vector bytes only in test source sets after a separate implementation branch.

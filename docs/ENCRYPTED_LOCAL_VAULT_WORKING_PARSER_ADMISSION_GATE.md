@@ -22,6 +22,8 @@ This document records the encrypted-vault-working-parser-admission-gate-only pas
 - Future desktop parser-vector execution requires a separate branch.
 - Future Android parser-vector execution requires a separate branch.
 
+The later working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It adds only a minimal commonMain in-memory parser for test-source synthetic vectors; it does not add a writer, production vector bytes, production parser inputs or writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
+
 ## Non-Authorization
 
 - No working parser implementation is added.

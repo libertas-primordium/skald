@@ -25,6 +25,8 @@ The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VA
 
 The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It admits only a future separate commonMain in-memory parser branch and keeps writer scope separate; it does not add a working parser, parser execution, serialization/parsing, production vector bytes, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
 
+The working-parser synthetic-vector execution branch is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION.md). It adds only the minimal in-memory parser and synthetic test-source vector execution path; writer implementation, production vectors, production parser inputs/writer outputs, production vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, and mainnet remain blocked.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.
