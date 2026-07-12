@@ -14,6 +14,8 @@ This document records the encrypted-vault-parser-writer-synthetic-vector-catalog
 - `disabledParserRejectedSyntheticBytes=true` is not parser implementation.
 - `disabledWriterRejectedWithoutProducingBytes=true` is not writer implementation.
 
+The later working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It admits only a future commonMain in-memory parser branch for synthetic test-source vector execution; it does not add a working parser, parser execution, serialization/parsing, production vector bytes, vault bytes, file I/O, crypto/authentication execution, storage success, writer implementation, production sync, provider selection, UI, endpoints, or mainnet.
+
 ## Synthetic Vector Status
 
 - Synthetic vector bytes were created only in test source sets.

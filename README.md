@@ -48,6 +48,8 @@ Current encrypted local vault status also includes a commonMain parser/writer im
 
 Current encrypted local vault status also includes a test-source-only parser/writer synthetic vector catalog; `syntheticVectorCatalogPresent=true` is catalog evidence only, synthetic bytes are test-source-only and rejected by disabled scaffolds, and no production vectors, working parser/writer, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior is added.
 
+Current encrypted local vault status also includes a commonMain working-parser admission gate; `workingParserAdmissionGatePassed=true` admits only a later in-memory synthetic-vector parser branch, keeps writer scope separate, and adds no working parser/writer, parser execution, serialization/parsing, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior.
+
 ## Targets
 
 - Android APK

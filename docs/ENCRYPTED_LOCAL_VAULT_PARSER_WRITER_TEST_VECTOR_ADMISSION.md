@@ -19,6 +19,8 @@ The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAU
 
 The test-source synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It creates short synthetic bytes only in test source sets and uses them only to prove disabled parser/writer rejection through safe request counts/flags; it does not add production vector bytes, parser inputs, writer outputs, working parser/writer implementation, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior.
 
+The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It admits only a later commonMain in-memory parser branch that may use synthetic test-source vectors after separate authorization; it does not add parser execution, a working parser, a working writer, serialization/parsing, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoint, or mainnet behavior.
+
 ## Test Vector Admission Policy
 
 - Future parser/writer implementation may create synthetic in-memory vector bytes only in test source sets after a separate implementation branch.

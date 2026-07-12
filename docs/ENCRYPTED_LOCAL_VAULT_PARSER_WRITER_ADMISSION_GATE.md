@@ -23,6 +23,8 @@ The parser/writer implementation scaffold is documented in [`ENCRYPTED_LOCAL_VAU
 
 The parser/writer synthetic vector catalog is documented in [`ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md`](ENCRYPTED_LOCAL_VAULT_PARSER_WRITER_SYNTHETIC_VECTOR_CATALOG.md). It is test-source-only catalog evidence with short synthetic bytes and disabled rejection checks; it does not add production vector bytes, parser/writer implementation, serialization/parsing, vault bytes, file I/O, crypto execution, storage success, production sync, provider selection, UI, endpoints, or mainnet.
 
+The working-parser admission gate is documented in [`ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md`](ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_ADMISSION_GATE.md). It admits only a future separate commonMain in-memory parser branch and keeps writer scope separate; it does not add a working parser, parser execution, serialization/parsing, production vector bytes, vault bytes, file I/O, crypto/authentication execution, storage success, sync, provider selection, UI, endpoints, or mainnet.
+
 ## Parser Admission Policy
 
 - Future parser must authenticate before trusting record metadata.
