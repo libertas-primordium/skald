@@ -573,8 +573,8 @@ enum class SkaldVaultV1VaultKdfFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported characters rejected"),
     RawKdfInputRejected("raw KDF input rejected"),
@@ -1005,15 +1005,13 @@ object SkaldVaultV1KdfCalibrationAuthorizationPolicy :
             return SkaldVaultV1VaultKdfFailureReason.RawRelativeLocationInputRejected
         }
         if (Regex("""^[0-9a-fA-F]{64}$""").matches(value)) {
-            return SkaldVaultV1VaultKdfFailureReason.TransactionLikeEvidenceRejected
+            return SkaldVaultV1VaultKdfFailureReason.AmbiguousRawCryptographicMaterialRejected
         }
-        if (Regex("""^(bc1|tb1|bcrt1)[a-z0-9]{20,}$""").matches(lower)) {
-            return SkaldVaultV1VaultKdfFailureReason.BitcoinAddressLikeEvidenceRejected
+        if (MoneroMaterialCandidatePolicy.isAddressShapedCandidate(value)) {
+            return SkaldVaultV1VaultKdfFailureReason.MoneroAddressLikeEvidenceRejected
         }
-        if (lower.startsWith("nsec") || lower.startsWith("xprv") || lower.startsWith("tprv") ||
-            Regex("""^[KL5][1-9A-HJ-NP-Za-km-z]{50,51}$""").matches(value)
-        ) {
-            return SkaldVaultV1VaultKdfFailureReason.WalletMaterialRejected
+        if (MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(value)) {
+            return SkaldVaultV1VaultKdfFailureReason.AmbiguousRawCryptographicMaterialRejected
         }
 
         return when {

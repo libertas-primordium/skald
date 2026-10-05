@@ -30,7 +30,7 @@ enum class SkaldVaultV1TestOnlyProviderIdentityCapabilityCategory {
     SecureMetadata,
     ProductionSync,
     BackendClient,
-    BdkWalletState,
+    MoneroEngineState,
     SettingsCodec,
     UiSurface,
     Signing,
@@ -77,7 +77,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityCapabilityMatrix(
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -129,7 +129,7 @@ object SkaldVaultV1TestOnlyProviderIdentityCapabilityMatrixPolicy {
                 !reachabilityProof.persistenceReachable &&
                 !reachabilityProof.productionSyncReachable &&
                 !reachabilityProof.backendClientReachable &&
-                !reachabilityProof.bdkWalletStateReachable &&
+                !reachabilityProof.moneroEngineStateReachable &&
                 !reachabilityProof.settingsCodecReachable &&
                 !reachabilityProof.uiSurfaceReachable &&
                 !reachabilityProof.signingBroadcastingReachable &&
@@ -194,7 +194,7 @@ object SkaldVaultV1TestOnlyProviderIdentityCapabilityMatrixPolicy {
             persistenceReachable = false,
             productionSyncReachable = false,
             backendClientReachable = false,
-            bdkWalletStateReachable = false,
+            moneroEngineStateReachable = false,
             settingsCodecReachable = false,
             uiSurfaceReachable = false,
             signingBroadcastingReachable = false,

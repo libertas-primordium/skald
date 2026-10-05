@@ -678,8 +678,8 @@ enum class SkaldVaultV1VaultUnlockFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret-like material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported evidence characters rejected"),
     RawUnlockInputRejected("raw unlock input rejected"),
@@ -1129,15 +1129,13 @@ object SkaldVaultV1UnlockAuthorizationPolicy : SkaldVaultV1UnlockAuthorizationBo
             return SkaldVaultV1VaultUnlockFailureReason.RawRelativeLocationInputRejected
         }
         if (Regex("""^[0-9a-fA-F]{64}$""").matches(value)) {
-            return SkaldVaultV1VaultUnlockFailureReason.TransactionLikeEvidenceRejected
+            return SkaldVaultV1VaultUnlockFailureReason.AmbiguousRawCryptographicMaterialRejected
         }
-        if (Regex("""^(bc1|tb1|bcrt1)[a-z0-9]{20,}$""").matches(lower)) {
-            return SkaldVaultV1VaultUnlockFailureReason.BitcoinAddressLikeEvidenceRejected
+        if (MoneroMaterialCandidatePolicy.isAddressShapedCandidate(value)) {
+            return SkaldVaultV1VaultUnlockFailureReason.MoneroAddressLikeEvidenceRejected
         }
-        if (lower.startsWith("nsec") || lower.startsWith("xprv") || lower.startsWith("tprv") ||
-            Regex("""^[KL5][1-9A-HJ-NP-Za-km-z]{50,51}$""").matches(value)
-        ) {
-            return SkaldVaultV1VaultUnlockFailureReason.WalletMaterialRejected
+        if (MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(value)) {
+            return SkaldVaultV1VaultUnlockFailureReason.AmbiguousRawCryptographicMaterialRejected
         }
 
         return when {

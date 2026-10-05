@@ -1,23 +1,7 @@
 package com.libertasprimordium.skald.domain.security
 
 object SecretPolicy {
-    val plannedSecretKinds: List<SecretKind> = listOf(
-        SecretKind.BitcoinSeed,
-        SecretKind.Bip39Mnemonic,
-        SecretKind.DescriptorPrivateKey,
-        SecretKind.ImportedPrivateKey,
-        SecretKind.NostrNsec,
-        SecretKind.BitcoinCoreRpcPassword,
-        SecretKind.BitcoinCoreCookie,
-        SecretKind.LightningMacaroon,
-        SecretKind.CoreLightningRune,
-        SecretKind.NwcSecret,
-        SecretKind.PhoenixdAuthToken,
-        SecretKind.CashuSeed,
-        SecretKind.CashuProofMaterial,
-        SecretKind.BackupEncryptionKey,
-        SecretKind.MetadataEncryptionKey,
-    )
+    val plannedSecretKinds: List<SecretKind> = SecretKind.entries.toList()
 
     fun requiresSecureStorage(kind: SecretKind): Boolean =
         plannedSecretKinds.contains(kind)

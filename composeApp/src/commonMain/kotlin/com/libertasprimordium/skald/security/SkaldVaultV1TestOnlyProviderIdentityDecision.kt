@@ -174,9 +174,9 @@ enum class SkaldVaultV1TestOnlyProviderIdentityForbiddenLinkage(val label: Strin
     SecureStorageSuccess("linked to secure storage success"),
     SecureMetadataSuccess("linked to secure metadata success"),
     ProductionSync("linked to production sync"),
-    BdkWalletState("linked to BDK wallet state"),
+    MoneroEngineState("linked to wallet engine wallet state"),
     WalletLabels("linked to wallet labels"),
-    UtxoLabels("linked to UTXO labels"),
+    OwnedOutputLabels("linked to owned output labels"),
     BackendObservationState("linked to backend observation state"),
     Mainnet("linked to mainnet"),
 }

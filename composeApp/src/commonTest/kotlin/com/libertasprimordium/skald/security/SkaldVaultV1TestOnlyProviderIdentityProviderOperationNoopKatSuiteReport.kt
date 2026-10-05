@@ -74,7 +74,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteRepo
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -446,14 +446,14 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteReportPo
                 providerOperationMetadataKatValidation.backendClientReachable ||
                 providerOperationMetadataKat.backendClientReachable ||
                 capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            providerOperationNoopKatValidation.bdkWalletStateReachable ||
-                providerOperationNoopKat.bdkWalletStateReachable ||
-                providerOperationNoopKatAdmission.bdkWalletStateReachable ||
-                providerOperationMetadataKatSuiteReport.bdkWalletStateReachable ||
-                providerOperationMetadataKatValidation.bdkWalletStateReachable ||
-                providerOperationMetadataKat.bdkWalletStateReachable ||
-                capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            providerOperationNoopKatValidation.moneroEngineStateReachable ||
+                providerOperationNoopKat.moneroEngineStateReachable ||
+                providerOperationNoopKatAdmission.moneroEngineStateReachable ||
+                providerOperationMetadataKatSuiteReport.moneroEngineStateReachable ||
+                providerOperationMetadataKatValidation.moneroEngineStateReachable ||
+                providerOperationMetadataKat.moneroEngineStateReachable ||
+                capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             providerOperationNoopKatValidation.settingsCodecReachable ||
                 providerOperationNoopKat.settingsCodecReachable ||
@@ -702,7 +702,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteReportPo
                 !persistenceReachable &&
                 !productionSyncReachable &&
                 !backendClientReachable &&
-                !bdkWalletStateReachable &&
+                !moneroEngineStateReachable &&
                 !settingsCodecReachable &&
                 !uiSurfaceReachable &&
                 !signingBroadcastingReachable &&
@@ -782,7 +782,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatSuiteReportPo
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

@@ -32,7 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.libertasprimordium.skald.ui.navigation.AppScreen
-import com.libertasprimordium.skald.ui.navigation.PrimaryRailTabSpec
+import com.libertasprimordium.skald.ui.navigation.PrimaryTabSpec
 import com.libertasprimordium.skald.ui.navigation.SkaldNavigationModel
 import com.libertasprimordium.skald.ui.theme.SkaldBlack
 import com.libertasprimordium.skald.ui.theme.SkaldCharcoal
@@ -58,7 +58,7 @@ fun SkaldHeader(
         ) {
             Wordmark(compact = compact)
             HeaderNetworkText(
-                text = "DEVELOPMENT TESTNET",
+                text = "OFFLINE SCAFFOLD",
                 compact = compact,
             )
         }
@@ -120,7 +120,7 @@ fun PrimaryNavigation(
         horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 8.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        SkaldNavigationModel.PrimaryRailTabs.forEach { tab ->
+        SkaldNavigationModel.PrimaryTabs.forEach { tab ->
             PrimaryTabButton(
                 tab = tab,
                 selected = selected == tab.screen,
@@ -135,7 +135,7 @@ fun PrimaryNavigation(
 
 @Composable
 private fun PrimaryTabButton(
-    tab: PrimaryRailTabSpec,
+    tab: PrimaryTabSpec,
     selected: Boolean,
     onSelected: (AppScreen) -> Unit,
     modifier: Modifier = Modifier,
@@ -151,7 +151,7 @@ private fun PrimaryTabButton(
             contentPadding = PaddingValues(0.dp),
             modifier = modifier.semantics { contentDescription = tab.accessibilityLabel },
         ) {
-            RailIcon(
+            NavigationIcon(
                 icon = tab.icon,
                 selected = true,
                 modifier = Modifier.size(28.dp),
@@ -169,7 +169,7 @@ private fun PrimaryTabButton(
             contentPadding = PaddingValues(0.dp),
             modifier = modifier.semantics { contentDescription = tab.accessibilityLabel },
         ) {
-            RailIcon(
+            NavigationIcon(
                 icon = tab.icon,
                 selected = false,
                 modifier = Modifier.size(28.dp),

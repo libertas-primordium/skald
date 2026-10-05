@@ -138,7 +138,7 @@ class VaultTestOnlyProviderKatVectorCatalogTest {
         )
         assertContains(
             evidence.platformCheckVectorRows.map { it.vectorClass },
-            SkaldVaultV1TestOnlyProviderKatPlatformCheckVectorClass.BitcoinWalletLibraryUnrelated,
+            SkaldVaultV1TestOnlyProviderKatPlatformCheckVectorClass.WalletEngineLibraryUnrelated,
         )
     }
 
@@ -179,18 +179,18 @@ class VaultTestOnlyProviderKatVectorCatalogTest {
         listOf(
             SkaldVaultV1TestOnlyProviderKatFixtureClass.WalletSeed,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.MnemonicPhrase,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.Descriptor,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.XprvTprvWif,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.NostrNsec,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.LightningCredential,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.CashuProof,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.WalletRecoveryReference,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.MoneroPrivateKeyMaterial,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.MoneroPrivateViewKey,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.MoneroDaemonCredential,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.MoneroTransactionProof,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.BackendCredential,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.RealAddress,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.RealTxid,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.Psbt,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.UnsignedTransactionMaterial,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.TransactionHex,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.WalletLabel,
-            SkaldVaultV1TestOnlyProviderKatFixtureClass.UtxoLabel,
+            SkaldVaultV1TestOnlyProviderKatFixtureClass.OwnedOutputLabel,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.TransactionNote,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.BackendObservationMetadata,
             SkaldVaultV1TestOnlyProviderKatFixtureClass.SecureMetadataRecord,

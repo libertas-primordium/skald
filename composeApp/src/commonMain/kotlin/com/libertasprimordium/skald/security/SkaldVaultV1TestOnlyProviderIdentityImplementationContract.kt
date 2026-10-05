@@ -61,11 +61,11 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection {
     SecureStorageAbsenceContract,
     SecureMetadataAbsenceContract,
     BackendClientAbsenceContract,
-    BdkWalletStateAbsenceContract,
+    MoneroEngineStateAbsenceContract,
     SettingsCodecAbsenceContract,
     UiSurfaceAbsenceContract,
     SigningBroadcastingAbsenceContract,
-    TorNostrAbsenceContract,
+    TorMoneroMaterialAbsenceContract,
     PublicEndpointAbsenceContract,
     MainnetAbsenceContract,
     RedactionContract,
@@ -109,13 +109,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement
     MustRemainAbsentFromMigration,
     MustRemainAbsentFromProductionSync,
     MustRemainAbsentFromBackendClients,
-    MustRemainAbsentFromBdkWalletState,
+    MustRemainAbsentFromMoneroEngineState,
     MustRemainAbsentFromSettingsCodecs,
     MustRemainAbsentFromUiSurface,
     MustRemainAbsentFromSigning,
     MustRemainAbsentFromBroadcasting,
     MustRemainAbsentFromTorTransport,
-    MustRemainAbsentFromNostrParsing,
+    MustRemainAbsentFromMoneroMaterialParsing,
     MustRemainAbsentFromPublicEndpointDefaults,
     MustRemainAbsentFromMainnet,
     MustExposeOnlyRedactedSafeLabels,
@@ -209,10 +209,10 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause {
     CurrentBranchWritesSettings,
     CurrentBranchExposesUi,
     CurrentBranchCreatesBackendClient,
-    CurrentBranchCreatesBdkWalletState,
+    CurrentBranchCreatesMoneroEngineState,
     CurrentBranchSignsOrBroadcasts,
     CurrentBranchEnablesNetworkTransport,
-    CurrentBranchParsesNostrSecrets,
+    CurrentBranchParsesMoneroPrivateViewKeys,
     CurrentBranchAddsPublicEndpoint,
     CurrentBranchEnablesMainnet,
 }
@@ -244,13 +244,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLin
     ContractToMigrationRuntime,
     ContractToProductionSyncRuntime,
     ContractToBackendClientRuntime,
-    ContractToBdkWalletStateRuntime,
+    ContractToMoneroEngineStateRuntime,
     ContractToSettingsCodecRuntime,
     ContractToUiRuntime,
     ContractToSigningRuntime,
     ContractToBroadcastingRuntime,
     ContractToTorRuntime,
-    ContractToNostrRuntime,
+    ContractToMoneroMaterialRuntime,
     ContractToPublicEndpointRuntime,
     ContractToMainnetRuntime,
 }
@@ -284,13 +284,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationContractForbiddenPr
     ContractToMigration,
     ContractToProductionSync,
     ContractToBackendClient,
-    ContractToBdkWalletState,
+    ContractToMoneroEngineState,
     ContractToSettingsCodec,
     ContractToUiSurface,
     ContractToSigning,
     ContractToBroadcasting,
     ContractToTorTransport,
-    ContractToNostrParsing,
+    ContractToMoneroMaterialParsing,
     ContractToPublicEndpointDefault,
     ContractToMainnet,
 }
@@ -376,8 +376,8 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationContractFutureRevie
     CryptoExecutionAbsenceReview,
     VaultLifecycleAndPersistenceAbsenceReview,
     SecureStorageAndMetadataAbsenceReview,
-    BackendBdkSettingsUiAbsenceReview,
-    SigningBroadcastingTorNostrEndpointAbsenceReview,
+    BackendWalletEngineSettingsUiAbsenceReview,
+    SigningBroadcastingTorMoneroMaterialEndpointAbsenceReview,
     RedactionAndLeakageReview,
     SourceGuardCoverageReview,
     NonAuthorizationReview,
@@ -493,13 +493,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationContractCapabilitie
     val canUseForMigration: Boolean,
     val canUseForProductionSync: Boolean,
     val canUseForBackendClient: Boolean,
-    val canUseForBdkWalletState: Boolean,
+    val canUseForMoneroEngineState: Boolean,
     val canUseForSettingsCodec: Boolean,
     val canUseForUiSurface: Boolean,
     val canUseForSigning: Boolean,
     val canUseForBroadcasting: Boolean,
     val canUseForTorTransport: Boolean,
-    val canUseForNostrParsing: Boolean,
+    val canUseForMoneroMaterialParsing: Boolean,
     val canUseForPublicEndpointDefault: Boolean,
     val canUseForMainnet: Boolean,
     val productionProviderSelectable: Boolean,
@@ -541,13 +541,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationContractCapabilitie
             canUseForMigration = false,
             canUseForProductionSync = false,
             canUseForBackendClient = false,
-            canUseForBdkWalletState = false,
+            canUseForMoneroEngineState = false,
             canUseForSettingsCodec = false,
             canUseForUiSurface = false,
             canUseForSigning = false,
             canUseForBroadcasting = false,
             canUseForTorTransport = false,
-            canUseForNostrParsing = false,
+            canUseForMoneroMaterialParsing = false,
             canUseForPublicEndpointDefault = false,
             canUseForMainnet = false,
             productionProviderSelectable = false,
@@ -917,8 +917,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationContractPolicy {
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.RuntimeReachabilityAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromBackendClients ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.BackendClientAbsenceContract
-            SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromBdkWalletState ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.BdkWalletStateAbsenceContract
+            SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromMoneroEngineState ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.MoneroEngineStateAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromSettingsCodecs ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.SettingsCodecAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromUiSurface ->
@@ -927,8 +927,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationContractPolicy {
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromBroadcasting ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.SigningBroadcastingAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromTorTransport,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromNostrParsing ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.TorNostrAbsenceContract
+            SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromMoneroMaterialParsing ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.TorMoneroMaterialAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromPublicEndpointDefaults ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.PublicEndpointAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationContractRequirement.MustRemainAbsentFromMainnet ->
@@ -986,13 +986,13 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationContractPolicy {
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.UiSurfaceAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchCreatesBackendClient ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.BackendClientAbsenceContract
-            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchCreatesBdkWalletState ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.BdkWalletStateAbsenceContract
+            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchCreatesMoneroEngineState ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.MoneroEngineStateAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchSignsOrBroadcasts ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.SigningBroadcastingAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchEnablesNetworkTransport,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchParsesNostrSecrets ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.TorNostrAbsenceContract
+            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchParsesMoneroPrivateViewKeys ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.TorMoneroMaterialAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchAddsPublicEndpoint ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.PublicEndpointAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenClause.CurrentBranchEnablesMainnet ->
@@ -1044,8 +1044,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationContractPolicy {
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.RuntimeReachabilityAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToBackendClientRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.BackendClientAbsenceContract
-            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToBdkWalletStateRuntime ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.BdkWalletStateAbsenceContract
+            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToMoneroEngineStateRuntime ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.MoneroEngineStateAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToSettingsCodecRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.SettingsCodecAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToUiRuntime ->
@@ -1054,8 +1054,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationContractPolicy {
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToBroadcastingRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.SigningBroadcastingAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToTorRuntime,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToNostrRuntime ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.TorNostrAbsenceContract
+            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToMoneroMaterialRuntime ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.TorMoneroMaterialAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToPublicEndpointRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationContractSection.PublicEndpointAbsenceContract
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeLinkage.ContractToMainnetRuntime ->

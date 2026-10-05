@@ -296,15 +296,18 @@ data class SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(
     val releaseMainnetEvidenceClaimed: Boolean,
     val safeAuditId: String,
 ) {
-    override fun toString(): String =
-        "SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(" +
-            "categories=${categories.map { it.name }}, " +
-            "sources=${sources.map { it.name }}, " +
+    override fun toString(): String {
+        val categoryNames = categories.map { it.name }
+        val sourceNames = sources.map { it.name }
+        return "SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(" +
+            "categories=${categoryNames}, " +
+            "sources=${sourceNames}, " +
             "warningOnlyEvidenceClaimed=$warningOnlyEvidenceClaimed, " +
             "userConsentOverrideRequested=$userConsentOverrideRequested, " +
             "releaseMainnetEvidenceClaimed=$releaseMainnetEvidenceClaimed, " +
             "safeAuditId=<redacted>" +
             ")"
+    }
 
     companion object {
         fun currentEvidence(

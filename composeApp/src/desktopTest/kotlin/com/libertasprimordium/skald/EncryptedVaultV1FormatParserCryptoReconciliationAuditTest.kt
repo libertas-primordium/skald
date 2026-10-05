@@ -79,6 +79,8 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
             assertFalse(pattern.containsMatchIn(source), "Canonical decision source contains $description.")
         }
 
+        assertTrue(VaultImportConfinementTest().acceptsReviewedProductionSource(CANONICAL_DECISION_PATH, source), "Canonical decision must have no external API surface.")
+
         val forbiddenImports = listOf(
             "java.io",
             "java.nio",
@@ -89,8 +91,6 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
             "org.bouncycastle",
             "javax.crypto",
             "java.security",
-            "org.bitcoindevkit",
-            "bdk",
         )
         forbiddenImports.forEach { forbidden ->
             assertFalse(

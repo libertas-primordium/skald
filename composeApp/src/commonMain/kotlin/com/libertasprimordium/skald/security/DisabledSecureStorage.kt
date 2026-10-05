@@ -34,7 +34,7 @@ fun commonDisabledSecureStorageCapability(): SecureStorageCapability =
         canStoreSecrets = false,
         canReadSecrets = false,
         canDeleteSecrets = false,
-        implementationNote = "Skald Vault has not enabled storage for seeds, private keys, Nostr nsecs, Lightning credentials, Cashu proof material, backend passwords, or backup encryption keys.",
+        implementationNote = "Skald Vault has not enabled storage for seeds, private keys, Monero private view keys, Monero daemon credentials, Monero transaction proof material, backend passwords, or backup encryption keys.",
         futureImplementationHint = "Future implementations must use platform-protected or encrypted storage and pass explicit recovery/security tests before any secret-bearing flow is enabled.",
     )
 

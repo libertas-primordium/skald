@@ -83,16 +83,7 @@ fun SecureStorageCapability.toUiStatus(): SecureStorageUiStatus =
         title = "Secret storage",
         state = "disabled / not implemented",
         detail = implementationNote,
-        plannedSecretClasses = listOf(
-            "App seed",
-            "Imported private keys",
-            "Nostr nsec",
-            "Bitcoin Core credentials",
-            "Lightning node credentials",
-            "NWC secrets",
-            "Cashu recovery/proof material",
-            "Backup encryption keys",
-        ),
+        plannedSecretClasses = com.libertasprimordium.skald.domain.security.SecretKind.entries.map { it.label },
         disabledActions = listOf(
             "Initialize secret storage",
             "Import secret",

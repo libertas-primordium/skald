@@ -457,8 +457,8 @@ enum class SkaldVaultV1VaultMigrationCorruptionFailureReason(val label: String) 
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret-like material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported evidence characters rejected"),
     RawMigrationCorruptionInputRejected("raw migration/corruption input rejected"),
@@ -1033,12 +1033,12 @@ object SkaldVaultV1MigrationCorruptionPolicy : SkaldVaultV1MigrationCorruptionBo
                 lower.contains("mnemonic") ||
                 lower.contains("seed") ->
                 SkaldVaultV1VaultMigrationCorruptionFailureReason.SecretMaterialRejected
-            looksLikeWalletMaterial(value) ->
-                SkaldVaultV1VaultMigrationCorruptionFailureReason.WalletMaterialRejected
-            looksLikeBitcoinAddress(value) ->
-                SkaldVaultV1VaultMigrationCorruptionFailureReason.BitcoinAddressLikeEvidenceRejected
+            looksLikeRawCryptographicMaterial(value) ->
+                SkaldVaultV1VaultMigrationCorruptionFailureReason.AmbiguousRawCryptographicMaterialRejected
+            looksLikeMoneroAddress(value) ->
+                SkaldVaultV1VaultMigrationCorruptionFailureReason.MoneroAddressLikeEvidenceRejected
             value.length == 64 && value.all { it.isHexDigit() } ->
-                SkaldVaultV1VaultMigrationCorruptionFailureReason.TransactionLikeEvidenceRejected
+                SkaldVaultV1VaultMigrationCorruptionFailureReason.AmbiguousRawCryptographicMaterialRejected
             value.any { !it.isSupportedEvidenceCharacter() } ->
                 SkaldVaultV1VaultMigrationCorruptionFailureReason.UnsupportedCharactersRejected
             else -> SkaldVaultV1VaultMigrationCorruptionFailureReason.RawMigrationCorruptionInputRejected
@@ -1052,20 +1052,11 @@ object SkaldVaultV1MigrationCorruptionPolicy : SkaldVaultV1MigrationCorruptionBo
         SkaldVaultV1VaultMigrationCorruptionFailureClass.ManualReviewRequired,
     )
 
-    private fun looksLikeBitcoinAddress(value: String): Boolean {
-        val lower = value.lowercase()
-        return (lower.startsWith("bc1") || lower.startsWith("tb1") || lower.startsWith("bcrt1")) &&
-            lower.length >= 24 &&
-            lower.drop(3).all { it.isLetterOrDigit() }
-    }
+    private fun looksLikeMoneroAddress(value: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(value)
 
-    private fun looksLikeWalletMaterial(value: String): Boolean {
-        val lower = value.lowercase()
-        return lower.startsWith("nsec1") ||
-            lower.startsWith("xprv") ||
-            lower.startsWith("tprv") ||
-            ((value.startsWith("K") || value.startsWith("L") || value.startsWith("5")) && value.length >= 50)
-    }
+    private fun looksLikeRawCryptographicMaterial(value: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(value)
 
     private fun Char.isHexDigit(): Boolean =
         this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'

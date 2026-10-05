@@ -277,11 +277,11 @@ class VaultTestOnlyProviderIdentityProviderOperationSyntheticTraceSuiteReportTes
             "txid",
             "descriptor",
             "address",
-            "PSBT",
+            "unsigned transaction material",
             "transaction hex",
-            "Nostr nsec",
-            "Lightning credential",
-            "Cashu proof",
+            "private view key",
+            "daemon credential",
+            "transaction secret",
             "backend credential",
         )
 

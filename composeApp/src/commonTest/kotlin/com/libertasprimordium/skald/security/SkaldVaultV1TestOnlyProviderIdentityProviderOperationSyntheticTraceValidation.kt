@@ -330,7 +330,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceValida
                 executorTargetReachable ||
                 providerKatExecutorReachable ||
                 sourceTrace.backendClientReachable ||
-                sourceTrace.bdkWalletStateReachable ||
+                sourceTrace.moneroEngineStateReachable ||
                 sourceTrace.settingsCodecReachable ||
                 uiPresent ||
                 endpointPresent ||

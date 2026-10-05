@@ -41,8 +41,8 @@ fun SecureStorageInlineStatus(status: SecureStorageUiStatus) {
         Text(status.detail, color = SkaldWarning, lineHeight = 20.sp)
         BulletList(
             listOf(
-                "Backend profile settings remain non-secret only.",
-                "Credential references cannot unlock connection testing in this pass.",
+                "Sensitive metadata requires the encrypted vault.",
+                "Connection and secret access remain unavailable.",
                 "Secret writes, reads, and deletes fail closed.",
             ),
         )

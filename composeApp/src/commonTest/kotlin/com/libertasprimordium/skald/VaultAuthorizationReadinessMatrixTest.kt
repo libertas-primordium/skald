@@ -511,12 +511,12 @@ class VaultAuthorizationReadinessMatrixTest {
         assertFalse(capability.androidKeystoreWrappingAvailable)
         assertFalse(capability.linuxRootReady)
         assertFalse(capability.linuxOptionalWrappingAvailable)
-        assertFalse(capability.bdkPersistenceAvailable)
+        assertFalse(capability.walletEnginePersistenceAvailable)
         assertFalse(capability.walletSyncAvailable)
         assertFalse(capability.signingAvailable)
         assertFalse(capability.broadcastingAvailable)
         assertFalse(capability.torTransportAvailable)
-        assertFalse(capability.nostrParsingAvailable)
+        assertFalse(capability.moneroMaterialParsingAvailable)
         assertFalse(capability.mainnetAvailable)
     }
 }

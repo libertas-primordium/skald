@@ -86,6 +86,9 @@ object SkaldVaultV1StorageNamespacePathPolicy {
     ): SkaldVaultV1StorageNamespacePathResult<SkaldVaultV1StoragePathSegment> {
         validateIdentifierSource(source)?.let { return rejected(it) }
         validateTextShape(value = value, allowNamespaceSlash = false)?.let { return rejected(it) }
+        if (!SkaldVaultV1ApprovedInputDomain.storageSegment(value)) {
+            return rejected(SkaldVaultV1StorageNamespacePathRejectionReason.UnknownNamespacePolicy)
+        }
         return accepted(SkaldVaultV1StoragePathSegment(value))
     }
 
@@ -258,16 +261,6 @@ object SkaldVaultV1StorageNamespacePathPolicy {
 
     private fun looksLikeSecretMaterial(value: String): Boolean {
         val lower = value.toAsciiLower()
-        if (lower.startsWith("nsec1") ||
-            lower.startsWith("xprv") ||
-            lower.startsWith("tprv") ||
-            lower.startsWith("zprv") ||
-            lower.startsWith("yprv") ||
-            lower.startsWith("vprv") ||
-            lower.startsWith("uprv")
-        ) {
-            return true
-        }
         if (lower.contains("mnemonic") ||
             lower.contains("password") ||
             lower.contains("passphrase") ||

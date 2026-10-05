@@ -109,7 +109,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTrace(
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -629,8 +629,8 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTracePolicy
             traceAdmission.productionSyncReachable || capabilityMatrix.productionSyncReachable
         val backendClientReachable =
             traceAdmission.backendClientReachable || capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            traceAdmission.bdkWalletStateReachable || capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            traceAdmission.moneroEngineStateReachable || capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             traceAdmission.settingsCodecReachable || capabilityMatrix.settingsCodecReachable
         val uiSurfaceReachable = traceAdmission.uiSurfaceReachable || capabilityMatrix.uiSurfaceReachable
@@ -842,7 +842,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTracePolicy
                 !persistenceReachable &&
                 !productionSyncReachable &&
                 !backendClientReachable &&
-                !bdkWalletStateReachable &&
+                !moneroEngineStateReachable &&
                 !settingsCodecReachable &&
                 !uiSurfaceReachable &&
                 !signingBroadcastingReachable &&
@@ -947,7 +947,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTracePolicy
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

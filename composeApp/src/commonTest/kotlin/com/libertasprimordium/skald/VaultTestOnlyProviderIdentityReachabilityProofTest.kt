@@ -170,7 +170,7 @@ class VaultTestOnlyProviderIdentityReachabilityProofTest {
             proof.persistenceReachable,
             proof.productionSyncReachable,
             proof.backendClientReachable,
-            proof.bdkWalletStateReachable,
+            proof.moneroEngineStateReachable,
             proof.settingsCodecReachable,
             proof.uiSurfaceReachable,
             proof.signingBroadcastingReachable,

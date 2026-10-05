@@ -159,11 +159,11 @@ enum class SkaldVaultV1VaultSecureStorageValueKind(val label: String) {
     WalletLabel("wallet label"),
     TransactionNote("transaction note"),
     BackendCredential("backend credential"),
-    LightningMacaroonRuneNwcSecret("Lightning macaroon/rune/NWC secret"),
-    PhoenixdToken("Phoenixd token"),
-    CashuProofMaterial("Cashu proof material"),
-    NostrNsecPrivateMaterial("Nostr nsec/private material"),
-    BdkPersistenceHandle("BDK persistence handle"),
+    MoneroDaemonAndLwsCredential("Monero daemon or LWS credential"),
+    MoneroLwsCredential("LWS token"),
+    MoneroTransactionSecretMaterial("Monero transaction proof material"),
+    MoneroPrivateViewKeyMaterial("Monero private view key/private material"),
+    WalletEnginePersistenceHandle("wallet engine persistence handle"),
     PublicPolicyEvidence("public policy evidence"),
     PublicNonWalletKatVectorEvidence("public non-wallet KAT/vector evidence"),
     EnumStatusCapabilityEvidence("enum/status/capability evidence"),
@@ -750,8 +750,8 @@ enum class SkaldVaultV1VaultSecureStorageFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret-like material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported evidence characters rejected"),
     RawSecureStorageInputRejected("raw secure-storage input rejected"),
@@ -1181,15 +1181,13 @@ object SkaldVaultV1SecureStorageAuthorizationPolicy :
             return SkaldVaultV1VaultSecureStorageFailureReason.RawRelativeLocationInputRejected
         }
         if (Regex("""^[0-9a-fA-F]{64}$""").matches(value)) {
-            return SkaldVaultV1VaultSecureStorageFailureReason.TransactionLikeEvidenceRejected
+            return SkaldVaultV1VaultSecureStorageFailureReason.AmbiguousRawCryptographicMaterialRejected
         }
-        if (Regex("""^(bc1|tb1|bcrt1)[a-z0-9]{20,}$""").matches(lower)) {
-            return SkaldVaultV1VaultSecureStorageFailureReason.BitcoinAddressLikeEvidenceRejected
+        if (MoneroMaterialCandidatePolicy.isAddressShapedCandidate(value)) {
+            return SkaldVaultV1VaultSecureStorageFailureReason.MoneroAddressLikeEvidenceRejected
         }
-        if (lower.startsWith("nsec") || lower.startsWith("xprv") || lower.startsWith("tprv") ||
-            Regex("""^[KL5][1-9A-HJ-NP-Za-km-z]{50,51}$""").matches(value)
-        ) {
-            return SkaldVaultV1VaultSecureStorageFailureReason.WalletMaterialRejected
+        if (MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(value)) {
+            return SkaldVaultV1VaultSecureStorageFailureReason.AmbiguousRawCryptographicMaterialRejected
         }
 
         return when {

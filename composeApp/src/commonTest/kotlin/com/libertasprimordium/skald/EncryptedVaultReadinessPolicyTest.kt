@@ -1,17 +1,5 @@
 package com.libertasprimordium.skald
 
-import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncBlocker
-import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncRequest
-import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncCapability
-import com.libertasprimordium.skald.domain.onchain.BitcoinWalletSyncWarning
-import com.libertasprimordium.skald.domain.onchain.DescriptorWalletProfileId
-import com.libertasprimordium.skald.domain.onchain.DisabledBitcoinWalletSyncService
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressDerivationIndex
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressSource
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressState
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletContext
-import com.libertasprimordium.skald.domain.onchain.ReceiveAddressWalletOperationalState
-import com.libertasprimordium.skald.domain.core.NetworkEnvironment
 import com.libertasprimordium.skald.security.Argon2idCalibrationImplementationStatus
 import com.libertasprimordium.skald.security.DisabledSecureSecretStorage
 import com.libertasprimordium.skald.security.DisabledSecureWalletMetadataRepository
@@ -922,51 +910,27 @@ class EncryptedVaultReadinessPolicyTest {
 
     @Test
     fun torRoutingMetadataIsSensitiveMetadata() {
-        assertContains(SensitiveMetadataKind.entries, SensitiveMetadataKind.TorRoutingMetadata)
+        assertContains(SensitiveMetadataKind.entries, SensitiveMetadataKind.RoutingMetadata)
         assertTrue(
             SecureMetadataPersistencePolicy.requiresEncryptedMetadataStorage(
-                SensitiveMetadataKind.TorRoutingMetadata,
+                SensitiveMetadataKind.RoutingMetadata,
             ),
         )
     }
 
     @Test
-    fun syncPreflightIncludesEncryptedVaultReadinessBlocker() {
-        val wallet = wallet()
-        val result = DisabledBitcoinWalletSyncService().sync(
-            BitcoinWalletSyncRequest(
-                backendProfile = null,
-                wallet = wallet,
-                candidate = displayedAddress(wallet),
-                secureStorageCapability = secureStorage,
-                encryptedVaultReadiness = EncryptedVaultReadinessPolicy.disabled(),
-                secureMetadataCapability = secureMetadata,
-            ),
-        )
+    fun sensitiveMetadataAdmissionIncludesEncryptedVaultReadinessBlocker() {
+        val readiness = EncryptedVaultReadinessPolicy.disabled()
+        val decision = EncryptedVaultReadinessPolicy.evaluate(readiness, secureStorage, secureMetadata)
+        val metadata = SecureMetadataPersistencePolicy.evaluate(secureMetadata, SensitiveMetadataKind.entries.toSet())
 
-        assertContains(result.blockers, BitcoinWalletSyncBlocker.EncryptedVaultUnavailable)
-        assertContains(result.blockers, BitcoinWalletSyncBlocker.SecureStorageUnavailable)
-        assertContains(result.blockers, BitcoinWalletSyncBlocker.SecureMetadataPersistenceUnavailable)
-        assertContains(result.warnings, BitcoinWalletSyncWarning.EncryptedVaultUnavailable)
-        assertContains(result.warnings, BitcoinWalletSyncWarning.EncryptedVaultReadinessOnly)
-        assertContains(result.capabilities, BitcoinWalletSyncCapability.EncryptedVaultReadinessBoundary)
-        assertFalse(result.productionSyncEnabled)
-        assertFalse(result.observationPersistenceEnabled)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.VaultImplementationUnavailable)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProductionProviderImplementationUnavailable)
+        assertContains(decision.blockers, EncryptedVaultBlockingIssue.ProviderSelectionProductionBlocked)
+        assertFalse(decision.canEnableProductionPersistence)
+        assertFalse(readiness.productionPersistenceEnabled)
+        assertFalse(secureStorage.canStoreSecrets)
+        assertFalse(metadata.canPersistSensitiveMetadata)
+        assertFalse(secureMetadata.canStoreMetadata)
     }
-
-    private fun wallet(): ReceiveAddressWalletContext =
-        ReceiveAddressWalletContext(
-            profileId = DescriptorWalletProfileId("vault-readiness-wallet"),
-            profileLabel = "Vault readiness placeholder",
-            network = NetworkEnvironment.Regtest,
-            source = ReceiveAddressSource.NativeDescriptor,
-            operationalState = ReceiveAddressWalletOperationalState.OperationalDevelopmentWallet,
-            canDeriveReceiveAddresses = true,
-        )
-
-    private fun displayedAddress(wallet: ReceiveAddressWalletContext): ReceiveAddressState =
-        ReceiveAddressState.placeholderReserved(
-            wallet = wallet,
-            derivationIndex = ReceiveAddressDerivationIndex(0),
-        ).markDisplayed()
 }

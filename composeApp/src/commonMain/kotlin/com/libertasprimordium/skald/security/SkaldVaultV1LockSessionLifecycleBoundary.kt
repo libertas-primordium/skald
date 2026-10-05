@@ -205,8 +205,8 @@ enum class SkaldVaultV1VaultLockSessionFailureReason(val label: String) {
     FileOrPathObjectInputRejected("platform object-like input is not accepted"),
     SecretMaterialRejected("secret-looking lifecycle material is rejected"),
     WalletMaterialRejected("wallet or key-looking lifecycle material is rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like lifecycle material is rejected"),
-    TransactionLikeEvidenceRejected("transaction-id-like lifecycle material is rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like lifecycle material is rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-bearing lifecycle input is rejected"),
     EmptyEvidenceNameRejected("empty lifecycle evidence is rejected"),
     UnsupportedEvidenceNameRejected("unsupported lifecycle evidence is rejected"),
@@ -1223,12 +1223,12 @@ object SkaldVaultV1LockSessionLifecyclePolicy : SkaldVaultV1LockSessionLifecycle
             "password" in lower || "token" in lower || "credential" in lower ||
                 "secret" in lower || "user:pass" in lower ->
                 SkaldVaultV1VaultLockSessionFailureReason.SecretMaterialRejected
-            looksLikeBitcoinAddress(candidate) ->
-                SkaldVaultV1VaultLockSessionFailureReason.BitcoinAddressLikeEvidenceRejected
-            looksLikeWalletMaterial(candidate) ->
-                SkaldVaultV1VaultLockSessionFailureReason.WalletMaterialRejected
+            looksLikeMoneroAddress(candidate) ->
+                SkaldVaultV1VaultLockSessionFailureReason.MoneroAddressLikeEvidenceRejected
+            looksLikeRawCryptographicMaterial(candidate) ->
+                SkaldVaultV1VaultLockSessionFailureReason.AmbiguousRawCryptographicMaterialRejected
             candidate.length == 64 && candidate.all { it.isHexDigit() } ->
-                SkaldVaultV1VaultLockSessionFailureReason.TransactionLikeEvidenceRejected
+                SkaldVaultV1VaultLockSessionFailureReason.AmbiguousRawCryptographicMaterialRejected
             !candidate.all { it.isSafeEvidenceChar() } ->
                 SkaldVaultV1VaultLockSessionFailureReason.UnsupportedEvidenceNameRejected
             else -> SkaldVaultV1VaultLockSessionFailureReason.RawLifecycleEvidenceInputRejected
@@ -1248,20 +1248,11 @@ object SkaldVaultV1LockSessionLifecyclePolicy : SkaldVaultV1LockSessionLifecycle
             lower.startsWith("https:")
     }
 
-    private fun looksLikeBitcoinAddress(value: String): Boolean {
-        val lower = value.lowercase()
-        return (lower.startsWith("bc1") || lower.startsWith("tb1") || lower.startsWith("bcrt1")) &&
-            lower.length >= 20
-    }
+    private fun looksLikeMoneroAddress(value: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(value)
 
-    private fun looksLikeWalletMaterial(value: String): Boolean {
-        val lower = value.lowercase()
-        return (lower.startsWith("nsec1") && value.length >= 12) ||
-            (lower.startsWith("xprv") && value.length >= 12) ||
-            (lower.startsWith("tprv") && value.length >= 12) ||
-            ((value.firstOrNull() == 'K' || value.firstOrNull() == 'L' || value.firstOrNull() == '5') &&
-                value.length >= 50)
-    }
+    private fun looksLikeRawCryptographicMaterial(value: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(value)
 
     private fun Char.isHexDigit(): Boolean =
         this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'

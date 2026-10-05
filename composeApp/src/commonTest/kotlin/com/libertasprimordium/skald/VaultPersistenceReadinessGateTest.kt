@@ -130,7 +130,7 @@ class VaultPersistenceReadinessGateTest {
         assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.AndroidAppPrivateStoragePolicyPreserved)
         assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.LinuxCustomRootPolicyReviewed)
         assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.ProviderOperationsConnectedWithoutSecretExposure)
-        assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.NoBdkProductionPersistenceBypass)
+        assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.NoWalletEngineProductionPersistenceBypass)
         assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.NoManagedInfrastructureDependency)
         assertContains(gates, SkaldVaultV1VaultPersistenceRequiredGate.MainnetReleaseHardeningApproved)
     }
@@ -328,11 +328,11 @@ class VaultPersistenceReadinessGateTest {
     @Test
     fun rawReadinessInputsAreRejected() {
         val longHex = "a".repeat(64)
-        val bitcoinAddressLike = "bc" + "1" + "q".repeat(24)
-        val nostrSecretLike = "nsec" + "1" + "q".repeat(24)
-        val extendedPrivatePrefixFixture = "xprv" + "9".repeat(32)
-        val testPrivatePrefixFixture = "tprv" + "9".repeat(32)
-        val wifLike = "K" + "1".repeat(50)
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
+        val unapprovedSpendLabel = "unapproved-unapproved-spend-label"
+        val unapprovedRecoveryLabel = "unapproved-unapproved-recovery-label"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
         val cases = listOf(
             null to SkaldVaultV1VaultPersistenceReadinessFailureReason.EmptyEvidenceRejected,
             "" to SkaldVaultV1VaultPersistenceReadinessFailureReason.EmptyEvidenceRejected,
@@ -351,12 +351,15 @@ class VaultPersistenceReadinessGateTest {
             "token-fixture" to SkaldVaultV1VaultPersistenceReadinessFailureReason.SecretMaterialRejected,
             "passphrase-fixture" to SkaldVaultV1VaultPersistenceReadinessFailureReason.PassphraseMaterialRejected,
             "provider-key-material" to SkaldVaultV1VaultPersistenceReadinessFailureReason.ProviderKeyMaterialRejected,
-            longHex to SkaldVaultV1VaultPersistenceReadinessFailureReason.TransactionLikeEvidenceRejected,
-            bitcoinAddressLike to SkaldVaultV1VaultPersistenceReadinessFailureReason.BitcoinAddressLikeEvidenceRejected,
-            nostrSecretLike to SkaldVaultV1VaultPersistenceReadinessFailureReason.WalletMaterialRejected,
-            extendedPrivatePrefixFixture to SkaldVaultV1VaultPersistenceReadinessFailureReason.WalletMaterialRejected,
-            testPrivatePrefixFixture to SkaldVaultV1VaultPersistenceReadinessFailureReason.WalletMaterialRejected,
-            wifLike to SkaldVaultV1VaultPersistenceReadinessFailureReason.WalletMaterialRejected,
+            // Invalid network/checksum shape; uppercase L must not be normalized to excluded lowercase l.
+            "L".repeat(95) to SkaldVaultV1VaultPersistenceReadinessFailureReason.MoneroAddressLikeEvidenceRejected,
+            "L".repeat(106) to SkaldVaultV1VaultPersistenceReadinessFailureReason.MoneroAddressLikeEvidenceRejected,
+            longHex to SkaldVaultV1VaultPersistenceReadinessFailureReason.AmbiguousRawCryptographicMaterialRejected,
+            unapprovedAddressLabel to SkaldVaultV1VaultPersistenceReadinessFailureReason.RawReadinessEvidenceInputRejected,
+            unapprovedScanLabel to SkaldVaultV1VaultPersistenceReadinessFailureReason.RawReadinessEvidenceInputRejected,
+            unapprovedSpendLabel to SkaldVaultV1VaultPersistenceReadinessFailureReason.RawReadinessEvidenceInputRejected,
+            unapprovedRecoveryLabel to SkaldVaultV1VaultPersistenceReadinessFailureReason.RawReadinessEvidenceInputRejected,
+            unapprovedImportLabel to SkaldVaultV1VaultPersistenceReadinessFailureReason.RawReadinessEvidenceInputRejected,
         )
 
         cases.forEach { (raw, expectedReason) ->

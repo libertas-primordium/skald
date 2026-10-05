@@ -138,16 +138,16 @@ class VaultTestOnlyProviderIdentityDescriptorValidationTest {
         assertFalse(label.contains("random", ignoreCase = true))
         assertFalse(label.contains("timestamp", ignoreCase = true))
         assertFalse(label.contains("hash", ignoreCase = true))
-        assertFalse(label.startsWith("bc1", ignoreCase = true))
-        assertFalse(label.startsWith("tb1", ignoreCase = true))
-        assertFalse(label.startsWith("bcrt1", ignoreCase = true))
-        assertFalse(label.contains("wpkh(", ignoreCase = true))
-        assertFalse(label.contains("tr(", ignoreCase = true))
-        assertFalse(label.contains("xpub", ignoreCase = true))
-        assertFalse(label.contains("xprv", ignoreCase = true))
-        assertFalse(label.contains("tprv", ignoreCase = true))
-        assertFalse(label.startsWith("nsec", ignoreCase = true))
-        assertFalse(label.startsWith("psbt", ignoreCase = true))
+        assertFalse(Regex("^[1-9A-HJ-NP-Za-km-z]{95}$").matches(label))
+        assertFalse(Regex("^[1-9A-HJ-NP-Za-km-z]{106}$").matches(label))
+        assertFalse(label.contains("recovery_material=", ignoreCase = true))
+        assertFalse(label.contains("private_spend_key=", ignoreCase = true))
+        assertFalse(label.contains("private_view_key=", ignoreCase = true))
+        assertFalse(label.contains("public_address=", ignoreCase = true))
+        assertFalse(label.contains("private_spend_key=", ignoreCase = true))
+        assertFalse(label.contains("private_view_key=", ignoreCase = true))
+        assertFalse(label.startsWith("recovery_material=", ignoreCase = true))
+        assertFalse(label.startsWith("unsigned_transaction=", ignoreCase = true))
         assertFalse(Regex("^[0-9a-fA-F]{64}$").matches(label))
         assertFalse(Regex("^[0-9a-fA-F]{120,}$").matches(label))
     }
@@ -308,7 +308,7 @@ class VaultTestOnlyProviderIdentityDescriptorValidationTest {
             "mnemonic",
             "seed phrase",
             "private key",
-            "nsec",
+            "recovery_material=",
             "ciphertext",
             "plaintext",
             "provider handle",
@@ -320,12 +320,12 @@ class VaultTestOnlyProviderIdentityDescriptorValidationTest {
             "support-export payload",
             "endpoint value",
             "filesystem path",
-            "wpkh(",
-            "tr(",
-            "xpub",
-            "xprv",
-            "tprv",
-            "psbt",
+            "private_spend_key=",
+            "private_view_key=",
+            "public_address=",
+            "private_spend_key=",
+            "private_view_key=",
+            "unsigned_transaction=",
         )
 
         assertContains(output, "REDACTED")
@@ -339,7 +339,7 @@ class VaultTestOnlyProviderIdentityDescriptorValidationTest {
             assertFalse(output.contains(forbidden, ignoreCase = true), "Output leaked forbidden text: $forbidden")
         }
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(output))
-        assertFalse(Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
+        assertFalse(Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
     }
 
     @Test

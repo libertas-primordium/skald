@@ -145,13 +145,13 @@ class VaultTestOnlySelectedProviderPublicKatExecutionTest {
             "support-export payload",
             "endpoint value",
             "filesystem path",
-            "wpkh(",
-            "tr(",
-            "xpub",
-            "xprv",
-            "tprv",
-            "psbt",
-            "nsec",
+            "private_spend_key=",
+            "private_view_key=",
+            "public_address=",
+            "private_spend_key=",
+            "private_view_key=",
+            "unsigned_transaction=",
+            "recovery_material=",
         )
 
         assertContains(output, "REDACTED")
@@ -162,7 +162,7 @@ class VaultTestOnlySelectedProviderPublicKatExecutionTest {
             assertFalse(output.contains(forbidden, ignoreCase = true), "Output leaked forbidden text: $forbidden")
         }
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(output))
-        assertFalse(Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
+        assertFalse(Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
     }
 
     private fun select(): DesktopTestOnlyProviderSelectionResult.Selected {

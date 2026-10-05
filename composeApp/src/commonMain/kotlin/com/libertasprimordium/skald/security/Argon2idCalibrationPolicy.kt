@@ -1443,32 +1443,5 @@ data class Argon2idCalibrationPolicy(
 fun commonArgon2idCalibrationPolicy(): Argon2idCalibrationPolicy =
     Argon2idCalibrationPolicy.currentProbeOnly()
 
-private fun String.containsAndroidCalibrationSecretLikeText(): Boolean {
-    val lower = lowercase()
-    val forbiddenFragments = listOf(
-        "passphrase",
-        "password",
-        "mnemonic",
-        "seed",
-        "private",
-        "xprv",
-        "tprv",
-        "wif",
-        "nsec",
-        "token",
-        "macaroon",
-        "credential",
-        "cashu proof",
-        "rpc cookie",
-        "wallet label",
-        "utxo label",
-        "transaction note",
-        "serial",
-        "imei",
-        "android_id",
-        "android id",
-    )
-    return forbiddenFragments.any { it in lower } ||
-        Regex("""\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\b""").containsMatchIn(lower) ||
-        Regex("""\b[0-9a-f]{64}\b""").containsMatchIn(lower)
-}
+private fun String.containsAndroidCalibrationSecretLikeText(): Boolean =
+    !SkaldVaultV1ApprovedInputDomain.calibrationEvidenceText(this)

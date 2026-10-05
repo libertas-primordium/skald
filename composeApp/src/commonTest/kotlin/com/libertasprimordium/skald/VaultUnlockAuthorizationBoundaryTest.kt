@@ -411,15 +411,15 @@ class VaultUnlockAuthorizationBoundaryTest {
         assertRejected("vault/root", SkaldVaultV1VaultUnlockFailureReason.RawRelativeLocationInputRejected)
         assertRejected("https://example.invalid", SkaldVaultV1VaultUnlockFailureReason.LinkLikeInputRejected)
         assertRejected("file-object", SkaldVaultV1VaultUnlockFailureReason.PlatformObjectLikeInputRejected)
-        assertRejected("a".repeat(64), SkaldVaultV1VaultUnlockFailureReason.TransactionLikeEvidenceRejected)
+        assertRejected("a".repeat(64), SkaldVaultV1VaultUnlockFailureReason.AmbiguousRawCryptographicMaterialRejected)
         assertRejected(
-            "bc" + "1q" + "a".repeat(24),
-            SkaldVaultV1VaultUnlockFailureReason.BitcoinAddressLikeEvidenceRejected,
+            "L".repeat(95),
+            SkaldVaultV1VaultUnlockFailureReason.MoneroAddressLikeEvidenceRejected,
         )
-        assertRejected("ns" + "ec1candidate", SkaldVaultV1VaultUnlockFailureReason.WalletMaterialRejected)
-        assertRejected("xp" + "rvcandidate", SkaldVaultV1VaultUnlockFailureReason.WalletMaterialRejected)
-        assertRejected("tp" + "rvcandidate", SkaldVaultV1VaultUnlockFailureReason.WalletMaterialRejected)
-        assertRejected("K" + "a".repeat(50), SkaldVaultV1VaultUnlockFailureReason.WalletMaterialRejected)
+        assertRejected("unapproved-scan-fixture", SkaldVaultV1VaultUnlockFailureReason.RawUnlockInputRejected)
+        assertRejected("unapproved-spend-fixture", SkaldVaultV1VaultUnlockFailureReason.RawUnlockInputRejected)
+        assertRejected("unapproved-recovery-fixture", SkaldVaultV1VaultUnlockFailureReason.RawUnlockInputRejected)
+        assertRejected("unapproved-import-fixture", SkaldVaultV1VaultUnlockFailureReason.RawUnlockInputRejected)
         assertRejected("../vault", SkaldVaultV1VaultUnlockFailureReason.TraversalRejected)
         assertRejected("unsupported#chars", SkaldVaultV1VaultUnlockFailureReason.UnsupportedCharactersRejected)
     }

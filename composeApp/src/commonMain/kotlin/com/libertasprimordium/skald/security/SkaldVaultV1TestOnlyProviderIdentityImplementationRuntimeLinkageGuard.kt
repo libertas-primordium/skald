@@ -73,13 +73,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface {
     Migration,
     ProductionSync,
     BackendClient,
-    BdkWalletState,
+    MoneroEngineState,
     SettingsCodec,
     UiSurface,
     Signing,
     Broadcasting,
     TorTransport,
-    NostrParsing,
+    MoneroMaterialParsing,
     PublicEndpointDefault,
     Mainnet,
 }
@@ -97,12 +97,12 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageClass
     ForbiddenPersistenceLinkage,
     ForbiddenStorageLinkage,
     ForbiddenBackendClientLinkage,
-    ForbiddenBdkWalletStateLinkage,
+    ForbiddenMoneroEngineStateLinkage,
     ForbiddenSettingsLinkage,
     ForbiddenUiLinkage,
     ForbiddenSigningBroadcastingLinkage,
     ForbiddenTransportLinkage,
-    ForbiddenNostrLinkage,
+    ForbiddenMoneroMaterialLinkage,
     ForbiddenPublicEndpointLinkage,
     ForbiddenMainnetLinkage,
     EvidenceOnlyNonAuthorizingLinkage,
@@ -138,11 +138,11 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlock
     SecureMetadataDisabled,
     ProductionSyncDisabled,
     BackendClientDisabled,
-    BdkWalletStateDisabled,
+    MoneroEngineStateDisabled,
     SettingsCodecDisabled,
     UiSurfaceDisabled,
     SigningBroadcastingDisabled,
-    TorNostrDisabled,
+    TorMoneroMaterialDisabled,
     PublicEndpointDisabled,
     MainnetDisabled,
     UserConsentCannotOverride,
@@ -166,11 +166,11 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlock
     SecureStorageLinkRejected,
     SecureMetadataLinkRejected,
     BackendClientLinkRejected,
-    BdkWalletStateLinkRejected,
+    MoneroEngineStateLinkRejected,
     SettingsCodecLinkRejected,
     UiSurfaceLinkRejected,
     SigningBroadcastingLinkRejected,
-    TorNostrLinkRejected,
+    TorMoneroMaterialLinkRejected,
     PublicEndpointLinkRejected,
     MainnetLinkRejected,
 }
@@ -202,13 +202,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeBri
     IdentityImplementationToMigration,
     IdentityImplementationToProductionSync,
     IdentityImplementationToBackendClient,
-    IdentityImplementationToBdkWalletState,
+    IdentityImplementationToMoneroEngineState,
     IdentityImplementationToSettingsCodec,
     IdentityImplementationToUiSurface,
     IdentityImplementationToSigning,
     IdentityImplementationToBroadcasting,
     IdentityImplementationToTorTransport,
-    IdentityImplementationToNostrParsing,
+    IdentityImplementationToMoneroMaterialParsing,
     IdentityImplementationToPublicEndpointDefault,
     IdentityImplementationToMainnet,
 }
@@ -242,13 +242,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageForbi
     RuntimeLinkageGuardToMigration,
     RuntimeLinkageGuardToProductionSync,
     RuntimeLinkageGuardToBackendClient,
-    RuntimeLinkageGuardToBdkWalletState,
+    RuntimeLinkageGuardToMoneroEngineState,
     RuntimeLinkageGuardToSettingsCodec,
     RuntimeLinkageGuardToUiSurface,
     RuntimeLinkageGuardToSigning,
     RuntimeLinkageGuardToBroadcasting,
     RuntimeLinkageGuardToTorTransport,
-    RuntimeLinkageGuardToNostrParsing,
+    RuntimeLinkageGuardToMoneroMaterialParsing,
     RuntimeLinkageGuardToPublicEndpointDefault,
     RuntimeLinkageGuardToMainnet,
 }
@@ -329,8 +329,8 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageFutur
     CryptoExecutionAbsenceReview,
     VaultLifecycleAndPersistenceAbsenceReview,
     SecureStorageAndMetadataAbsenceReview,
-    BackendBdkSettingsUiAbsenceReview,
-    SigningBroadcastingTorNostrEndpointAbsenceReview,
+    BackendWalletEngineSettingsUiAbsenceReview,
+    SigningBroadcastingTorMoneroMaterialEndpointAbsenceReview,
     SourceGuardCoverageReview,
     RedactionAndLeakageReview,
     NonAuthorizationReview,
@@ -438,13 +438,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard
     val canUseForMigration: Boolean,
     val canUseForProductionSync: Boolean,
     val canUseForBackendClient: Boolean,
-    val canUseForBdkWalletState: Boolean,
+    val canUseForMoneroEngineState: Boolean,
     val canUseForSettingsCodec: Boolean,
     val canUseForUiSurface: Boolean,
     val canUseForSigning: Boolean,
     val canUseForBroadcasting: Boolean,
     val canUseForTorTransport: Boolean,
-    val canUseForNostrParsing: Boolean,
+    val canUseForMoneroMaterialParsing: Boolean,
     val canUseForPublicEndpointDefault: Boolean,
     val canUseForMainnet: Boolean,
     val productionProviderSelectable: Boolean,
@@ -488,13 +488,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard
             canUseForMigration = false,
             canUseForProductionSync = false,
             canUseForBackendClient = false,
-            canUseForBdkWalletState = false,
+            canUseForMoneroEngineState = false,
             canUseForSettingsCodec = false,
             canUseForUiSurface = false,
             canUseForSigning = false,
             canUseForBroadcasting = false,
             canUseForTorTransport = false,
-            canUseForNostrParsing = false,
+            canUseForMoneroMaterialParsing = false,
             canUseForPublicEndpointDefault = false,
             canUseForMainnet = false,
             productionProviderSelectable = false,
@@ -533,11 +533,11 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard
     val secureStorageLinkClaimed: Boolean = false,
     val secureMetadataLinkClaimed: Boolean = false,
     val backendClientLinkClaimed: Boolean = false,
-    val bdkWalletStateLinkClaimed: Boolean = false,
+    val moneroEngineStateLinkClaimed: Boolean = false,
     val settingsCodecLinkClaimed: Boolean = false,
     val uiSurfaceLinkClaimed: Boolean = false,
     val signingBroadcastingLinkClaimed: Boolean = false,
-    val torNostrLinkClaimed: Boolean = false,
+    val torMoneroMaterialLinkClaimed: Boolean = false,
     val publicEndpointLinkClaimed: Boolean = false,
     val mainnetLinkClaimed: Boolean = false,
 ) {
@@ -576,11 +576,11 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuard
     val currentSecureStorageBridgePresent: Boolean,
     val currentSecureMetadataBridgePresent: Boolean,
     val currentBackendClientBridgePresent: Boolean,
-    val currentBdkWalletStateBridgePresent: Boolean,
+    val currentMoneroEngineStateBridgePresent: Boolean,
     val currentSettingsCodecBridgePresent: Boolean,
     val currentUiSurfaceBridgePresent: Boolean,
     val currentSigningBroadcastingBridgePresent: Boolean,
-    val currentTorNostrBridgePresent: Boolean,
+    val currentTorMoneroMaterialBridgePresent: Boolean,
     val currentPublicEndpointBridgePresent: Boolean,
     val currentMainnetBridgePresent: Boolean,
     val statuses: Set<SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageStatus>,
@@ -644,11 +644,11 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuardPoli
             currentSecureStorageBridgePresent = false,
             currentSecureMetadataBridgePresent = false,
             currentBackendClientBridgePresent = false,
-            currentBdkWalletStateBridgePresent = false,
+            currentMoneroEngineStateBridgePresent = false,
             currentSettingsCodecBridgePresent = false,
             currentUiSurfaceBridgePresent = false,
             currentSigningBroadcastingBridgePresent = false,
-            currentTorNostrBridgePresent = false,
+            currentTorMoneroMaterialBridgePresent = false,
             currentPublicEndpointBridgePresent = false,
             currentMainnetBridgePresent = false,
             statuses = SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageStatus.entries.toSet(),
@@ -924,8 +924,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuardPoli
                 .IdentityImplementationToBackendClient ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.BackendClient
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeBridge
-                .IdentityImplementationToBdkWalletState ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.BdkWalletState
+                .IdentityImplementationToMoneroEngineState ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.MoneroEngineState
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeBridge
                 .IdentityImplementationToSettingsCodec ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.SettingsCodec
@@ -940,8 +940,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuardPoli
                 .IdentityImplementationToTorTransport ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.TorTransport
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeBridge
-                .IdentityImplementationToNostrParsing ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.NostrParsing
+                .IdentityImplementationToMoneroMaterialParsing ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.MoneroMaterialParsing
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenRuntimeBridge
                 .IdentityImplementationToPublicEndpointDefault ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeSurface.PublicEndpointDefault
@@ -984,11 +984,11 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuardPoli
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.SecureMetadataDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.ProductionSyncDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.BackendClientDisabled,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.BdkWalletStateDisabled,
+            SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.MoneroEngineStateDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.SettingsCodecDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.UiSurfaceDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.SigningBroadcastingDisabled,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.TorNostrDisabled,
+            SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.TorMoneroMaterialDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.PublicEndpointDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.MainnetDisabled,
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.UserConsentCannotOverride,
@@ -1104,8 +1104,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuardPoli
             if (request.backendClientLinkClaimed) {
                 add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.BackendClientLinkRejected)
             }
-            if (request.bdkWalletStateLinkClaimed) {
-                add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.BdkWalletStateLinkRejected)
+            if (request.moneroEngineStateLinkClaimed) {
+                add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.MoneroEngineStateLinkRejected)
             }
             if (request.settingsCodecLinkClaimed) {
                 add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.SettingsCodecLinkRejected)
@@ -1119,8 +1119,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageGuardPoli
                         .SigningBroadcastingLinkRejected,
                 )
             }
-            if (request.torNostrLinkClaimed) {
-                add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.TorNostrLinkRejected)
+            if (request.torMoneroMaterialLinkClaimed) {
+                add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.TorMoneroMaterialLinkRejected)
             }
             if (request.publicEndpointLinkClaimed) {
                 add(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.PublicEndpointLinkRejected)

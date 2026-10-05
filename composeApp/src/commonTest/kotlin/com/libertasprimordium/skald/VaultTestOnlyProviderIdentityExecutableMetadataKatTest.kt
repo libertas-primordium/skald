@@ -181,7 +181,7 @@ class VaultTestOnlyProviderIdentityExecutableMetadataKatTest {
             result.persistenceReachable,
             result.productionSyncReachable,
             result.backendClientReachable,
-            result.bdkWalletStateReachable,
+            result.moneroEngineStateReachable,
             result.settingsCodecReachable,
             result.uiSurfaceReachable,
             result.signingBroadcastingReachable,

@@ -72,7 +72,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityKatCaseBinding(
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -333,15 +333,15 @@ object SkaldVaultV1TestOnlyProviderIdentityKatCaseBindingPolicy {
                 publicVectorValidation.backendClientReachable ||
                 fixtureRow?.backendClientReachable == true ||
                 publicVectorRow?.backendClientReachable == true
-        val bdkWalletStateReachable =
-            capabilityMatrix.bdkWalletStateReachable ||
-                fixtureCatalog.bdkWalletStateReachable ||
-                fixtureValidation.bdkWalletStateReachable ||
-                publicVectorAdmission.bdkWalletStateReachable ||
-                publicVectorFixture.bdkWalletStateReachable ||
-                publicVectorValidation.bdkWalletStateReachable ||
-                fixtureRow?.bdkWalletStateReachable == true ||
-                publicVectorRow?.bdkWalletStateReachable == true
+        val moneroEngineStateReachable =
+            capabilityMatrix.moneroEngineStateReachable ||
+                fixtureCatalog.moneroEngineStateReachable ||
+                fixtureValidation.moneroEngineStateReachable ||
+                publicVectorAdmission.moneroEngineStateReachable ||
+                publicVectorFixture.moneroEngineStateReachable ||
+                publicVectorValidation.moneroEngineStateReachable ||
+                fixtureRow?.moneroEngineStateReachable == true ||
+                publicVectorRow?.moneroEngineStateReachable == true
         val settingsCodecReachable =
             capabilityMatrix.settingsCodecReachable ||
                 fixtureCatalog.settingsCodecReachable ||
@@ -534,7 +534,7 @@ object SkaldVaultV1TestOnlyProviderIdentityKatCaseBindingPolicy {
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

@@ -11,7 +11,11 @@ data class SkaldVaultV1TestOnlyProviderSyntheticIdentitySafeLabel(
     val value: String,
 ) {
     init {
-        require(value.isNotBlank()) { "synthetic identity label must not be blank" }
+        require(value in setOf(
+            "candidate label redacted",
+            "candidate label absent",
+            "Model-only synthetic identity namespace; accepted labels are future-review-only.",
+        )) { "unapproved synthetic identity display label" }
     }
 
     override fun toString(): String =
@@ -114,6 +118,7 @@ enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespaceBlocker(val lab
 }
 
 enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason(val label: String) {
+    UnapprovedSyntheticPurpose("unapproved synthetic purpose"),
     Blank("blank input"),
     TooLong("too long"),
     UppercaseOrNonLowercaseAscii("uppercase or non-lowercase ASCII"),
@@ -143,11 +148,11 @@ enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityForbiddenMaterialClass(v
     RawPassphrase("raw passphrase"),
     SeedPhrase("seed phrase"),
     MnemonicPhrase("mnemonic phrase"),
-    XprvToken("xprv token"),
-    XpubToken("xpub token"),
-    NsecToken("nsec token"),
+    PrivateSpendKeyToken("private spend-key token"),
+    PublicAddressToken("public address token"),
+    PrivateViewKeyToken("private view key token"),
     PrivateKey("private key"),
-    Psbt("PSBT"),
+    UnsignedTransactionMaterial("unsigned transaction material"),
     TransactionMaterial("transaction material"),
     SaltMaterial("salt material"),
     NonceMaterial("nonce material"),
@@ -157,14 +162,14 @@ enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityForbiddenMaterialClass(v
     KeysetMaterial("keyset material"),
     ProviderHandle("provider handle"),
     CryptoObject("crypto object"),
-    WalletDescriptor("wallet descriptor"),
+    WalletRecoveryReference("wallet recovery reference"),
     StoragePath("storage path"),
     FileLocation("file location"),
     BackendCredential("backend credential"),
     NetworkEndpoint("network endpoint"),
     WalletAddress("wallet address"),
     WalletLabel("wallet label"),
-    UtxoLabel("UTXO label"),
+    OwnedOutputLabel("owned output label"),
     BackendObservationState("backend observation state"),
 }
 
@@ -173,9 +178,9 @@ enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityForbiddenAlias(val label
     BouncyCastle("Bouncy Castle"),
     Lazysodium("Lazysodium"),
     IonSpin("IonSpin"),
-    Bdk("BDK"),
-    Electrum("Electrum"),
-    Esplora("Esplora"),
+    WalletEngine("wallet engine"),
+    DaemonTransport("DaemonTransport"),
+    LwsTransport("LwsTransport"),
     ProductionProvider("production provider"),
     ReleaseProvider("release provider"),
     MainnetProvider("mainnet provider"),
@@ -205,13 +210,13 @@ enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityForbiddenLinkage(val lab
     StoragePath("storage path"),
     ProductionSync("production sync"),
     BackendClient("backend client"),
-    BdkWalletState("BDK wallet state"),
+    MoneroEngineState("wallet engine wallet state"),
     SettingsCodec("settings codec"),
     UiSurface("UI surface"),
     Signing("signing"),
     Broadcasting("broadcasting"),
     TorTransport("Tor transport"),
-    NostrParsing("Nostr parsing"),
+    MoneroMaterialParsing("MoneroMaterial parsing"),
     PublicEndpointDefault("public endpoint default"),
     Mainnet("mainnet"),
 }
@@ -243,7 +248,7 @@ enum class SkaldVaultV1TestOnlyProviderSyntheticIdentityRedactionClass(val label
     NoCryptoRuntimeReference("no crypto runtime reference"),
     NoStorageLocation("no storage location"),
     NoNetworkEndpoint("no network endpoint"),
-    NoWalletDescriptor("no wallet descriptor"),
+    NoWalletRecoveryReference("no wallet recovery reference"),
     NoBackendState("no backend state"),
 }
 
@@ -325,13 +330,13 @@ data class SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespaceCapability(
     val canUseForStoragePath: Boolean,
     val canUseForProductionSync: Boolean,
     val canUseForBackendClient: Boolean,
-    val canUseForBdkWalletState: Boolean,
+    val canUseForMoneroEngineState: Boolean,
     val canUseForSettingsCodec: Boolean,
     val canUseForUiSurface: Boolean,
     val canUseForSigning: Boolean,
     val canUseForBroadcasting: Boolean,
     val canUseForTorTransport: Boolean,
-    val canUseForNostrParsing: Boolean,
+    val canUseForMoneroMaterialParsing: Boolean,
     val canUseForPublicEndpointDefault: Boolean,
     val canUseForMainnet: Boolean,
     val productionProviderSelectable: Boolean,
@@ -365,13 +370,13 @@ data class SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespaceCapability(
             canUseForStoragePath = false,
             canUseForProductionSync = false,
             canUseForBackendClient = false,
-            canUseForBdkWalletState = false,
+            canUseForMoneroEngineState = false,
             canUseForSettingsCodec = false,
             canUseForUiSurface = false,
             canUseForSigning = false,
             canUseForBroadcasting = false,
             canUseForTorTransport = false,
-            canUseForNostrParsing = false,
+            canUseForMoneroMaterialParsing = false,
             canUseForPublicEndpointDefault = false,
             canUseForMainnet = false,
             productionProviderSelectable = false,
@@ -779,6 +784,15 @@ object SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespacePolicy {
                 add(SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.UrlLikeStructure)
             }
             addAll(familyRejectionReasons(candidate))
+            val family = candidateFamily(candidate)
+            val exactPurpose = family?.let {
+                candidateValue.removePrefix(ALLOWED_NAMESPACE_PREFIX).removePrefix(it.token).removePrefix("-")
+            }
+            if (family == null || exactPurpose == null ||
+                !SkaldVaultV1ApprovedInputDomain.syntheticPurpose(family.token, exactPurpose)
+            ) {
+                add(SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.UnapprovedSyntheticPurpose)
+            }
             if (purposeTokens.any { it.length == 64 && it.all { character -> isHexDigit(character) } }) {
                 add(SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.Hex64Token)
             }
@@ -875,21 +889,14 @@ object SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespacePolicy {
     fun hasEndpointLikeToken(tokens: List<String>): Boolean =
         tokens.any { it in endpointLikeTokens() }
 
-    fun hasWalletAddressLikeToken(candidate: SkaldVaultV1TestOnlyProviderSyntheticIdentitySafeId): Boolean {
-        val lower = candidate.value.lowercase()
-        return lower.startsWith("bc1") ||
-            lower.startsWith("tb1") ||
-            lower.startsWith("bcrt1") ||
-            "-bc1" in lower ||
-            "-tb1" in lower ||
-            "-bcrt1" in lower
-    }
+    fun hasWalletAddressLikeToken(candidate: SkaldVaultV1TestOnlyProviderSyntheticIdentitySafeId): Boolean =
+        candidate.value.split('-').any(MoneroMaterialCandidatePolicy::isAddressShapedCandidate)
 
     fun endpointLikeTokens(): Set<String> =
         setOf("http", "https", "tcp", "udp", "onion", "localhost", "port", "endpoint")
 
     fun dependencyAliasTokens(): Set<String> =
-        setOf("tink", "bouncy", "bouncycastle", "lazysodium", "ionspin", "bdk", "electrum", "esplora")
+        setOf("tink", "bouncy", "bouncycastle", "lazysodium", "ionspin", "engine", "daemon", "lws")
 
     fun productionProviderAliasTokens(): Set<String> =
         setOf("production", "prod", "release", "mainnet")
@@ -903,9 +910,6 @@ object SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespacePolicy {
             "secret",
             "seed",
             "mnemonic",
-            "xprv",
-            "xpub",
-            "nsec",
             "key",
             "credential",
             "descriptor",
@@ -913,7 +917,6 @@ object SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespacePolicy {
             "file",
             "backend",
             "wallet",
-            "psbt",
             "transaction",
             "salt",
             "nonce",
@@ -935,6 +938,6 @@ object SkaldVaultV1TestOnlyProviderSyntheticIdentityNamespacePolicy {
             "ui",
             "sync",
             "tor",
-            "nostr",
+            "lws",
         )
 }

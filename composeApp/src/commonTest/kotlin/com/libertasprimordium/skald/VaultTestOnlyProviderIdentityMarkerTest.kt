@@ -112,18 +112,18 @@ class VaultTestOnlyProviderIdentityMarkerTest {
     }
 
     @Test
-    fun markerSafeIdIsNotAddressTxidDescriptorXpubNsecPsbtOrTransactionHexLike() {
+    fun markerSafeIdIsNotAddressTransactionRecoveryOrRawCryptographicMaterialLike() {
         val safeId = marker().safeId.value
         val compact = safeId.replace("-", "")
 
-        assertFalse(Regex("""(?i)\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\b""").containsMatchIn(safeId))
+        assertFalse(Regex("""\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\b""").containsMatchIn(safeId))
         assertFalse(Regex("""\b[0-9a-fA-F]{64}\b""").containsMatchIn(safeId))
         assertFalse(safeId.contains("descriptor", ignoreCase = true))
-        assertFalse(safeId.contains("wpkh", ignoreCase = true))
-        assertFalse(safeId.contains("tr(", ignoreCase = true))
-        assertFalse(Regex("""(?i)\b[xt]prv\b|\b[xt]pub\b""").containsMatchIn(safeId))
-        assertFalse(Regex("""(?i)\bnsec1[a-z0-9]+""").containsMatchIn(safeId))
-        assertFalse(Regex("""(?i)\bpsbt""").containsMatchIn(safeId))
+        assertFalse(safeId.contains("recovery_material=", ignoreCase = true))
+        assertFalse(safeId.contains("private_view_key=", ignoreCase = true))
+        assertFalse(Regex("""(?i)\bprivate_(?:view|spend)_key=""").containsMatchIn(safeId))
+        assertFalse(Regex("""(?i)\btransaction_secret=""").containsMatchIn(safeId))
+        assertFalse(Regex("""(?i)\bunsigned_transaction=""").containsMatchIn(safeId))
         assertFalse(compact.length > 20 && compact.all { character -> character in '0'..'9' || character in 'a'..'f' })
     }
 
@@ -325,11 +325,11 @@ class VaultTestOnlyProviderIdentityMarkerTest {
             "txid",
             "descriptor",
             "address",
-            "PSBT",
+            "unsigned transaction material",
             "transaction hex",
-            "Nostr nsec",
-            "Lightning credential",
-            "Cashu proof",
+            "private view key",
+            "daemon credential",
+            "transaction secret",
             "backend credential",
         )
 

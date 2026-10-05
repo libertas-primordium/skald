@@ -71,7 +71,7 @@ enum class SkaldVaultV1VaultPersistenceRequiredGate(val label: String) {
     AndroidAppPrivateStoragePolicyPreserved("Android app-private-only storage policy preserved"),
     LinuxCustomRootPolicyReviewed("Linux custom-root policy reviewed where used"),
     ProviderOperationsConnectedWithoutSecretExposure("provider operations connected without exposing secrets"),
-    NoBdkProductionPersistenceBypass("no BDK production persistence bypass"),
+    NoWalletEngineProductionPersistenceBypass("no wallet engine production persistence bypass"),
     NoManagedInfrastructureDependency("no public endpoint or Skald-operated infrastructure dependency"),
     MainnetReleaseHardeningApproved("mainnet remains disabled unless release review approves it"),
 }
@@ -130,8 +130,8 @@ enum class SkaldVaultV1VaultPersistenceReadinessFailureReason(val label: String)
     PassphraseMaterialRejected("passphrase-like readiness material is rejected"),
     ProviderKeyMaterialRejected("provider-key-like readiness material is rejected"),
     WalletMaterialRejected("wallet or key-looking readiness material is rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like readiness material is rejected"),
-    TransactionLikeEvidenceRejected("transaction-id-like readiness material is rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like readiness material is rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-bearing readiness input is rejected"),
     EmptyEvidenceRejected("empty readiness evidence is rejected"),
     UnsupportedEvidenceRejected("unsupported readiness evidence is rejected"),
@@ -177,7 +177,7 @@ enum class SkaldVaultV1VaultPersistenceReadinessBlocker(val label: String) {
     PermissionOwnershipMissing("permission and ownership checks remain unverified"),
     DurabilityMissing("durability remains unverified"),
     AntiRollbackAnchorMissing("anti-rollback anchor remains unavailable"),
-    BdkProductionPersistenceBypassUnreviewed("BDK production persistence bypass remains unavailable and unreviewed"),
+    WalletEngineProductionPersistenceBypassUnreviewed("wallet engine production persistence bypass remains unavailable and unreviewed"),
     ManagedInfrastructureDependencyRejected("Skald-operated or hidden public endpoint dependency remains rejected"),
     WalletSyncUnavailable("wallet sync remains unavailable"),
     MainnetDisabled("mainnet remains unavailable"),
@@ -961,7 +961,7 @@ object SkaldVaultV1PersistenceReadinessGate : SkaldVaultV1VaultPersistenceReadin
             SkaldVaultV1VaultPersistenceReadinessBlocker.PermissionOwnershipMissing,
             SkaldVaultV1VaultPersistenceReadinessBlocker.DurabilityMissing,
             SkaldVaultV1VaultPersistenceReadinessBlocker.AntiRollbackAnchorMissing,
-            SkaldVaultV1VaultPersistenceReadinessBlocker.BdkProductionPersistenceBypassUnreviewed,
+            SkaldVaultV1VaultPersistenceReadinessBlocker.WalletEngineProductionPersistenceBypassUnreviewed,
             SkaldVaultV1VaultPersistenceReadinessBlocker.ManagedInfrastructureDependencyRejected,
             SkaldVaultV1VaultPersistenceReadinessBlocker.WalletSyncUnavailable,
             SkaldVaultV1VaultPersistenceReadinessBlocker.MainnetDisabled,
@@ -1041,12 +1041,12 @@ object SkaldVaultV1PersistenceReadinessGate : SkaldVaultV1VaultPersistenceReadin
                 SkaldVaultV1VaultPersistenceReadinessFailureReason.ProviderKeyMaterialRejected
             looksLikeSecretOrCredential(lower) ->
                 SkaldVaultV1VaultPersistenceReadinessFailureReason.SecretMaterialRejected
-            looksLikePrivateKeyMaterial(raw, lower) ->
-                SkaldVaultV1VaultPersistenceReadinessFailureReason.WalletMaterialRejected
-            looksLikeBitcoinAddress(lower) ->
-                SkaldVaultV1VaultPersistenceReadinessFailureReason.BitcoinAddressLikeEvidenceRejected
+            looksLikeRawCryptographicMaterial(raw) ->
+                SkaldVaultV1VaultPersistenceReadinessFailureReason.AmbiguousRawCryptographicMaterialRejected
+            looksLikeMoneroAddress(raw) ->
+                SkaldVaultV1VaultPersistenceReadinessFailureReason.MoneroAddressLikeEvidenceRejected
             containsLongHexSegment(raw) ->
-                SkaldVaultV1VaultPersistenceReadinessFailureReason.TransactionLikeEvidenceRejected
+                SkaldVaultV1VaultPersistenceReadinessFailureReason.AmbiguousRawCryptographicMaterialRejected
             hasUnsupportedEvidenceCharacters(raw) ->
                 SkaldVaultV1VaultPersistenceReadinessFailureReason.UnsupportedEvidenceRejected
             else -> SkaldVaultV1VaultPersistenceReadinessFailureReason.RawReadinessEvidenceInputRejected
@@ -1074,30 +1074,13 @@ object SkaldVaultV1PersistenceReadinessGate : SkaldVaultV1VaultPersistenceReadin
         ).any { lower.contains(it) } ||
             lower.contains(":") && lower.contains("@")
 
-    private fun looksLikePrivateKeyMaterial(raw: String, lower: String): Boolean =
-        lower.contains("nsec") ||
-            raw.startsWith("xprv") ||
-            raw.startsWith("tprv") ||
-            isWifLike(raw)
+    private fun looksLikeRawCryptographicMaterial(raw: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(raw)
 
-    private fun looksLikeBitcoinAddress(lower: String): Boolean =
-        lower.startsWith("bc1") ||
-            lower.startsWith("tb1") ||
-            lower.startsWith("bcrt1")
+    private fun looksLikeMoneroAddress(lower: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(lower)
 
-    private fun isWifLike(raw: String): Boolean =
-        raw.length in 51..52 &&
-            raw.firstOrNull() in setOf('K', 'L', '5') &&
-            raw.all {
-                it in '1'..'9' ||
-                    it in 'A'..'H' ||
-                    it in 'J'..'N' ||
-                    it in 'P'..'Z' ||
-                    it in 'a'..'k' ||
-                    it in 'm'..'z'
-            }
-
-    private fun containsLongHexSegment(raw: String): Boolean {
+private fun containsLongHexSegment(raw: String): Boolean {
         var run = 0
         raw.forEach { char ->
             run = if (char.isHex()) run + 1 else 0

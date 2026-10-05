@@ -193,17 +193,21 @@ class SkaldVaultV1LinuxRootToken private constructor(
                 rawStaticEvidence = null,
             )
 
-        fun defaultUserDataRoot(rawStaticEvidence: String): SkaldVaultV1LinuxRootToken =
-            SkaldVaultV1LinuxRootToken(
+        fun defaultUserDataRoot(rawStaticEvidence: String): SkaldVaultV1LinuxRootToken {
+            require(SkaldVaultV1ApprovedInputDomain.rootFixture(rawStaticEvidence)) { "Unapproved static root evidence" }
+            return SkaldVaultV1LinuxRootToken(
                 kind = SkaldVaultV1LinuxRootTokenKind.DefaultLinuxUserDataRoot,
                 rawStaticEvidence = rawStaticEvidence,
             )
+        }
 
-        fun customCandidateRoot(rawStaticEvidence: String): SkaldVaultV1LinuxRootToken =
-            SkaldVaultV1LinuxRootToken(
+        fun customCandidateRoot(rawStaticEvidence: String): SkaldVaultV1LinuxRootToken {
+            require(SkaldVaultV1ApprovedInputDomain.rootFixture(rawStaticEvidence)) { "Unapproved static root evidence" }
+            return SkaldVaultV1LinuxRootToken(
                 kind = SkaldVaultV1LinuxRootTokenKind.CustomLinuxCandidateRoot,
                 rawStaticEvidence = rawStaticEvidence,
             )
+        }
     }
 }
 
@@ -469,6 +473,9 @@ object SkaldVaultV1LinuxRootResolutionPolicy {
                 return SkaldVaultV1LinuxRootResolutionFailureReason.UnsupportedCharacterRejected
             }
         }
+        if (!SkaldVaultV1ApprovedInputDomain.rootFixture(value)) {
+            return SkaldVaultV1LinuxRootResolutionFailureReason.UnsupportedCharacterRejected
+        }
         return null
     }
 
@@ -579,9 +586,6 @@ object SkaldVaultV1LinuxRootResolutionPolicy {
             lower.contains("token") ||
             lower.contains("key=") ||
             lower.contains("api_key") ||
-            lower.contains("nsec") ||
-            lower.contains("xprv") ||
-            lower.contains("tprv") ||
             lower.contains("seed") ||
             lower.contains("mnemonic") ||
             lower.contains("recovery phrase") ||
@@ -591,14 +595,7 @@ object SkaldVaultV1LinuxRootResolutionPolicy {
         }
         return lower.split('/').any { segment ->
             val compact = segment.replace("-", "").replace("_", "").replace(".", "")
-            compact.length >= 64 && compact.all { it in '0'..'9' || it in 'a'..'f' } ||
-                segment.startsWith("nsec1") ||
-                segment.startsWith("xprv") ||
-                segment.startsWith("tprv") ||
-                segment.startsWith("bc1") ||
-                segment.startsWith("tb1") ||
-                segment.startsWith("bcrt1") ||
-                segment.startsWith("wif")
+            compact.length >= 64 && compact.all { it in '0'..'9' || it in 'a'..'f' }
         }
     }
 

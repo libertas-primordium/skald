@@ -116,7 +116,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBou
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -379,9 +379,9 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundar
         val backendClientReachable =
             providerOperationNoopExecutionBoundary.backendClientReachable ||
                 capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            providerOperationNoopExecutionBoundary.bdkWalletStateReachable ||
-                capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            providerOperationNoopExecutionBoundary.moneroEngineStateReachable ||
+                capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             providerOperationNoopExecutionBoundary.settingsCodecReachable ||
                 capabilityMatrix.settingsCodecReachable
@@ -714,7 +714,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopExecutionBoundar
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

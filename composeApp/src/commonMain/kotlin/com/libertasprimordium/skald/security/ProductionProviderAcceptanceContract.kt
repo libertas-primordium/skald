@@ -680,8 +680,8 @@ enum class ProductionProviderStorageBoundaryForbiddenMaterial(val label: String)
     TinkKeysets("Tink keysets"),
     WalletSeedMaterial("wallet seed material"),
     PrivateKeys("private keys"),
-    NostrSecrets("Nostr secrets"),
-    CashuProofs("Cashu proofs"),
+    MoneroPrivateViewKeys("MoneroMaterial secrets"),
+    MoneroTransactionProofs("Monero transaction proofs"),
     BackendCredentials("backend credentials"),
 }
 
@@ -1124,8 +1124,8 @@ enum class ProductionProviderRedactionLeakageRule(val label: String) {
     PublicVectorsScopedToDocsTestsAndSourceGuards(
         "public non-wallet vectors are scoped to docs, tests, and source guards",
     ),
-    WalletUtxoSyncMaterialCannotUsePublicVectorException(
-        "wallet, UTXO, and sync material cannot use the public-vector exception",
+    WalletOwnedOutputSyncMaterialCannotUsePublicVectorException(
+        "wallet, owned output, and sync material cannot use the public-vector exception",
     ),
     DoesNotUseFilePathStorageSettingsOrPlatformApis(
         "boundary does not use File, Path, storage, Settings, or platform APIs",

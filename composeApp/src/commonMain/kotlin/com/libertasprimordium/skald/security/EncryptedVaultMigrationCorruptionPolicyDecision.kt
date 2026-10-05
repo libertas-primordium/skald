@@ -132,8 +132,8 @@ enum class EncryptedVaultMigrationCorruptionPolicyDecisionCheck {
     SecureSecretStorageSuccessPathAbsent,
     SecureMetadataStorageSuccessPathAbsent,
     ProductionObservationPersistenceAbsent,
-    ProductionAddressIndexPersistenceAbsent,
-    ProductionUtxoPersistenceAbsent,
+    ProductionMoneroSubaddressMetadataPersistenceAbsent,
+    ProductionOwnedOutputPersistenceAbsent,
     ProductionWalletHistoryPersistenceAbsent,
     ProductionSyncAbsent,
     ProductionBackendClientAbsent,
@@ -260,8 +260,8 @@ data class EncryptedVaultMigrationCorruptionPolicyDecision(
     val secureSecretStorageSuccessPathPresent: Boolean,
     val secureMetadataStorageSuccessPathPresent: Boolean,
     val productionObservationPersistencePresent: Boolean,
-    val productionAddressIndexPersistencePresent: Boolean,
-    val productionUtxoPersistencePresent: Boolean,
+    val productionMoneroSubaddressMetadataPersistencePresent: Boolean,
+    val productionOwnedOutputPersistencePresent: Boolean,
     val productionWalletHistoryPersistencePresent: Boolean,
     val productionSyncPresent: Boolean,
     val productionBackendClientPresent: Boolean,
@@ -458,10 +458,10 @@ object EncryptedVaultMigrationCorruptionPolicyDecisionPolicy {
             storagePathDecision.secureMetadataStorageSuccessPathPresent
         val productionObservationPersistencePresent =
             storagePathDecision.productionObservationPersistencePresent
-        val productionAddressIndexPersistencePresent =
-            storagePathDecision.productionAddressIndexPersistencePresent
-        val productionUtxoPersistencePresent =
-            storagePathDecision.productionUtxoPersistencePresent
+        val productionMoneroSubaddressMetadataPersistencePresent =
+            storagePathDecision.productionMoneroSubaddressMetadataPersistencePresent
+        val productionOwnedOutputPersistencePresent =
+            storagePathDecision.productionOwnedOutputPersistencePresent
         val productionWalletHistoryPersistencePresent =
             storagePathDecision.productionWalletHistoryPersistencePresent
         val productionSyncPresent = storagePathDecision.productionSyncPresent
@@ -656,8 +656,8 @@ object EncryptedVaultMigrationCorruptionPolicyDecisionPolicy {
                 secureSecretStorageSuccessPathPresent ||
                 secureMetadataStorageSuccessPathPresent ||
                 productionObservationPersistencePresent ||
-                productionAddressIndexPersistencePresent ||
-                productionUtxoPersistencePresent ||
+                productionMoneroSubaddressMetadataPersistencePresent ||
+                productionOwnedOutputPersistencePresent ||
                 productionWalletHistoryPersistencePresent
         val productionSyncSurfacePresent = productionSyncPresent || productionBackendClientPresent
         val productionProviderSelectionSurfacePresent =
@@ -853,8 +853,8 @@ object EncryptedVaultMigrationCorruptionPolicyDecisionPolicy {
             secureSecretStorageSuccessPathPresent = secureSecretStorageSuccessPathPresent,
             secureMetadataStorageSuccessPathPresent = secureMetadataStorageSuccessPathPresent,
             productionObservationPersistencePresent = productionObservationPersistencePresent,
-            productionAddressIndexPersistencePresent = productionAddressIndexPersistencePresent,
-            productionUtxoPersistencePresent = productionUtxoPersistencePresent,
+            productionMoneroSubaddressMetadataPersistencePresent = productionMoneroSubaddressMetadataPersistencePresent,
+            productionOwnedOutputPersistencePresent = productionOwnedOutputPersistencePresent,
             productionWalletHistoryPersistencePresent = productionWalletHistoryPersistencePresent,
             productionSyncPresent = productionSyncPresent,
             productionBackendClientPresent = productionBackendClientPresent,

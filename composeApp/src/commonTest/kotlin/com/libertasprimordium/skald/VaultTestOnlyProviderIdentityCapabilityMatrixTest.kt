@@ -175,7 +175,7 @@ class VaultTestOnlyProviderIdentityCapabilityMatrixTest {
             matrix.persistenceReachable,
             matrix.productionSyncReachable,
             matrix.backendClientReachable,
-            matrix.bdkWalletStateReachable,
+            matrix.moneroEngineStateReachable,
             matrix.settingsCodecReachable,
             matrix.uiSurfaceReachable,
             matrix.signingBroadcastingReachable,

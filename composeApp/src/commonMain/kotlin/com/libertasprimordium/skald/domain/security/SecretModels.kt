@@ -1,28 +1,36 @@
 package com.libertasprimordium.skald.domain.security
 
 @JvmInline
-value class SecretId(val value: String)
+value class SecretId(val value: String) {
+    init {
+        require(value in setOf("SECRET_STORAGE_DISABLED", "app-seed", "mnemonic", "backup-key", "metadata-key")) {
+            "Unapproved placeholder secret identifier"
+        }
+    }
+
+    override fun toString(): String = "SecretId(REDACTED)"
+}
 
 @JvmInline
-value class SecretLabel(val value: String)
+value class SecretLabel(val value: String) {
+    init {
+        require(SecretKind.entries.any { value == "${it.label} metadata" }) {
+            "Unapproved placeholder secret label"
+        }
+    }
+
+    override fun toString(): String = "SecretLabel(REDACTED)"
+}
 
 enum class SecretKind(val label: String) {
-    BitcoinSeed("Bitcoin seed"),
-    Bip39Mnemonic("BIP39 mnemonic"),
-    DescriptorPrivateKey("descriptor private key"),
+    MoneroRecoveryMaterial("Monero recovery material"),
+    MoneroPrivateSpendKey("Monero private spend key"),
+    MoneroPrivateViewKey("Monero private view key"),
+    MoneroTransactionSecretMaterial("Monero transaction secret material"),
+    MoneroDaemonCredential("Monero daemon credential"),
+    MoneroLwsCredential("Monero LWS credential"),
     ImportedPrivateKey("imported private key"),
-    NostrNsec("Nostr nsec"),
-    BitcoinCoreRpcPassword("Bitcoin Core RPC password"),
-    BitcoinCoreCookie("Bitcoin Core cookie"),
-    ElectrumCredential("Electrum credential"),
-    EsploraCredential("Esplora credential"),
     TorProxyPassword("Tor proxy password"),
-    LightningMacaroon("Lightning macaroon"),
-    CoreLightningRune("Core Lightning rune"),
-    NwcSecret("NWC secret"),
-    PhoenixdAuthToken("Phoenixd auth token"),
-    CashuSeed("Cashu seed"),
-    CashuProofMaterial("Cashu proof material"),
     BackupEncryptionKey("backup encryption key"),
     MetadataEncryptionKey("metadata encryption key"),
 }
@@ -60,9 +68,9 @@ sealed interface SecretStorageStatus {
 enum class SecretRecoveryWarning(val label: String) {
     NativeSeedRequired("native seed recovery requires real seed storage"),
     SeparateImportedKeyBackupRequired("imported keys require separate backup"),
-    NostrIdentityKeyRisk("Nostr identity keys can compromise identity and funds"),
-    RemoteNodeExternalBackupRequired("remote-node credentials and funds require external backup"),
-    CashuMintAndProofStateRequired("Cashu recovery depends on mint support and proof state"),
+    MoneroViewKeyDisclosureRisk("private view-key disclosure exposes wallet scanning information"),
+    RemoteNodeExternalBackupRequired("daemon access configuration does not restore local wallet keys or metadata"),
+    MoneroRestoreContextRequired("Monero recovery requires supported recovery material and restore context"),
     BackupKeyRequired("backup encryption keys require a secure storage design"),
     MetadataEncryptionRequired("metadata encryption keys require a secure storage design"),
 }
@@ -75,5 +83,14 @@ data class SecretMetadata(
     val storageStatus: SecretStorageStatus,
     val recoveryWarning: SecretRecoveryWarning,
 ) {
+    init {
+        require(createdAtDescription == "SECRET_STORAGE_NOT_IMPLEMENTED") {
+            "Unapproved placeholder creation evidence"
+        }
+    }
+
     val containsSecretPayload: Boolean = false
+
+    override fun toString(): String =
+        "SecretMetadata(kind=${kind.name}, id=REDACTED, label=REDACTED, createdAtDescription=REDACTED)"
 }

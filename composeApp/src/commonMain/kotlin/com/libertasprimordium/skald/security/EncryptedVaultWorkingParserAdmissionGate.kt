@@ -183,8 +183,8 @@ enum class EncryptedVaultWorkingParserAdmissionCheck {
     SecureSecretStorageSuccessPathAbsent,
     SecureMetadataStorageSuccessPathAbsent,
     ProductionObservationPersistenceAbsent,
-    ProductionAddressIndexPersistenceAbsent,
-    ProductionUtxoPersistenceAbsent,
+    ProductionMoneroSubaddressMetadataPersistenceAbsent,
+    ProductionOwnedOutputPersistenceAbsent,
     ProductionWalletHistoryPersistenceAbsent,
     ProductionSyncAbsent,
     ProductionBackendClientAbsent,
@@ -354,8 +354,8 @@ data class EncryptedVaultWorkingParserAdmissionGate(
     val secureSecretStorageSuccessPathPresent: Boolean,
     val secureMetadataStorageSuccessPathPresent: Boolean,
     val productionObservationPersistencePresent: Boolean,
-    val productionAddressIndexPersistencePresent: Boolean,
-    val productionUtxoPersistencePresent: Boolean,
+    val productionMoneroSubaddressMetadataPersistencePresent: Boolean,
+    val productionOwnedOutputPersistencePresent: Boolean,
     val productionWalletHistoryPersistencePresent: Boolean,
     val productionSyncPresent: Boolean,
     val productionBackendClientPresent: Boolean,
@@ -621,9 +621,9 @@ object EncryptedVaultWorkingParserAdmissionGatePolicy {
             scaffold.secureMetadataStorageSuccessPathPresent
         val productionObservationPersistencePresent =
             scaffold.productionObservationPersistencePresent
-        val productionAddressIndexPersistencePresent =
-            scaffold.productionAddressIndexPersistencePresent
-        val productionUtxoPersistencePresent = scaffold.productionUtxoPersistencePresent
+        val productionMoneroSubaddressMetadataPersistencePresent =
+            scaffold.productionMoneroSubaddressMetadataPersistencePresent
+        val productionOwnedOutputPersistencePresent = scaffold.productionOwnedOutputPersistencePresent
         val productionWalletHistoryPersistencePresent =
             scaffold.productionWalletHistoryPersistencePresent
         val productionSyncPresent = scaffold.productionSyncPresent
@@ -842,8 +842,8 @@ object EncryptedVaultWorkingParserAdmissionGatePolicy {
                 secureSecretStorageSuccessPathPresent ||
                 secureMetadataStorageSuccessPathPresent ||
                 productionObservationPersistencePresent ||
-                productionAddressIndexPersistencePresent ||
-                productionUtxoPersistencePresent ||
+                productionMoneroSubaddressMetadataPersistencePresent ||
+                productionOwnedOutputPersistencePresent ||
                 productionWalletHistoryPersistencePresent
         val productionSyncSurfacePresent = productionSyncPresent || productionBackendClientPresent
         val productionProviderSelectionSurfacePresent =
@@ -1097,8 +1097,8 @@ object EncryptedVaultWorkingParserAdmissionGatePolicy {
             secureSecretStorageSuccessPathPresent = secureSecretStorageSuccessPathPresent,
             secureMetadataStorageSuccessPathPresent = secureMetadataStorageSuccessPathPresent,
             productionObservationPersistencePresent = productionObservationPersistencePresent,
-            productionAddressIndexPersistencePresent = productionAddressIndexPersistencePresent,
-            productionUtxoPersistencePresent = productionUtxoPersistencePresent,
+            productionMoneroSubaddressMetadataPersistencePresent = productionMoneroSubaddressMetadataPersistencePresent,
+            productionOwnedOutputPersistencePresent = productionOwnedOutputPersistencePresent,
             productionWalletHistoryPersistencePresent = productionWalletHistoryPersistencePresent,
             productionSyncPresent = productionSyncPresent,
             productionBackendClientPresent = productionBackendClientPresent,

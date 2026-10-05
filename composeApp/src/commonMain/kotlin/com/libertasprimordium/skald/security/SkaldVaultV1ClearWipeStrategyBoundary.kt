@@ -62,9 +62,9 @@ enum class SkaldVaultV1VaultClearWipeValueKind(val label: String) {
     MnemonicText("mnemonic text"),
     SeedBytes("seed bytes"),
     PrivateKeyBytes("private key bytes"),
-    XprvTprvWifText("xprv/tprv/WIF text"),
-    NostrNsecPrivateKeyMaterial("Nostr nsec/private key material"),
-    DescriptorPrivateMaterial("descriptor private material"),
+    MoneroPrivateKeyText("Monero private key material text"),
+    MoneroPrivateViewKeyMaterial("Monero private view key/private key material"),
+    MoneroRecoveryMaterial("Monero recovery material"),
     ProviderRootKey("provider root key"),
     VaultRootKey("vault root key"),
     MetadataEncryptionKey("metadata encryption key"),
@@ -87,7 +87,7 @@ enum class SkaldVaultV1VaultClearWipeValueKind(val label: String) {
     RedactionDiagnosticStagingValue("redaction/diagnostic staging value"),
     WalletLabelTransactionNoteSensitiveMetadata("wallet label or transaction note sensitive metadata"),
     BackendCredentialStagingValue("backend credential staging value"),
-    LightningCashuNostrCredentialStagingValue("Lightning/Cashu/Nostr credential staging value"),
+    MoneroCredentialStagingValue("Monero daemon/Monero transaction/MoneroMaterial credential staging value"),
     FuturePlatformWrappedKeyReference("future platform-wrapped key reference"),
     FutureAndroidHardwareWrappedKeyHandle("future Android hardware-wrapped key handle"),
     FutureLinuxOptionalKeyWrappingHandle("future Linux optional key-wrapping handle"),
@@ -377,8 +377,8 @@ enum class SkaldVaultV1VaultClearWipeFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret-like material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported evidence characters rejected"),
     RawClearWipeInputRejected("raw clear/wipe input rejected"),
@@ -814,12 +814,12 @@ object SkaldVaultV1ClearWipeStrategyPolicy : SkaldVaultV1ClearWipeStrategyBounda
                 lower.contains("credential") ||
                 lower.contains("token") ->
                 SkaldVaultV1VaultClearWipeFailureReason.SecretMaterialRejected
-            looksLikeWalletMaterial(value) ->
-                SkaldVaultV1VaultClearWipeFailureReason.WalletMaterialRejected
-            looksLikeBitcoinAddress(value) ->
-                SkaldVaultV1VaultClearWipeFailureReason.BitcoinAddressLikeEvidenceRejected
+            looksLikeRawCryptographicMaterial(value) ->
+                SkaldVaultV1VaultClearWipeFailureReason.AmbiguousRawCryptographicMaterialRejected
+            looksLikeMoneroAddress(value) ->
+                SkaldVaultV1VaultClearWipeFailureReason.MoneroAddressLikeEvidenceRejected
             value.length == 64 && value.all { it.isHexDigit() } ->
-                SkaldVaultV1VaultClearWipeFailureReason.TransactionLikeEvidenceRejected
+                SkaldVaultV1VaultClearWipeFailureReason.AmbiguousRawCryptographicMaterialRejected
             value.any { !it.isSupportedEvidenceCharacter() } ->
                 SkaldVaultV1VaultClearWipeFailureReason.UnsupportedCharactersRejected
             else -> SkaldVaultV1VaultClearWipeFailureReason.RawClearWipeInputRejected
@@ -832,9 +832,9 @@ object SkaldVaultV1ClearWipeStrategyPolicy : SkaldVaultV1ClearWipeStrategyBounda
         SkaldVaultV1VaultClearWipeValueKind.MnemonicText,
         SkaldVaultV1VaultClearWipeValueKind.SeedBytes,
         SkaldVaultV1VaultClearWipeValueKind.PrivateKeyBytes,
-        SkaldVaultV1VaultClearWipeValueKind.XprvTprvWifText,
-        SkaldVaultV1VaultClearWipeValueKind.NostrNsecPrivateKeyMaterial,
-        SkaldVaultV1VaultClearWipeValueKind.DescriptorPrivateMaterial,
+        SkaldVaultV1VaultClearWipeValueKind.MoneroPrivateKeyText,
+        SkaldVaultV1VaultClearWipeValueKind.MoneroPrivateViewKeyMaterial,
+        SkaldVaultV1VaultClearWipeValueKind.MoneroRecoveryMaterial,
     )
 
     private val providerOwnedKinds = setOf(
@@ -870,7 +870,7 @@ object SkaldVaultV1ClearWipeStrategyPolicy : SkaldVaultV1ClearWipeStrategyBounda
         SkaldVaultV1VaultClearWipeValueKind.PassphraseRetryThrottleState,
         SkaldVaultV1VaultClearWipeValueKind.WalletLabelTransactionNoteSensitiveMetadata,
         SkaldVaultV1VaultClearWipeValueKind.BackendCredentialStagingValue,
-        SkaldVaultV1VaultClearWipeValueKind.LightningCashuNostrCredentialStagingValue,
+        SkaldVaultV1VaultClearWipeValueKind.MoneroCredentialStagingValue,
     )
 
     private val referenceDeletionEvents = setOf(
@@ -880,20 +880,11 @@ object SkaldVaultV1ClearWipeStrategyPolicy : SkaldVaultV1ClearWipeStrategyBounda
         SkaldVaultV1VaultClearWipeEventKind.CrashRecoveryBegins,
     )
 
-    private fun looksLikeBitcoinAddress(value: String): Boolean {
-        val lower = value.lowercase()
-        return (lower.startsWith("bc1") || lower.startsWith("tb1") || lower.startsWith("bcrt1")) &&
-            lower.length >= 24 &&
-            lower.drop(3).all { it.isLetterOrDigit() }
-    }
+    private fun looksLikeMoneroAddress(value: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(value)
 
-    private fun looksLikeWalletMaterial(value: String): Boolean {
-        val lower = value.lowercase()
-        return lower.startsWith("nsec1") ||
-            lower.startsWith("xprv") ||
-            lower.startsWith("tprv") ||
-            ((value.startsWith("K") || value.startsWith("L") || value.startsWith("5")) && value.length >= 50)
-    }
+    private fun looksLikeRawCryptographicMaterial(value: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(value)
 
     private fun Char.isHexDigit(): Boolean =
         this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'

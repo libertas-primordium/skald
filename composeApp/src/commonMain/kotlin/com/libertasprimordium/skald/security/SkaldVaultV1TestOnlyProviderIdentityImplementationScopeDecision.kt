@@ -57,11 +57,11 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory {
     SecureStorageForbiddenScope,
     SecureMetadataForbiddenScope,
     BackendClientForbiddenScope,
-    BdkWalletStateForbiddenScope,
+    MoneroEngineStateForbiddenScope,
     SettingsCodecForbiddenScope,
     UiSurfaceForbiddenScope,
     SigningBroadcastingForbiddenScope,
-    TorNostrForbiddenScope,
+    TorMoneroMaterialForbiddenScope,
     PublicEndpointForbiddenScope,
     MainnetForbiddenScope,
 }
@@ -116,13 +116,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem 
     RunMigration,
     StartProductionSync,
     CreateBackendClient,
-    CreateBdkWalletState,
+    CreateMoneroEngineState,
     WriteSettingsCodec,
     ExposeUiSurface,
     SignTransactions,
     BroadcastTransactions,
     StartTorTransport,
-    ParseNostrSecrets,
+    ParseMoneroPrivateViewKeys,
     AddPublicEndpointDefault,
     EnableMainnet,
 }
@@ -254,13 +254,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationScopeForbiddenPromo
     ScopeDecisionToMigration,
     ScopeDecisionToProductionSync,
     ScopeDecisionToBackendClient,
-    ScopeDecisionToBdkWalletState,
+    ScopeDecisionToMoneroEngineState,
     ScopeDecisionToSettingsCodec,
     ScopeDecisionToUiSurface,
     ScopeDecisionToSigning,
     ScopeDecisionToBroadcasting,
     ScopeDecisionToTorTransport,
-    ScopeDecisionToNostrParsing,
+    ScopeDecisionToMoneroMaterialParsing,
     ScopeDecisionToPublicEndpointDefault,
     ScopeDecisionToMainnet,
 }
@@ -315,8 +315,8 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationScopeFutureReviewRe
     ProviderOperationAbsenceProof,
     VaultLifecycleAndPersistenceAbsenceProof,
     SecureStorageAndMetadataAbsenceProof,
-    BackendBdkSettingsUiAbsenceProof,
-    SigningBroadcastingTorNostrEndpointAbsenceProof,
+    BackendWalletEngineSettingsUiAbsenceProof,
+    SigningBroadcastingTorMoneroMaterialEndpointAbsenceProof,
     RedactionAndLeakageReview,
     SourceGuardCoverageReview,
     NonAuthorizationReview,
@@ -431,13 +431,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationScopeDecisionCapabi
     val canUseForMigration: Boolean,
     val canUseForProductionSync: Boolean,
     val canUseForBackendClient: Boolean,
-    val canUseForBdkWalletState: Boolean,
+    val canUseForMoneroEngineState: Boolean,
     val canUseForSettingsCodec: Boolean,
     val canUseForUiSurface: Boolean,
     val canUseForSigning: Boolean,
     val canUseForBroadcasting: Boolean,
     val canUseForTorTransport: Boolean,
-    val canUseForNostrParsing: Boolean,
+    val canUseForMoneroMaterialParsing: Boolean,
     val canUseForPublicEndpointDefault: Boolean,
     val canUseForMainnet: Boolean,
     val productionProviderSelectable: Boolean,
@@ -478,13 +478,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationScopeDecisionCapabi
             canUseForMigration = false,
             canUseForProductionSync = false,
             canUseForBackendClient = false,
-            canUseForBdkWalletState = false,
+            canUseForMoneroEngineState = false,
             canUseForSettingsCodec = false,
             canUseForUiSurface = false,
             canUseForSigning = false,
             canUseForBroadcasting = false,
             canUseForTorTransport = false,
-            canUseForNostrParsing = false,
+            canUseForMoneroMaterialParsing = false,
             canUseForPublicEndpointDefault = false,
             canUseForMainnet = false,
             productionProviderSelectable = false,
@@ -828,8 +828,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationScopeDecisionPolicy {
                 SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.RuntimeReachabilityForbiddenScope
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.CreateBackendClient ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.BackendClientForbiddenScope
-            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.CreateBdkWalletState ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.BdkWalletStateForbiddenScope
+            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.CreateMoneroEngineState ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.MoneroEngineStateForbiddenScope
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.WriteSettingsCodec ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.SettingsCodecForbiddenScope
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.ExposeUiSurface ->
@@ -838,8 +838,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationScopeDecisionPolicy {
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.BroadcastTransactions ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.SigningBroadcastingForbiddenScope
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.StartTorTransport,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.ParseNostrSecrets ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.TorNostrForbiddenScope
+            SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.ParseMoneroPrivateViewKeys ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.TorMoneroMaterialForbiddenScope
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.AddPublicEndpointDefault ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationScopeCategory.PublicEndpointForbiddenScope
             SkaldVaultV1TestOnlyProviderIdentityImplementationForbiddenScopeItem.EnableMainnet ->

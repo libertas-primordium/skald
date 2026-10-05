@@ -37,7 +37,7 @@ class EncryptedVaultParserWriterSyntheticVector private constructor(
     val nonWallet: Boolean = true
     val nonSecret: Boolean = true
     val nonNetwork: Boolean = true
-    val validBitcoinData: Boolean = false
+    val validMoneroData: Boolean = false
     val realVaultData: Boolean = false
     val productionSerializedVaultBytes: Boolean = false
     val logged: Boolean = false
@@ -150,8 +150,8 @@ data class EncryptedVaultParserWriterSyntheticVectorCatalogReport(
     val secureSecretStorageSuccessPathPresent: Boolean,
     val secureMetadataStorageSuccessPathPresent: Boolean,
     val productionObservationPersistencePresent: Boolean,
-    val productionAddressIndexPersistencePresent: Boolean,
-    val productionUtxoPersistencePresent: Boolean,
+    val productionMoneroSubaddressMetadataPersistencePresent: Boolean,
+    val productionOwnedOutputPersistencePresent: Boolean,
     val productionWalletHistoryPersistencePresent: Boolean,
     val productionSyncPresent: Boolean,
     val productionBackendClientPresent: Boolean,
@@ -379,8 +379,8 @@ object EncryptedVaultParserWriterSyntheticVectorCatalog {
             secureMetadataStorageSuccessPathPresent =
                 scaffold.secureMetadataStorageSuccessPathPresent,
             productionObservationPersistencePresent = false,
-            productionAddressIndexPersistencePresent = false,
-            productionUtxoPersistencePresent = false,
+            productionMoneroSubaddressMetadataPersistencePresent = false,
+            productionOwnedOutputPersistencePresent = false,
             productionWalletHistoryPersistencePresent = false,
             productionSyncPresent = false,
             productionBackendClientPresent = false,

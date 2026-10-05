@@ -69,11 +69,11 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection {
     SecureStorageAbsenceReadiness,
     SecureMetadataAbsenceReadiness,
     BackendClientAbsenceReadiness,
-    BdkWalletStateAbsenceReadiness,
+    MoneroEngineStateAbsenceReadiness,
     SettingsCodecAbsenceReadiness,
     UiSurfaceAbsenceReadiness,
     SigningBroadcastingAbsenceReadiness,
-    TorNostrAbsenceReadiness,
+    TorMoneroMaterialAbsenceReadiness,
     PublicEndpointAbsenceReadiness,
     MainnetAbsenceReadiness,
 }
@@ -127,11 +127,11 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck {
     SecureStorageAbsenceNonAuthorizing,
     SecureMetadataAbsenceNonAuthorizing,
     BackendClientAbsenceNonAuthorizing,
-    BdkWalletStateAbsenceNonAuthorizing,
+    MoneroEngineStateAbsenceNonAuthorizing,
     SettingsCodecAbsenceNonAuthorizing,
     UiSurfaceAbsenceNonAuthorizing,
     SigningBroadcastingAbsenceNonAuthorizing,
-    TorNostrAbsenceNonAuthorizing,
+    TorMoneroMaterialAbsenceNonAuthorizing,
     PublicEndpointAbsenceNonAuthorizing,
     MainnetAbsenceNonAuthorizing,
 }
@@ -274,13 +274,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenR
     ReadinessGateToMigrationRuntime,
     ReadinessGateToProductionSyncRuntime,
     ReadinessGateToBackendClientRuntime,
-    ReadinessGateToBdkWalletStateRuntime,
+    ReadinessGateToMoneroEngineStateRuntime,
     ReadinessGateToSettingsCodecRuntime,
     ReadinessGateToUiRuntime,
     ReadinessGateToSigningRuntime,
     ReadinessGateToBroadcastingRuntime,
     ReadinessGateToTorRuntime,
-    ReadinessGateToNostrRuntime,
+    ReadinessGateToMoneroMaterialRuntime,
     ReadinessGateToPublicEndpointRuntime,
     ReadinessGateToMainnetRuntime,
 }
@@ -314,13 +314,13 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenP
     ReadinessGateToMigration,
     ReadinessGateToProductionSync,
     ReadinessGateToBackendClient,
-    ReadinessGateToBdkWalletState,
+    ReadinessGateToMoneroEngineState,
     ReadinessGateToSettingsCodec,
     ReadinessGateToUiSurface,
     ReadinessGateToSigning,
     ReadinessGateToBroadcasting,
     ReadinessGateToTorTransport,
-    ReadinessGateToNostrParsing,
+    ReadinessGateToMoneroMaterialParsing,
     ReadinessGateToPublicEndpointDefault,
     ReadinessGateToMainnet,
 }
@@ -380,8 +380,8 @@ enum class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessFutureRevi
     CryptoExecutionAbsenceReview,
     VaultLifecycleAndPersistenceAbsenceReview,
     SecureStorageAndMetadataAbsenceReview,
-    BackendBdkSettingsUiAbsenceReview,
-    SigningBroadcastingTorNostrEndpointAbsenceReview,
+    BackendWalletEngineSettingsUiAbsenceReview,
+    SigningBroadcastingTorMoneroMaterialEndpointAbsenceReview,
     NonAuthorizationReview,
     FutureImplementationReview,
     MainnetNonAuthorizationReview,
@@ -505,13 +505,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGateCapabi
     val canUseForMigration: Boolean,
     val canUseForProductionSync: Boolean,
     val canUseForBackendClient: Boolean,
-    val canUseForBdkWalletState: Boolean,
+    val canUseForMoneroEngineState: Boolean,
     val canUseForSettingsCodec: Boolean,
     val canUseForUiSurface: Boolean,
     val canUseForSigning: Boolean,
     val canUseForBroadcasting: Boolean,
     val canUseForTorTransport: Boolean,
-    val canUseForNostrParsing: Boolean,
+    val canUseForMoneroMaterialParsing: Boolean,
     val canUseForPublicEndpointDefault: Boolean,
     val canUseForMainnet: Boolean,
     val productionProviderSelectable: Boolean,
@@ -554,13 +554,13 @@ data class SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGateCapabi
             canUseForMigration = false,
             canUseForProductionSync = false,
             canUseForBackendClient = false,
-            canUseForBdkWalletState = false,
+            canUseForMoneroEngineState = false,
             canUseForSettingsCodec = false,
             canUseForUiSurface = false,
             canUseForSigning = false,
             canUseForBroadcasting = false,
             canUseForTorTransport = false,
-            canUseForNostrParsing = false,
+            canUseForMoneroMaterialParsing = false,
             canUseForPublicEndpointDefault = false,
             canUseForMainnet = false,
             productionProviderSelectable = false,
@@ -941,11 +941,11 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGatePolicy {
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.SecureStorageAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.SecureMetadataAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.BackendClientAbsenceNonAuthorizing,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.BdkWalletStateAbsenceNonAuthorizing,
+            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.MoneroEngineStateAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.SettingsCodecAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.UiSurfaceAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.SigningBroadcastingAbsenceNonAuthorizing,
-            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.TorNostrAbsenceNonAuthorizing,
+            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.TorMoneroMaterialAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.PublicEndpointAbsenceNonAuthorizing,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.MainnetAbsenceNonAuthorizing,
         )
@@ -1031,8 +1031,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGatePolicy {
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.SecureMetadataAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.BackendClientAbsenceNonAuthorizing ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.BackendClientAbsenceReadiness
-            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.BdkWalletStateAbsenceNonAuthorizing ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.BdkWalletStateAbsenceReadiness
+            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.MoneroEngineStateAbsenceNonAuthorizing ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.MoneroEngineStateAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.SettingsCodecAbsenceNonAuthorizing ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.SettingsCodecAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.UiSurfaceAbsenceNonAuthorizing ->
@@ -1041,8 +1041,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGatePolicy {
                 .SigningBroadcastingAbsenceNonAuthorizing ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection
                     .SigningBroadcastingAbsenceReadiness
-            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.TorNostrAbsenceNonAuthorizing ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.TorNostrAbsenceReadiness
+            SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.TorMoneroMaterialAbsenceNonAuthorizing ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.TorMoneroMaterialAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.PublicEndpointAbsenceNonAuthorizing ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.PublicEndpointAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessCheck.MainnetAbsenceNonAuthorizing ->
@@ -1120,8 +1120,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGatePolicy {
                 .ReadinessGateToBackendClientRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.BackendClientAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenRuntimeLinkage
-                .ReadinessGateToBdkWalletStateRuntime ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.BdkWalletStateAbsenceReadiness
+                .ReadinessGateToMoneroEngineStateRuntime ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.MoneroEngineStateAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenRuntimeLinkage
                 .ReadinessGateToSettingsCodecRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.SettingsCodecAbsenceReadiness
@@ -1137,8 +1137,8 @@ object SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessGatePolicy {
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenRuntimeLinkage
                 .ReadinessGateToTorRuntime,
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenRuntimeLinkage
-                .ReadinessGateToNostrRuntime ->
-                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.TorNostrAbsenceReadiness
+                .ReadinessGateToMoneroMaterialRuntime ->
+                SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.TorMoneroMaterialAbsenceReadiness
             SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessForbiddenRuntimeLinkage
                 .ReadinessGateToPublicEndpointRuntime ->
                 SkaldVaultV1TestOnlyProviderIdentityImplementationReadinessSection.PublicEndpointAbsenceReadiness
