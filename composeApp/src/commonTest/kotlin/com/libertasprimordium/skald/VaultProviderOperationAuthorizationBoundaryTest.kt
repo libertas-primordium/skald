@@ -200,7 +200,7 @@ class VaultProviderOperationAuthorizationBoundaryTest {
             SkaldVaultV1VaultProviderOperationRequiredGate.SecureMetadataStorageApproved,
             SkaldVaultV1VaultProviderOperationRequiredGate.NoRawSecretDiagnosticExposure,
             SkaldVaultV1VaultProviderOperationRequiredGate.NoProviderOperationInUiOrDomainPolicyDirectly,
-            SkaldVaultV1VaultProviderOperationRequiredGate.NoBdkPersistenceBypass,
+            SkaldVaultV1VaultProviderOperationRequiredGate.NoWalletEnginePersistenceBypass,
             SkaldVaultV1VaultProviderOperationRequiredGate.OperationAllowedForNetworkMode,
             SkaldVaultV1VaultProviderOperationRequiredGate.MainnetReleaseReviewApproved,
         ).forEach { gate -> assertContains(gates, gate) }
@@ -352,12 +352,12 @@ class VaultProviderOperationAuthorizationBoundaryTest {
         assertRejected("vault/root", SkaldVaultV1VaultProviderOperationFailureReason.RawRelativeLocationInputRejected)
         assertRejected("https://example.invalid", SkaldVaultV1VaultProviderOperationFailureReason.LinkLikeInputRejected)
         assertRejected("file-object", SkaldVaultV1VaultProviderOperationFailureReason.PlatformObjectLikeInputRejected)
-        assertRejected("a".repeat(64), SkaldVaultV1VaultProviderOperationFailureReason.TransactionLikeEvidenceRejected)
-        assertRejected("bc" + "1q" + "a".repeat(24), SkaldVaultV1VaultProviderOperationFailureReason.BitcoinAddressLikeEvidenceRejected)
-        assertRejected("ns" + "ec1fixture", SkaldVaultV1VaultProviderOperationFailureReason.WalletMaterialRejected)
-        assertRejected("xp" + "rvfixture", SkaldVaultV1VaultProviderOperationFailureReason.WalletMaterialRejected)
-        assertRejected("tp" + "rvfixture", SkaldVaultV1VaultProviderOperationFailureReason.WalletMaterialRejected)
-        assertRejected("K" + "a".repeat(50), SkaldVaultV1VaultProviderOperationFailureReason.WalletMaterialRejected)
+        assertRejected("a".repeat(64), SkaldVaultV1VaultProviderOperationFailureReason.AmbiguousRawCryptographicMaterialRejected)
+        assertRejected("L".repeat(95), SkaldVaultV1VaultProviderOperationFailureReason.MoneroAddressLikeEvidenceRejected)
+        assertRejected("unapproved-scan-fixture", SkaldVaultV1VaultProviderOperationFailureReason.RawProviderOperationInputRejected)
+        assertRejected("unapproved-spend-fixture", SkaldVaultV1VaultProviderOperationFailureReason.RawProviderOperationInputRejected)
+        assertRejected("unapproved-recovery-fixture", SkaldVaultV1VaultProviderOperationFailureReason.RawProviderOperationInputRejected)
+        assertRejected("unapproved-import-fixture", SkaldVaultV1VaultProviderOperationFailureReason.RawProviderOperationInputRejected)
         assertRejected("../vault", SkaldVaultV1VaultProviderOperationFailureReason.TraversalRejected)
         assertRejected("unsupported#chars", SkaldVaultV1VaultProviderOperationFailureReason.UnsupportedCharactersRejected)
     }

@@ -232,8 +232,8 @@ class EncryptedVaultMigrationCorruptionPolicyDecisionTest {
         assertFalse(decision.secureSecretStorageSuccessPathPresent)
         assertFalse(decision.secureMetadataStorageSuccessPathPresent)
         assertFalse(decision.productionObservationPersistencePresent)
-        assertFalse(decision.productionAddressIndexPersistencePresent)
-        assertFalse(decision.productionUtxoPersistencePresent)
+        assertFalse(decision.productionMoneroSubaddressMetadataPersistencePresent)
+        assertFalse(decision.productionOwnedOutputPersistencePresent)
         assertFalse(decision.productionWalletHistoryPersistencePresent)
         assertFalse(decision.productionSyncPresent)
         assertFalse(decision.productionBackendClientPresent)
@@ -341,10 +341,10 @@ class EncryptedVaultMigrationCorruptionPolicyDecisionTest {
             "mnemonic",
             "seed phrase",
             "private key",
-            "xprv",
-            "tprv",
-            "WIF",
-            "nsec",
+            "private_spend_key=",
+            "private_view_key=",
+            "transaction_secret=",
+            "recovery_material=",
             "ciphertext",
             "plaintext",
             "salt",
@@ -370,10 +370,10 @@ class EncryptedVaultMigrationCorruptionPolicyDecisionTest {
             "migration payload",
             "corruption hash",
             "repair diagnostics",
-            "wpkh(",
-            "tr(",
-            "xpub",
-            "psbt",
+            "private_spend_key=",
+            "private_view_key=",
+            "public_address=",
+            "unsigned_transaction=",
         )
 
         assertContains(output, "REDACTED")
@@ -391,7 +391,7 @@ class EncryptedVaultMigrationCorruptionPolicyDecisionTest {
             assertFalse(output.contains(forbidden, ignoreCase = true), "Output leaked forbidden text: $forbidden")
         }
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(output))
-        assertFalse(Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
+        assertFalse(Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
         assertFalse(Regex("""(?:^|\s)/(?:[A-Za-z0-9._-]+/?)+""").containsMatchIn(output))
     }
 }

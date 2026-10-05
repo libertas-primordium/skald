@@ -263,9 +263,9 @@ class VaultPlatformPathConstructionBoundaryTest {
     fun rawPlatformPathLikeInputsAreRejectedBeforePlanning() {
         val longHex = "0123456789abcdef0123456789abcdef" +
             "0123456789abcdef0123456789abcdef"
-        val wifLike = "K" + "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".take(51)
-        val bitcoinAddressLikeSentinel = "bc1" + "invalidaddresssentinel0000000000"
-        val nostrSecretLikeSentinel = "nsec1" + "invalidsentinel"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
         val cases = mapOf(
             "" to SkaldVaultV1PlatformPathConstructionFailureReason.EmptyArtifactSegmentRejected,
             "   " to SkaldVaultV1PlatformPathConstructionFailureReason.EmptyArtifactSegmentRejected,
@@ -286,16 +286,19 @@ class VaultPlatformPathConstructionBoundaryTest {
                 SkaldVaultV1PlatformPathConstructionFailureReason.SecretMaterialRejected,
             "contains-token-sentinel" to
                 SkaldVaultV1PlatformPathConstructionFailureReason.SecretMaterialRejected,
-            longHex to SkaldVaultV1PlatformPathConstructionFailureReason.TransactionLikeArtifactRejected,
-            "xprv-invalid-sentinel" to
-                SkaldVaultV1PlatformPathConstructionFailureReason.WalletMaterialRejected,
-            "tprv-invalid-sentinel" to
-                SkaldVaultV1PlatformPathConstructionFailureReason.WalletMaterialRejected,
-            wifLike to SkaldVaultV1PlatformPathConstructionFailureReason.WalletMaterialRejected,
-            nostrSecretLikeSentinel to
-                SkaldVaultV1PlatformPathConstructionFailureReason.WalletMaterialRejected,
-            bitcoinAddressLikeSentinel to
-                SkaldVaultV1PlatformPathConstructionFailureReason.BitcoinAddressLikeArtifactRejected,
+            // Invalid network/checksum shape; uppercase L must not be normalized to excluded lowercase l.
+            "L".repeat(95) to SkaldVaultV1PlatformPathConstructionFailureReason.MoneroAddressLikeArtifactRejected,
+            "L".repeat(106) to SkaldVaultV1PlatformPathConstructionFailureReason.MoneroAddressLikeArtifactRejected,
+            longHex to SkaldVaultV1PlatformPathConstructionFailureReason.AmbiguousRawCryptographicMaterialRejected,
+            "unapproved-spend-sentinel" to
+                SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected,
+            "unapproved-scan-sentinel" to
+                SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected,
+            unapprovedImportLabel to SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected,
+            unapprovedScanLabel to
+                SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected,
+            unapprovedAddressLabel to
+                SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected,
             "plain-label" to SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected,
         )
 
@@ -318,16 +321,16 @@ class VaultPlatformPathConstructionBoundaryTest {
         val rootEvidence = androidRootEvidence()
         val longHex = "0123456789abcdef0123456789abcdef" +
             "0123456789abcdef0123456789abcdef"
-        val bitcoinAddressLikeSentinel = "bc1" + "invalidaddresssentinel0000000000"
-        val nostrSecretLikeSentinel = "nsec1" + "invalidsentinel"
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
         val cases = listOf(
             listOf("skald-vault-v1", "", "recovery"),
             listOf("skald-vault-v1", "..", "recovery"),
             listOf("skald-vault-v1", "path/segment", "recovery"),
             listOf("skald-vault-v1", "secret_material", "recovery"),
             listOf("skald-vault-v1", longHex, "recovery"),
-            listOf("skald-vault-v1", nostrSecretLikeSentinel, "recovery"),
-            listOf("skald-vault-v1", bitcoinAddressLikeSentinel, "recovery"),
+            listOf("skald-vault-v1", unapprovedScanLabel, "recovery"),
+            listOf("skald-vault-v1", unapprovedAddressLabel, "recovery"),
             listOf("skald-vault-v1", "unsupported:colon", "recovery"),
         )
 

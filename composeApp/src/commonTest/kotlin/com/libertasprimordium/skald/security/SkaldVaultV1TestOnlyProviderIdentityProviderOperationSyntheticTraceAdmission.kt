@@ -52,7 +52,7 @@ enum class SkaldVaultV1TestOnlyProviderIdentityFutureSyntheticTraceCriterion {
     FutureSyntheticTraceMustNotRunKdfHkdfHmacAead,
     FutureSyntheticTraceMustNotTouchVaultLifecycle,
     FutureSyntheticTraceMustNotTouchPersistence,
-    FutureSyntheticTraceMustNotTouchBackendBdkSettingsUi,
+    FutureSyntheticTraceMustNotTouchBackendWalletEngineSettingsUi,
     FutureSyntheticTraceMustNotSignOrBroadcast,
     FutureSyntheticTraceMustNotEnableMainnet,
     FutureSyntheticTraceMustRemainCoveredBySourceGuards,
@@ -143,7 +143,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAd
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -540,9 +540,9 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmiss
         val backendClientReachable =
             providerOperationNoopExecutionBoundarySuiteReport.backendClientReachable ||
                 capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            providerOperationNoopExecutionBoundarySuiteReport.bdkWalletStateReachable ||
-                capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            providerOperationNoopExecutionBoundarySuiteReport.moneroEngineStateReachable ||
+                capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             providerOperationNoopExecutionBoundarySuiteReport.settingsCodecReachable ||
                 capabilityMatrix.settingsCodecReachable
@@ -741,7 +741,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmiss
                 !persistenceReachable &&
                 !productionSyncReachable &&
                 !backendClientReachable &&
-                !bdkWalletStateReachable &&
+                !moneroEngineStateReachable &&
                 !settingsCodecReachable &&
                 !uiSurfaceReachable &&
                 !signingBroadcastingReachable &&
@@ -830,7 +830,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationSyntheticTraceAdmiss
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

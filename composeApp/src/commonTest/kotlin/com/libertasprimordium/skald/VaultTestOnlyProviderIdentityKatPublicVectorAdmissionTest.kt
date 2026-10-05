@@ -229,7 +229,7 @@ class VaultTestOnlyProviderIdentityKatPublicVectorAdmissionTest {
             admission.persistenceReachable,
             admission.productionSyncReachable,
             admission.backendClientReachable,
-            admission.bdkWalletStateReachable,
+            admission.moneroEngineStateReachable,
             admission.settingsCodecReachable,
             admission.uiSurfaceReachable,
             admission.signingBroadcastingReachable,

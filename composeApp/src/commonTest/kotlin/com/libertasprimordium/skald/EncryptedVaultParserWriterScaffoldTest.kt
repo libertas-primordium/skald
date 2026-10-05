@@ -188,8 +188,8 @@ class EncryptedVaultParserWriterScaffoldTest {
         assertFalse(scaffold.secureSecretStorageSuccessPathPresent)
         assertFalse(scaffold.secureMetadataStorageSuccessPathPresent)
         assertFalse(scaffold.productionObservationPersistencePresent)
-        assertFalse(scaffold.productionAddressIndexPersistencePresent)
-        assertFalse(scaffold.productionUtxoPersistencePresent)
+        assertFalse(scaffold.productionMoneroSubaddressMetadataPersistencePresent)
+        assertFalse(scaffold.productionOwnedOutputPersistencePresent)
         assertFalse(scaffold.productionWalletHistoryPersistencePresent)
         assertFalse(scaffold.productionSyncPresent)
         assertFalse(scaffold.productionBackendClientPresent)
@@ -349,20 +349,20 @@ class EncryptedVaultParserWriterScaffoldTest {
             "endpoint values",
             "filesystem paths",
             "txids",
-            "descriptors",
+            "monero wallet recovery metadata",
             "addresses",
-            "psbts",
+            "unsigned transactions",
             "transaction hex",
-            "nostr nsecs",
-            "lightning credentials",
-            "cashu proofs",
+            "private view keys",
+            "daemon credentials",
+            "transaction secrets",
             "backend credentials",
             "seeds",
             "mnemonics",
             "private keys",
-            "xprvs",
-            "tprvs",
-            "wifs",
+            "private spend keys",
+            "private view keys",
+            "transaction secrets",
             "wallet database material",
             "directory names",
             "file names",
@@ -405,11 +405,11 @@ class EncryptedVaultParserWriterScaffoldTest {
         assertFalse('.' in label, "Safe label must not be a filename or endpoint: $label")
         assertFalse('~' in label, "Safe label must not be a home-relative path: $label")
         listOf(
-            "nsec",
-            "psbt",
-            "xprv",
-            "tprv",
-            "wif",
+            "recovery_material=",
+            "unsigned_transaction=",
+            "private_spend_key=",
+            "private_view_key=",
+            "transaction_secret=",
             "mnemonic",
             "private-key",
             "credential",

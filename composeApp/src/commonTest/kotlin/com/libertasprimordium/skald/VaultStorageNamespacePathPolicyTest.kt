@@ -215,7 +215,7 @@ class VaultStorageNamespacePathPolicyTest {
             SkaldVaultV1StorageNamespacePathRejectionReason.SecretMaterialRejected,
         )
         assertRejected(
-            SkaldVaultV1StorageNamespacePathPolicy.validatePathSegment("nsec1qqqqqqqqqqqqqqqq"),
+            SkaldVaultV1StorageNamespacePathPolicy.validatePathSegment("private_view_key_fixture"),
             SkaldVaultV1StorageNamespacePathRejectionReason.SecretMaterialRejected,
         )
         assertRejected(
@@ -324,7 +324,7 @@ class VaultStorageNamespacePathPolicyTest {
         assertTrue(result is SkaldVaultV1StorageNamespacePathResult.Rejected)
         assertEquals(expected, result.reason)
         assertFalse(result.safeMessage.contains("wallet_label"))
-        assertFalse(result.safeMessage.contains("nsec1"))
+        assertFalse(result.safeMessage.contains("private_view_key_fixture"))
         assertFalse(result.safeMessage.contains("/absolute"))
     }
 }

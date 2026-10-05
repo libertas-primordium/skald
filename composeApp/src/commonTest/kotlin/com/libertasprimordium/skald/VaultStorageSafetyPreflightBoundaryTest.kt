@@ -239,10 +239,10 @@ class VaultStorageSafetyPreflightBoundaryTest {
 
     @Test
     fun rawStorageSafetyEvidenceInputsAreRejectedWithTypedReasons() {
-        val bitcoinAddressLikeSentinel = "bc" + "1invalidpreflightaddresssentinel0000000000"
-        val nostrSecretLikeSentinel = "nsec" + "1invalidpreflightsentinel0000000000"
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
         val longHex = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        val wifLikeSentinel = "K" + "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrs"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
 
         mapOf(
             "" to SkaldVaultV1StorageSafetyPreflightFailureReason.EmptyEvidenceNameRejected,
@@ -263,15 +263,18 @@ class VaultStorageSafetyPreflightBoundaryTest {
             "contains-password-sentinel" to SkaldVaultV1StorageSafetyPreflightFailureReason.SecretMaterialRejected,
             "contains-token-sentinel" to SkaldVaultV1StorageSafetyPreflightFailureReason.SecretMaterialRejected,
             "user:pass@example" to SkaldVaultV1StorageSafetyPreflightFailureReason.SecretMaterialRejected,
-            "xprv-invalid-preflight-sentinel" to
-                SkaldVaultV1StorageSafetyPreflightFailureReason.WalletMaterialRejected,
-            "tprv-invalid-preflight-sentinel" to
-                SkaldVaultV1StorageSafetyPreflightFailureReason.WalletMaterialRejected,
-            wifLikeSentinel to SkaldVaultV1StorageSafetyPreflightFailureReason.WalletMaterialRejected,
-            nostrSecretLikeSentinel to SkaldVaultV1StorageSafetyPreflightFailureReason.WalletMaterialRejected,
-            bitcoinAddressLikeSentinel to
-                SkaldVaultV1StorageSafetyPreflightFailureReason.BitcoinAddressLikeEvidenceRejected,
-            longHex to SkaldVaultV1StorageSafetyPreflightFailureReason.TransactionLikeEvidenceRejected,
+            "unapproved-spend-preflight-sentinel" to
+                SkaldVaultV1StorageSafetyPreflightFailureReason.RawStorageSafetyEvidenceInputRejected,
+            "unapproved-scan-preflight-sentinel" to
+                SkaldVaultV1StorageSafetyPreflightFailureReason.RawStorageSafetyEvidenceInputRejected,
+            unapprovedImportLabel to SkaldVaultV1StorageSafetyPreflightFailureReason.RawStorageSafetyEvidenceInputRejected,
+            unapprovedScanLabel to SkaldVaultV1StorageSafetyPreflightFailureReason.RawStorageSafetyEvidenceInputRejected,
+            unapprovedAddressLabel to
+                SkaldVaultV1StorageSafetyPreflightFailureReason.RawStorageSafetyEvidenceInputRejected,
+            // Invalid network/checksum shape; uppercase L must not be normalized to excluded lowercase l.
+            "L".repeat(95) to SkaldVaultV1StorageSafetyPreflightFailureReason.MoneroAddressLikeEvidenceRejected,
+            "L".repeat(106) to SkaldVaultV1StorageSafetyPreflightFailureReason.MoneroAddressLikeEvidenceRejected,
+            longHex to SkaldVaultV1StorageSafetyPreflightFailureReason.AmbiguousRawCryptographicMaterialRejected,
             "unsupported:colon" to
                 SkaldVaultV1StorageSafetyPreflightFailureReason.UnsupportedEvidenceNameRejected,
             "unsupported space" to

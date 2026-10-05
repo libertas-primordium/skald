@@ -98,11 +98,11 @@ class VaultRedactionLeakageBoundaryTest {
             SkaldVaultV1VaultRedactionValueKind.MnemonicPhrase,
             SkaldVaultV1VaultRedactionValueKind.Seed,
             SkaldVaultV1VaultRedactionValueKind.PrivateKey,
-            SkaldVaultV1VaultRedactionValueKind.XprvTprv,
-            SkaldVaultV1VaultRedactionValueKind.Wif,
-            SkaldVaultV1VaultRedactionValueKind.NostrNsec,
-            SkaldVaultV1VaultRedactionValueKind.NostrPrivateKeyDerivedWalletMaterial,
-            SkaldVaultV1VaultRedactionValueKind.DescriptorPrivateMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateSpendKey,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateKeyMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateViewKey,
+            SkaldVaultV1VaultRedactionValueKind.MoneroRecoveryDerivedWalletMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroRecoveryMaterial,
             SkaldVaultV1VaultRedactionValueKind.ProviderRootKey,
             SkaldVaultV1VaultRedactionValueKind.VaultRootKey,
             SkaldVaultV1VaultRedactionValueKind.MetadataEncryptionKey,
@@ -121,20 +121,20 @@ class VaultRedactionLeakageBoundaryTest {
             SkaldVaultV1VaultRedactionValueKind.RootToken,
             SkaldVaultV1VaultRedactionValueKind.RawPlatformRootPath,
             SkaldVaultV1VaultRedactionValueKind.BackendCredential,
-            SkaldVaultV1VaultRedactionValueKind.RpcCookie,
-            SkaldVaultV1VaultRedactionValueKind.LightningMacaroonRuneNwcSecret,
-            SkaldVaultV1VaultRedactionValueKind.PhoenixdToken,
-            SkaldVaultV1VaultRedactionValueKind.CashuProofMaterial,
+            SkaldVaultV1VaultRedactionValueKind.DaemonCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroDaemonAndLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroTransactionSecretMaterial,
             SkaldVaultV1VaultRedactionValueKind.WalletDatabaseBytes,
-            SkaldVaultV1VaultRedactionValueKind.BdkPersistenceHandle,
+            SkaldVaultV1VaultRedactionValueKind.WalletEnginePersistenceHandle,
             SkaldVaultV1VaultRedactionValueKind.TransactionHex,
-            SkaldVaultV1VaultRedactionValueKind.Psbt,
-            SkaldVaultV1VaultRedactionValueKind.TxidOutpoint,
-            SkaldVaultV1VaultRedactionValueKind.BitcoinAddress,
-            SkaldVaultV1VaultRedactionValueKind.NostrEventSignature,
+            SkaldVaultV1VaultRedactionValueKind.UnsignedTransactionMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroTransactionReference,
+            SkaldVaultV1VaultRedactionValueKind.MoneroAddress,
+            SkaldVaultV1VaultRedactionValueKind.MoneroKeyImageMetadata,
             SkaldVaultV1VaultRedactionValueKind.PaymentTransactionNote,
             SkaldVaultV1VaultRedactionValueKind.WalletLabel,
-            SkaldVaultV1VaultRedactionValueKind.UtxoLabel,
+            SkaldVaultV1VaultRedactionValueKind.OwnedOutputLabel,
             SkaldVaultV1VaultRedactionValueKind.BackendEndpoint,
             SkaldVaultV1VaultRedactionValueKind.OnionEndpoint,
             SkaldVaultV1VaultRedactionValueKind.TorRoutingMetadata,
@@ -177,15 +177,15 @@ class VaultRedactionLeakageBoundaryTest {
             SkaldVaultV1VaultRedactionValueKind.MnemonicPhrase,
             SkaldVaultV1VaultRedactionValueKind.Seed,
             SkaldVaultV1VaultRedactionValueKind.PrivateKey,
-            SkaldVaultV1VaultRedactionValueKind.XprvTprv,
-            SkaldVaultV1VaultRedactionValueKind.Wif,
-            SkaldVaultV1VaultRedactionValueKind.NostrNsec,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateSpendKey,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateKeyMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateViewKey,
             SkaldVaultV1VaultRedactionValueKind.RawKdfOutput,
             SkaldVaultV1VaultRedactionValueKind.RawAeadKey,
             SkaldVaultV1VaultRedactionValueKind.DecryptedVaultRecord,
             SkaldVaultV1VaultRedactionValueKind.BackendCredential,
-            SkaldVaultV1VaultRedactionValueKind.LightningMacaroonRuneNwcSecret,
-            SkaldVaultV1VaultRedactionValueKind.CashuProofMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroDaemonAndLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroTransactionSecretMaterial,
             SkaldVaultV1VaultRedactionValueKind.WalletDatabaseBytes,
         )
 
@@ -252,7 +252,7 @@ class VaultRedactionLeakageBoundaryTest {
     }
 
     @Test
-    fun publicNonWalletVectorIsScopedAndRejectedForWalletUtxoSync() {
+    fun publicNonWalletVectorIsScopedAndRejectedForWalletOwnedOutputSync() {
         val allowedScopes = listOf(
             SkaldVaultV1VaultRedactionScope.Docs,
             SkaldVaultV1VaultRedactionScope.Test,
@@ -279,7 +279,7 @@ class VaultRedactionLeakageBoundaryTest {
             SkaldVaultV1RedactionLeakagePolicy.evaluate(
                 SkaldVaultV1VaultRedactionRequest.publicNonWalletVector(
                     vectorId = "public-non-wallet-vector-id",
-                    scope = SkaldVaultV1VaultRedactionScope.WalletUtxoSync,
+                    scope = SkaldVaultV1VaultRedactionScope.WalletOwnedOutputSync,
                 ),
             ),
         )
@@ -287,7 +287,7 @@ class VaultRedactionLeakageBoundaryTest {
         assertContains(rejected.blockers, SkaldVaultV1VaultRedactionBlocker.PublicVectorScopeRejected)
         assertContains(
             rejected.blockers,
-            SkaldVaultV1VaultRedactionBlocker.PublicVectorRejectedInWalletUtxoSyncScope,
+            SkaldVaultV1VaultRedactionBlocker.PublicVectorRejectedInWalletOwnedOutputSyncScope,
         )
     }
 
@@ -368,11 +368,11 @@ class VaultRedactionLeakageBoundaryTest {
 
     @Test
     fun rawRedactionInputsAreRejectedWithTypedReasons() {
-        val bitcoinAddressLike = "bc" + "1" + "q".repeat(24)
-        val nostrSecretLike = "ns" + "ec" + "1" + "q".repeat(24)
-        val extendedPrivatePrefixFixture = "xp" + "rv" + "9".repeat(32)
-        val testPrivatePrefixFixture = "tp" + "rv" + "9".repeat(32)
-        val wifLike = "K" + "1".repeat(50)
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
+        val unapprovedSpendLabel = "unapproved-unapproved-spend-label"
+        val unapprovedRecoveryLabel = "unapproved-unapproved-recovery-label"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
         val cases = listOf(
             null to SkaldVaultV1VaultRedactionFailureReason.EmptyEvidenceRejected,
             "" to SkaldVaultV1VaultRedactionFailureReason.EmptyEvidenceRejected,
@@ -399,12 +399,12 @@ class VaultRedactionLeakageBoundaryTest {
             "unsupported:colon" to SkaldVaultV1VaultRedactionFailureReason.UnsupportedEvidenceRejected,
             "secret-fixture" to SkaldVaultV1VaultRedactionFailureReason.SecretMaterialRejected,
             "mnemonic-fixture" to SkaldVaultV1VaultRedactionFailureReason.SecretMaterialRejected,
-            rawLongHexFixture to SkaldVaultV1VaultRedactionFailureReason.TransactionLikeEvidenceRejected,
-            bitcoinAddressLike to SkaldVaultV1VaultRedactionFailureReason.BitcoinAddressLikeEvidenceRejected,
-            nostrSecretLike to SkaldVaultV1VaultRedactionFailureReason.WalletMaterialRejected,
-            extendedPrivatePrefixFixture to SkaldVaultV1VaultRedactionFailureReason.WalletMaterialRejected,
-            testPrivatePrefixFixture to SkaldVaultV1VaultRedactionFailureReason.WalletMaterialRejected,
-            wifLike to SkaldVaultV1VaultRedactionFailureReason.WalletMaterialRejected,
+            rawLongHexFixture to SkaldVaultV1VaultRedactionFailureReason.AmbiguousRawCryptographicMaterialRejected,
+            unapprovedAddressLabel to SkaldVaultV1VaultRedactionFailureReason.UnsupportedEvidenceRejected,
+            unapprovedScanLabel to SkaldVaultV1VaultRedactionFailureReason.UnsupportedEvidenceRejected,
+            unapprovedSpendLabel to SkaldVaultV1VaultRedactionFailureReason.UnsupportedEvidenceRejected,
+            unapprovedRecoveryLabel to SkaldVaultV1VaultRedactionFailureReason.UnsupportedEvidenceRejected,
+            unapprovedImportLabel to SkaldVaultV1VaultRedactionFailureReason.UnsupportedEvidenceRejected,
         )
 
         cases.forEach { (raw, expectedReason) ->

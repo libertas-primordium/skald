@@ -121,7 +121,7 @@ class VaultTestOnlyExecutableProviderImplementationTest {
             "mnemonic",
             "seed phrase",
             "private key",
-            "nsec",
+            "recovery_material=",
             "ciphertext",
             "plaintext",
             "provider handle",
@@ -135,12 +135,12 @@ class VaultTestOnlyExecutableProviderImplementationTest {
             "filesystem path",
             "public vector bytes",
             "public vector hex",
-            "wpkh(",
-            "tr(",
-            "xpub",
-            "xprv",
-            "tprv",
-            "psbt",
+            "private_spend_key=",
+            "private_view_key=",
+            "public_address=",
+            "private_spend_key=",
+            "private_view_key=",
+            "unsigned_transaction=",
         )
 
         assertContains(output, "REDACTED")
@@ -153,6 +153,6 @@ class VaultTestOnlyExecutableProviderImplementationTest {
             assertFalse(output.contains(forbidden, ignoreCase = true), "Output leaked forbidden text: $forbidden")
         }
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(output))
-        assertFalse(Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
+        assertFalse(Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
     }
 }

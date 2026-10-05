@@ -175,7 +175,7 @@ class VaultTestOnlyProviderIdentityKatFixtureScopeTest {
             scope.persistenceReachable,
             scope.productionSyncReachable,
             scope.backendClientReachable,
-            scope.bdkWalletStateReachable,
+            scope.moneroEngineStateReachable,
             scope.settingsCodecReachable,
             scope.uiSurfaceReachable,
             scope.signingBroadcastingReachable,

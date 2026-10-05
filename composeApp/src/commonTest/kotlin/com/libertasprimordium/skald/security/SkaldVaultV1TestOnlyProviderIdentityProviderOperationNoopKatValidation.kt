@@ -104,7 +104,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatValidatio
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -433,13 +433,13 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatValidationPol
                 providerOperationMetadataKatValidation.backendClientReachable ||
                 providerOperationMetadataKat.backendClientReachable ||
                 capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            providerOperationNoopKat.bdkWalletStateReachable ||
-                providerOperationNoopKatAdmission.bdkWalletStateReachable ||
-                providerOperationMetadataKatSuiteReport.bdkWalletStateReachable ||
-                providerOperationMetadataKatValidation.bdkWalletStateReachable ||
-                providerOperationMetadataKat.bdkWalletStateReachable ||
-                capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            providerOperationNoopKat.moneroEngineStateReachable ||
+                providerOperationNoopKatAdmission.moneroEngineStateReachable ||
+                providerOperationMetadataKatSuiteReport.moneroEngineStateReachable ||
+                providerOperationMetadataKatValidation.moneroEngineStateReachable ||
+                providerOperationMetadataKat.moneroEngineStateReachable ||
+                capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             providerOperationNoopKat.settingsCodecReachable ||
                 providerOperationNoopKatAdmission.settingsCodecReachable ||
@@ -795,7 +795,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationNoopKatValidationPol
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

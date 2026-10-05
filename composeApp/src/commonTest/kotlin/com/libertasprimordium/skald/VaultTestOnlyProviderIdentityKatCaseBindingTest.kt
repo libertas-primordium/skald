@@ -193,7 +193,7 @@ class VaultTestOnlyProviderIdentityKatCaseBindingTest {
             binding.persistenceReachable,
             binding.productionSyncReachable,
             binding.backendClientReachable,
-            binding.bdkWalletStateReachable,
+            binding.moneroEngineStateReachable,
             binding.settingsCodecReachable,
             binding.uiSurfaceReachable,
             binding.signingBroadcastingReachable,

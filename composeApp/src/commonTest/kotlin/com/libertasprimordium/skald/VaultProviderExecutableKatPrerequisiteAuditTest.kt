@@ -274,6 +274,60 @@ class VaultProviderExecutableKatPrerequisiteAuditTest {
     }
 
     @Test
+    fun requestRenderingPreservesEmptyListFormattingAndRedactsAuditId() {
+        val request = SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(
+            categories = emptySet(),
+            sources = emptySet(),
+            warningOnlyEvidenceClaimed = false,
+            userConsentOverrideRequested = false,
+            releaseMainnetEvidenceClaimed = false,
+            safeAuditId = "synthetic-audit-marker-not-rendered",
+        )
+        assertEquals(
+            "SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(" +
+                "categories=[], sources=[], warningOnlyEvidenceClaimed=false, " +
+                "userConsentOverrideRequested=false, releaseMainnetEvidenceClaimed=false, safeAuditId=<redacted>)",
+            request.toString(),
+        )
+        assertFalse(request.toString().contains(request.safeAuditId))
+        assertTrue(request.categories.isEmpty())
+        assertTrue(request.sources.isEmpty())
+    }
+
+    @Test
+    fun requestRenderingPreservesInputOrderPunctuationAndInputCollections() {
+        val categories = linkedSetOf(
+            SkaldVaultV1ProviderExecutableKatPrerequisiteCategory.ProviderRegistryIsolationReviewed,
+            SkaldVaultV1ProviderExecutableKatPrerequisiteCategory.ProviderBoundaryReviewed,
+        )
+        val sources = linkedSetOf(
+            SkaldVaultV1ProviderExecutableKatPrerequisiteAuditSource.ProviderBoundary,
+            SkaldVaultV1ProviderExecutableKatPrerequisiteAuditSource.ExecutableKatDecisionGate,
+        )
+        val categoryOrder = categories.toList()
+        val sourceOrder = sources.toList()
+        val request = SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(
+            categories = categories,
+            sources = sources,
+            warningOnlyEvidenceClaimed = true,
+            userConsentOverrideRequested = false,
+            releaseMainnetEvidenceClaimed = true,
+            safeAuditId = "synthetic-audit-marker-not-rendered",
+        )
+        assertEquals(
+            "SkaldVaultV1ProviderExecutableKatPrerequisiteAuditRequest(" +
+                "categories=[ProviderRegistryIsolationReviewed, ProviderBoundaryReviewed], " +
+                "sources=[ProviderBoundary, ExecutableKatDecisionGate], " +
+                "warningOnlyEvidenceClaimed=true, userConsentOverrideRequested=false, " +
+                "releaseMainnetEvidenceClaimed=true, safeAuditId=<redacted>)",
+            request.toString(),
+        )
+        assertFalse(request.toString().contains(request.safeAuditId))
+        assertEquals(categoryOrder, categories.toList())
+        assertEquals(sourceOrder, sources.toList())
+    }
+
+    @Test
     fun sourceSetConfinementIsRepresentedButDoesNotApproveExecution() {
         val evidence = currentAudit()
         val sourceSetConfinement = finding(

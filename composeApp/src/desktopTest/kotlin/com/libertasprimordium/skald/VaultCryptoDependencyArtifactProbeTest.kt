@@ -43,8 +43,20 @@ class VaultCryptoDependencyArtifactProbeTest {
             File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt"),
             File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt"),
         )
+        val reviewedImports = mapOf(
+            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/VaultCryptoDependencyProbe.kt" to emptySet(),
+            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt" to setOf("com.google.crypto.tink.aead.XChaCha20Poly1305Key", "com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305", "org.bouncycastle.crypto.generators.Argon2BytesGenerator", "org.bouncycastle.crypto.modes.ChaCha20Poly1305"),
+            "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidKatValidationTest.kt" to setOf("androidx.test.ext.junit.runners.AndroidJUnit4", "com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305", "org.bouncycastle.crypto.generators.Argon2BytesGenerator", "org.bouncycastle.crypto.params.Argon2Parameters", "org.junit.Assert.assertArrayEquals", "org.junit.Test", "org.junit.runner.RunWith"),
+            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt" to setOf("com.google.crypto.tink.aead.XChaCha20Poly1305Key", "com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305", "org.bouncycastle.crypto.generators.Argon2BytesGenerator", "org.bouncycastle.crypto.modes.ChaCha20Poly1305"),
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt" to setOf("com.google.crypto.tink.aead.internal.InsecureNonceXChaCha20Poly1305", "org.bouncycastle.crypto.generators.Argon2BytesGenerator", "org.bouncycastle.crypto.params.Argon2Parameters", "kotlin.test.Test", "kotlin.test.assertContentEquals"),
+        )
+        files.forEach { file ->
+            val source = file.readText()
+            val path = file.relativeTo(root).invariantSeparatorsPath
+            val actualImports = Regex("""(?m)^import ([^\n]+)$""").findAll(source).map { it.groupValues[1] }.toSet()
+            kotlin.test.assertEquals(reviewedImports.getValue(path), actualImports, "Unreviewed probe or KAT import in $path")
+        }
         val forbiddenPatterns = listOf(
-            Regex("""import\s+org\.bitcoindevkit"""),
             Regex("""\bSecretPayload\("""),
             Regex("""\bSecureMetadataPayload\("""),
             Regex("""\bSecureRandom\b"""),

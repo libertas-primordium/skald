@@ -196,7 +196,7 @@ class VaultTestOnlyProviderIdentityKatPublicVectorFixtureTest {
             fixture.persistenceReachable,
             fixture.productionSyncReachable,
             fixture.backendClientReachable,
-            fixture.bdkWalletStateReachable,
+            fixture.moneroEngineStateReachable,
             fixture.settingsCodecReachable,
             fixture.uiSurfaceReachable,
             fixture.signingBroadcastingReachable,

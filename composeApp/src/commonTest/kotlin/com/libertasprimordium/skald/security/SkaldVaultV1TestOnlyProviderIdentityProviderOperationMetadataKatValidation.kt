@@ -103,7 +103,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatValid
     val persistenceReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -435,15 +435,15 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatValidatio
                 caseBinding.backendClientReachable ||
                 caseBindingValidation.backendClientReachable ||
                 capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            providerOperationMetadataKat.bdkWalletStateReachable ||
-                providerOperationKatAdmission.bdkWalletStateReachable ||
-                executableMetadataKatSuiteReport.bdkWalletStateReachable ||
-                executableMetadataKatValidation.bdkWalletStateReachable ||
-                executableMetadataKat.bdkWalletStateReachable ||
-                caseBinding.bdkWalletStateReachable ||
-                caseBindingValidation.bdkWalletStateReachable ||
-                capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            providerOperationMetadataKat.moneroEngineStateReachable ||
+                providerOperationKatAdmission.moneroEngineStateReachable ||
+                executableMetadataKatSuiteReport.moneroEngineStateReachable ||
+                executableMetadataKatValidation.moneroEngineStateReachable ||
+                executableMetadataKat.moneroEngineStateReachable ||
+                caseBinding.moneroEngineStateReachable ||
+                caseBindingValidation.moneroEngineStateReachable ||
+                capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             providerOperationMetadataKat.settingsCodecReachable ||
                 providerOperationKatAdmission.settingsCodecReachable ||
@@ -809,7 +809,7 @@ object SkaldVaultV1TestOnlyProviderIdentityProviderOperationMetadataKatValidatio
             persistenceReachable = persistenceReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

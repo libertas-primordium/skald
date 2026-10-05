@@ -107,9 +107,9 @@ class VaultClearWipeStrategyBoundaryTest {
             SkaldVaultV1VaultClearWipeValueKind.MnemonicText,
             SkaldVaultV1VaultClearWipeValueKind.SeedBytes,
             SkaldVaultV1VaultClearWipeValueKind.PrivateKeyBytes,
-            SkaldVaultV1VaultClearWipeValueKind.XprvTprvWifText,
-            SkaldVaultV1VaultClearWipeValueKind.NostrNsecPrivateKeyMaterial,
-            SkaldVaultV1VaultClearWipeValueKind.DescriptorPrivateMaterial,
+            SkaldVaultV1VaultClearWipeValueKind.MoneroPrivateKeyText,
+            SkaldVaultV1VaultClearWipeValueKind.MoneroPrivateViewKeyMaterial,
+            SkaldVaultV1VaultClearWipeValueKind.MoneroRecoveryMaterial,
             SkaldVaultV1VaultClearWipeValueKind.ProviderRootKey,
             SkaldVaultV1VaultClearWipeValueKind.VaultRootKey,
             SkaldVaultV1VaultClearWipeValueKind.MetadataEncryptionKey,
@@ -132,7 +132,7 @@ class VaultClearWipeStrategyBoundaryTest {
             SkaldVaultV1VaultClearWipeValueKind.RedactionDiagnosticStagingValue,
             SkaldVaultV1VaultClearWipeValueKind.WalletLabelTransactionNoteSensitiveMetadata,
             SkaldVaultV1VaultClearWipeValueKind.BackendCredentialStagingValue,
-            SkaldVaultV1VaultClearWipeValueKind.LightningCashuNostrCredentialStagingValue,
+            SkaldVaultV1VaultClearWipeValueKind.MoneroCredentialStagingValue,
             SkaldVaultV1VaultClearWipeValueKind.FuturePlatformWrappedKeyReference,
             SkaldVaultV1VaultClearWipeValueKind.FutureAndroidHardwareWrappedKeyHandle,
             SkaldVaultV1VaultClearWipeValueKind.FutureLinuxOptionalKeyWrappingHandle,
@@ -302,11 +302,11 @@ class VaultClearWipeStrategyBoundaryTest {
 
     @Test
     fun rawClearWipeInputsAreRejectedWithoutEchoingRawValues() {
-        val bitcoinAddressLike = "bc" + "1" + "q".repeat(24)
-        val nostrSecretLike = "ns" + "ec" + "1" + "q".repeat(24)
-        val extendedPrivatePrefixFixture = "xp" + "rv" + "9".repeat(32)
-        val testPrivatePrefixFixture = "tp" + "rv" + "9".repeat(32)
-        val wifLike = "K" + "1".repeat(50)
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
+        val unapprovedSpendLabel = "unapproved-unapproved-spend-label"
+        val unapprovedRecoveryLabel = "unapproved-unapproved-recovery-label"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
         val cases = listOf(
             null to SkaldVaultV1VaultClearWipeFailureReason.EmptyEvidenceRejected,
             "" to SkaldVaultV1VaultClearWipeFailureReason.EmptyEvidenceRejected,
@@ -329,12 +329,12 @@ class VaultClearWipeStrategyBoundaryTest {
             "file-object-fixture" to SkaldVaultV1VaultClearWipeFailureReason.PlatformObjectLikeInputRejected,
             "path-object-fixture" to SkaldVaultV1VaultClearWipeFailureReason.PlatformObjectLikeInputRejected,
             "secret-fixture" to SkaldVaultV1VaultClearWipeFailureReason.SecretMaterialRejected,
-            rawLongHexFixture to SkaldVaultV1VaultClearWipeFailureReason.TransactionLikeEvidenceRejected,
-            bitcoinAddressLike to SkaldVaultV1VaultClearWipeFailureReason.BitcoinAddressLikeEvidenceRejected,
-            nostrSecretLike to SkaldVaultV1VaultClearWipeFailureReason.WalletMaterialRejected,
-            extendedPrivatePrefixFixture to SkaldVaultV1VaultClearWipeFailureReason.WalletMaterialRejected,
-            testPrivatePrefixFixture to SkaldVaultV1VaultClearWipeFailureReason.WalletMaterialRejected,
-            wifLike to SkaldVaultV1VaultClearWipeFailureReason.WalletMaterialRejected,
+            rawLongHexFixture to SkaldVaultV1VaultClearWipeFailureReason.AmbiguousRawCryptographicMaterialRejected,
+            unapprovedAddressLabel to SkaldVaultV1VaultClearWipeFailureReason.RawClearWipeInputRejected,
+            unapprovedScanLabel to SkaldVaultV1VaultClearWipeFailureReason.RawClearWipeInputRejected,
+            unapprovedSpendLabel to SkaldVaultV1VaultClearWipeFailureReason.RawClearWipeInputRejected,
+            unapprovedRecoveryLabel to SkaldVaultV1VaultClearWipeFailureReason.RawClearWipeInputRejected,
+            unapprovedImportLabel to SkaldVaultV1VaultClearWipeFailureReason.RawClearWipeInputRejected,
             "../vault" to SkaldVaultV1VaultClearWipeFailureReason.TraversalRejected,
             "unsupported#chars" to SkaldVaultV1VaultClearWipeFailureReason.UnsupportedCharactersRejected,
         )

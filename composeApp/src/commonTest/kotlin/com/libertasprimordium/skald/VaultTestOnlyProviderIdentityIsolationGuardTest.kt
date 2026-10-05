@@ -125,7 +125,7 @@ class VaultTestOnlyProviderIdentityIsolationGuardTest {
             SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.SecureMetadataStorageSurface,
             SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.ProductionSyncServiceSurface,
             SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.WalletDomainServicesSurface,
-            SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.BdkAdapterPathsSurface,
+            SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.WalletEngineAdapterPathsSurface,
             SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.SettingsCodecsSurface,
             SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.AppUiSurface,
             SkaldVaultV1TestOnlyProviderIdentityIsolationSurface.MainnetPolicySurface,
@@ -141,7 +141,7 @@ class VaultTestOnlyProviderIdentityIsolationGuardTest {
         assertFalse(evidence.secureMetadataReachable)
         assertFalse(evidence.productionSyncReachable)
         assertFalse(evidence.walletServicesReachable)
-        assertFalse(evidence.bdkAdapterReachable)
+        assertFalse(evidence.walletEngineAdapterReachable)
         assertFalse(evidence.settingsCodecsReachable)
         assertFalse(evidence.appUiReachable)
     }
@@ -164,7 +164,7 @@ class VaultTestOnlyProviderIdentityIsolationGuardTest {
             SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityBecomesProductionSyncDependency,
             SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityBecomesSettingsState,
             SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityBecomesUiState,
-            SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityReachesBdkAdapter,
+            SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityReachesWalletEngineAdapter,
             SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityReachesMainnetPolicy,
             SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityCarriesProviderReference,
             SkaldVaultV1TestOnlyProviderIdentityEscapeRisk.IdentityCarriesCryptoReference,

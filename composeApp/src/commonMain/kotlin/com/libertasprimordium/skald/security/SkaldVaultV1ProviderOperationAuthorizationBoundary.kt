@@ -165,7 +165,7 @@ enum class SkaldVaultV1VaultProviderOperationRequiredGate(val label: String) {
     SecureMetadataStorageApproved("secure metadata storage approved"),
     NoRawSecretDiagnosticExposure("no raw secret diagnostic exposure"),
     NoProviderOperationInUiOrDomainPolicyDirectly("no provider operation in UI/domain policy directly"),
-    NoBdkPersistenceBypass("no BDK persistence bypass"),
+    NoWalletEnginePersistenceBypass("no wallet engine persistence bypass"),
     OperationAllowedForNetworkMode("operation allowed for network mode"),
     MainnetReleaseReviewApproved("mainnet remains disabled unless release review approves it"),
 }
@@ -195,7 +195,7 @@ enum class SkaldVaultV1VaultProviderOperationBlocker(val label: String) {
     SecureMetadataStorageUnavailable("secure metadata storage unavailable"),
     RawSecretDiagnosticsRejected("raw secret diagnostics rejected"),
     UiDomainProviderOperationRejected("provider operation direct UI/domain use rejected"),
-    BdkPersistenceBypassRejected("BDK persistence bypass rejected"),
+    WalletEnginePersistenceBypassRejected("wallet engine persistence bypass rejected"),
     NetworkModeBlocked("operation network mode blocked"),
     MainnetUnavailable("mainnet remains unavailable"),
     WarningOnlyEvidenceRejected("warning-only evidence cannot authorize provider operations"),
@@ -425,8 +425,8 @@ enum class SkaldVaultV1VaultProviderOperationFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret-like material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported evidence characters rejected"),
     RawProviderOperationInputRejected("raw provider operation input rejected"),
@@ -764,7 +764,7 @@ object SkaldVaultV1ProviderOperationAuthorizationPolicy :
             add(SkaldVaultV1VaultProviderOperationRequiredGate.ClearWipeStrategyApproved)
             add(SkaldVaultV1VaultProviderOperationRequiredGate.NoRawSecretDiagnosticExposure)
             add(SkaldVaultV1VaultProviderOperationRequiredGate.NoProviderOperationInUiOrDomainPolicyDirectly)
-            add(SkaldVaultV1VaultProviderOperationRequiredGate.NoBdkPersistenceBypass)
+            add(SkaldVaultV1VaultProviderOperationRequiredGate.NoWalletEnginePersistenceBypass)
             add(SkaldVaultV1VaultProviderOperationRequiredGate.OperationAllowedForNetworkMode)
             when (request.operationKind) {
                 SkaldVaultV1VaultProviderOperationKind.RuntimeRandomnessCheck,
@@ -842,7 +842,7 @@ object SkaldVaultV1ProviderOperationAuthorizationPolicy :
             add(SkaldVaultV1VaultProviderOperationBlocker.RedactionLeakageUnsafe)
             add(SkaldVaultV1VaultProviderOperationBlocker.RawSecretDiagnosticsRejected)
             add(SkaldVaultV1VaultProviderOperationBlocker.UiDomainProviderOperationRejected)
-            add(SkaldVaultV1VaultProviderOperationBlocker.BdkPersistenceBypassRejected)
+            add(SkaldVaultV1VaultProviderOperationBlocker.WalletEnginePersistenceBypassRejected)
             add(SkaldVaultV1VaultProviderOperationBlocker.NetworkModeBlocked)
             add(SkaldVaultV1VaultProviderOperationBlocker.MainnetUnavailable)
             add(SkaldVaultV1VaultProviderOperationBlocker.WarningOnlyEvidenceRejected)
@@ -951,12 +951,12 @@ object SkaldVaultV1ProviderOperationAuthorizationPolicy :
             normalized.contains("secret") ||
                 normalized.contains("credential") ->
                 SkaldVaultV1VaultProviderOperationFailureReason.SecretMaterialRejected
-            looksLikeWalletMaterial(candidate) ->
-                SkaldVaultV1VaultProviderOperationFailureReason.WalletMaterialRejected
-            looksLikeBitcoinAddress(candidate) ->
-                SkaldVaultV1VaultProviderOperationFailureReason.BitcoinAddressLikeEvidenceRejected
+            looksLikeRawCryptographicMaterial(candidate) ->
+                SkaldVaultV1VaultProviderOperationFailureReason.AmbiguousRawCryptographicMaterialRejected
+            looksLikeMoneroAddress(candidate) ->
+                SkaldVaultV1VaultProviderOperationFailureReason.MoneroAddressLikeEvidenceRejected
             looksLikeHex64(candidate) ->
-                SkaldVaultV1VaultProviderOperationFailureReason.TransactionLikeEvidenceRejected
+                SkaldVaultV1VaultProviderOperationFailureReason.AmbiguousRawCryptographicMaterialRejected
             candidate.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in '0'..'9' && it !in "-_./:" } ->
                 SkaldVaultV1VaultProviderOperationFailureReason.UnsupportedCharactersRejected
             else -> SkaldVaultV1VaultProviderOperationFailureReason.RawProviderOperationInputRejected
@@ -966,18 +966,10 @@ object SkaldVaultV1ProviderOperationAuthorizationPolicy :
     private fun looksLikeHex64(candidate: String): Boolean =
         candidate.length == 64 && candidate.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }
 
-    private fun looksLikeBitcoinAddress(candidate: String): Boolean {
-        val normalized = candidate.lowercase()
-        return (normalized.startsWith("bc1") ||
-            normalized.startsWith("tb1") ||
-            normalized.startsWith("bcrt1")) &&
-            normalized.length >= 24 &&
-            normalized.all { it in 'a'..'z' || it in '0'..'9' }
-    }
+    private fun looksLikeMoneroAddress(candidate: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(candidate)
 
-    private fun looksLikeWalletMaterial(candidate: String): Boolean =
-        candidate.startsWith("nsec1") ||
-            candidate.startsWith("xprv") ||
-            candidate.startsWith("tprv") ||
-            (candidate.length in 51..52 && candidate.first() in setOf('K', 'L', '5'))
+    private fun looksLikeRawCryptographicMaterial(candidate: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(candidate)
+
 }

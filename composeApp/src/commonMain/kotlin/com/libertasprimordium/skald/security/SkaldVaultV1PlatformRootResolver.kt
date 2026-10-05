@@ -325,11 +325,16 @@ class SkaldVaultV1PlatformRootEvidenceToken private constructor(
         fun accepted(
             kind: SkaldVaultV1PlatformRootKind,
             rawStaticEvidence: String?,
-        ): SkaldVaultV1PlatformRootEvidenceToken =
-            SkaldVaultV1PlatformRootEvidenceToken(
+        ): SkaldVaultV1PlatformRootEvidenceToken {
+            require(
+                SkaldVaultV1ApprovedInputDomain.androidRootEvidence(rawStaticEvidence) ||
+                    (rawStaticEvidence != null && SkaldVaultV1ApprovedInputDomain.rootFixture(rawStaticEvidence)),
+            ) { "Unapproved static root evidence" }
+            return SkaldVaultV1PlatformRootEvidenceToken(
                 kind = kind,
                 rawStaticEvidence = rawStaticEvidence,
             )
+        }
     }
 }
 
@@ -429,8 +434,16 @@ object SkaldVaultV1PlatformRootResolverPolicy : SkaldVaultV1PlatformRootResolver
 
     private fun acceptAndroidAppPrivate(
         request: SkaldVaultV1PlatformRootResolverRequest,
-    ): SkaldVaultV1PlatformRootResolverResult.Accepted<SkaldVaultV1PlatformRootResolverEvidence> =
-        accept(
+    ): SkaldVaultV1PlatformRootResolverResult<SkaldVaultV1PlatformRootResolverEvidence> {
+        if (!SkaldVaultV1ApprovedInputDomain.androidRootEvidence(request.androidStaticEvidenceOrNull())) {
+            return reject(
+                reason = SkaldVaultV1PlatformRootResolverFailureReason.UnknownPlatformRootRejected,
+                status = SkaldVaultV1PlatformRootResolverStatus.UnknownRootEvidenceRejected,
+                source = request.source,
+                rootKind = request.rootKind,
+            )
+        }
+        return accept(
             status = SkaldVaultV1PlatformRootResolverStatus.AndroidAppPrivateEvidenceAcceptedStillDisabled,
             source = request.source,
             rootKind = SkaldVaultV1PlatformRootKind.AndroidAppPrivateInternal,
@@ -442,6 +455,7 @@ object SkaldVaultV1PlatformRootResolverPolicy : SkaldVaultV1PlatformRootResolver
                 SkaldVaultV1PlatformRootResolverWarning.AndroidRootResolutionFutureWork,
             ),
         )
+    }
 
     private fun resolveLinuxDefaultSnapshot(
         request: SkaldVaultV1PlatformRootResolverRequest,

@@ -82,7 +82,7 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
             assertTrue(fixture.nonWallet)
             assertTrue(fixture.nonSecret)
             assertTrue(fixture.nonNetwork)
-            assertFalse(fixture.validBitcoinData)
+            assertFalse(fixture.validMoneroData)
             assertFalse(fixture.realVaultData)
             assertFalse(fixture.productionSerializedVaultBytes)
             assertFalse(fixture.logged)
@@ -199,8 +199,8 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
         assertFalse(report.secureSecretStorageSuccessPathPresent)
         assertFalse(report.secureMetadataStorageSuccessPathPresent)
         assertFalse(report.productionObservationPersistencePresent)
-        assertFalse(report.productionAddressIndexPersistencePresent)
-        assertFalse(report.productionUtxoPersistencePresent)
+        assertFalse(report.productionMoneroSubaddressMetadataPersistencePresent)
+        assertFalse(report.productionOwnedOutputPersistencePresent)
         assertFalse(report.productionWalletHistoryPersistencePresent)
         assertFalse(report.productionSyncPresent)
         assertFalse(report.productionBackendClientPresent)
@@ -311,7 +311,7 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
         }
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(rendered))
         assertFalse(
-            Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE)
+            Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE)
                 .containsMatchIn(rendered),
         )
         assertFalse(report.syntheticBytesLogged)
@@ -350,7 +350,7 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
         assertFalse('~' in marker, "Synthetic marker must not look like path material.")
         assertFalse(':' in marker, "Synthetic marker must not look like endpoint or drive material.")
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(marker))
-        assertFalse(Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE).containsMatchIn(marker))
+        assertFalse(Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE).containsMatchIn(marker))
         forbiddenMarkerText.forEach { forbidden ->
             assertFalse(forbidden in lower, "Synthetic marker contains forbidden material label: $forbidden")
         }
@@ -358,11 +358,11 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
 
     private companion object {
         val forbiddenMarkerText = listOf(
-            "nsec",
-            "psbt",
-            "xprv",
-            "tprv",
-            "wif",
+            "recovery_material=",
+            "unsigned_transaction=",
+            "private_spend_key=",
+            "private_view_key=",
+            "transaction_secret=",
             "seed",
             "mnemonic",
             "private",
@@ -372,9 +372,9 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
             "address",
             "txid",
             "transaction",
-            "cashu",
-            "lightning",
-            "macaroon",
+            "transaction_secret=",
+            "daemon_credential=",
+            "lws_credential=",
             "backend",
             "http",
             "onion",
@@ -406,20 +406,20 @@ class EncryptedVaultParserWriterSyntheticVectorCatalogTest {
             "endpoint values",
             "filesystem paths",
             "txids",
-            "descriptors",
+            "monero wallet recovery metadata",
             "addresses",
-            "psbts",
+            "unsigned transactions",
             "transaction hex",
-            "nostr nsecs",
-            "lightning credentials",
-            "cashu proofs",
+            "private view keys",
+            "daemon credentials",
+            "transaction secrets",
             "backend credentials",
             "seeds",
             "mnemonics",
             "private keys",
-            "xprvs",
-            "tprvs",
-            "wifs",
+            "private spend keys",
+            "private view keys",
+            "transaction secrets",
             "wallet database material",
             "directory names",
             "file names",

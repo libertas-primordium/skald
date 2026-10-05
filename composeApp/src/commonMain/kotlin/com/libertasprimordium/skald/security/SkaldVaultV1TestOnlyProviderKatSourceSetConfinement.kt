@@ -176,7 +176,7 @@ enum class SkaldVaultV1TestOnlyProviderKatConfinementRule(val label: String) {
     FutureExecutorAbsentFromSettingsCodecs("future executor must be absent from settings codecs"),
     FutureExecutorAbsentFromSecureStorageRepositories("future executor must be absent from secure storage repositories"),
     FutureExecutorAbsentFromSecureMetadataRepositories("future executor must be absent from secure metadata repositories"),
-    FutureExecutorAbsentFromBdkAdapterProductionPaths("future executor must be absent from BDK adapter production routes"),
+    FutureExecutorAbsentFromWalletEngineAdapterProductionPaths("future executor must be absent from wallet engine adapter production routes"),
     FutureExecutorMayBeConsideredOnlyInDesktopTestAfterExplicitBranchApproval(
         "future executor may be considered only in desktopTest after explicit branch approval",
     ),
@@ -215,7 +215,7 @@ enum class SkaldVaultV1TestOnlyProviderKatSourceGuardRequirement(val label: Stri
     CryptoImportsAbsentFromCommonMainSecurityBoundaries(
         "crypto imports absent from commonMain security boundaries",
     ),
-    BdkImportsAbsentFromCommonMainSecurityBoundaries("BDK imports absent from commonMain security boundaries"),
+    WalletEngineImportsAbsentFromCommonMainSecurityBoundaries("wallet engine imports absent from commonMain security boundaries"),
     ProcessNetworkApisAbsentFromCommonMainSecurityBoundaries(
         "process/network APIs absent from commonMain security boundaries",
     ),

@@ -236,11 +236,11 @@ class VaultSecureStorageAuthorizationBoundaryTest {
             SkaldVaultV1VaultSecureStorageValueKind.WalletLabel,
             SkaldVaultV1VaultSecureStorageValueKind.TransactionNote,
             SkaldVaultV1VaultSecureStorageValueKind.BackendCredential,
-            SkaldVaultV1VaultSecureStorageValueKind.LightningMacaroonRuneNwcSecret,
-            SkaldVaultV1VaultSecureStorageValueKind.PhoenixdToken,
-            SkaldVaultV1VaultSecureStorageValueKind.CashuProofMaterial,
-            SkaldVaultV1VaultSecureStorageValueKind.NostrNsecPrivateMaterial,
-            SkaldVaultV1VaultSecureStorageValueKind.BdkPersistenceHandle,
+            SkaldVaultV1VaultSecureStorageValueKind.MoneroDaemonAndLwsCredential,
+            SkaldVaultV1VaultSecureStorageValueKind.MoneroLwsCredential,
+            SkaldVaultV1VaultSecureStorageValueKind.MoneroTransactionSecretMaterial,
+            SkaldVaultV1VaultSecureStorageValueKind.MoneroPrivateViewKeyMaterial,
+            SkaldVaultV1VaultSecureStorageValueKind.WalletEnginePersistenceHandle,
             SkaldVaultV1VaultSecureStorageValueKind.PublicPolicyEvidence,
             SkaldVaultV1VaultSecureStorageValueKind.PublicNonWalletKatVectorEvidence,
             SkaldVaultV1VaultSecureStorageValueKind.EnumStatusCapabilityEvidence,
@@ -455,15 +455,15 @@ class VaultSecureStorageAuthorizationBoundaryTest {
         assertRejected("vault/root", SkaldVaultV1VaultSecureStorageFailureReason.RawRelativeLocationInputRejected)
         assertRejected("https://example.invalid", SkaldVaultV1VaultSecureStorageFailureReason.LinkLikeInputRejected)
         assertRejected("file-object", SkaldVaultV1VaultSecureStorageFailureReason.PlatformObjectLikeInputRejected)
-        assertRejected("a".repeat(64), SkaldVaultV1VaultSecureStorageFailureReason.TransactionLikeEvidenceRejected)
+        assertRejected("a".repeat(64), SkaldVaultV1VaultSecureStorageFailureReason.AmbiguousRawCryptographicMaterialRejected)
         assertRejected(
-            "bc" + "1q" + "a".repeat(24),
-            SkaldVaultV1VaultSecureStorageFailureReason.BitcoinAddressLikeEvidenceRejected,
+            "L".repeat(95),
+            SkaldVaultV1VaultSecureStorageFailureReason.MoneroAddressLikeEvidenceRejected,
         )
-        assertRejected("ns" + "ec1fixture", SkaldVaultV1VaultSecureStorageFailureReason.WalletMaterialRejected)
-        assertRejected("xp" + "rvfixture", SkaldVaultV1VaultSecureStorageFailureReason.WalletMaterialRejected)
-        assertRejected("tp" + "rvfixture", SkaldVaultV1VaultSecureStorageFailureReason.WalletMaterialRejected)
-        assertRejected("K" + "a".repeat(50), SkaldVaultV1VaultSecureStorageFailureReason.WalletMaterialRejected)
+        assertRejected("unapproved-scan-fixture", SkaldVaultV1VaultSecureStorageFailureReason.RawSecureStorageInputRejected)
+        assertRejected("unapproved-spend-fixture", SkaldVaultV1VaultSecureStorageFailureReason.RawSecureStorageInputRejected)
+        assertRejected("unapproved-recovery-fixture", SkaldVaultV1VaultSecureStorageFailureReason.RawSecureStorageInputRejected)
+        assertRejected("unapproved-import-fixture", SkaldVaultV1VaultSecureStorageFailureReason.RawSecureStorageInputRejected)
         assertRejected("../vault", SkaldVaultV1VaultSecureStorageFailureReason.TraversalRejected)
         assertRejected("unsupported#chars", SkaldVaultV1VaultSecureStorageFailureReason.UnsupportedCharactersRejected)
     }

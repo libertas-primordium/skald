@@ -13,11 +13,11 @@ enum class SkaldVaultV1VaultRedactionValueKind(val label: String) {
     MnemonicPhrase("mnemonic"),
     Seed("seed"),
     PrivateKey("private key"),
-    XprvTprv("xprv or tprv"),
-    Wif("WIF"),
-    NostrNsec("Nostr nsec"),
-    NostrPrivateKeyDerivedWalletMaterial("Nostr private-key-derived wallet material"),
-    DescriptorPrivateMaterial("descriptor private material"),
+    MoneroPrivateSpendKey("private spend key"),
+    MoneroPrivateKeyMaterial("ambiguous private key material"),
+    MoneroPrivateViewKey("Monero private view key"),
+    MoneroRecoveryDerivedWalletMaterial("Monero recovery-derived wallet material"),
+    MoneroRecoveryMaterial("Monero recovery material"),
     ProviderRootKey("provider root key"),
     VaultRootKey("vault root key"),
     MetadataEncryptionKey("metadata encryption key"),
@@ -36,20 +36,20 @@ enum class SkaldVaultV1VaultRedactionValueKind(val label: String) {
     RootToken("root token"),
     RawPlatformRootPath("raw platform root or path string"),
     BackendCredential("backend credential"),
-    RpcCookie("RPC cookie"),
-    LightningMacaroonRuneNwcSecret("Lightning macaroon, rune, or NWC secret"),
-    PhoenixdToken("Phoenixd token"),
-    CashuProofMaterial("Cashu proof material"),
+    DaemonCredential("daemon credential"),
+    MoneroDaemonAndLwsCredential("Monero daemon or LWS credential"),
+    MoneroLwsCredential("LWS token"),
+    MoneroTransactionSecretMaterial("Monero transaction proof material"),
     WalletDatabaseBytes("wallet database bytes"),
-    BdkPersistenceHandle("BDK persistence handle"),
+    WalletEnginePersistenceHandle("wallet engine persistence handle"),
     TransactionHex("transaction hex"),
-    Psbt("PSBT"),
-    TxidOutpoint("txid or outpoint"),
-    BitcoinAddress("Bitcoin address"),
-    NostrEventSignature("Nostr event or signature"),
+    UnsignedTransactionMaterial("unsigned transaction material"),
+    MoneroTransactionReference("Monero transaction reference"),
+    MoneroAddress("Monero address"),
+    MoneroKeyImageMetadata("Monero key-image metadata"),
     PaymentTransactionNote("payment note or transaction note"),
     WalletLabel("wallet label"),
-    UtxoLabel("UTXO label"),
+    OwnedOutputLabel("owned output label"),
     BackendEndpoint("backend endpoint"),
     OnionEndpoint("onion endpoint"),
     TorRoutingMetadata("Tor routing metadata"),
@@ -89,7 +89,7 @@ enum class SkaldVaultV1VaultRedactionScope(val label: String) {
     Test("test"),
     Docs("docs"),
     KatVector("KAT vector"),
-    WalletUtxoSync("wallet, UTXO, or sync"),
+    WalletOwnedOutputSync("wallet, owned output, or sync"),
     FutureStructuredAppLog("future structured app log"),
     FutureCrashReport("future crash report"),
     FutureSupportExport("future support export"),
@@ -177,8 +177,8 @@ enum class SkaldVaultV1VaultRedactionFailureReason(val label: String) {
     StackTraceInputRejected("stack trace input is rejected"),
     SecretMaterialRejected("secret-looking material is rejected"),
     WalletMaterialRejected("wallet or key-looking material is rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence is rejected"),
-    TransactionLikeEvidenceRejected("transaction-id-like evidence is rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence is rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-bearing evidence is rejected"),
     EmptyEvidenceRejected("empty redaction evidence is rejected"),
     UnsupportedEvidenceRejected("unsupported redaction evidence is rejected"),
@@ -192,7 +192,7 @@ enum class SkaldVaultV1VaultRedactionBlocker(val label: String) {
     RawValueRedacted("raw value must be redacted"),
     UnknownValueKindRejected("unknown value kind is rejected"),
     PublicVectorScopeRejected("public vector scope is rejected"),
-    PublicVectorRejectedInWalletUtxoSyncScope("public vector exception is rejected in wallet, UTXO, or sync scope"),
+    PublicVectorRejectedInWalletOwnedOutputSyncScope("public vector exception is rejected in wallet, owned output, or sync scope"),
     RuntimeLoggingDisabled("runtime logging is disabled"),
     CrashReportingDisabled("crash reporting is disabled"),
     AnalyticsDisabled("analytics is disabled"),
@@ -218,8 +218,8 @@ enum class SkaldVaultV1VaultRedactionWarning(val label: String) {
     PublicVectorsScopedToDocsTestsAndSourceGuards(
         "public non-wallet vectors are scoped to docs, tests, and source guards",
     ),
-    WalletUtxoSyncMaterialNeverUsesPublicVectorException(
-        "wallet, UTXO, and sync material never uses the public-vector exception",
+    WalletOwnedOutputSyncMaterialNeverUsesPublicVectorException(
+        "wallet, owned output, and sync material never uses the public-vector exception",
     ),
 }
 
@@ -447,18 +447,8 @@ class SkaldVaultV1VaultRedactionRequest private constructor(
                 rawCandidateFailureReason = classifyRawCandidateFailure(rawCandidate),
             )
 
-        private fun isSafePublicEvidenceId(candidate: String): Boolean {
-            if (candidate.isBlank()) return false
-            if (candidate.length > 96) return false
-            return candidate.all { ch ->
-                ch in 'a'..'z' ||
-                    ch in 'A'..'Z' ||
-                    ch in '0'..'9' ||
-                    ch == '-' ||
-                    ch == '_' ||
-                    ch == '.'
-            }
-        }
+        private fun isSafePublicEvidenceId(candidate: String): Boolean =
+            SkaldVaultV1ApprovedInputDomain.publicEvidenceIdentifier(candidate)
 
         private fun classifyRawCandidateFailure(rawCandidate: String?): SkaldVaultV1VaultRedactionFailureReason {
             val candidate = rawCandidate?.trim() ?: return SkaldVaultV1VaultRedactionFailureReason.EmptyEvidenceRejected
@@ -497,16 +487,14 @@ class SkaldVaultV1VaultRedactionRequest private constructor(
             if (lower.contains("secret") || lower.contains("seed") || lower.contains("mnemonic")) {
                 return SkaldVaultV1VaultRedactionFailureReason.SecretMaterialRejected
             }
-            if (lower.startsWith("nsec1") || lower.startsWith("xprv") || lower.startsWith("tprv") ||
-                isWifLike(candidate)
-            ) {
-                return SkaldVaultV1VaultRedactionFailureReason.WalletMaterialRejected
+            if (MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(candidate)) {
+                return SkaldVaultV1VaultRedactionFailureReason.AmbiguousRawCryptographicMaterialRejected
             }
-            if (lower.startsWith("bc1") || lower.startsWith("tb1") || lower.startsWith("bcrt1")) {
-                return SkaldVaultV1VaultRedactionFailureReason.BitcoinAddressLikeEvidenceRejected
+            if (MoneroMaterialCandidatePolicy.isAddressShapedCandidate(candidate)) {
+                return SkaldVaultV1VaultRedactionFailureReason.MoneroAddressLikeEvidenceRejected
             }
             if (candidate.length == 64 && candidate.all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }) {
-                return SkaldVaultV1VaultRedactionFailureReason.TransactionLikeEvidenceRejected
+                return SkaldVaultV1VaultRedactionFailureReason.AmbiguousRawCryptographicMaterialRejected
             }
             if (candidate.contains("..")) return SkaldVaultV1VaultRedactionFailureReason.TraversalRejected
             if (!isSafePublicEvidenceId(candidate)) {
@@ -515,19 +503,7 @@ class SkaldVaultV1VaultRedactionRequest private constructor(
             return SkaldVaultV1VaultRedactionFailureReason.RawSecretInputRejected
         }
 
-        private fun isWifLike(candidate: String): Boolean {
-            if (candidate.length !in 51..52) return false
-            if (candidate.first() !in setOf('K', 'L', '5')) return false
-            return candidate.all { ch ->
-                ch in '1'..'9' ||
-                    ch in 'A'..'H' ||
-                    ch in 'J'..'N' ||
-                    ch in 'P'..'Z' ||
-                    ch in 'a'..'k' ||
-                    ch in 'm'..'z'
-            }
-        }
-    }
+}
 }
 
 data class SkaldVaultV1VaultRedactionEvidence(
@@ -675,11 +651,11 @@ object SkaldVaultV1RedactionLeakagePolicy : SkaldVaultV1RedactionLeakageBoundary
             SkaldVaultV1VaultRedactionValueKind.MnemonicPhrase,
             SkaldVaultV1VaultRedactionValueKind.Seed,
             SkaldVaultV1VaultRedactionValueKind.PrivateKey,
-            SkaldVaultV1VaultRedactionValueKind.XprvTprv,
-            SkaldVaultV1VaultRedactionValueKind.Wif,
-            SkaldVaultV1VaultRedactionValueKind.NostrNsec,
-            SkaldVaultV1VaultRedactionValueKind.NostrPrivateKeyDerivedWalletMaterial,
-            SkaldVaultV1VaultRedactionValueKind.DescriptorPrivateMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateSpendKey,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateKeyMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroPrivateViewKey,
+            SkaldVaultV1VaultRedactionValueKind.MoneroRecoveryDerivedWalletMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroRecoveryMaterial,
             SkaldVaultV1VaultRedactionValueKind.ProviderRootKey,
             SkaldVaultV1VaultRedactionValueKind.VaultRootKey,
             SkaldVaultV1VaultRedactionValueKind.MetadataEncryptionKey,
@@ -691,12 +667,12 @@ object SkaldVaultV1RedactionLeakagePolicy : SkaldVaultV1RedactionLeakageBoundary
             SkaldVaultV1VaultRedactionValueKind.RandomEntropySample,
             SkaldVaultV1VaultRedactionValueKind.DecryptedVaultRecord,
             SkaldVaultV1VaultRedactionValueKind.BackendCredential,
-            SkaldVaultV1VaultRedactionValueKind.RpcCookie,
-            SkaldVaultV1VaultRedactionValueKind.LightningMacaroonRuneNwcSecret,
-            SkaldVaultV1VaultRedactionValueKind.PhoenixdToken,
-            SkaldVaultV1VaultRedactionValueKind.CashuProofMaterial,
+            SkaldVaultV1VaultRedactionValueKind.DaemonCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroDaemonAndLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroTransactionSecretMaterial,
             SkaldVaultV1VaultRedactionValueKind.WalletDatabaseBytes,
-            SkaldVaultV1VaultRedactionValueKind.BdkPersistenceHandle,
+            SkaldVaultV1VaultRedactionValueKind.WalletEnginePersistenceHandle,
             SkaldVaultV1VaultRedactionValueKind.ExceptionStackTrace,
             -> forbidden(valueKind)
             SkaldVaultV1VaultRedactionValueKind.EncryptedVaultRecordBytes ->
@@ -711,15 +687,15 @@ object SkaldVaultV1RedactionLeakagePolicy : SkaldVaultV1RedactionLeakageBoundary
                 redactedSensitiveMetadata(SkaldVaultV1VaultRedactionDecision.RedactCompletely)
             SkaldVaultV1VaultRedactionValueKind.PaymentTransactionNote,
             SkaldVaultV1VaultRedactionValueKind.WalletLabel,
-            SkaldVaultV1VaultRedactionValueKind.UtxoLabel,
+            SkaldVaultV1VaultRedactionValueKind.OwnedOutputLabel,
             SkaldVaultV1VaultRedactionValueKind.AndroidDeviceIdentifier,
             SkaldVaultV1VaultRedactionValueKind.FilesystemErrorText,
             -> redactedSensitiveMetadata(SkaldVaultV1VaultRedactionDecision.SummarizeClassOnly)
             SkaldVaultV1VaultRedactionValueKind.TransactionHex,
-            SkaldVaultV1VaultRedactionValueKind.Psbt,
-            SkaldVaultV1VaultRedactionValueKind.TxidOutpoint,
-            SkaldVaultV1VaultRedactionValueKind.BitcoinAddress,
-            SkaldVaultV1VaultRedactionValueKind.NostrEventSignature,
+            SkaldVaultV1VaultRedactionValueKind.UnsignedTransactionMaterial,
+            SkaldVaultV1VaultRedactionValueKind.MoneroTransactionReference,
+            SkaldVaultV1VaultRedactionValueKind.MoneroAddress,
+            SkaldVaultV1VaultRedactionValueKind.MoneroKeyImageMetadata,
             SkaldVaultV1VaultRedactionValueKind.BackendEndpoint,
             SkaldVaultV1VaultRedactionValueKind.OnionEndpoint,
             SkaldVaultV1VaultRedactionValueKind.TorRoutingMetadata,
@@ -765,14 +741,14 @@ object SkaldVaultV1RedactionLeakagePolicy : SkaldVaultV1RedactionLeakageBoundary
             SkaldVaultV1VaultRedactionValueKind.DecryptedVaultRecord ->
                 SkaldVaultV1VaultForbiddenValueClass.DecryptedPayload
             SkaldVaultV1VaultRedactionValueKind.BackendCredential,
-            SkaldVaultV1VaultRedactionValueKind.RpcCookie,
-            SkaldVaultV1VaultRedactionValueKind.LightningMacaroonRuneNwcSecret,
-            SkaldVaultV1VaultRedactionValueKind.PhoenixdToken,
-            SkaldVaultV1VaultRedactionValueKind.CashuProofMaterial,
+            SkaldVaultV1VaultRedactionValueKind.DaemonCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroDaemonAndLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroLwsCredential,
+            SkaldVaultV1VaultRedactionValueKind.MoneroTransactionSecretMaterial,
             -> SkaldVaultV1VaultForbiddenValueClass.Credential
             SkaldVaultV1VaultRedactionValueKind.WalletDatabaseBytes ->
                 SkaldVaultV1VaultForbiddenValueClass.WalletDatabase
-            SkaldVaultV1VaultRedactionValueKind.BdkPersistenceHandle ->
+            SkaldVaultV1VaultRedactionValueKind.WalletEnginePersistenceHandle ->
                 SkaldVaultV1VaultForbiddenValueClass.PersistenceHandle
             SkaldVaultV1VaultRedactionValueKind.ExceptionStackTrace ->
                 SkaldVaultV1VaultForbiddenValueClass.StackTrace
@@ -884,7 +860,7 @@ object SkaldVaultV1RedactionLeakagePolicy : SkaldVaultV1RedactionLeakageBoundary
                 -> add(SkaldVaultV1VaultRedactionBlocker.RawValueRedacted)
                 SkaldVaultV1VaultRedactionDecision.RejectDiagnostic -> {
                     add(SkaldVaultV1VaultRedactionBlocker.PublicVectorScopeRejected)
-                    add(SkaldVaultV1VaultRedactionBlocker.PublicVectorRejectedInWalletUtxoSyncScope)
+                    add(SkaldVaultV1VaultRedactionBlocker.PublicVectorRejectedInWalletOwnedOutputSyncScope)
                 }
                 SkaldVaultV1VaultRedactionDecision.RequiresManualReview ->
                     add(SkaldVaultV1VaultRedactionBlocker.RawValueRedacted)

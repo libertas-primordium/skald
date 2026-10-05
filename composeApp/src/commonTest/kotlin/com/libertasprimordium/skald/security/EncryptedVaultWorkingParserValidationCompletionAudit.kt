@@ -117,8 +117,8 @@ data class EncryptedVaultWorkingParserValidationCompletionAuditReport(
     val secureSecretStorageSuccessPathPresent: Boolean,
     val secureMetadataStorageSuccessPathPresent: Boolean,
     val productionObservationPersistencePresent: Boolean,
-    val productionAddressIndexPersistencePresent: Boolean,
-    val productionUtxoPersistencePresent: Boolean,
+    val productionMoneroSubaddressMetadataPersistencePresent: Boolean,
+    val productionOwnedOutputPersistencePresent: Boolean,
     val productionWalletHistoryPersistencePresent: Boolean,
     val productionSyncPresent: Boolean,
     val productionBackendClientPresent: Boolean,
@@ -408,9 +408,9 @@ object EncryptedVaultWorkingParserValidationCompletionAudit {
                 parserEvidence.secureMetadataStorageSuccessPathPresent,
             productionObservationPersistencePresent =
                 parserEvidence.productionObservationPersistencePresent,
-            productionAddressIndexPersistencePresent =
-                parserEvidence.productionAddressIndexPersistencePresent,
-            productionUtxoPersistencePresent = parserEvidence.productionUtxoPersistencePresent,
+            productionMoneroSubaddressMetadataPersistencePresent =
+                parserEvidence.productionMoneroSubaddressMetadataPersistencePresent,
+            productionOwnedOutputPersistencePresent = parserEvidence.productionOwnedOutputPersistencePresent,
             productionWalletHistoryPersistencePresent =
                 parserEvidence.productionWalletHistoryPersistencePresent,
             productionSyncPresent = parserEvidence.productionSyncPresent,

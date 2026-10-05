@@ -82,8 +82,8 @@ enum class SkaldVaultV1VaultStorageOperationFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input is not accepted"),
     SecretMaterialRejected("secret-looking storage input is rejected"),
     WalletMaterialRejected("wallet or key-looking storage input is rejected"),
-    BitcoinAddressLikeRecordIdRejected("Bitcoin address-like record identifier is rejected"),
-    TransactionLikeRecordIdRejected("transaction-id-like record identifier is rejected"),
+    MoneroAddressLikeRecordIdRejected("Monero address-like record identifier is rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-bearing storage input is rejected"),
     EmptyRecordIdRejected("empty record identifier is rejected"),
     UnsupportedRecordIdRejected("unsupported record identifier is rejected"),
@@ -694,15 +694,16 @@ private fun classifyStorageInput(
             SkaldVaultV1VaultStorageOperationFailureReason.CiphertextPayloadRejected
         looksLikeSecretOrCredential(lower) ->
             SkaldVaultV1VaultStorageOperationFailureReason.SecretMaterialRejected
-        looksLikePrivateKeyMaterial(raw, lower) ->
-            SkaldVaultV1VaultStorageOperationFailureReason.WalletMaterialRejected
-        looksLikeBitcoinAddress(lower) ->
-            SkaldVaultV1VaultStorageOperationFailureReason.BitcoinAddressLikeRecordIdRejected
+        looksLikeRawCryptographicMaterial(raw) ->
+            SkaldVaultV1VaultStorageOperationFailureReason.AmbiguousRawCryptographicMaterialRejected
+        looksLikeMoneroAddress(raw) ->
+            SkaldVaultV1VaultStorageOperationFailureReason.MoneroAddressLikeRecordIdRejected
         containsLongHexSegment(raw) ->
-            SkaldVaultV1VaultStorageOperationFailureReason.TransactionLikeRecordIdRejected
+            SkaldVaultV1VaultStorageOperationFailureReason.AmbiguousRawCryptographicMaterialRejected
         hasUnsupportedStorageIdentifierCharacters(raw) ->
             SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected
-        else -> null
+        SkaldVaultV1ApprovedInputDomain.recordIdentifier(raw) -> null
+        else -> SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected
     }
 }
 
@@ -729,28 +730,11 @@ private fun looksLikeSecretOrCredential(lower: String): Boolean =
     ).any { lower.contains(it) } ||
         lower.contains(":") && lower.contains("@")
 
-private fun looksLikePrivateKeyMaterial(raw: String, lower: String): Boolean =
-    lower.contains("nsec") ||
-        raw.startsWith("xprv") ||
-        raw.startsWith("tprv") ||
-        isWifLike(raw)
+private fun looksLikeRawCryptographicMaterial(raw: String): Boolean =
+    MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(raw)
 
-private fun looksLikeBitcoinAddress(lower: String): Boolean =
-    lower.startsWith("bc1") ||
-        lower.startsWith("tb1") ||
-        lower.startsWith("bcrt1")
-
-private fun isWifLike(raw: String): Boolean =
-    raw.length in 51..52 &&
-        raw.firstOrNull() in setOf('K', 'L', '5') &&
-        raw.all {
-            it in '1'..'9' ||
-                it in 'A'..'H' ||
-                it in 'J'..'N' ||
-                it in 'P'..'Z' ||
-                it in 'a'..'k' ||
-                it in 'm'..'z'
-        }
+private fun looksLikeMoneroAddress(lower: String): Boolean =
+    MoneroMaterialCandidatePolicy.isAddressShapedCandidate(lower)
 
 private fun containsLongHexSegment(raw: String): Boolean {
     var run = 0

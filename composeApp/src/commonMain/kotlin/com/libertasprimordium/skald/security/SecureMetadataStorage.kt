@@ -1,9 +1,15 @@
 package com.libertasprimordium.skald.security
 
-import com.libertasprimordium.skald.domain.core.NetworkEnvironment
+import com.libertasprimordium.skald.domain.monero.MoneroNetworkEvidence
 
 @JvmInline
-value class SecureMetadataRecordId(val value: String)
+value class SecureMetadataRecordId(val value: String) {
+    init {
+        require(value == "SECURE_METADATA_DISABLED") { "Unapproved placeholder metadata identifier" }
+    }
+
+    override fun toString(): String = "SecureMetadataRecordId(REDACTED)"
+}
 
 enum class WalletMetadataSensitivity(val label: String) {
     SensitiveWalletMetadata("sensitive wallet metadata"),
@@ -13,18 +19,18 @@ enum class SensitiveMetadataKind(
     val label: String,
     val sensitivity: WalletMetadataSensitivity,
 ) {
-    AddressIndexState("address index state", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    ReceiveAddressLifecycleState("receive-address lifecycle state", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    ObservedAddressUsage("observed address usage", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    ObservedUtxoState("observed UTXO state", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroAccountMetadata("Monero account metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroSubaddressMetadata("Monero subaddress metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroRestoreContext("Monero restore context", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroScanCheckpoint("Monero scan checkpoint", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroOwnedOutputState("Monero owned-output state", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroSpentState("Monero spent state", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroTransactionMetadata("Monero transaction metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    MoneroLwsDisclosureHistory("Monero LWS disclosure history", WalletMetadataSensitivity.SensitiveWalletMetadata),
     WalletLabels("wallet labels", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    UtxoLabels("UTXO labels", WalletMetadataSensitivity.SensitiveWalletMetadata),
     TransactionNotes("transaction notes", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    BackendObservationHistory("backend observation history", WalletMetadataSensitivity.SensitiveWalletMetadata),
     BackendEndpointMetadata("privacy-sensitive backend endpoint metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    TorRoutingMetadata("Tor routing policy and transport metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    NostrIdentityLinkageMetadata("Nostr identity-linkage metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
-    PrivacyAnalyzerMetadata("Privacy Analyzer metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
+    RoutingMetadata("routing policy and transport metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
     RecoveryMetadata("recovery metadata", WalletMetadataSensitivity.SensitiveWalletMetadata),
 }
 
@@ -103,7 +109,7 @@ object SecureMetadataPersistencePolicy {
 data class SecureMetadataRecordDescriptor(
     val id: SecureMetadataRecordId,
     val kind: SensitiveMetadataKind,
-    val network: NetworkEnvironment,
+    val network: MoneroNetworkEvidence = MoneroNetworkEvidence.Unspecified,
 ) {
     val containsSensitivePayload: Boolean = false
 
@@ -198,9 +204,7 @@ class DisabledSecureWalletMetadataRepository(
         payload: SecureMetadataPayload,
     ): SecureMetadataRepositoryResult<SecureMetadataRecordId> =
         SecureMetadataRepositoryResult.Rejected(
-            error = if (descriptor.network.allowsMainnetOperations) {
-                SecureMetadataRepositoryError.MainnetDisabled
-            } else if (descriptor.network == NetworkEnvironment.MainnetDisabled) {
+            error = if (descriptor.network == MoneroNetworkEvidence.Mainnet) {
                 SecureMetadataRepositoryError.MainnetDisabled
             } else {
                 SecureMetadataRepositoryError.EncryptedVaultUnavailable
@@ -237,6 +241,6 @@ fun commonDisabledSecureMetadataCapability(): SecureMetadataPersistenceCapabilit
             SecureMetadataRequirement.NoOsKeyringAsPrimaryStore,
         ),
         sensitiveKinds = SecureMetadataPersistencePolicy.allSensitiveKinds,
-        implementationNote = "Secure wallet metadata persistence is disabled. Observed addresses, address indexes, UTXOs, labels, notes, backend history, and identity-linkage metadata are not stored.",
+        implementationNote = "Secure wallet metadata persistence is disabled. Monero account, subaddress, scan, output, transaction, endpoint, routing, and disclosure metadata are not stored.",
         futureImplementationHint = "Future production sync must use app-controlled encrypted vault storage before sensitive wallet metadata can be persisted.",
     )

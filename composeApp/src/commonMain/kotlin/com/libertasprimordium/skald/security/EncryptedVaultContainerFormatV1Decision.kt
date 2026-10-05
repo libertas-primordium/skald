@@ -25,9 +25,9 @@ enum class EncryptedVaultContainerFormatV1Section(val label: EncryptedVaultConta
 enum class EncryptedVaultContainerFormatV1RecordClass(val label: EncryptedVaultContainerFormatV1SafeLabel) {
     SecretPayloadRecord(EncryptedVaultContainerFormatV1SafeLabel("SecretPayloadRecord")),
     SensitiveMetadataRecord(EncryptedVaultContainerFormatV1SafeLabel("SensitiveMetadataRecord")),
-    AddressIndexRecord(EncryptedVaultContainerFormatV1SafeLabel("AddressIndexRecord")),
+    MoneroSubaddressMetadataRecord(EncryptedVaultContainerFormatV1SafeLabel("MoneroSubaddressMetadataRecord")),
     BackendObservationRecord(EncryptedVaultContainerFormatV1SafeLabel("BackendObservationRecord")),
-    ObservedUtxoRecord(EncryptedVaultContainerFormatV1SafeLabel("ObservedUtxoRecord")),
+    ObservedOwnedOutputRecord(EncryptedVaultContainerFormatV1SafeLabel("ObservedOwnedOutputRecord")),
     WalletHistoryRecord(EncryptedVaultContainerFormatV1SafeLabel("WalletHistoryRecord")),
     RecoveryMetadataRecord(EncryptedVaultContainerFormatV1SafeLabel("RecoveryMetadataRecord")),
     PrivacyAnalyzerMetadataRecord(EncryptedVaultContainerFormatV1SafeLabel("PrivacyAnalyzerMetadataRecord")),
@@ -35,8 +35,8 @@ enum class EncryptedVaultContainerFormatV1RecordClass(val label: EncryptedVaultC
     TransactionNoteRecord(EncryptedVaultContainerFormatV1SafeLabel("TransactionNoteRecord")),
     BackendMetadataRecord(EncryptedVaultContainerFormatV1SafeLabel("BackendMetadataRecord")),
     TorRoutingMetadataRecord(EncryptedVaultContainerFormatV1SafeLabel("TorRoutingMetadataRecord")),
-    NostrIdentityLinkageMetadataRecord(
-        EncryptedVaultContainerFormatV1SafeLabel("NostrIdentityLinkageMetadataRecord"),
+    MoneroLwsDisclosureHistoryRecord(
+        EncryptedVaultContainerFormatV1SafeLabel("MoneroLwsDisclosureHistoryRecord"),
     ),
     BackupExportManifestRecord(EncryptedVaultContainerFormatV1SafeLabel("BackupExportManifestRecord")),
 }
@@ -54,13 +54,13 @@ enum class EncryptedVaultContainerFormatV1AssociatedDataForbiddenField {
     Labels,
     TransactionNotes,
     EndpointValues,
-    Descriptors,
+    MoneroWalletRecoveryMetadata,
     Addresses,
     Txids,
-    Psbts,
-    NostrIdentifiersOrSecretKeys,
-    LightningCredentials,
-    CashuProofs,
+    UnsignedTransactionMaterial,
+    MoneroAddressesOrPrivateViewKeys,
+    MoneroDaemonCredentials,
+    MoneroTransactionProofs,
     BackendCredentials,
     FilesystemPaths,
     SourceLocations,
@@ -108,8 +108,8 @@ enum class EncryptedVaultContainerFormatV1DecisionCheck {
     SecureSecretStorageSuccessPathAbsent,
     SecureMetadataStorageSuccessPathAbsent,
     ProductionObservationPersistenceAbsent,
-    ProductionAddressIndexPersistenceAbsent,
-    ProductionUtxoPersistenceAbsent,
+    ProductionMoneroSubaddressMetadataPersistenceAbsent,
+    ProductionOwnedOutputPersistenceAbsent,
     ProductionWalletHistoryPersistenceAbsent,
     ProductionSyncAbsent,
     ProductionBackendClientAbsent,
@@ -212,8 +212,8 @@ data class EncryptedVaultContainerFormatV1Decision(
     val secureSecretStorageSuccessPathPresent: Boolean,
     val secureMetadataStorageSuccessPathPresent: Boolean,
     val productionObservationPersistencePresent: Boolean,
-    val productionAddressIndexPersistencePresent: Boolean,
-    val productionUtxoPersistencePresent: Boolean,
+    val productionMoneroSubaddressMetadataPersistencePresent: Boolean,
+    val productionOwnedOutputPersistencePresent: Boolean,
     val productionWalletHistoryPersistencePresent: Boolean,
     val productionSyncPresent: Boolean,
     val productionBackendClientPresent: Boolean,
@@ -342,8 +342,8 @@ object EncryptedVaultContainerFormatV1DecisionPolicy {
         val secureSecretStorageSuccessPathPresent = storageDecision.secureSecretStorageSuccessPathPresent
         val secureMetadataStorageSuccessPathPresent = storageDecision.secureMetadataStorageSuccessPathPresent
         val productionObservationPersistencePresent = storageDecision.productionObservationPersistencePresent
-        val productionAddressIndexPersistencePresent = storageDecision.productionAddressIndexPersistencePresent
-        val productionUtxoPersistencePresent = storageDecision.productionUtxoPersistencePresent
+        val productionMoneroSubaddressMetadataPersistencePresent = storageDecision.productionMoneroSubaddressMetadataPersistencePresent
+        val productionOwnedOutputPersistencePresent = storageDecision.productionOwnedOutputPersistencePresent
         val productionWalletHistoryPersistencePresent = storageDecision.productionWalletHistoryPersistencePresent
         val productionSyncPresent = storageDecision.productionSyncPresent
         val productionBackendClientPresent = storageDecision.productionBackendClientPresent
@@ -496,8 +496,8 @@ object EncryptedVaultContainerFormatV1DecisionPolicy {
                 secureSecretStorageSuccessPathPresent ||
                 secureMetadataStorageSuccessPathPresent ||
                 productionObservationPersistencePresent ||
-                productionAddressIndexPersistencePresent ||
-                productionUtxoPersistencePresent ||
+                productionMoneroSubaddressMetadataPersistencePresent ||
+                productionOwnedOutputPersistencePresent ||
                 productionWalletHistoryPersistencePresent
         val productionSyncSurfacePresent =
             productionSyncPresent || productionBackendClientPresent
@@ -638,8 +638,8 @@ object EncryptedVaultContainerFormatV1DecisionPolicy {
             secureSecretStorageSuccessPathPresent = secureSecretStorageSuccessPathPresent,
             secureMetadataStorageSuccessPathPresent = secureMetadataStorageSuccessPathPresent,
             productionObservationPersistencePresent = productionObservationPersistencePresent,
-            productionAddressIndexPersistencePresent = productionAddressIndexPersistencePresent,
-            productionUtxoPersistencePresent = productionUtxoPersistencePresent,
+            productionMoneroSubaddressMetadataPersistencePresent = productionMoneroSubaddressMetadataPersistencePresent,
+            productionOwnedOutputPersistencePresent = productionOwnedOutputPersistencePresent,
             productionWalletHistoryPersistencePresent = productionWalletHistoryPersistencePresent,
             productionSyncPresent = productionSyncPresent,
             productionBackendClientPresent = productionBackendClientPresent,

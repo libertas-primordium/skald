@@ -287,11 +287,11 @@ class VaultPlatformRootResolverBoundaryTest {
             "/home/password-vaults" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
             "/home/token-vaults" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
             "/home/$fakeLongHex" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
-            "/home/xprv_invalid_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
-            "/home/tprv_invalid_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
-            "/home/wif_invalid_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
-            "/home/nsec1_invalid_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
-            "/home/bc1_invalid_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
+            "/home/private_spend_key_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
+            "/home/private_view_key_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
+            "/home/private_transaction_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
+            "/home/private_recovery_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
+            "/home/private_address_fixture" to SkaldVaultV1LinuxRootResolutionFailureReason.SecretMaterialRejected,
             "/" + "a".repeat(4096) to SkaldVaultV1LinuxRootResolutionFailureReason.TooLong,
         )
 

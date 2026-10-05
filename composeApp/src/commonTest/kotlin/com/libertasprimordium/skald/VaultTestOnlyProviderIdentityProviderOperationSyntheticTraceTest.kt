@@ -302,7 +302,7 @@ class VaultTestOnlyProviderIdentityProviderOperationSyntheticTraceTest {
             trace.persistenceReachable,
             trace.productionSyncReachable,
             trace.backendClientReachable,
-            trace.bdkWalletStateReachable,
+            trace.moneroEngineStateReachable,
             trace.settingsCodecReachable,
             trace.uiSurfaceReachable,
             trace.signingBroadcastingReachable,

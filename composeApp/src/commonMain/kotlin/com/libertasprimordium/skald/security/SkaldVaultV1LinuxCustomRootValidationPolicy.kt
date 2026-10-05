@@ -175,6 +175,9 @@ object SkaldVaultV1LinuxCustomRootValidationPolicy {
                 return SkaldVaultV1LinuxCustomRootValidationFailureReason.UnsupportedCharacterRejected
             }
         }
+        if (!SkaldVaultV1ApprovedInputDomain.rootFixture(candidate)) {
+            return SkaldVaultV1LinuxCustomRootValidationFailureReason.UnsupportedCharacterRejected
+        }
         return null
     }
 
@@ -247,8 +250,7 @@ object SkaldVaultV1LinuxCustomRootValidationPolicy {
             lower.contains("password") ||
             lower.contains("passphrase") ||
             lower.contains("private") ||
-            lower.contains("secret") ||
-            lower.contains("nsec")
+            lower.contains("secret")
         ) {
             return true
         }

@@ -593,8 +593,8 @@ enum class SkaldVaultV1VaultRandomnessFailureReason(val label: String) {
     PlatformObjectLikeInputRejected("platform object-like input rejected"),
     SecretMaterialRejected("secret-like material rejected"),
     WalletMaterialRejected("wallet material rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence rejected"),
-    TransactionLikeEvidenceRejected("transaction-like evidence rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     TraversalRejected("traversal-like evidence rejected"),
     UnsupportedCharactersRejected("unsupported evidence characters rejected"),
     RawRandomnessInputRejected("raw randomness input rejected"),
@@ -1222,12 +1222,12 @@ object SkaldVaultV1RuntimeRandomnessAuthorizationPolicy :
                 SkaldVaultV1VaultRandomnessFailureReason.PlatformObjectLikeInputRejected
             normalized.contains("/") ->
                 SkaldVaultV1VaultRandomnessFailureReason.RawRelativeLocationInputRejected
-            looksLikeWalletMaterial(candidate) ->
-                SkaldVaultV1VaultRandomnessFailureReason.WalletMaterialRejected
-            looksLikeBitcoinAddress(candidate) ->
-                SkaldVaultV1VaultRandomnessFailureReason.BitcoinAddressLikeEvidenceRejected
+            looksLikeRawCryptographicMaterial(candidate) ->
+                SkaldVaultV1VaultRandomnessFailureReason.AmbiguousRawCryptographicMaterialRejected
+            looksLikeMoneroAddress(candidate) ->
+                SkaldVaultV1VaultRandomnessFailureReason.MoneroAddressLikeEvidenceRejected
             looksLikeHex64(candidate) ->
-                SkaldVaultV1VaultRandomnessFailureReason.TransactionLikeEvidenceRejected
+                SkaldVaultV1VaultRandomnessFailureReason.AmbiguousRawCryptographicMaterialRejected
             candidate.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in '0'..'9' && it !in "-_./:" } ->
                 SkaldVaultV1VaultRandomnessFailureReason.UnsupportedCharactersRejected
             else -> SkaldVaultV1VaultRandomnessFailureReason.RawRandomnessInputRejected
@@ -1237,18 +1237,10 @@ object SkaldVaultV1RuntimeRandomnessAuthorizationPolicy :
     private fun looksLikeHex64(candidate: String): Boolean =
         candidate.length == 64 && candidate.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }
 
-    private fun looksLikeBitcoinAddress(candidate: String): Boolean {
-        val normalized = candidate.lowercase()
-        return (normalized.startsWith("bc1") ||
-            normalized.startsWith("tb1") ||
-            normalized.startsWith("bcrt1")) &&
-            normalized.length >= 24 &&
-            normalized.all { it in 'a'..'z' || it in '0'..'9' }
-    }
+    private fun looksLikeMoneroAddress(candidate: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(candidate)
 
-    private fun looksLikeWalletMaterial(candidate: String): Boolean =
-        candidate.startsWith("nsec1") ||
-            candidate.startsWith("xprv") ||
-            candidate.startsWith("tprv") ||
-            (candidate.length in 51..52 && candidate.first() in setOf('K', 'L', '5'))
+    private fun looksLikeRawCryptographicMaterial(candidate: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(candidate)
+
 }

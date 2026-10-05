@@ -146,6 +146,7 @@ enum class SkaldVaultV1VaultPassphraseEvidenceSource(val label: String) {
 }
 
 enum class SkaldVaultV1VaultPassphraseFailureReason(val label: String) {
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     EmptyEvidenceRejected("empty passphrase policy evidence is rejected"),
     RawPassphraseInputRejected("raw passphrase input is rejected"),
     PinMaterialRejected("PIN-like input is rejected"),
@@ -160,7 +161,7 @@ enum class SkaldVaultV1VaultPassphraseFailureReason(val label: String) {
     LinkLikeInputRejected("link-like input is rejected"),
     PlatformObjectLikeInputRejected("platform object-like input is rejected"),
     WalletMaterialRejected("wallet or key-looking material is rejected"),
-    BitcoinAddressLikeEvidenceRejected("Bitcoin address-like evidence is rejected"),
+    MoneroAddressLikeEvidenceRejected("Monero address-like evidence is rejected"),
     TraversalRejected("traversal-bearing input is rejected"),
     UnsupportedCharactersRejected("unsupported characters are rejected"),
     UnsupportedEvidenceRejected("unsupported passphrase policy evidence is rejected"),
@@ -492,15 +493,13 @@ class SkaldVaultV1VaultPassphrasePolicyRequest private constructor(
                 return SkaldVaultV1VaultPassphraseFailureReason.KeyMaterialRejected
             }
             if (candidate.matches(Regex("""(?i)^[0-9a-f]{64}$"""))) {
-                return SkaldVaultV1VaultPassphraseFailureReason.WalletMaterialRejected
+                return SkaldVaultV1VaultPassphraseFailureReason.AmbiguousRawCryptographicMaterialRejected
             }
-            if (lower.matches(Regex("""^(bc1|tb1|bcrt1)[a-z0-9]{20,}$"""))) {
-                return SkaldVaultV1VaultPassphraseFailureReason.BitcoinAddressLikeEvidenceRejected
+            if (MoneroMaterialCandidatePolicy.isAddressShapedCandidate(candidate)) {
+                return SkaldVaultV1VaultPassphraseFailureReason.MoneroAddressLikeEvidenceRejected
             }
-            if (lower.matches(Regex("""^(nsec1|xprv|tprv)[a-z0-9]+$""")) ||
-                candidate.matches(Regex("""^[KL5][1-9A-HJ-NP-Za-km-z]{50,51}$"""))
-            ) {
-                return SkaldVaultV1VaultPassphraseFailureReason.WalletMaterialRejected
+            if (MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(candidate)) {
+                return SkaldVaultV1VaultPassphraseFailureReason.AmbiguousRawCryptographicMaterialRejected
             }
             if (!candidate.all { ch ->
                     ch in 'a'..'z' ||

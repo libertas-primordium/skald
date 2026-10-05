@@ -63,7 +63,7 @@ fun SkaldAppScaffold(
                         onSelected = onSelectedScreen,
                     )
                     WarningStrip(
-                        text = "No real wallet functionality exists in this scaffold. Demo portfolio - testnet/regtest/signet only.",
+                        text = "Offline scaffold. Wallet operations and mainnet are disabled. Do not use real funds.",
                     )
                     Column(
                         modifier = Modifier

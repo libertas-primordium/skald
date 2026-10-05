@@ -350,10 +350,10 @@ class VaultDisabledStorageServiceFacadeTest {
 
     @Test
     fun rawStorageInputsAndRecordDescriptorsAreRejectedWithTypedReasons() {
-        val bitcoinAddressLikeSentinel = "bc" + "1invalidstoragefacadesentinel0000000000"
-        val nostrSecretLikeSentinel = "nsec" + "1invalidstoragefacadesentinel0000000000"
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
         val longHex = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        val wifLikeSentinel = "K" + "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrs"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
 
         mapOf(
             "" to SkaldVaultV1VaultStorageOperationFailureReason.EmptyRecordIdRejected,
@@ -374,13 +374,16 @@ class VaultDisabledStorageServiceFacadeTest {
             "contains-password-sentinel" to SkaldVaultV1VaultStorageOperationFailureReason.SecretMaterialRejected,
             "contains-token-sentinel" to SkaldVaultV1VaultStorageOperationFailureReason.SecretMaterialRejected,
             "user:pass@example" to SkaldVaultV1VaultStorageOperationFailureReason.SecretMaterialRejected,
-            "xprv-invalid-storage-sentinel" to SkaldVaultV1VaultStorageOperationFailureReason.WalletMaterialRejected,
-            "tprv-invalid-storage-sentinel" to SkaldVaultV1VaultStorageOperationFailureReason.WalletMaterialRejected,
-            wifLikeSentinel to SkaldVaultV1VaultStorageOperationFailureReason.WalletMaterialRejected,
-            nostrSecretLikeSentinel to SkaldVaultV1VaultStorageOperationFailureReason.WalletMaterialRejected,
-            bitcoinAddressLikeSentinel to
-                SkaldVaultV1VaultStorageOperationFailureReason.BitcoinAddressLikeRecordIdRejected,
-            longHex to SkaldVaultV1VaultStorageOperationFailureReason.TransactionLikeRecordIdRejected,
+            "unapproved-spend-storage-sentinel" to SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected,
+            "unapproved-scan-storage-sentinel" to SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected,
+            unapprovedImportLabel to SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected,
+            unapprovedScanLabel to SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected,
+            unapprovedAddressLabel to
+                SkaldVaultV1VaultStorageOperationFailureReason.UnsupportedRecordIdRejected,
+            // Invalid network/checksum shape; uppercase L must not be normalized to excluded lowercase l.
+            "L".repeat(95) to SkaldVaultV1VaultStorageOperationFailureReason.MoneroAddressLikeRecordIdRejected,
+            "L".repeat(106) to SkaldVaultV1VaultStorageOperationFailureReason.MoneroAddressLikeRecordIdRejected,
+            longHex to SkaldVaultV1VaultStorageOperationFailureReason.AmbiguousRawCryptographicMaterialRejected,
             "plaintext-record-payload-sentinel" to
                 SkaldVaultV1VaultStorageOperationFailureReason.PlaintextPayloadRejected,
             "ciphertext-record-payload-sentinel" to

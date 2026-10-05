@@ -336,11 +336,11 @@ class VaultTestOnlyProviderIdentityImplementationRuntimeLinkageGuardTest {
                     secureStorageLinkClaimed = true,
                     secureMetadataLinkClaimed = true,
                     backendClientLinkClaimed = true,
-                    bdkWalletStateLinkClaimed = true,
+                    moneroEngineStateLinkClaimed = true,
                     settingsCodecLinkClaimed = true,
                     uiSurfaceLinkClaimed = true,
                     signingBroadcastingLinkClaimed = true,
-                    torNostrLinkClaimed = true,
+                    torMoneroMaterialLinkClaimed = true,
                     publicEndpointLinkClaimed = true,
                     mainnetLinkClaimed = true,
                 ),
@@ -417,14 +417,14 @@ class VaultTestOnlyProviderIdentityImplementationRuntimeLinkageGuardTest {
                 evidence.blockers,
         )
         assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.BackendClientLinkRejected in evidence.blockers)
-        assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.BdkWalletStateLinkRejected in evidence.blockers)
+        assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.MoneroEngineStateLinkRejected in evidence.blockers)
         assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.SettingsCodecLinkRejected in evidence.blockers)
         assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.UiSurfaceLinkRejected in evidence.blockers)
         assertTrue(
             SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker
                 .SigningBroadcastingLinkRejected in evidence.blockers,
         )
-        assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.TorNostrLinkRejected in evidence.blockers)
+        assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.TorMoneroMaterialLinkRejected in evidence.blockers)
         assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.PublicEndpointLinkRejected in evidence.blockers)
         assertTrue(SkaldVaultV1TestOnlyProviderIdentityImplementationRuntimeLinkageBlocker.MainnetLinkRejected in evidence.blockers)
     }
@@ -555,13 +555,13 @@ class VaultTestOnlyProviderIdentityImplementationRuntimeLinkageGuardTest {
         assertFalse(capabilities.canUseForMigration)
         assertFalse(capabilities.canUseForProductionSync)
         assertFalse(capabilities.canUseForBackendClient)
-        assertFalse(capabilities.canUseForBdkWalletState)
+        assertFalse(capabilities.canUseForMoneroEngineState)
         assertFalse(capabilities.canUseForSettingsCodec)
         assertFalse(capabilities.canUseForUiSurface)
         assertFalse(capabilities.canUseForSigning)
         assertFalse(capabilities.canUseForBroadcasting)
         assertFalse(capabilities.canUseForTorTransport)
-        assertFalse(capabilities.canUseForNostrParsing)
+        assertFalse(capabilities.canUseForMoneroMaterialParsing)
         assertFalse(capabilities.canUseForPublicEndpointDefault)
         assertFalse(capabilities.canUseForMainnet)
         assertFalse(capabilities.productionProviderSelectable)
@@ -583,11 +583,11 @@ class VaultTestOnlyProviderIdentityImplementationRuntimeLinkageGuardTest {
         assertFalse(evidence.currentSecureStorageBridgePresent)
         assertFalse(evidence.currentSecureMetadataBridgePresent)
         assertFalse(evidence.currentBackendClientBridgePresent)
-        assertFalse(evidence.currentBdkWalletStateBridgePresent)
+        assertFalse(evidence.currentMoneroEngineStateBridgePresent)
         assertFalse(evidence.currentSettingsCodecBridgePresent)
         assertFalse(evidence.currentUiSurfaceBridgePresent)
         assertFalse(evidence.currentSigningBroadcastingBridgePresent)
-        assertFalse(evidence.currentTorNostrBridgePresent)
+        assertFalse(evidence.currentTorMoneroMaterialBridgePresent)
         assertFalse(evidence.currentPublicEndpointBridgePresent)
         assertFalse(evidence.currentMainnetBridgePresent)
     }

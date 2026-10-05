@@ -220,8 +220,8 @@ enum class EncryptedVaultParserWriterTestVectorAdmissionCheck {
     SecureSecretStorageSuccessPathAbsent,
     SecureMetadataStorageSuccessPathAbsent,
     ProductionObservationPersistenceAbsent,
-    ProductionAddressIndexPersistenceAbsent,
-    ProductionUtxoPersistenceAbsent,
+    ProductionMoneroSubaddressMetadataPersistenceAbsent,
+    ProductionOwnedOutputPersistenceAbsent,
     ProductionWalletHistoryPersistenceAbsent,
     ProductionSyncAbsent,
     ProductionBackendClientAbsent,
@@ -372,8 +372,8 @@ data class EncryptedVaultParserWriterTestVectorAdmission(
     val secureSecretStorageSuccessPathPresent: Boolean,
     val secureMetadataStorageSuccessPathPresent: Boolean,
     val productionObservationPersistencePresent: Boolean,
-    val productionAddressIndexPersistencePresent: Boolean,
-    val productionUtxoPersistencePresent: Boolean,
+    val productionMoneroSubaddressMetadataPersistencePresent: Boolean,
+    val productionOwnedOutputPersistencePresent: Boolean,
     val productionWalletHistoryPersistencePresent: Boolean,
     val productionSyncPresent: Boolean,
     val productionBackendClientPresent: Boolean,
@@ -621,9 +621,9 @@ object EncryptedVaultParserWriterTestVectorAdmissionPolicy {
             parserWriterGate.secureMetadataStorageSuccessPathPresent
         val productionObservationPersistencePresent =
             parserWriterGate.productionObservationPersistencePresent
-        val productionAddressIndexPersistencePresent =
-            parserWriterGate.productionAddressIndexPersistencePresent
-        val productionUtxoPersistencePresent = parserWriterGate.productionUtxoPersistencePresent
+        val productionMoneroSubaddressMetadataPersistencePresent =
+            parserWriterGate.productionMoneroSubaddressMetadataPersistencePresent
+        val productionOwnedOutputPersistencePresent = parserWriterGate.productionOwnedOutputPersistencePresent
         val productionWalletHistoryPersistencePresent =
             parserWriterGate.productionWalletHistoryPersistencePresent
         val productionSyncPresent = parserWriterGate.productionSyncPresent
@@ -842,8 +842,8 @@ object EncryptedVaultParserWriterTestVectorAdmissionPolicy {
                 secureSecretStorageSuccessPathPresent ||
                 secureMetadataStorageSuccessPathPresent ||
                 productionObservationPersistencePresent ||
-                productionAddressIndexPersistencePresent ||
-                productionUtxoPersistencePresent ||
+                productionMoneroSubaddressMetadataPersistencePresent ||
+                productionOwnedOutputPersistencePresent ||
                 productionWalletHistoryPersistencePresent
         val productionSyncSurfacePresent = productionSyncPresent || productionBackendClientPresent
         val productionProviderSelectionSurfacePresent =
@@ -1113,8 +1113,8 @@ object EncryptedVaultParserWriterTestVectorAdmissionPolicy {
             secureSecretStorageSuccessPathPresent = secureSecretStorageSuccessPathPresent,
             secureMetadataStorageSuccessPathPresent = secureMetadataStorageSuccessPathPresent,
             productionObservationPersistencePresent = productionObservationPersistencePresent,
-            productionAddressIndexPersistencePresent = productionAddressIndexPersistencePresent,
-            productionUtxoPersistencePresent = productionUtxoPersistencePresent,
+            productionMoneroSubaddressMetadataPersistencePresent = productionMoneroSubaddressMetadataPersistencePresent,
+            productionOwnedOutputPersistencePresent = productionOwnedOutputPersistencePresent,
             productionWalletHistoryPersistencePresent = productionWalletHistoryPersistencePresent,
             productionSyncPresent = productionSyncPresent,
             productionBackendClientPresent = productionBackendClientPresent,

@@ -37,7 +37,6 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.androidx.activity.compose)
-                implementation(libs.bdk.android)
                 implementation(libs.bouncycastle.provider)
                 implementation(libs.tink.android)
             }
@@ -46,7 +45,6 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-                implementation(libs.bdk.jvm)
                 implementation(libs.bouncycastle.provider)
                 implementation(libs.tink.jvm)
             }
@@ -158,7 +156,7 @@ compose.desktop {
             targetFormats(TargetFormat.Deb)
             packageName = "skald"
             packageVersion = "0.1.0"
-            description = "Sovereign multi-rail Bitcoin wallet scaffold for advanced users"
+            description = "Android and Linux Monero wallet scaffold with disabled wallet operations"
             copyright = "Copyright 2026 Libertas Primordium"
 
             linux {

@@ -20,19 +20,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.libertasprimordium.skald.domain.privacy.PrivacyRisk
-import com.libertasprimordium.skald.domain.privacy.PrivacyRiskLevel
-import com.libertasprimordium.skald.domain.quote.OperationQuote
 import com.libertasprimordium.skald.ui.theme.SkaldBlack
 import com.libertasprimordium.skald.ui.theme.SkaldCharcoal
-import com.libertasprimordium.skald.ui.theme.SkaldDanger
 import com.libertasprimordium.skald.ui.theme.SkaldDarkGray
 import com.libertasprimordium.skald.ui.theme.SkaldMutedText
 import com.libertasprimordium.skald.ui.theme.SkaldNearBlack
 import com.libertasprimordium.skald.ui.theme.SkaldOrange
 import com.libertasprimordium.skald.ui.theme.SkaldOrangeSoft
-import com.libertasprimordium.skald.ui.theme.SkaldSuccess
-import com.libertasprimordium.skald.ui.theme.SkaldWarning
 import com.libertasprimordium.skald.ui.theme.SkaldWhite
 
 @Composable
@@ -97,26 +91,6 @@ fun CardGrid(content: @Composable ColumnScope.() -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         content = content,
     )
-}
-
-@Composable
-fun RailBalanceRow(label: String, sats: Long, detail: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, SkaldDarkGray, RoundedCornerShape(8.dp))
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(label, color = SkaldWhite, fontWeight = FontWeight.Bold)
-            Text(detail, color = SkaldMutedText, fontSize = 13.sp, lineHeight = 18.sp)
-        }
-        if (sats > 0) {
-            Text("${sats.toSatsText()} sats", color = SkaldOrangeSoft, fontWeight = FontWeight.Bold)
-        }
-    }
 }
 
 @Composable
@@ -244,48 +218,3 @@ fun StatusPill(text: String) {
         )
     }
 }
-
-@Composable
-fun QuoteCard(quote: OperationQuote) {
-    SkaldCard(title = "Quote Engine", state = if (quote.isPlaceholder) "placeholder" else "active") {
-        Text(
-            "${quote.operation}: ${quote.sourceRail.label} to ${quote.destinationRail.label}",
-            color = SkaldWhite,
-            fontWeight = FontWeight.Bold,
-        )
-        Text("Amount in: ${quote.amountInSats.toSatsText()} sats", color = SkaldMutedText)
-        Text("Amount out: ${quote.amountOutSats.toSatsText()} sats", color = SkaldMutedText)
-        Text("Fees: not estimated", color = SkaldWarning)
-        Text("Expiry: ${quote.expiry}", color = SkaldMutedText)
-        Text("${quote.trustBoundary.title}: ${quote.trustBoundary.detail}", color = SkaldMutedText, lineHeight = 20.sp)
-        BulletList(quote.failureModes)
-    }
-}
-
-@Composable
-fun PrivacyRiskList(risks: List<PrivacyRisk>) {
-    SkaldCard(title = "Privacy Analyzer", state = "placeholder") {
-        risks.forEach { risk ->
-            Text(
-                text = "${risk.level.label.uppercase()} - ${risk.title}",
-                color = riskColor(risk.level),
-                fontWeight = FontWeight.Bold,
-            )
-            Text(risk.detail, color = SkaldMutedText, lineHeight = 20.sp)
-        }
-    }
-}
-
-fun riskColor(level: PrivacyRiskLevel): Color =
-    when (level) {
-        PrivacyRiskLevel.Info -> SkaldSuccess
-        PrivacyRiskLevel.Warning -> SkaldWarning
-        PrivacyRiskLevel.Danger -> SkaldDanger
-    }
-
-fun Long.toSatsText(): String =
-    toString()
-        .reversed()
-        .chunked(3)
-        .joinToString(",")
-        .reversed()

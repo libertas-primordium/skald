@@ -50,7 +50,7 @@ data class SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReport(
     val providerKatExecutorReachable: Boolean,
     val productionSyncReachable: Boolean,
     val backendClientReachable: Boolean,
-    val bdkWalletStateReachable: Boolean,
+    val moneroEngineStateReachable: Boolean,
     val settingsCodecReachable: Boolean,
     val uiSurfaceReachable: Boolean,
     val signingBroadcastingReachable: Boolean,
@@ -359,15 +359,15 @@ object SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReportPolic
                 publicVectorValidation.backendClientReachable ||
                 publicVectorFixture.backendClientReachable ||
                 capabilityMatrix.backendClientReachable
-        val bdkWalletStateReachable =
-            metadataKat.bdkWalletStateReachable ||
-                metadataKatValidation.bdkWalletStateReachable ||
-                executableAdmission.bdkWalletStateReachable ||
-                caseBinding.bdkWalletStateReachable ||
-                caseBindingValidation.bdkWalletStateReachable ||
-                publicVectorValidation.bdkWalletStateReachable ||
-                publicVectorFixture.bdkWalletStateReachable ||
-                capabilityMatrix.bdkWalletStateReachable
+        val moneroEngineStateReachable =
+            metadataKat.moneroEngineStateReachable ||
+                metadataKatValidation.moneroEngineStateReachable ||
+                executableAdmission.moneroEngineStateReachable ||
+                caseBinding.moneroEngineStateReachable ||
+                caseBindingValidation.moneroEngineStateReachable ||
+                publicVectorValidation.moneroEngineStateReachable ||
+                publicVectorFixture.moneroEngineStateReachable ||
+                capabilityMatrix.moneroEngineStateReachable
         val settingsCodecReachable =
             metadataKat.settingsCodecReachable ||
                 metadataKatValidation.settingsCodecReachable ||
@@ -554,7 +554,7 @@ object SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReportPolic
                 !providerKatExecutorReachable &&
                 !productionSyncReachable &&
                 !backendClientReachable &&
-                !bdkWalletStateReachable &&
+                !moneroEngineStateReachable &&
                 !settingsCodecReachable &&
                 !uiSurfaceReachable &&
                 !signingBroadcastingReachable &&
@@ -622,7 +622,7 @@ object SkaldVaultV1TestOnlyProviderIdentityExecutableMetadataKatSuiteReportPolic
             providerKatExecutorReachable = providerKatExecutorReachable,
             productionSyncReachable = productionSyncReachable,
             backendClientReachable = backendClientReachable,
-            bdkWalletStateReachable = bdkWalletStateReachable,
+            moneroEngineStateReachable = moneroEngineStateReachable,
             settingsCodecReachable = settingsCodecReachable,
             uiSurfaceReachable = uiSurfaceReachable,
             signingBroadcastingReachable = signingBroadcastingReachable,

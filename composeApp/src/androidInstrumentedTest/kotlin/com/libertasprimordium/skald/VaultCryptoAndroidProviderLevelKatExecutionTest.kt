@@ -118,13 +118,13 @@ class VaultCryptoAndroidProviderLevelKatExecutionTest {
             "support-export payload",
             "endpoint value",
             "filesystem path",
-            "wpkh(",
-            "tr(",
-            "xpub",
-            "xprv",
-            "tprv",
-            "psbt",
-            "nsec",
+            "private_spend_key=",
+            "private_view_key=",
+            "public_address=",
+            "private_spend_key=",
+            "private_view_key=",
+            "unsigned_transaction=",
+            "recovery_material=",
         )
 
         assertTrue(output.contains("REDACTED"))
@@ -136,7 +136,7 @@ class VaultCryptoAndroidProviderLevelKatExecutionTest {
             assertFalse("Output leaked forbidden text: $forbidden", output.contains(forbidden, ignoreCase = true))
         }
         assertFalse(Regex("\\b[0-9a-fA-F]{64}\\b").containsMatchIn(output))
-        assertFalse(Regex("\\b(?:bc1|tb1|bcrt1)[a-z0-9]{20,}\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
+        assertFalse(Regex("\\b[1-9A-HJ-NP-Za-km-z]{95}(?:[1-9A-HJ-NP-Za-km-z]{11})?\\b", RegexOption.IGNORE_CASE).containsMatchIn(output))
     }
 
     private fun katRequest(vectorId: VaultCryptoProviderKatVectorId): VaultCryptoProviderKatRequest =

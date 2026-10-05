@@ -56,8 +56,8 @@ enum class SkaldVaultV1PlatformPathConstructionFailureReason(val label: String) 
     FileOrPathObjectInputRejected("File or Path object input is not accepted by this API"),
     SecretMaterialRejected("secret-looking artifact or path material is rejected"),
     WalletMaterialRejected("wallet/address/key-looking artifact or path material is rejected"),
-    BitcoinAddressLikeArtifactRejected("Bitcoin address-like artifact material is rejected"),
-    TransactionLikeArtifactRejected("transaction-id-like artifact material is rejected"),
+    MoneroAddressLikeArtifactRejected("Monero address-like artifact material is rejected"),
+    AmbiguousRawCryptographicMaterialRejected("ambiguous raw cryptographic material rejected"),
     PathTraversalRejected("path traversal is rejected"),
     EmptyArtifactSegmentRejected("empty artifact segment is rejected"),
     UnsupportedArtifactSegmentRejected("unsupported artifact segment is rejected"),
@@ -723,12 +723,12 @@ object SkaldVaultV1PlatformPathConstructionPolicy : SkaldVaultV1PlatformPathCons
                 SkaldVaultV1PlatformPathConstructionFailureReason.RawRelativePathInputRejected
             looksLikeSecretOrCredential(lower) ->
                 SkaldVaultV1PlatformPathConstructionFailureReason.SecretMaterialRejected
-            looksLikePrivateKeyMaterial(raw, lower) ->
-                SkaldVaultV1PlatformPathConstructionFailureReason.WalletMaterialRejected
-            looksLikeBitcoinAddress(lower) ->
-                SkaldVaultV1PlatformPathConstructionFailureReason.BitcoinAddressLikeArtifactRejected
+            looksLikeRawCryptographicMaterial(raw) ->
+                SkaldVaultV1PlatformPathConstructionFailureReason.AmbiguousRawCryptographicMaterialRejected
+            looksLikeMoneroAddress(raw) ->
+                SkaldVaultV1PlatformPathConstructionFailureReason.MoneroAddressLikeArtifactRejected
             containsLongHexSegment(raw) ->
-                SkaldVaultV1PlatformPathConstructionFailureReason.TransactionLikeArtifactRejected
+                SkaldVaultV1PlatformPathConstructionFailureReason.AmbiguousRawCryptographicMaterialRejected
             else -> SkaldVaultV1PlatformPathConstructionFailureReason.RawPlatformPathInputRejected
         }
     }
@@ -745,13 +745,14 @@ object SkaldVaultV1PlatformPathConstructionPolicy : SkaldVaultV1PlatformPathCons
                     SkaldVaultV1PlatformPathConstructionFailureReason.PathTraversalRejected
                 looksLikeSecretOrCredential(lower) ->
                     SkaldVaultV1PlatformPathConstructionFailureReason.SecretMaterialRejected
-                looksLikePrivateKeyMaterial(segment, lower) ->
-                    SkaldVaultV1PlatformPathConstructionFailureReason.WalletMaterialRejected
-                looksLikeBitcoinAddress(lower) ->
-                    SkaldVaultV1PlatformPathConstructionFailureReason.BitcoinAddressLikeArtifactRejected
+                looksLikeRawCryptographicMaterial(segment) ->
+                    SkaldVaultV1PlatformPathConstructionFailureReason.AmbiguousRawCryptographicMaterialRejected
+                looksLikeMoneroAddress(segment) ->
+                    SkaldVaultV1PlatformPathConstructionFailureReason.MoneroAddressLikeArtifactRejected
                 containsLongHexSegment(segment) ->
-                    SkaldVaultV1PlatformPathConstructionFailureReason.TransactionLikeArtifactRejected
-                else -> null
+                    SkaldVaultV1PlatformPathConstructionFailureReason.AmbiguousRawCryptographicMaterialRejected
+                SkaldVaultV1ApprovedInputDomain.storageSegment(segment) -> null
+                else -> SkaldVaultV1PlatformPathConstructionFailureReason.UnsupportedArtifactSegmentRejected
             }
         }
 
@@ -776,23 +777,13 @@ object SkaldVaultV1PlatformPathConstructionPolicy : SkaldVaultV1PlatformPathCons
         ).any { lower.contains(it) } ||
             lower.contains(":") && lower.contains("@")
 
-    private fun looksLikePrivateKeyMaterial(raw: String, lower: String): Boolean =
-        lower.contains("nsec") ||
-            raw.startsWith("xprv") ||
-            raw.startsWith("tprv") ||
-            isWifLike(raw)
+    private fun looksLikeRawCryptographicMaterial(raw: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAmbiguousRawCryptographicMaterial(raw)
 
-    private fun looksLikeBitcoinAddress(lower: String): Boolean =
-        lower.startsWith("bc1") ||
-            lower.startsWith("tb1") ||
-            lower.startsWith("bcrt1")
+    private fun looksLikeMoneroAddress(lower: String): Boolean =
+        MoneroMaterialCandidatePolicy.isAddressShapedCandidate(lower)
 
-    private fun isWifLike(raw: String): Boolean =
-        raw.length in 51..52 &&
-            raw.firstOrNull() in setOf('K', 'L', '5') &&
-            raw.all { it in '1'..'9' || it in 'A'..'H' || it in 'J'..'N' || it in 'P'..'Z' || it in 'a'..'k' || it in 'm'..'z' }
-
-    private fun containsLongHexSegment(raw: String): Boolean {
+private fun containsLongHexSegment(raw: String): Boolean {
         var run = 0
         raw.forEach { char ->
             run = if (char.isHex()) run + 1 else 0

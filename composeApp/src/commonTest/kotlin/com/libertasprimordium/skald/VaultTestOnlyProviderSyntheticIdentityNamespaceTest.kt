@@ -259,8 +259,8 @@ class VaultTestOnlyProviderSyntheticIdentityNamespaceTest {
             SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.EndpointLikeStructure,
         )
         assertRejected(
-            validId("deterministic-kat", "bc1sample"),
-            SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.WalletAddressLikeStructure,
+            validId("deterministic-kat", "unapproved-address-fixture"),
+            SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.UnapprovedSyntheticPurpose,
         )
         assertRejected(
             validId("deterministic-kat", "a".repeat(64)),
@@ -270,7 +270,7 @@ class VaultTestOnlyProviderSyntheticIdentityNamespaceTest {
 
     @Test
     fun dependencyProviderProductionAndMaterialTokensAreRejected() {
-        listOf("tink", "bouncy", "lazysodium", "ionspin", "bdk", "electrum", "esplora").forEach { token ->
+        listOf("tink", "bouncy", "lazysodium", "ionspin", "engine", "daemon", "lws").forEach { token ->
             assertRejected(
                 validId("deterministic-kat", token),
                 SkaldVaultV1TestOnlyProviderSyntheticIdentityRejectionReason.DependencyCandidateAlias,
@@ -288,9 +288,9 @@ class VaultTestOnlyProviderSyntheticIdentityNamespaceTest {
             "secret",
             "seed",
             "mnemonic",
-            "xprv",
-            "xpub",
-            "nsec",
+            "private_spend_key=",
+            "public_address=",
+            "recovery_material=",
             "key",
             "credential",
             "descriptor",
@@ -416,14 +416,14 @@ class VaultTestOnlyProviderSyntheticIdentityNamespaceTest {
         listOf(
             "passphrase",
             "mnemonic",
-            "xprv",
-            "nsec",
+            "private_spend_key=",
+            "recovery_material=",
             "provider handle",
             "storage path",
             "backend credential",
             "crypto object",
             "endpoint",
-            "wallet descriptor",
+            "wallet recovery reference",
         ).forEach { forbidden ->
             assertFalse(forbidden in requestText.lowercase())
             assertFalse(forbidden in safeIdText.lowercase())
@@ -491,13 +491,13 @@ class VaultTestOnlyProviderSyntheticIdentityNamespaceTest {
         assertFalse(capability.canUseForStoragePath)
         assertFalse(capability.canUseForProductionSync)
         assertFalse(capability.canUseForBackendClient)
-        assertFalse(capability.canUseForBdkWalletState)
+        assertFalse(capability.canUseForMoneroEngineState)
         assertFalse(capability.canUseForSettingsCodec)
         assertFalse(capability.canUseForUiSurface)
         assertFalse(capability.canUseForSigning)
         assertFalse(capability.canUseForBroadcasting)
         assertFalse(capability.canUseForTorTransport)
-        assertFalse(capability.canUseForNostrParsing)
+        assertFalse(capability.canUseForMoneroMaterialParsing)
         assertFalse(capability.canUseForPublicEndpointDefault)
         assertFalse(capability.canUseForMainnet)
         assertFalse(capability.productionProviderSelectable)

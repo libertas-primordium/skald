@@ -371,11 +371,11 @@ class VaultLockSessionLifecycleBoundaryTest {
     @Test
     fun rawLifecycleInputsAreRejected() {
         val longHex = "a".repeat(64)
-        val bitcoinAddressLike = "bc" + "1" + "q".repeat(24)
-        val nostrSecretLike = "ns" + "ec" + "1" + "q".repeat(24)
-        val extendedPrivatePrefixFixture = "xp" + "rv" + "9".repeat(32)
-        val testPrivatePrefixFixture = "tp" + "rv" + "9".repeat(32)
-        val wifLike = "K" + "1".repeat(50)
+        val unapprovedAddressLabel = "unapproved-unapproved-address-label"
+        val unapprovedScanLabel = "unapproved-unapproved-scan-label"
+        val unapprovedSpendLabel = "unapproved-unapproved-spend-label"
+        val unapprovedRecoveryLabel = "unapproved-unapproved-recovery-label"
+        val unapprovedImportLabel = "unapproved-unapproved-import-label"
         val cases = listOf(
             null to SkaldVaultV1VaultLockSessionFailureReason.EmptyEvidenceNameRejected,
             "" to SkaldVaultV1VaultLockSessionFailureReason.EmptyEvidenceNameRejected,
@@ -400,12 +400,12 @@ class VaultLockSessionLifecycleBoundaryTest {
             "password-fixture" to SkaldVaultV1VaultLockSessionFailureReason.SecretMaterialRejected,
             "token-fixture" to SkaldVaultV1VaultLockSessionFailureReason.SecretMaterialRejected,
             "secret-fixture" to SkaldVaultV1VaultLockSessionFailureReason.SecretMaterialRejected,
-            longHex to SkaldVaultV1VaultLockSessionFailureReason.TransactionLikeEvidenceRejected,
-            bitcoinAddressLike to SkaldVaultV1VaultLockSessionFailureReason.BitcoinAddressLikeEvidenceRejected,
-            nostrSecretLike to SkaldVaultV1VaultLockSessionFailureReason.WalletMaterialRejected,
-            extendedPrivatePrefixFixture to SkaldVaultV1VaultLockSessionFailureReason.WalletMaterialRejected,
-            testPrivatePrefixFixture to SkaldVaultV1VaultLockSessionFailureReason.WalletMaterialRejected,
-            wifLike to SkaldVaultV1VaultLockSessionFailureReason.WalletMaterialRejected,
+            longHex to SkaldVaultV1VaultLockSessionFailureReason.AmbiguousRawCryptographicMaterialRejected,
+            unapprovedAddressLabel to SkaldVaultV1VaultLockSessionFailureReason.RawLifecycleEvidenceInputRejected,
+            unapprovedScanLabel to SkaldVaultV1VaultLockSessionFailureReason.RawLifecycleEvidenceInputRejected,
+            unapprovedSpendLabel to SkaldVaultV1VaultLockSessionFailureReason.RawLifecycleEvidenceInputRejected,
+            unapprovedRecoveryLabel to SkaldVaultV1VaultLockSessionFailureReason.RawLifecycleEvidenceInputRejected,
+            unapprovedImportLabel to SkaldVaultV1VaultLockSessionFailureReason.RawLifecycleEvidenceInputRejected,
         )
 
         cases.forEach { (raw, expectedReason) ->

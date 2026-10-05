@@ -196,7 +196,7 @@ class VaultTestOnlyProviderIdentityProviderOperationNoopExecutionBoundaryTest {
             boundary.persistenceReachable,
             boundary.productionSyncReachable,
             boundary.backendClientReachable,
-            boundary.bdkWalletStateReachable,
+            boundary.moneroEngineStateReachable,
             boundary.settingsCodecReachable,
             boundary.uiSurfaceReachable,
             boundary.signingBroadcastingReachable,
