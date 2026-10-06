@@ -10,9 +10,6 @@ import com.libertasprimordium.skald.security.SecureSecretStorage
 import com.libertasprimordium.skald.ui.SkaldShellState
 import com.libertasprimordium.skald.ui.components.SkaldAppScaffold
 import com.libertasprimordium.skald.ui.navigation.AppScreen
-import com.libertasprimordium.skald.ui.screens.ConnectionScreen
-import com.libertasprimordium.skald.ui.screens.OverviewScreen
-import com.libertasprimordium.skald.ui.screens.RecoveryScreen
 import com.libertasprimordium.skald.ui.screens.SettingsScreen
 import com.libertasprimordium.skald.ui.screens.WalletScreen
 
@@ -28,11 +25,8 @@ fun SkaldApp(
     ) { screen ->
         val page = state.page
         when (screen) {
-            AppScreen.Overview -> OverviewScreen(page)
             AppScreen.Wallet -> WalletScreen(page)
-            AppScreen.Recovery -> RecoveryScreen(page, state.secureStorageStatus)
-            AppScreen.Connection -> ConnectionScreen(page)
-            AppScreen.Settings -> SettingsScreen(page, state.secureStorageStatus)
+            AppScreen.Settings -> SettingsScreen(page)
         }
     }
 }

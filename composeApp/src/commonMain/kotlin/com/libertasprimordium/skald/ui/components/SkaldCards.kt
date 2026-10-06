@@ -2,18 +2,15 @@ package com.libertasprimordium.skald.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -60,18 +57,13 @@ fun SkaldCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (title != null || state != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (title != null) {
                         Text(
                             text = title,
                             color = SkaldWhite,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f),
                         )
                     }
                     if (state != null) {
@@ -80,108 +72,6 @@ fun SkaldCard(
                 }
             }
             content()
-        }
-    }
-}
-
-@Composable
-fun CardGrid(content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        content = content,
-    )
-}
-
-@Composable
-fun InfoBlock(
-    title: String,
-    state: String,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, SkaldDarkGray, RoundedCornerShape(8.dp))
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Text(title, color = SkaldWhite, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            Text(state, color = SkaldOrangeSoft, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-        content()
-    }
-}
-
-@Composable
-fun DetailLine(label: String, detail: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Text(label, color = SkaldWhite, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.42f))
-        Text(detail, color = SkaldMutedText, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.weight(0.58f))
-    }
-}
-
-@Composable
-fun BulletList(items: List<String>) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        items.forEach { item ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("-", color = SkaldOrange)
-                Text(item, color = SkaldMutedText, lineHeight = 20.sp)
-            }
-        }
-    }
-}
-
-@Composable
-fun DisabledActionArea(
-    title: String,
-    actions: List<Pair<String, String>>,
-) {
-    SkaldCard(title = title, state = "not implemented yet") {
-        actions.forEach { (label, reason) ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, SkaldDarkGray, RoundedCornerShape(8.dp))
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = label,
-                    color = SkaldWhite,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 20.sp,
-                )
-                LockedAction(reason, modifier = Modifier.fillMaxWidth())
-            }
-        }
-    }
-}
-
-@Composable
-fun LockedAction(
-    reason: String,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        color = SkaldBlack,
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, SkaldOrange),
-        modifier = modifier,
-    ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Text("Not implemented yet", color = SkaldOrange, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            Text(reason, color = SkaldMutedText, fontSize = 12.sp, lineHeight = 16.sp)
         }
     }
 }

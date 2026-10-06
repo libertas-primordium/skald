@@ -1,6 +1,7 @@
 package com.libertasprimordium.skald
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -22,46 +23,105 @@ class MoneroShellStartupBoundaryTest {
         val original = SourceGuardCorpus.productionRuntimeSourceFiles.single {
             SourceGuardCorpus.relativePath(it) == path
         }.let(SourceGuardCorpus::text)
+        assertTrue(contract.accepts(original))
         val mutations = listOf(
             original + "\nimport example.unapproved.Service\n",
-            original.replace("import androidx.compose.runtime.remember", "import androidx.compose.runtime.remember as launch"),
+            replaceExactlyOnce(original, "import androidx.compose.runtime.remember", "import androidx.compose.runtime.remember as launch"),
             original + "\nval inserted = example.unapproved.Service()\n",
             original + "\nval inserted = Class.forName(\"example.unapproved.Service\")\n",
             original + "\nval inserted = Runtime.getRuntime()\n",
             original + "\nval inserted = InjectedInitializer\n",
             original + "\nval inserted = ::unapprovedOperation\n",
-            original.replace("state.navigate(it)", "state.getSecret(it)"),
+            replaceExactlyOnce(original, "state.navigate(it)", "state.getSecret(it)"),
             original + "\nval page = '\"'; val state = java.lang.System.gc(); val screen = '\"'\n",
-            original.replace("package com.libertasprimordium.skald", "package com.libertasprimordium.skald; val inserted = example.unapproved.Service()"),
+            replaceExactlyOnce(original, "package com.libertasprimordium.skald", "package com.libertasprimordium.skald; val inserted = example.unapproved.Service()"),
             original + "\nval inserted = \"\${example.unapproved.Service()}\"\n",
         )
         mutations.forEachIndexed { index, source ->
+            assertFalse(source == original, "Startup mutation $index did not change the source")
             assertFalse(contract.accepts(source), "Startup mutation $index was admitted")
         }
     }
 
     @Test
-    fun everyDestinationIsWiredThroughTheStateAndUnavailableActionsHaveNoCallbacks() {
-        fun source(suffix: String) = SourceGuardCorpus.productionRuntimeSourceFiles.single {
-            SourceGuardCorpus.relativePath(it).endsWith(suffix)
-        }.let(SourceGuardCorpus::text)
+    fun actualShellRejectsStorageOperationsAndOperationCapableHandles() {
+        val path = "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/SkaldShellState.kt"
+        val original = source("/ui/SkaldShellState.kt")
+        val contract = contracts.getValue(path)
+        assertTrue(contract.accepts(original))
+        val mutations = listOf(
+            replaceExactlyOnce(
+                original,
+                "secureStorage.capability.toUiStatus()",
+                "secureStorage.capability.toUiStatus().also { secureStorage.listMetadata() }",
+            ),
+            replaceExactlyOnce(
+                original,
+                "val secureStorageStatus: SecureStorageUiStatus,",
+                "val secureStorageStatus: SecureStorageUiStatus, val operationStorage: SecureSecretStorage? = null,",
+            ),
+        )
+        mutations.forEachIndexed { index, mutation ->
+            assertFalse(contract.accepts(mutation), "Shell mutation $index was admitted")
+        }
+    }
+
+    @Test
+    fun everyDestinationIsWiredThroughTheStateAndReadOnlyPagesHaveNoCallbacks() {
         val app = source("/App.kt")
-        assertTrue(app.contains("SkaldShellState.start(secureStorage)"))
+        assertTrue(app.contains("remember(secureStorage)"))
+        assertEquals(1, app.split("SkaldShellState.start(secureStorage)").size - 1)
         assertTrue(app.contains("state = state.navigate(it)"))
         assertTrue(app.contains("val page = state.page"))
-        listOf("Overview", "Wallet", "Recovery", "Connection", "Settings").forEach { screen ->
+        listOf("Wallet", "Settings").forEach { screen ->
             assertTrue(app.contains("AppScreen.$screen -> ${screen}Screen(page"))
             val page = source("/ui/screens/${screen}Screen.kt")
-            assertTrue(page.contains("page.unavailableActions"))
+            assertTrue(page.contains("page.sections"))
             assertFalse(Regex("onClick|clickable|onValueChange").containsMatchIn(page))
         }
         val cards = source("/ui/components/SkaldCards.kt")
-        val locked = cards.substringAfter("fun LockedAction(").substringBefore("fun WarningStrip(")
-        assertTrue(locked.contains("Surface("))
-        assertFalse(Regex("onClick|clickable|Button\\s*\\(").containsMatchIn(locked))
-        val actions = cards.substringAfter("fun DisabledActionArea(").substringBefore("fun LockedAction(")
-        assertTrue(actions.contains("LockedAction(reason"))
-        assertFalse(actions.contains("onClick"))
+        assertFalse(Regex("onClick|clickable|onValueChange").containsMatchIn(cards))
+        val scaffold = source("/ui/components/SkaldAppScaffold.kt")
+        val notice = "Development build. Wallet and vault features are unavailable. Do not use real funds."
+        assertEquals(1, scaffold.split(notice).size - 1)
+        assertTrue(scaffold.contains("remember(selectedScreen) { ScrollState(0) }"))
+        assertFalse(scaffold.contains("rememberScrollState"))
+        assertFalse(scaffold.contains("rememberSaveable"))
+        listOf("Wallet", "Settings").forEach { screen ->
+            assertFalse(source("/ui/screens/${screen}Screen.kt").contains(notice))
+        }
+    }
+
+    @Test
+    fun retainedStateAndPresentationModelsContainOnlyImmutableSnapshotsAndText() {
+        fun fields(type: Class<*>): Map<String, String> = type.declaredFields
+            .filterNot { java.lang.reflect.Modifier.isStatic(it.modifiers) }
+            .onEach { assertTrue(java.lang.reflect.Modifier.isFinal(it.modifiers), "Presentation fields must be final") }
+            .associate { it.name to it.genericType.typeName }
+        assertEquals(
+            mapOf(
+                "selectedScreen" to "com.libertasprimordium.skald.ui.navigation.AppScreen",
+                "secureStorageStatus" to "com.libertasprimordium.skald.security.SecureStorageUiStatus",
+            ),
+            fields(com.libertasprimordium.skald.ui.SkaldShellState::class.java),
+        )
+        assertEquals(
+            mapOf("title" to "java.lang.String", "subtitle" to "java.lang.String", "sections" to "java.util.List<com.libertasprimordium.skald.ui.ShellSection>"),
+            fields(com.libertasprimordium.skald.ui.ShellPage::class.java),
+        )
+        assertEquals(
+            mapOf("title" to "java.lang.String", "status" to "java.lang.String", "paragraphs" to "java.util.List<java.lang.String>"),
+            fields(com.libertasprimordium.skald.ui.ShellSection::class.java),
+        )
+    }
+
+    private fun source(suffix: String): String = SourceGuardCorpus.productionRuntimeSourceFiles.single {
+        SourceGuardCorpus.relativePath(it).endsWith(suffix)
+    }.let(SourceGuardCorpus::text)
+
+    private fun replaceExactlyOnce(source: String, target: String, replacement: String): String {
+        assertEquals(1, source.split(target).size - 1, "Mutation target must identify one current source location")
+        return source.replace(target, replacement).also { assertFalse(it == source, "Mutation must change the source") }
     }
 
     private data class StartupContract(val packageName: String, val imports: Set<String>, val identifiers: Set<String>) {
@@ -97,22 +157,13 @@ class MoneroShellStartupBoundaryTest {
                 "com.libertasprimordium.skald.ui.SkaldShellState",
                 "com.libertasprimordium.skald.ui.components.SkaldAppScaffold",
                 "com.libertasprimordium.skald.ui.navigation.AppScreen",
-                "com.libertasprimordium.skald.ui.screens.ConnectionScreen",
-                "com.libertasprimordium.skald.ui.screens.OverviewScreen",
-                "com.libertasprimordium.skald.ui.screens.RecoveryScreen",
                 "com.libertasprimordium.skald.ui.screens.SettingsScreen",
                 "com.libertasprimordium.skald.ui.screens.WalletScreen",
             ),
             identifiers = setOf(
                 "AppScreen",
                 "Composable",
-                "Connection",
-                "ConnectionScreen",
                 "DisabledSecureSecretStorage",
-                "Overview",
-                "OverviewScreen",
-                "Recovery",
-                "RecoveryScreen",
                 "SecureSecretStorage",
                 "Settings",
                 "SettingsScreen",
@@ -131,7 +182,6 @@ class MoneroShellStartupBoundaryTest {
                 "remember",
                 "screen",
                 "secureStorage",
-                "secureStorageStatus",
                 "selectedScreen",
                 "start",
                 "state",
@@ -150,14 +200,12 @@ class MoneroShellStartupBoundaryTest {
             ),
             identifiers = setOf(
                 "AppScreen",
-                "Connection",
                 "List",
-                "Overview",
-                "Recovery",
                 "SecureSecretStorage",
                 "SecureStorageUiStatus",
                 "Settings",
                 "ShellPage",
+                "ShellSection",
                 "SkaldShellState",
                 "String",
                 "Wallet",
@@ -166,14 +214,15 @@ class MoneroShellStartupBoundaryTest {
                 "companion",
                 "constructor",
                 "data",
-                "details",
-                "emptyList",
                 "fun",
                 "get",
                 "listOf",
                 "navigate",
                 "object",
                 "page",
+                "paragraphs",
+                "sections",
+                "null",
                 "private",
                 "screen",
                 "secureStorage",
@@ -184,7 +233,6 @@ class MoneroShellStartupBoundaryTest {
                 "subtitle",
                 "title",
                 "toUiStatus",
-                "unavailableActions",
                 "val",
                 "when",
             ),

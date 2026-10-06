@@ -1,22 +1,21 @@
 package com.libertasprimordium.skald.ui.screens
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
 import com.libertasprimordium.skald.ui.ShellPage
-import com.libertasprimordium.skald.ui.components.BulletList
-import com.libertasprimordium.skald.ui.components.DisabledActionArea
 import com.libertasprimordium.skald.ui.components.ScreenTitle
 import com.libertasprimordium.skald.ui.components.SkaldCard
+import com.libertasprimordium.skald.ui.theme.SkaldMutedText
 
 @Composable
 fun WalletScreen(page: ShellPage) {
     ScreenTitle(page.title, page.subtitle)
-    SkaldCard(title = page.title, state = page.status) {
-        BulletList(page.details)
-    }
-    if (page.unavailableActions.isNotEmpty()) {
-        DisabledActionArea(
-            title = "Unavailable actions",
-            actions = page.unavailableActions.map { it to "Unavailable in the offline scaffold." },
-        )
+    page.sections.forEach { section ->
+        SkaldCard(title = section.title, state = section.status) {
+            section.paragraphs.forEach { paragraph ->
+                Text(paragraph, color = SkaldMutedText, lineHeight = 24.sp)
+            }
+        }
     }
 }

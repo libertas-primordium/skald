@@ -12,7 +12,7 @@ The product target supplied for this pass is a native Android/Linux Monero walle
 
 The boundary requirements below express the intended security constraints for later passes. They select no engine, JNI wrapper, subprocess architecture, transport library, LWS version, recovery format, or native storage contract. Documentation of an intended operation never authorizes executing it. Mainnet, real funds, production key handling, wallet import/create, account/subaddress generation, password entry, signing, relay, and persistence remain disabled.
 
-The user explicitly authorized protocol removal and direct Monero validation/classification placeholders while preserving vault architecture, prototype evidence and closed operational gates. Local governance is reconciled at the end of this session under that direct instruction; the next session reads the updated files. Earlier protocol/network approvals grant no Monero network permission. Deterministic offline tests are the current scope. UI simplification follows this pass, then work returns to completing the vault.
+The user explicitly authorized protocol removal and direct Monero validation/classification placeholders while preserving vault architecture, prototype evidence and closed operational gates. Local governance was reconciled at the end of the removal session under that direct instruction; subsequent sessions read the updated files. Earlier protocol/network approvals grant no Monero network permission. Deterministic offline tests are the current scope. The subsequent presentation-only pass simplifies the UI to Wallet and Settings. Work next returns to separately scoped canonical vault completion.
 
 ## Decisions made in the removal pass
 
@@ -21,7 +21,7 @@ The user explicitly authorized protocol removal and direct Monero validation/cla
 - `MoneroNetworkEvidence` labels `Unspecified`, `Mainnet`, `Testnet` and `Stagenet` independently of authorization. `Unspecified` is the default; mainnet is explicitly rejected and every other identity remains blocked by unavailable storage/provider gates. There is no selectable runtime network, port, chain probe or ordinal migration.
 - Typed material declarations select safe rejection categories for addresses, recovery material, private keys, transaction secrets and credentials. Shape-only recognition, where present, is defensive classification only: a 64-hex string has ambiguous cryptographic meaning; address-shaped text does not prove checksum, network, ownership or key validity. Unknown material is still rejected.
 - Vault identifiers, paths and provider evidence remain container infrastructure. Their positive admission is restricted to retained app-owned forms, fixed layout constants and supported synthetic evidence. Candidate recognition never grants admission. This is a deliberate restriction of placeholder acceptance, not a future canonical ID encoding; no old rejected input may become accepted and existing approved vault fixture bytes remain unchanged.
-- The app keeps five inert scaffold destinations with unavailable balances and operations. It has no settings persistence, wallet service or network client. Local full-node scanning and optional LWS remain target descriptions rather than selectable implementations.
+- The subsequently simplified UI has two destinations, Wallet and Settings, with unavailable balances and operations. Wallet contains one empty state; Settings presents read-only Vault, Connection, and About information. It has no settings persistence, wallet service or network client. Local full-node scanning and optional LWS remain target descriptions rather than selectable implementations.
 
 These choices are metadata and rejection-policy decisions. They do not choose recovery word counts/languages, Monero address decoding, key/scalar validation, cryptography, amount arithmetic, JNI interfaces, a daemon protocol or LWS compatibility. Monero material may eventually be valid encrypted payload content under a separately approved vault policy; the present restrictions prevent it becoming raw identifiers, paths, diagnostics or inert evidence.
 
@@ -176,7 +176,7 @@ Use deterministic offline tests first. Real protocol validation later needs expl
 
 ## Decisions required before operational implementation
 
-1. Review the later UI simplification scope separately. Harmless preferences and Monero integration-network/harness policy remain unresolved; this pass adds neither persistence nor network use.
+1. Complete the vault through its separately authorized canonical sequence after the two-screen UI pass. Harmless preferences and Monero integration-network/harness policy remain unresolved; UI simplification adds neither persistence nor network use.
 2. Select an engine and bridge only after Android/Linux packaging, lifecycle, licensing, maintenance, and native storage-isolation evidence. Embedding versus subprocess remains open.
 3. Decide whether Skald will ever bundle/manage `monerod`; the current default target only connects to user-selected infrastructure.
 4. Design canonical record/export or subordinate-blob ownership, segmentation, encryption, commit consistency, and crash recovery without bypassing the vault sequence.
@@ -185,7 +185,7 @@ Use deterministic offline tests first. Real protocol validation later needs expl
 7. Pin and review LWS protocol/version, scan-key scope, subaddresses, outgoing/spent completeness, key-image exchange, consent lifetime, and disclosure history.
 8. Select checked atomic-XMR representation/bounds/display parsing and Monero output-selection/privacy, review, offline-signing, and relay policies.
 
-These operational questions remain outside the removal pass. Follow the [accepted sequence](MONERO_PIVOT_MIGRATION_MAP.md): UI simplification next, then canonical vault completion. The completed classifications and inert shell do not authorize engine integration, new storage, provider promotion, or mainnet.
+These operational questions remain outside the removal pass. Follow the [accepted sequence](MONERO_PIVOT_MIGRATION_MAP.md): the two-screen presentation pass followed by separately scoped canonical vault completion. The completed classifications and inert shell do not authorize engine integration, new storage, provider promotion, or mainnet.
 
 ## Evidence limits and source freshness
 
