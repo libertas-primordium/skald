@@ -1,21 +1,22 @@
 package com.libertasprimordium.skald.ui.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
@@ -40,40 +41,31 @@ fun SkaldAppScaffold(
                         colors = listOf(SkaldBlack, SkaldNearBlack, SkaldCharcoal),
                     ),
                 )
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-            ) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 val compact = maxWidth < 760.dp
+                // Ephemeral per-page position: navigation always starts the new page at the top.
+                val scrollState = remember(selectedScreen) { ScrollState(0) }
                 Column(
                     verticalArrangement = Arrangement.spacedBy(if (compact) 12.dp else 16.dp),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .widthIn(max = 960.dp)
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(20.dp),
                 ) {
-                    SkaldHeader(
-                        compact = compact,
-                        selected = selectedScreen,
-                        onSelected = onSelectedScreen,
-                    )
+                    SkaldHeader(compact = compact)
                     PrimaryNavigation(
                         selected = selectedScreen,
                         compact = compact,
                         onSelected = onSelectedScreen,
                     )
                     WarningStrip(
-                        text = "Offline scaffold. Wallet operations and mainnet are disabled. Do not use real funds.",
+                        text = "Development build. Wallet and vault features are unavailable. Do not use real funds.",
                     )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                            .padding(bottom = 40.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        content(selectedScreen)
-                    }
+                    content(selectedScreen)
                 }
             }
         }

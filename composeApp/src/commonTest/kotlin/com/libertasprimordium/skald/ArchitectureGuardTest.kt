@@ -7,11 +7,13 @@ import com.libertasprimordium.skald.security.SecureStorageCapability
 import com.libertasprimordium.skald.security.SecureStorageResult
 import com.libertasprimordium.skald.security.SecretPayload
 import com.libertasprimordium.skald.security.commonDisabledSecureStorageCapability
+import com.libertasprimordium.skald.security.toUiStatus
 import com.libertasprimordium.skald.ui.SkaldShellState
 import com.libertasprimordium.skald.ui.navigation.AppScreen
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ArchitectureGuardTest {
@@ -20,8 +22,8 @@ class ArchitectureGuardTest {
         val storage = OperationRejectingStorage()
         val initial = SkaldShellState.start(storage)
         assertEquals(1, storage.capabilityReads)
-        assertEquals(AppScreen.Overview, initial.selectedScreen)
-        assertEquals("Wallet unavailable", initial.page.status)
+        assertEquals(AppScreen.Wallet, initial.selectedScreen)
+        assertEquals(commonDisabledSecureStorageCapability().toUiStatus(), initial.secureStorageStatus)
 
         var state = initial
         repeat(3) {
@@ -30,38 +32,48 @@ class ArchitectureGuardTest {
                 assertEquals(destination, state.selectedScreen)
                 assertEquals(destination.label, state.page.title)
                 assertSame(initial.secureStorageStatus, state.secureStorageStatus)
+                assertEquals(state.page, state.page)
             }
         }
         assertEquals(1, storage.capabilityReads)
         assertEquals(0, storage.operationAttempts)
-        assertEquals(AppScreen.Overview, initial.selectedScreen)
+        assertEquals(AppScreen.Wallet, initial.selectedScreen)
     }
 
     @Test
-    fun noPagePresentsAnAmountOrLiveWalletState() {
+    fun walletPresentsAnUnavailableEmptyStateWithoutRepresentingAnAmountOrHistory() {
         val shell = SkaldShellState.start(OperationRejectingStorage())
-        AppScreen.entries.forEach { destination ->
-            val page = shell.navigate(destination).page
-            val text = listOf(page.title, page.subtitle, page.status) + page.details + page.unavailableActions
-            assertTrue(text.none { value -> value.any(Char::isDigit) })
-            assertTrue(page.status in setOf("Wallet unavailable", "Unavailable", "Endpoint unconfigured", "Offline scaffold"))
-        }
-        assertTrue(shell.page.details.any { it.contains("Balance and transaction history are unavailable") })
-        assertTrue(shell.page.details.any { it.contains("mainnet are disabled") })
+        val page = shell.page
+        assertEquals("Wallet", page.title)
+        assertEquals("Monero wallet", page.subtitle)
+        val emptyState = page.sections.single()
+        assertEquals("Wallet unavailable", emptyState.title)
+        assertNull(emptyState.status)
+        assertEquals(
+            listOf("Wallet functionality is not implemented yet. Balances and transaction history are unavailable."),
+            emptyState.paragraphs,
+        )
+        assertEquals("disabled / not implemented", shell.secureStorageStatus.state)
     }
 
     @Test
-    fun unavailableWalletActionsRemainPresentationWithoutApprovalsOrOperations() {
+    fun repeatedPageReadsKeepTheCapabilitySnapshotAndNeverAttemptStorage() {
         val storage = OperationRejectingStorage()
         val shell = SkaldShellState.start(storage)
-        val wallet = shell.navigate(AppScreen.Wallet).page
-        assertEquals(listOf("Create wallet", "Import wallet", "Receive", "Send"), wallet.unavailableActions)
-        assertTrue(wallet.details.any { it.contains("separate signing and relay approvals") })
-        assertTrue(wallet.details.any { it.contains("input, recipient, fee, change and privacy review") })
-        assertTrue(wallet.details.any { it.contains("Watch-only") && it.contains("never imply signing") })
-        assertTrue(shell.navigate(AppScreen.Connection).page.unavailableActions.isEmpty())
+        repeat(5) {
+            val wallet = shell.navigate(AppScreen.Wallet)
+            val settings = wallet.navigate(AppScreen.Settings)
+            assertEquals(listOf("Wallet unavailable"), wallet.page.sections.map { it.title })
+            assertEquals(listOf("Vault", "Connection", "About"), settings.page.sections.map { it.title })
+            assertSame(shell.secureStorageStatus, settings.secureStorageStatus)
+            assertEquals(shell.secureStorageStatus.plannedSecretClasses, settings.secureStorageStatus.plannedSecretClasses)
+            assertEquals(shell.secureStorageStatus.disabledActions, settings.secureStorageStatus.disabledActions)
+        }
+        assertEquals(1, storage.capabilityReads)
         assertEquals(0, storage.operationAttempts)
+        assertTrue(shell.secureStorageStatus.disabledActions.isNotEmpty())
     }
+
 }
 
 private class OperationRejectingStorage : SecureSecretStorage {

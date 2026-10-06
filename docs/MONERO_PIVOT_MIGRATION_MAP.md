@@ -1,10 +1,10 @@
 # Monero Pivot Migration Map
 
-## Current pass: protocol removal with disabled Monero placeholders
+## Current status: two-screen Monero scaffold
 
-Updated 2026-10-04 on `monero-pivot-scaffold-01`, based on `a9c239a125622ce0071b2a8f649aa677ef185cec`. The user authorized the coordinated removal after the documentation baseline below. The baseline inventory remains historical: **547 files and 618 tree entries**, not the size of the current working tree. No stored data is migrated.
+Updated 2026-10-05 on `monero-ui-simplification-01`, based on development `91efe94f6b2d4cd9d6d25f478154a1d5ad882479`. The protocol-removal and bounded transition closeout preceded this presentation-only pass. The user authorized the coordinated removal after the documentation baseline below. The baseline inventory remains historical: **547 files and 618 tree entries**, not the size of the current working tree. No stored data is migrated.
 
-The maintained app now has an inert Monero-oriented shell. Its five temporary destinations are **Overview, Wallet, Recovery, Connection, Settings**. Existing Compose styling and platform launch mechanics remain. Balances are unavailable; creation, import, receive, send, recovery, synchronization and connection testing are unavailable. Connection describes intended user-owned full-node/local scanning with no endpoint configured. Optional custom LWS is explanatory text only: no selection, enrollment, consent collection or key disclosure.
+The maintained app has two inert destinations: **Wallet and Settings**. Wallet combines the former Overview and Wallet presentation into one unavailable empty state. Settings contains read-only Vault, Connection, and About cards; standalone Recovery and Connection routes, the overflow menu, action placeholders, and duplicate diagnostics are removed. The shared development warning appears once per rendered page. Existing Compose styling, capability-snapshot startup, and platform launch mechanics remain. Balances are unavailable; creation, import, receive, send, recovery, synchronization and connection testing are unavailable. The Connection card describes intended user-owned full-node/local scanning with no endpoint configured. Optional custom LWS is explanatory text only: no selection, enrollment, consent collection or key disclosure.
 
 | Area | Pass-2 disposition |
 | --- | --- |
@@ -20,20 +20,22 @@ The maintained app now has an inert Monero-oriented shell. Its five temporary de
 
 “Vault operations unchanged” means no crypto/storage implementation, capability, provider selection, authenticated fixture bytes or canonical architecture choice is advanced. It does not mean policy enum names, diagnostic reasons and identifier acceptance are byte-identical. The July 12 [canonical vault decision](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) and unsupported P0 formats remain distinct. Production selection stays `DisabledVaultCryptoProvider` with `productionProviderSelectable=false`; all wallet and canonical vault operations remain blocked. A Monero recovery seed is never the source of the canonical random vault root.
 
-The user explicitly superseded active descriptor/BDK/multi-rail requirements for this pass. Ignored local governance is reconciled at the end of the session while preserving generic security, verification and manual Git rules. This session uses the direct user scope; the next session reads the updated local instructions. No change to those instructions grants an operational capability.
+The removal pass explicitly superseded active descriptor/BDK/multi-rail requirements and reconciled ignored local governance while preserving generic security, verification and manual Git rules. The separately authorized UI pass changes presentation only. No instruction or documentation change grants an operational capability.
 
 ## Accepted sequence and remaining decisions
 
-1. Complete this protocol-removal pass, direct Monero placeholders and independent same-pass review. Verify admission is a subset of baseline accepted forms, retained fixtures still work, source confinement is not weakened, and startup performs no storage or backend work.
-2. Simplify and polish the UI in a separately bounded pass. The current five destinations preserve scaffold structure and do not decide the final navigation.
-3. Return to vault completion in the canonical decision's order: prototype disposition/reachability, exact layout, provider API and acceptance, canonical codec/vectors, sessions, storage/atomicity and repositories. Each gate needs its own implementation authority; this removal does not advance them.
+1. Completed protocol removal, direct Monero placeholders, and bounded transition closeout established the retained admission, fixture, confinement, and inert-startup baseline.
+2. The authorized UI simplification provides Wallet and Settings in the existing aesthetic, with read-only information and no new capability. Its verification covers state/navigation, source guards, supported builds, and actual Android/Linux presentation.
+3. Next, return to separately scoped vault completion in the canonical decision's order: prototype disposition/reachability, exact layout, provider API and acceptance, canonical codec/vectors, sessions, storage/atomicity and repositories. Each gate needs its own implementation authority; this removal does not advance them.
 4. Only after separate authorization, plan operational Monero domain, engine, full-node and optional-LWS integration. Engine convenience cannot bypass the vault sequence.
 
 Engine/bridge selection and native storage ownership, recovery formats/languages/watch-only scope, integer amount representation, output selection and transaction review, transport/TLS/LAN/Tor policy, Android background lifecycle, Monero test harness and pinned LWS compatibility remain deferred. No engine spike, new amount arithmetic, protocol parser, endpoint policy, native dependency, daemon service or real network test belongs to this pass. See the [boundary decision](MONERO_WALLET_BOUNDARY_DECISION.md).
 
-## Verification and review contract
+## UI verification and historical transition evidence
 
-The working pass records its starting diff/hashes, exact final change/deletion inventory, case-level source-guard dispositions, identifier admission analysis and independent review findings under ignored `.skald-local/reports/monero-pass2`. Local `BUILD_HISTORY.md` records actual commands, execution/caching status, test totals, package evidence and unavailable checks. These local reports are review evidence and are not product inputs.
+The UI pass records its baseline, exact changed-path inventory, protected-file hashes, focused and full offline tests, supported artifacts, actual Android/Linux screenshots and interactions, and independent UI/security reviews under ignored `.skald-local/reports/monero-ui-pass`. Security/domain sources, adapters, entry points, manifests, dependency/build configuration, crypto fixtures, theme, and the confinement scanner remain unchanged. Runtime verification limitations must remain explicit; previous crypto tests do not substitute for UI observation.
+
+The following contract describes the preceding protocol-removal pass. That pass records its starting diff/hashes, exact final change/deletion inventory, case-level source-guard dispositions, identifier admission analysis and independent review findings under ignored `.skald-local/reports/monero-pass2`. Local `BUILD_HISTORY.md` records actual commands, execution/caching status, test totals, package evidence and unavailable checks. These local reports are review evidence and are not product inputs.
 
 Completion requires the applicable offline test suite (`:composeApp:allTests`), desktop compilation, Android debug assembly, Debian packaging, Android instrumented-source compilation, and available required connected vault regressions. Inspect final runtime dependency graphs and packaged archives/native libraries. Rerun source guards after final source/document/build edits. Distinguish static review, tests actually executed and unavailable device coverage; passing tests alone do not establish exhaustive correctness.
 

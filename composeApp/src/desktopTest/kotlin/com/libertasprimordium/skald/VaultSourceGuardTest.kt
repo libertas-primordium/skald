@@ -73,10 +73,11 @@ class VaultSourceGuardTest {
     }
 
     @Test
-    fun disabledConnectionAndWalletUiFilesDoNotImportClientsOrRunProcesses() {
+    fun disabledSettingsAndWalletUiFilesDoNotImportClientsOrRunProcesses() {
         val root = repositoryRoot()
         val files = listOf(
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/ConnectionScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/SettingsScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/WalletScreen.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/SkaldShellState.kt"),
         )
         val forbiddenPatterns = listOf(
@@ -88,17 +89,15 @@ class VaultSourceGuardTest {
             .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
-        assertTrue(offenders.isEmpty(), "Disabled connection/wallet UI must remain client/process free: $offenders")
+        assertTrue(offenders.isEmpty(), "Disabled settings/wallet UI must remain client/process free: $offenders")
     }
 
     @Test
-    fun recoveryAndOverviewFilesDoNotImportClientsOrPersist() {
+    fun walletAndSettingsFilesDoNotImportClientsOrPersist() {
         val root = repositoryRoot()
         val files = listOf(
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/RecoveryScreen.kt"),
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/OverviewScreen.kt"),
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/RecoveryScreen.kt"),
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/OverviewScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/WalletScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/SettingsScreen.kt"),
         )
         val forbiddenPatterns = listOf(
             Regex("""\bProcessBuilder\b"""),
@@ -112,7 +111,7 @@ class VaultSourceGuardTest {
             .filter { file -> forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) } }
             .map { it.relativeTo(root).invariantSeparatorsPath }
 
-        assertTrue(offenders.isEmpty(), "Recovery/overview scaffold files must remain client/process/persistence free: $offenders")
+        assertTrue(offenders.isEmpty(), "Wallet/settings files must remain client/process/persistence free: $offenders")
     }
 
     @Test
@@ -11632,7 +11631,7 @@ class VaultSourceGuardTest {
     private fun boundaryFiles(root: File): List<File> =
         listOf(
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/App.kt"),
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/ConnectionScreen.kt"),
+            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/SettingsScreen.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/screens/WalletScreen.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/ui/SkaldShellState.kt"),
             File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SecureMetadataStorage.kt"),
