@@ -12,7 +12,7 @@ The product target supplied for this pass is a native Android/Linux Monero walle
 
 The boundary requirements below express the intended security constraints for later passes. They select no engine, JNI wrapper, subprocess architecture, transport library, LWS version, recovery format, or native storage contract. Documentation of an intended operation never authorizes executing it. Mainnet, real funds, production key handling, wallet import/create, account/subaddress generation, password entry, signing, relay, and persistence remain disabled.
 
-The user explicitly authorized protocol removal and direct Monero validation/classification placeholders while preserving vault architecture, prototype evidence and closed operational gates. Local governance was reconciled at the end of the removal session under that direct instruction; subsequent sessions read the updated files. Earlier protocol/network approvals grant no Monero network permission. Deterministic offline tests are the current scope. The subsequent presentation-only pass simplifies the UI to Wallet and Settings. Work next returns to separately scoped canonical vault completion.
+The user explicitly authorized protocol removal and direct Monero validation/classification placeholders while preserving vault architecture, prototype evidence and closed operational gates. Local governance was reconciled at the end of the removal session under that direct instruction; subsequent sessions read the updated files. Earlier protocol/network approvals grant no Monero network permission. Deterministic offline tests are the current scope. The subsequent presentation-only pass simplified the UI to Wallet and Settings. The first separately authorized vault prerequisite now isolates the unsupported executable prototypes and synthetic classifier in tests; exact canonical format/provider decisions remain later work.
 
 ## Decisions made in the removal pass
 
@@ -47,7 +47,7 @@ This is a narrowed scaffold contract, deliberately unsuitable for accepting real
 
 ## Canonical vault authority
 
-The [July 12 canonical vault decision](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) remains authoritative and unchanged. Its status is `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`.
+The architecture selected by the [July 12 canonical vault decision](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) remains authoritative and unchanged. Its status is `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`.
 
 The architecture selects an app-controlled multi-artifact live-vault directory: a minimal public header with a wrapped-root envelope, one authoritative encrypted authenticated manifest, independently encrypted opaque records, temporary staging, and quarantine/recovery artifacts. Backup/export is a separate format with an independent key hierarchy.
 
@@ -57,7 +57,7 @@ Canonical encoding must be bounded, big-endian, strictly ordered, and nonrecursi
 
 All canonical production vault cryptography must route through Skald's `VaultCryptoProvider`, with opaque provider-owned key handles, owned-copy sensitive byte types, redacted diagnostics, and practical clearing on lock/close. Linux remains passphrase-first; an OS keyring is not primary storage. Production selection is `DisabledVaultCryptoProvider` only and `productionProviderSelectable=false`. Create/open/unlock/encrypt/decrypt, runtime vault keys and nonces, sessions, secure secret/metadata persistence, production parser integration, vault file I/O, sync, signing, broadcasting, and mainnet remain blocked.
 
-Earlier `SkaldVaultV1ContainerFormat`, `SkaldVaultV1ManifestFormat`, `SkaldVaultV1HeaderCommitment`, `SkaldVaultV1RecordAead`, and their direct helper/fixture/KAT/atomicity graph are `PRE_RELEASE_PROTOTYPE_P0_UNSUPPORTED`. `EncryptedVaultWorkingParser` is `SYNTHETIC_TEST_CONTRACT_CLASSIFIER_ONLY`, not a canonical vault parser. Some direct helpers and the commonMain integrated KAT harness are executable and production-compiled, without app/storage integration; provider-selection rejection does not make those public helpers non-executable. Existing executable test crypto remains evidence in its current scope. Neither prototypes nor test success authorize a Monero vault, production provider selection, or persistence. Prototype quarantine and reachability restrictions need a separate pass; the pivot must not promote old helpers for convenience.
+Earlier `SkaldVaultV1ContainerFormat`, `SkaldVaultV1ManifestFormat`, `SkaldVaultV1HeaderCommitment`, `SkaldVaultV1RecordAead`, and their direct helper/fixture/KAT/atomicity graph are `PRE_RELEASE_PROTOTYPE_P0_UNSUPPORTED`. `EncryptedVaultWorkingParser` is `SYNTHETIC_TEST_CONTRACT_CLASSIFIER_ONLY`, not a canonical vault parser. The separately authorized [prototype quarantine](ENCRYPTED_LOCAL_VAULT_PROTOTYPE_QUARANTINE.md) removes the direct helper/fixture/integrated-KAT graph and synthetic classifier from production compilation while preserving their historical contracts in test support. Production retains only the small inert P0 KDF enum/parameter/constants needed by existing disabled policies; its historical 64-byte output is not canonical KEK/root architecture. Package exclusion and full test-target/device execution require independent closeout evidence. Existing test crypto remains scoped evidence. Neither prototypes nor test success authorize a Monero vault, production provider selection, or persistence; no production bridge to test helpers is permitted.
 
 Exact canonical magic, field identifiers/framing, header AAD bytes, passphrase normalization/UTF-8 process, record envelope overhead, and final device KDF parameters remain deferred. Supported canonical persistence does not yet exist, so this plan promises no Bitcoin-to-Monero vault migration or P0-byte compatibility.
 
@@ -176,7 +176,7 @@ Use deterministic offline tests first. Real protocol validation later needs expl
 
 ## Decisions required before operational implementation
 
-1. Complete the vault through its separately authorized canonical sequence after the two-screen UI pass. Harmless preferences and Monero integration-network/harness policy remain unresolved; UI simplification adds neither persistence nor network use.
+1. Complete the vault through its separately authorized canonical sequence. After review of prototype quarantine, settle exact canonical format and provider-contract questions before implementing dependent code. Harmless preferences and Monero integration-network/harness policy remain unresolved; the UI and quarantine passes add neither persistence nor network use.
 2. Select an engine and bridge only after Android/Linux packaging, lifecycle, licensing, maintenance, and native storage-isolation evidence. Embedding versus subprocess remains open.
 3. Decide whether Skald will ever bundle/manage `monerod`; the current default target only connects to user-selected infrastructure.
 4. Design canonical record/export or subordinate-blob ownership, segmentation, encryption, commit consistency, and crash recovery without bypassing the vault sequence.
@@ -185,7 +185,7 @@ Use deterministic offline tests first. Real protocol validation later needs expl
 7. Pin and review LWS protocol/version, scan-key scope, subaddresses, outgoing/spent completeness, key-image exchange, consent lifetime, and disclosure history.
 8. Select checked atomic-XMR representation/bounds/display parsing and Monero output-selection/privacy, review, offline-signing, and relay policies.
 
-These operational questions remain outside the removal pass. Follow the [accepted sequence](MONERO_PIVOT_MIGRATION_MAP.md): the two-screen presentation pass followed by separately scoped canonical vault completion. The completed classifications and inert shell do not authorize engine integration, new storage, provider promotion, or mainnet.
+These operational questions remain outside the removal and quarantine passes. Follow the [accepted sequence](MONERO_PIVOT_MIGRATION_MAP.md): preserve the two-screen presentation, review the prototype-isolation prerequisite, then separately scope canonical format/provider decisions and subsequent vault implementation. The completed classifications and inert shell do not authorize engine integration, new storage, provider promotion, or mainnet.
 
 ## Evidence limits and source freshness
 

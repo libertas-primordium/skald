@@ -546,7 +546,7 @@ object SkaldVaultV1Argon2idCalibrationPolicy {
         val reason = when {
             parameters.type != SkaldVaultV1Argon2idType.Argon2id ->
                 Argon2idCalibrationRejectionReason.UnsupportedArgon2Type
-            parameters.version != SkaldVaultV1Argon2idRootDerivation.ARGON2_VERSION_19 ->
+            parameters.version != SkaldVaultV1PrototypeKdfCompatibility.ARGON2_VERSION_19 ->
                 Argon2idCalibrationRejectionReason.UnsupportedArgon2Version
             parameters.memoryKiB < MINIMUM_MEMORY_KIB ->
                 Argon2idCalibrationRejectionReason.MemoryBelowV1Floor
@@ -581,7 +581,7 @@ object SkaldVaultV1Argon2idCalibrationPolicy {
 
     private fun SkaldVaultV1Argon2idCalibrationObservation.isFloorCandidate(): Boolean =
         parameters.type == SkaldVaultV1Argon2idType.Argon2id &&
-            parameters.version == SkaldVaultV1Argon2idRootDerivation.ARGON2_VERSION_19 &&
+            parameters.version == SkaldVaultV1PrototypeKdfCompatibility.ARGON2_VERSION_19 &&
             parameters.memoryKiB == MINIMUM_MEMORY_KIB &&
             parameters.iterations == MINIMUM_ITERATIONS &&
             parameters.parallelism == REQUIRED_PARALLELISM &&

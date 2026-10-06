@@ -125,17 +125,17 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
         )
         protectedProductionPaths.forEach { path ->
             assertFalse(
-                productionSource(path).contains("EncryptedVaultV1CanonicalArchitecture"),
+                auditedSource(path).contains("EncryptedVaultV1CanonicalArchitecture"),
                 "$path must remain unchanged and independent of the architecture policy model.",
             )
         }
     }
 
     @Test
-    fun productionCompiledParserSerializerAndSyntheticClassifierCountsAreExact() {
-        val container = productionSource(CONTAINER_FORMAT_PATH)
-        val manifest = productionSource(MANIFEST_FORMAT_PATH)
-        val syntheticParser = productionSource(WORKING_PARSER_PATH)
+    fun testOnlyParserSerializerAndSyntheticClassifierCountsArePreserved() {
+        val container = auditedSource(CONTAINER_FORMAT_PATH)
+        val manifest = auditedSource(MANIFEST_FORMAT_PATH)
+        val syntheticParser = auditedSource(WORKING_PARSER_PATH)
 
         val rawByteParserDeclarations =
             RAW_BYTE_PARSE_DECLARATION.findAll(container).count() +
@@ -150,25 +150,28 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
         assertEquals(1, syntheticClassifierDeclarations)
         assertEquals(2, rawByteSerializerDeclarations)
 
-        EXPECTED_PRODUCTION_OBJECT_DECLARATIONS.forEach { (declaration, expectedPath) ->
-            val definitionFiles = SourceGuardCorpus.productionRuntimeSourceFiles.filter { file ->
+        EXPECTED_AUDITED_OBJECT_DECLARATIONS.forEach { (declaration, expectedPath) ->
+            val definitionFiles = (SourceGuardCorpus.productionRuntimeSourceFiles + SourceGuardCorpus.testSourceFiles).filter { file ->
                 Regex("""\bobject\s+${Regex.escape(declaration)}\b""")
                     .containsMatchIn(SourceGuardCorpus.text(file))
             }
             assertEquals(
                 listOf(expectedPath),
                 definitionFiles.map(SourceGuardCorpus::relativePath),
-                "$declaration must have one production-compiled declaration in its audited source set.",
+                "$declaration must have one declaration in its explicitly audited source set.",
             )
+            if (expectedPath != PROVIDER_SELECTION_PATH) {
+                assertTrue(SourceGuardCorpus.productionRuntimeSourceFiles.none { it in definitionFiles })
+            }
         }
     }
 
     @Test
     fun cryptoExecutionDeclarationCountsAndPlatformPrimitivePlacementAreExact() {
-        val argon2 = productionSource(ARGON2_PATH)
-        val header = productionSource(HEADER_COMMITMENT_PATH)
-        val recordAead = productionSource(RECORD_AEAD_PATH)
-        val katHarness = productionSource(KAT_HARNESS_PATH)
+        val argon2 = auditedSource(ARGON2_PATH)
+        val header = auditedSource(HEADER_COMMITMENT_PATH)
+        val recordAead = auditedSource(RECORD_AEAD_PATH)
+        val katHarness = auditedSource(KAT_HARNESS_PATH)
 
         val corePublicCryptoExecutionDeclarations =
             functionDeclarationCount(argon2, "deriveRootMaterial") +
@@ -200,17 +203,17 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
         )
 
         val commonExpectDeclarations = PRIMITIVE_NAMES.sumOf { primitiveName ->
-            SourceGuardCorpus.commonMainFiles.sumOf { file ->
+            SourceGuardCorpus.testSourceFiles.filter { SourceGuardCorpus.relativePath(it).startsWith("composeApp/src/prototypeTestSupport/") }.sumOf { file ->
                 expectDeclaration(primitiveName).findAll(SourceGuardCorpus.text(file)).count()
             }
         }
         val androidActualDeclarations = PRIMITIVE_NAMES.sumOf { primitiveName ->
-            SourceGuardCorpus.androidMainFiles.sumOf { file ->
+            SourceGuardCorpus.testSourceFiles.filter { SourceGuardCorpus.relativePath(it).startsWith("composeApp/src/androidPrototypeTestSupport/") }.sumOf { file ->
                 actualDeclaration(primitiveName).findAll(SourceGuardCorpus.text(file)).count()
             }
         }
         val desktopActualDeclarations = PRIMITIVE_NAMES.sumOf { primitiveName ->
-            SourceGuardCorpus.desktopMainFiles.sumOf { file ->
+            SourceGuardCorpus.testSourceFiles.filter { SourceGuardCorpus.relativePath(it).startsWith("composeApp/src/desktopTest/") }.sumOf { file ->
                 actualDeclaration(primitiveName).findAll(SourceGuardCorpus.text(file)).count()
             }
         }
@@ -222,7 +225,7 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
     }
 
     @Test
-    fun namedProductionCallSitesAreConfinedToTheExistingKatHarness() {
+    fun productionCallsAreAbsentAndPreservedSupportCallsStayInTheExistingKatHarness() {
         val expectedCounts = linkedMapOf(
             "SkaldVaultV1ContainerFormat.serialize" to 0,
             "SkaldVaultV1ContainerFormat.parse" to 0,
@@ -237,12 +240,18 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
         )
 
         expectedCounts.forEach { (namedCall, expectedCount) ->
-            val callSites = SourceGuardCorpus.productionRuntimeSourceFiles.flatMap { file ->
+            val productionSites = SourceGuardCorpus.productionRuntimeSourceFiles.filter { file ->
+                SourceGuardCorpus.text(file).contains(namedCall)
+            }
+            assertTrue(productionSites.isEmpty(), "Quarantined call appeared in production: $namedCall")
+            val callSites = SourceGuardCorpus.testSourceFiles.filter { file ->
+                SourceGuardCorpus.relativePath(file).startsWith("composeApp/src/prototypeTestSupport/")
+            }.flatMap { file ->
                 List(SourceGuardCorpus.text(file).literalCount(namedCall)) {
                     SourceGuardCorpus.relativePath(file)
                 }
             }
-            assertEquals(expectedCount, callSites.size, "Unexpected production call-site count for $namedCall.")
+            assertEquals(expectedCount, callSites.size, "Unexpected preserved support call-site count for $namedCall.")
             if (expectedCount > 0) {
                 assertEquals(setOf(KAT_HARNESS_PATH), callSites.toSet())
             }
@@ -263,15 +272,15 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
 
     @Test
     fun fixtureAndSyntheticCatalogPlacementRemainFactuallyDistinct() {
-        val commonFixtureEvidence = linkedMapOf(
+        val testSupportFixtureEvidence = linkedMapOf(
             CONTAINER_FORMAT_PATH to listOf("fun vectorFixtureContainer", "FIXTURE_HEADER_COMMITMENT_TAG"),
             MANIFEST_FORMAT_PATH to listOf("fun vectorFixtureManifest", "FIXTURE_HEADER_COMMITMENT_CONTEXT"),
             HEADER_COMMITMENT_PATH to listOf("fun vectorFixtureHeader"),
             RECORD_AEAD_PATH to listOf("VECTOR_RECORD_AEAD_KEY", "VECTOR_PLAINTEXT", "fun vectorFixtureAadContext"),
             KAT_HARNESS_PATH to listOf("object SkaldVaultV1ProviderKatFixtures"),
         )
-        commonFixtureEvidence.forEach { (path, evidence) ->
-            val source = productionSource(path)
+        testSupportFixtureEvidence.forEach { (path, evidence) ->
+            val source = auditedSource(path)
             evidence.forEach { expected -> assertTrue(source.contains(expected), "$path is missing $expected") }
         }
 
@@ -291,7 +300,7 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
 
     @Test
     fun earlierDirectCryptoLineDoesNotFlowThroughProviderSelection() {
-        val directCryptoFiles = DIRECT_CRYPTO_PATHS.map { path -> productionFile(path) }
+        val directCryptoFiles = DIRECT_CRYPTO_PATHS.map { path -> auditedFile(path) }
         val providerReferences = directCryptoFiles.filter { file ->
             SourceGuardCorpus.text(file).contains("VaultCryptoProvider")
         }
@@ -341,6 +350,17 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
     private fun productionSource(path: String): String =
         SourceGuardCorpus.text(productionFile(path))
 
+    private fun auditedFile(path: String) =
+        (SourceGuardCorpus.productionRuntimeSourceFiles + SourceGuardCorpus.testSourceFiles).single { file ->
+            SourceGuardCorpus.relativePath(file) == path
+        }.also { file ->
+            if (path != PROVIDER_SELECTION_PATH && path != CANONICAL_DECISION_PATH) {
+                assertFalse(file in SourceGuardCorpus.productionRuntimeSourceFiles, "Prototype must be test-only: $path")
+            }
+        }
+
+    private fun auditedSource(path: String): String = SourceGuardCorpus.text(auditedFile(path))
+
     private fun docsSource(path: String): String =
         SourceGuardCorpus.docsFiles
             .single { file -> SourceGuardCorpus.relativePath(file) == path }
@@ -385,18 +405,20 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
 
         const val SECURITY_ROOT =
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security"
+        const val SUPPORT_SECURITY_ROOT =
+            "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security"
         const val ANDROID_SECURITY_ROOT =
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security"
+            "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security"
         const val DESKTOP_SECURITY_ROOT =
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security"
-        const val CONTAINER_FORMAT_PATH = "$SECURITY_ROOT/SkaldVaultV1ContainerFormat.kt"
-        const val MANIFEST_FORMAT_PATH = "$SECURITY_ROOT/SkaldVaultV1ManifestFormat.kt"
-        const val HEADER_COMMITMENT_PATH = "$SECURITY_ROOT/SkaldVaultV1HeaderCommitment.kt"
-        const val RECORD_AEAD_PATH = "$SECURITY_ROOT/SkaldVaultV1RecordAead.kt"
-        const val ARGON2_PATH = "$SECURITY_ROOT/SkaldVaultV1Argon2idRootDerivation.kt"
-        const val WORKING_PARSER_PATH = "$SECURITY_ROOT/EncryptedVaultWorkingParser.kt"
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security"
+        const val CONTAINER_FORMAT_PATH = "$SUPPORT_SECURITY_ROOT/SkaldVaultV1ContainerFormat.kt"
+        const val MANIFEST_FORMAT_PATH = "$SUPPORT_SECURITY_ROOT/SkaldVaultV1ManifestFormat.kt"
+        const val HEADER_COMMITMENT_PATH = "$SUPPORT_SECURITY_ROOT/SkaldVaultV1HeaderCommitment.kt"
+        const val RECORD_AEAD_PATH = "$SUPPORT_SECURITY_ROOT/SkaldVaultV1RecordAead.kt"
+        const val ARGON2_PATH = "$SUPPORT_SECURITY_ROOT/SkaldVaultV1Argon2idRootDerivation.kt"
+        const val WORKING_PARSER_PATH = "$SUPPORT_SECURITY_ROOT/EncryptedVaultWorkingParser.kt"
         const val PROVIDER_SELECTION_PATH = "$SECURITY_ROOT/VaultCryptoProviderSelection.kt"
-        const val KAT_HARNESS_PATH = "$SECURITY_ROOT/SkaldVaultV1StillDisabledProviderKatHarness.kt"
+        const val KAT_HARNESS_PATH = "$SUPPORT_SECURITY_ROOT/SkaldVaultV1StillDisabledProviderKatHarness.kt"
         const val CANONICAL_DECISION_PATH =
             "$SECURITY_ROOT/EncryptedVaultV1CanonicalArchitectureDecision.kt"
         const val SYNTHETIC_CATALOG_PATH =
@@ -420,7 +442,7 @@ class EncryptedVaultV1FormatParserCryptoReconciliationAuditTest {
             "EncryptedVaultV1CanonicalArchitecturePolicy.currentDecision"
         val KOTLIN_STRING_LITERAL = Regex("""\"([^\"\\]*(?:\\.[^\"\\]*)*)\"""")
 
-        val EXPECTED_PRODUCTION_OBJECT_DECLARATIONS = linkedMapOf(
+        val EXPECTED_AUDITED_OBJECT_DECLARATIONS = linkedMapOf(
             "SkaldVaultV1ContainerFormat" to CONTAINER_FORMAT_PATH,
             "SkaldVaultV1ManifestFormat" to MANIFEST_FORMAT_PATH,
             "SkaldVaultV1HeaderCommitment" to HEADER_COMMITMENT_PATH,

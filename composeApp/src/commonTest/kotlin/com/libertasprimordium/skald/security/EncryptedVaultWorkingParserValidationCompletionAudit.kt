@@ -327,7 +327,7 @@ object EncryptedVaultWorkingParserValidationCompletionAudit {
                 scaffold.parserWriterImplementationScaffoldPresent,
             workingParserImplementationPresent = parserEvidence.workingParserImplementationPresent,
             commonMainInMemoryParserPresent = parserEvidence.commonMainInMemoryParserPresent,
-            parserCompiledIntoProductionArtifacts = true,
+            parserCompiledIntoProductionArtifacts = false,
             syntheticTestVectorExecutionPresent = true,
             syntheticTestVectorExecutionValidated = syntheticTestVectorExecutionValidated,
             existingCatalogReused = true,
@@ -734,6 +734,6 @@ object EncryptedVaultWorkingParserValidationCompletionAudit {
     private const val ASCII_CASE_BIT = 0x20
     private const val SYNTHETIC_TOKEN_INDEX = 4
     private const val EXPECTED_PARSER_DISPLAY =
-        "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+        "EncryptedVaultWorkingParser(REDACTED, PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER, " +
             "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
 }

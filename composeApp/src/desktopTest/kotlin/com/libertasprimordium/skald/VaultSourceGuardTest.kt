@@ -1403,7 +1403,7 @@ class VaultSourceGuardTest {
         val root = repositoryRoot()
         val parserFile = File(
             root,
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
+            "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
         )
         val approvedParserFile = sourceGuardRelativePath(parserFile)
         val parserDefinitionPatterns = listOf(
@@ -1430,9 +1430,7 @@ class VaultSourceGuardTest {
         )
         val misplacedParserDefinitions = productionRuntimeKotlinFiles()
             .filter { file ->
-                val relative = sourceGuardRelativePath(file)
-                relative != approvedParserFile &&
-                    parserDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                parserDefinitionPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
             }
             .map(::sourceGuardRelativePath)
         val parserSource = sourceGuardText(parserFile)
@@ -1594,10 +1592,13 @@ class VaultSourceGuardTest {
             .filter { pattern -> pattern.containsMatchIn(parserClassificationSource) }
             .map { pattern -> pattern.pattern }
 
-        assertTrue(parserFile.isFile, "Working parser file must exist.")
+        assertTrue(parserFile.isFile, "Working parser test support must exist.")
+        assertTrue(SourceGuardCorpus.testSourceFiles.any { sourceGuardRelativePath(it) == approvedParserFile })
+        assertFalse(SourceGuardCorpus.productionRuntimeSourceFiles.any { sourceGuardRelativePath(it) == approvedParserFile })
+        assertTrue(Regex("""commonMainInMemoryParserPresent\s*=\s*false""").containsMatchIn(parserSource))
         assertTrue(
             misplacedParserDefinitions.isEmpty(),
-            "Working parser definitions must stay in the approved commonMain parser file: $misplacedParserDefinitions",
+            "Working parser definitions must stay in the approved test-support parser file: $misplacedParserDefinitions",
         )
         assertTrue(
             productionMarkerOffenders.isEmpty(),
@@ -1630,7 +1631,7 @@ class VaultSourceGuardTest {
         )
         assertTrue("override fun toString(): String" in parserSource)
         assertTrue(
-            "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " in
+            "EncryptedVaultWorkingParser(REDACTED, PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER, " in
                 parserSource,
         )
         assertTrue(
@@ -1651,7 +1652,7 @@ class VaultSourceGuardTest {
     fun encryptedVaultWorkingParserValidationAuditStaysTestOnlyPayloadFreeAndUnreachableFromProduction() {
         val root = repositoryRoot()
         val parserPath =
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt"
+            "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt"
         val auditPath =
             "composeApp/src/commonTest/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParserValidationCompletionAudit.kt"
         val auditTestPath =
@@ -1675,7 +1676,6 @@ class VaultSourceGuardTest {
             .substringAfter("data class EncryptedVaultWorkingParserRedactedDiagnostics(")
             .substringBefore(") {")
         val productionOutsideParser = productionRuntimeKotlinFiles()
-            .filterNot { sourceGuardRelativePath(it) == parserPath }
         val productionCallPatterns = listOf(
             Regex("""EncryptedVaultWorkingParser\s*\.\s*parse\s*\("""),
             Regex("""EncryptedVaultWorkingParserRequest\s*\.\s*testSourceSyntheticVector\s*\("""),
@@ -1756,6 +1756,7 @@ class VaultSourceGuardTest {
         assertFalse("skv-" in auditSource)
         assertTrue("COMMON_TEST_VALIDATION_ONLY" in auditSource)
         assertTrue("parserValidationCompletionAuditPassed" in auditSource)
+        assertTrue(Regex("""parserCompiledIntoProductionArtifacts\s*=\s*false""").containsMatchIn(auditSource))
         assertTrue(SourceGuardCorpus.productionRuntimeSourceFiles.none { sourceGuardRelativePath(it) == auditPath })
         assertTrue(SourceGuardCorpus.productionRuntimeSourceFiles.none { sourceGuardRelativePath(it) == auditTestPath })
         assertTrue(SourceGuardCorpus.testSourceFiles.any { sourceGuardRelativePath(it) == androidValidationPath })
@@ -2181,7 +2182,6 @@ class VaultSourceGuardTest {
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultParserWriterTestVectorAdmission.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultParserWriterScaffold.kt",
             "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParserAdmissionGate.kt",
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/EncryptedVaultWorkingParser.kt",
             CANONICAL_ARCHITECTURE_DECISION_POLICY_PATH,
         )
         val offenders = productionRuntimeKotlinFiles()
@@ -3492,9 +3492,9 @@ class VaultSourceGuardTest {
         val sourceRoot = File(root, "composeApp/src")
         val allowedFiles = setOf(
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1RecordAead.kt",
+            "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt",
+            "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
+            "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1RecordAead.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidArgon2idCalibrationProbeTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidKatValidationTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidRecordAeadBuildingBlockTest.kt",
@@ -3502,9 +3502,9 @@ class VaultSourceGuardTest {
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidTestProviderKatHarnessTest.kt",
             "composeApp/src/androidInstrumentedTest/kotlin/com/libertasprimordium/skald/VaultCryptoAndroidProviderLevelKatExecutionTest.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1RecordAead.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
+            "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1RecordAead.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoArgon2idCalibrationProbeTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCanonicalHeaderHkdfHmacVectorTest.kt",
             "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/VaultCryptoKnownAnswerVectorTest.kt",
@@ -3537,11 +3537,8 @@ class VaultSourceGuardTest {
             File(root, "composeApp/src/desktopMain"),
         )
         val allowedFiles = setOf(
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RecordAead.kt",
             "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidVaultCryptoDependencyCompileProbe.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1RecordAead.kt",
             "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopVaultCryptoDependencyCompileProbe.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1RecordAead.kt",
         )
         val tinkAeadPatterns = listOf(
             Regex("""import\s+com\.google\.crypto\.tink"""),
@@ -3579,10 +3576,12 @@ class VaultSourceGuardTest {
     fun recordAeadBuildingBlocksDoNotPersistGenerateRandomKeysUseInternalApisOrLog() {
         val root = repositoryRoot()
         val files = listOf(
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RecordAead.kt"),
-            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1RecordAead.kt"),
-            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1RecordAead.kt"),
+            File(root, "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1RecordAead.kt"),
+            File(root, "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1RecordAead.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1RecordAead.kt"),
         )
+        assertTrue(files.all { it in SourceGuardCorpus.testSourceFiles })
+        assertTrue(files.none { it in SourceGuardCorpus.productionRuntimeSourceFiles })
         val forbiddenPatterns = listOf(
             Regex("""com\.google\.crypto\.tink\.aead\.internal"""),
             Regex("""com\.google\.crypto\.tink\.internal"""),
@@ -3716,12 +3715,6 @@ class VaultSourceGuardTest {
             File(root, "composeApp/src/androidMain"),
             File(root, "composeApp/src/desktopMain"),
         )
-        val allowedFiles = setOf(
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1HeaderCommitment.kt",
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1HeaderCommitmentCrypto.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1HeaderCommitmentCrypto.kt",
-        )
         val forbiddenPatterns = listOf(
             Regex("""import\s+javax\.crypto"""),
             Regex("""\bMac\.getInstance\("""),
@@ -3741,9 +3734,7 @@ class VaultSourceGuardTest {
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
                     .filter { file ->
-                        val relative = file.relativeTo(root).invariantSeparatorsPath
-                        relative !in allowedFiles &&
-                            forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                        forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3763,12 +3754,6 @@ class VaultSourceGuardTest {
             File(root, "composeApp/src/androidMain"),
             File(root, "composeApp/src/desktopMain"),
         )
-        val allowedFiles = setOf(
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1Argon2idRootDerivation.kt",
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt",
-        )
         val forbiddenPatterns = listOf(
             Regex("""\bArgon2BytesGenerator\("""),
             Regex("""\bArgon2Parameters\.Builder\("""),
@@ -3784,9 +3769,7 @@ class VaultSourceGuardTest {
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
                     .filter { file ->
-                        val relative = file.relativeTo(root).invariantSeparatorsPath
-                        relative !in allowedFiles &&
-                            forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                        forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3806,12 +3789,6 @@ class VaultSourceGuardTest {
             File(root, "composeApp/src/androidMain"),
             File(root, "composeApp/src/desktopMain"),
         )
-        val allowedFiles = setOf(
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicy.kt",
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
-            "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1PassphrasePolicy.kt",
-            "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1PassphrasePolicy.kt",
-        )
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.text\.Normalizer"""),
             Regex("""\bNormalizer\.normalize\("""),
@@ -3824,9 +3801,7 @@ class VaultSourceGuardTest {
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
                     .filter { file ->
-                        val relative = file.relativeTo(root).invariantSeparatorsPath
-                        relative !in allowedFiles &&
-                            forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                        forbiddenPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -3842,13 +3817,15 @@ class VaultSourceGuardTest {
     fun passphraseAndArgon2idBuildingBlocksDoNotLogPersistGenerateRandomnessOrUseAead() {
         val root = repositoryRoot()
         val files = listOf(
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicy.kt"),
-            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1PassphrasePolicy.kt"),
-            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1PassphrasePolicy.kt"),
-            File(root, "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1Argon2idRootDerivation.kt"),
-            File(root, "composeApp/src/androidMain/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt"),
-            File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt"),
+            File(root, "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1PassphrasePolicy.kt"),
+            File(root, "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1PassphrasePolicy.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1PassphrasePolicy.kt"),
+            File(root, "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1Argon2idRootDerivation.kt"),
+            File(root, "composeApp/src/androidPrototypeTestSupport/kotlin/com/libertasprimordium/skald/security/AndroidSkaldVaultV1Argon2idRootDerivation.kt"),
+            File(root, "composeApp/src/desktopTest/kotlin/com/libertasprimordium/skald/security/DesktopSkaldVaultV1Argon2idRootDerivation.kt"),
         )
+        assertTrue(files.all { it in SourceGuardCorpus.testSourceFiles })
+        assertTrue(files.none { it in SourceGuardCorpus.productionRuntimeSourceFiles })
         val forbiddenPatterns = listOf(
             Regex("""\bprintln\("""),
             Regex("""\bprint\("""),
@@ -3887,8 +3864,10 @@ class VaultSourceGuardTest {
         val root = repositoryRoot()
         val file = File(
             root,
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
+            "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1StillDisabledProviderKatHarness.kt",
         )
+        assertTrue(file in SourceGuardCorpus.testSourceFiles)
+        assertFalse(file in SourceGuardCorpus.productionRuntimeSourceFiles)
         val forbiddenPatterns = listOf(
             Regex("""\bVaultCryptoProviderSelectionRegistry\b"""),
             Regex("""\bProductionVaultCryptoProvider\b"""),
@@ -4290,7 +4269,7 @@ class VaultSourceGuardTest {
             File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security"),
         )
         val approvedParserWriterFile =
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ContainerFormat.kt"
+            "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ContainerFormat.kt"
         val parserWriterPatterns = listOf(
             Regex("""\bSkaldVaultV1ContainerFormat\b"""),
             Regex("""\bSkaldVaultV1ContainerResult\b"""),
@@ -4303,9 +4282,7 @@ class VaultSourceGuardTest {
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
                     .filter { file ->
-                        val relative = file.relativeTo(root).invariantSeparatorsPath
-                        relative != approvedParserWriterFile &&
-                            parserWriterPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                        parserWriterPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4313,9 +4290,10 @@ class VaultSourceGuardTest {
 
         assertTrue(
             misplacedParserWriter.isEmpty(),
-            "Container parser/writer types must stay in the exact approved file: $misplacedParserWriter",
+            "Container parser/writer types must be absent from production and stay in the exact test-support file: $misplacedParserWriter",
         )
 
+        assertTrue(SourceGuardCorpus.testSourceFiles.any { sourceGuardRelativePath(it) == approvedParserWriterFile })
         val source = sourceGuardText(File(root, approvedParserWriterFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),
@@ -4388,7 +4366,7 @@ class VaultSourceGuardTest {
             File(root, "composeApp/src/desktopMain/kotlin/com/libertasprimordium/skald/security"),
         )
         val approvedParserWriterFile =
-            "composeApp/src/commonMain/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ManifestFormat.kt"
+            "composeApp/src/prototypeTestSupport/kotlin/com/libertasprimordium/skald/security/SkaldVaultV1ManifestFormat.kt"
         val parserWriterPatterns = listOf(
             Regex("""\bSkaldVaultV1ManifestFormat\b"""),
             Regex("""\bSkaldVaultV1ManifestResult\b"""),
@@ -4401,9 +4379,7 @@ class VaultSourceGuardTest {
                 sourceRoot.walkTopDown()
                     .filter { it.isFile && it.extension == "kt" }
                     .filter { file ->
-                        val relative = file.relativeTo(root).invariantSeparatorsPath
-                        relative != approvedParserWriterFile &&
-                            parserWriterPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
+                        parserWriterPatterns.any { it.containsMatchIn(sourceGuardText(file)) }
                     }
                     .map { it.relativeTo(root).invariantSeparatorsPath }
                     .toList()
@@ -4411,9 +4387,10 @@ class VaultSourceGuardTest {
 
         assertTrue(
             misplacedParserWriter.isEmpty(),
-            "Manifest parser/writer types must stay in the exact approved file: $misplacedParserWriter",
+            "Manifest parser/writer types must be absent from production and stay in the exact test-support file: $misplacedParserWriter",
         )
 
+        assertTrue(SourceGuardCorpus.testSourceFiles.any { sourceGuardRelativePath(it) == approvedParserWriterFile })
         val source = sourceGuardText(File(root, approvedParserWriterFile))
         val forbiddenPatterns = listOf(
             Regex("""import\s+java\.io"""),

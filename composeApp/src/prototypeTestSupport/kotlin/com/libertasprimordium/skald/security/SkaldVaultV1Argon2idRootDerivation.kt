@@ -9,21 +9,6 @@ internal expect fun skaldVaultV1Argon2idRootMaterial(
     outputBytes: Int,
 ): ByteArray
 
-enum class SkaldVaultV1Argon2idType(val label: String) {
-    Argon2id("Argon2id"),
-    Argon2i("Argon2i"),
-    Argon2d("Argon2d"),
-}
-
-data class SkaldVaultV1Argon2idParameters(
-    val type: SkaldVaultV1Argon2idType = SkaldVaultV1Argon2idType.Argon2id,
-    val version: Int = SkaldVaultV1HeaderCommitment.KDF_VERSION,
-    val memoryKiB: Int = SkaldVaultV1HeaderCommitment.KDF_MEMORY_KIB,
-    val iterations: Int = SkaldVaultV1HeaderCommitment.KDF_TIME_COST,
-    val parallelism: Int = SkaldVaultV1HeaderCommitment.KDF_PARALLELISM,
-    val outputBytes: Int = SkaldVaultV1HeaderCommitment.ARGON2ID_ROOT_MATERIAL_BYTES,
-)
-
 enum class SkaldVaultV1Argon2idRootDerivationRejectionReason(val label: String) {
     EmptyPassphraseBytes("empty normalized passphrase bytes"),
     UnsupportedArgon2Type("unsupported Argon2 type"),
