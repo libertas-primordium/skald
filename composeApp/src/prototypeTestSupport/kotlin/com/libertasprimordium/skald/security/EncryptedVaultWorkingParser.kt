@@ -12,7 +12,7 @@ enum class EncryptedVaultWorkingParserKind(val label: String) {
 }
 
 enum class EncryptedVaultWorkingParserSourceSet(val label: String) {
-    CommonMainInMemoryParser("COMMON_MAIN_IN_MEMORY_PARSER"),
+    PrototypeTestSupportInMemoryParser("PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER"),
     TestSourceSyntheticVector("TEST_SOURCE_SYNTHETIC_VECTOR"),
 }
 
@@ -256,14 +256,14 @@ data class EncryptedVaultWorkingParserEvidence(
     val warningCount: Int,
 ) {
     override fun toString(): String =
-        "EncryptedVaultWorkingParserEvidence(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+        "EncryptedVaultWorkingParserEvidence(REDACTED, PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER, " +
             "SYNTHETIC_ONLY, NO_WRITER, NO_PRODUCTION_MATERIAL, NO_IO, " +
             "NO_CRYPTO_AUTH_EXECUTION, DISABLED_PROVIDER_ONLY, NO_MAINNET)"
 }
 
 object EncryptedVaultWorkingParser {
     override fun toString(): String =
-        "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+        "EncryptedVaultWorkingParser(REDACTED, PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER, " +
             "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
 
     fun currentParserEvidence(): EncryptedVaultWorkingParserEvidence =
@@ -273,14 +273,14 @@ object EncryptedVaultWorkingParser {
             parserKind =
                 EncryptedVaultWorkingParserKind
                     .EncryptedLocalVaultWorkingParserSyntheticVectorExecution,
-            sourceSet = EncryptedVaultWorkingParserSourceSet.CommonMainInMemoryParser,
+            sourceSet = EncryptedVaultWorkingParserSourceSet.PrototypeTestSupportInMemoryParser,
             workingParserAdmissionEvidencePresent = true,
             parserWriterSyntheticVectorCatalogEvidencePresent = true,
             parserWriterImplementationScaffoldEvidencePresent = true,
             containerFormatV1DecisionEvidencePresent = true,
             migrationCorruptionPolicyEvidencePresent = true,
             workingParserImplementationPresent = true,
-            commonMainInMemoryParserPresent = true,
+            commonMainInMemoryParserPresent = false,
             syntheticVectorParserExecutionSupported = true,
             parserFailClosedPolicyPresent = true,
             parserRedactedResultPolicyPresent = true,

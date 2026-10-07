@@ -62,6 +62,9 @@ object SourceGuardCorpus {
         SourceGuardTiming.measure("test_source_files", "files", List<File>::size) {
             listOf(
                 File(repositoryRoot, "composeApp/src/commonTest"),
+                File(repositoryRoot, "composeApp/src/prototypeTestSupport"),
+                File(repositoryRoot, "composeApp/src/androidPrototypeTestSupport"),
+                File(repositoryRoot, "composeApp/src/androidUnitTest"),
                 File(repositoryRoot, "composeApp/src/desktopTest"),
                 File(repositoryRoot, "composeApp/src/androidInstrumentedTest"),
             ).flatMap { root -> kotlinTextFilesUnder("test_source_root_${root.name}", root) }

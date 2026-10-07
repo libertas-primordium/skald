@@ -30,7 +30,7 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
         EncryptedVaultParserWriterSyntheticVectorCatalog.fixtures
 
     @Test
-    fun workingParserExistsAsCommonMainInMemorySyntheticVectorParser() {
+    fun workingParserExistsOnlyAsPrototypeTestSupportSyntheticVectorParser() {
         val evidence = evidence()
 
         assertEquals(1, evidence.parserVersion)
@@ -42,10 +42,10 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
             "ENCRYPTED_LOCAL_VAULT_WORKING_PARSER_SYNTHETIC_VECTOR_EXECUTION",
             evidence.parserKind.label,
         )
-        assertEquals(EncryptedVaultWorkingParserSourceSet.CommonMainInMemoryParser, evidence.sourceSet)
-        assertEquals("COMMON_MAIN_IN_MEMORY_PARSER", evidence.sourceSet.label)
+        assertEquals(EncryptedVaultWorkingParserSourceSet.PrototypeTestSupportInMemoryParser, evidence.sourceSet)
+        assertEquals("PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER", evidence.sourceSet.label)
         assertTrue(evidence.workingParserImplementationPresent)
-        assertTrue(evidence.commonMainInMemoryParserPresent)
+        assertFalse(evidence.commonMainInMemoryParserPresent)
         assertTrue(evidence.syntheticVectorParserExecutionSupported)
         assertTrue(evidence.parserFailClosedPolicyPresent)
         assertTrue(evidence.parserRedactedResultPolicyPresent)
@@ -439,7 +439,7 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
         val lowerRendered = rendered.lowercase()
 
         assertContains(rendered, "REDACTED")
-        assertContains(rendered, "COMMON_MAIN_IN_MEMORY_PARSER")
+        assertContains(rendered, "PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER")
         assertContains(rendered, "SYNTHETIC_ONLY")
         assertContains(rendered, "NO_WRITER")
         assertContains(rendered, "NO_IO")
@@ -561,7 +561,7 @@ class EncryptedVaultWorkingParserSyntheticVectorExecutionTest {
         const val SYNTHETIC_TOKEN_START_INDEX = 4
         val SYNTHETIC_SEPARATOR = '-'.code.toByte()
         const val EXPECTED_PARSER_DISPLAY =
-            "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+            "EncryptedVaultWorkingParser(REDACTED, PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER, " +
                 "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
 
         val acceptedVectorClasses = setOf(

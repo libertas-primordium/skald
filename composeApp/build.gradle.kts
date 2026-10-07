@@ -24,6 +24,8 @@ kotlin {
         }
     }
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -51,12 +53,24 @@ kotlin {
         }
 
         val commonTest by getting {
+            // Shared helper declarations only; no production source set owns this directory.
+            kotlin.srcDir("src/prototypeTestSupport/kotlin")
             dependencies {
                 implementation(libs.kotlin.test)
             }
         }
 
+        val androidUnitTest by getting {
+            kotlin.srcDir("src/androidPrototypeTestSupport/kotlin")
+        }
+
+        // A common ancestor for device-test expect declarations, without the common test suite.
+        val prototypeTestSupport by creating
+
         val androidInstrumentedTest by getting {
+            // Share helpers, not the common @Test suite, with device tests.
+            dependsOn(prototypeTestSupport)
+            kotlin.srcDir("src/androidPrototypeTestSupport/kotlin")
             dependencies {
                 implementation(libs.androidx.test.ext.junit)
                 implementation(libs.androidx.test.runner)

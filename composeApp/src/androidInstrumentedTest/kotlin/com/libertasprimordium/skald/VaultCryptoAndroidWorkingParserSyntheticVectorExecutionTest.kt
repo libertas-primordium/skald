@@ -220,7 +220,7 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
         val selection = VaultCryptoProviderSelectionRegistry.select()
 
         assertTrue(evidence.workingParserImplementationPresent)
-        assertTrue(evidence.commonMainInMemoryParserPresent)
+        assertFalse(evidence.commonMainInMemoryParserPresent)
         assertTrue(evidence.syntheticVectorParserExecutionSupported)
         assertFalse(evidence.workingWriterImplementationPresent)
         assertFalse(evidence.productionVectorBytesPresent)
@@ -311,7 +311,7 @@ class VaultCryptoAndroidWorkingParserSyntheticVectorExecutionTest {
     private companion object {
         const val ASCII_CASE_BIT = 0x20
         const val EXPECTED_PARSER_DISPLAY =
-            "EncryptedVaultWorkingParser(REDACTED, COMMON_MAIN_IN_MEMORY_PARSER, " +
+            "EncryptedVaultWorkingParser(REDACTED, PROTOTYPE_TEST_SUPPORT_IN_MEMORY_PARSER, " +
                 "SYNTHETIC_ONLY, NO_BYTES_EXPOSED, NO_IO, NO_CRYPTO_AUTH_EXECUTION)"
     }
 }
