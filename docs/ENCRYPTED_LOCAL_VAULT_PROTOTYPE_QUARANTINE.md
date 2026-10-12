@@ -99,3 +99,8 @@ Package absence establishes a reduced application surface, not completed vault s
 After review and Git closeout of this prerequisite, separately settle the exact canonical binary layout and provider contract before implementation depends on them: magic/field IDs/framing, non-circular header AAD bytes, normalization/UTF-8 policy, record-envelope representation/overhead, and opaque provider operations/ownership. Final device KDF parameters are still undecided. Later provider/KAT acceptance, canonical codecs/vectors, lock/session, storage/atomicity, repositories, backup/export, and persistence each require their own scope.
 
 Vault cardinality, lock/background behavior, backup credentials/recovery, live secure-input policy, and Monero engine/transport/LWS integration remain outside this phase. Quarantine does not select those answers or authorize the next implementation step.
+
+
+## 2026-10-11 — Later canonical specification authority
+
+This report's original prefix, placement/count evidence and historical design statements remain intact. Phase 02's [revision-2 amendment](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_SECURITY_AMENDMENT.md) and linked format/provider/acceptance documents now specify canonical bytes and credential semantics and supersede the earlier no-separate-header-HMAC choice with a separated-key persisted root-envelope commitment. Current normative status is `CANONICAL_V1_SPECIFIED_IMPLEMENTATION_BLOCKED`; persisted format remains version 1. This is documentation only, with no canonical crypto execution or provider enablement. P0 quarantine, fixture behavior, inert compatibility models and all compiled inputs remain unchanged. Earlier evidence is not canonical implementation proof.

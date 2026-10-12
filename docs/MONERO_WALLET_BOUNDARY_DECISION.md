@@ -12,7 +12,7 @@ The product target supplied for this pass is a native Android/Linux Monero walle
 
 The boundary requirements below express the intended security constraints for later passes. They select no engine, JNI wrapper, subprocess architecture, transport library, LWS version, recovery format, or native storage contract. Documentation of an intended operation never authorizes executing it. Mainnet, real funds, production key handling, wallet import/create, account/subaddress generation, password entry, signing, relay, and persistence remain disabled.
 
-The user explicitly authorized protocol removal and direct Monero validation/classification placeholders while preserving vault architecture, prototype evidence and closed operational gates. Local governance was reconciled at the end of the removal session under that direct instruction; subsequent sessions read the updated files. Earlier protocol/network approvals grant no Monero network permission. Deterministic offline tests are the current scope. The subsequent presentation-only pass simplified the UI to Wallet and Settings. The first separately authorized vault prerequisite now isolates the unsupported executable prototypes and synthetic classifier in tests; exact canonical format/provider decisions remain later work.
+The user explicitly authorized protocol removal and direct Monero validation/classification placeholders while preserving vault architecture, prototype evidence and closed operational gates. Local governance was reconciled at the end of the removal session under that direct instruction; subsequent sessions read the updated files. Earlier protocol/network approvals grant no Monero network permission. Deterministic offline tests are the current scope. The subsequent presentation-only pass simplified the UI to Wallet and Settings. Phase 01 isolated the unsupported executable prototypes and synthetic classifier in tests. Phase 02 specifies canonical format/provider decisions in documentation; executable implementation remains blocked and separately scoped.
 
 ## Decisions made in the removal pass
 
@@ -47,11 +47,11 @@ This is a narrowed scaffold contract, deliberately unsuitable for accepting real
 
 ## Canonical vault authority
 
-The architecture selected by the [July 12 canonical vault decision](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md) remains authoritative and unchanged. Its status is `CANONICAL_ARCHITECTURE_SELECTED_IMPLEMENTATION_BLOCKED`.
+The [revision-2 security amendment](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_SECURITY_AMENDMENT.md), [format specification](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_FORMAT_SPECIFICATION.md), [provider contract](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_PROVIDER_CONTRACT.md) and [acceptance plan](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_ACCEPTANCE_PLAN.md) are current normative authority: `CANONICAL_V1_SPECIFIED_IMPLEMENTATION_BLOCKED`. They retain the unamended [July 12 architecture](ENCRYPTED_LOCAL_VAULT_V1_CANONICAL_ARCHITECTURE_DECISION.md); its original status and typed model remain historical compatibility evidence, unchanged by the documentation pass.
 
 The architecture selects an app-controlled multi-artifact live-vault directory: a minimal public header with a wrapped-root envelope, one authoritative encrypted authenticated manifest, independently encrypted opaque records, temporary staging, and quarantine/recovery artifacts. Backup/export is a separate format with an independent key hierarchy.
 
-Argon2id derives an exactly 32-byte key-encryption key (KEK). That KEK wraps a random exactly 32-byte vault root using XChaCha20-Poly1305. HKDF-SHA-256 separates manifest, metadata-record, and secret-record roots and derives distinct per-record keys. The vault root is not a direct AEAD key; records do not share one record key. Each record encryption requires a fresh random 24-byte nonce. Wrapped-root AEAD associated data authenticates the canonical public-header context. There is **no separately persisted header HMAC**.
+Argon2id derives an exactly 32-byte KEK. HKDF-SHA-256 derives separate wrap and commitment keys: XChaCha20-Poly1305 wraps an independent random 32-byte vault root, and a full persisted HMAC-SHA-256 commitment binds the canonical header context plus root ciphertext/tag before unwrap. This explicitly supersedes the no-separate-header-HMAC decision. The format registry defines the exact non-circular transcript and separated content roots/per-artifact keys. The root is not a direct AEAD key, records do not share one key, and each encryption uses a fresh random 24-byte nonce. Dedicated production cryptographic acceptance remains pending.
 
 Canonical encoding must be bounded, big-endian, strictly ordered, and nonrecursive, rejecting duplicate fields, unknown fields/features, and trailing input with checked allocation arithmetic. New record artifacts are installed before the authoritative encrypted manifest is atomically replaced as the final commit point. Durability failures must fail closed, with nondestructive quarantine and recovery rather than silent destructive repair. A consistent old whole-vault snapshot cannot reliably be detected without an external monotonic anchor; no such anchor is present.
 
@@ -59,7 +59,7 @@ All canonical production vault cryptography must route through Skald's `VaultCry
 
 Earlier `SkaldVaultV1ContainerFormat`, `SkaldVaultV1ManifestFormat`, `SkaldVaultV1HeaderCommitment`, `SkaldVaultV1RecordAead`, and their direct helper/fixture/KAT/atomicity graph are `PRE_RELEASE_PROTOTYPE_P0_UNSUPPORTED`. `EncryptedVaultWorkingParser` is `SYNTHETIC_TEST_CONTRACT_CLASSIFIER_ONLY`, not a canonical vault parser. The separately authorized [prototype quarantine](ENCRYPTED_LOCAL_VAULT_PROTOTYPE_QUARANTINE.md) removes the direct helper/fixture/integrated-KAT graph and synthetic classifier from production compilation while preserving their historical contracts in test support. Production retains only the small inert P0 KDF enum/parameter/constants needed by existing disabled policies; its historical 64-byte output is not canonical KEK/root architecture. Package exclusion and full test-target/device execution require independent closeout evidence. Existing test crypto remains scoped evidence. Neither prototypes nor test success authorize a Monero vault, production provider selection, or persistence; no production bridge to test helpers is permitted.
 
-Exact canonical magic, field identifiers/framing, header AAD bytes, passphrase normalization/UTF-8 process, record envelope overhead, and final device KDF parameters remain deferred. Supported canonical persistence does not yet exist, so this plan promises no Bitcoin-to-Monero vault migration or P0-byte compatibility.
+Phase 02 fixes canonical magic, fields/framing, AAD/commitment transcripts, manifest/record schemas and sizes, and Unicode 15.0.0 NFC/UTF-8 credential semantics. It does not implement them. Final deployment KDF calibration, platform provider acceptance, storage/session integration and backup/recovery remain deferred. Supported canonical persistence does not yet exist, so this plan promises no Bitcoin-to-Monero vault migration or P0-byte compatibility.
 
 ## Proposed boundaries
 
@@ -176,7 +176,7 @@ Use deterministic offline tests first. Real protocol validation later needs expl
 
 ## Decisions required before operational implementation
 
-1. Complete the vault through its separately authorized canonical sequence. After review of prototype quarantine, settle exact canonical format and provider-contract questions before implementing dependent code. Harmless preferences and Monero integration-network/harness policy remain unresolved; the UI and quarantine passes add neither persistence nor network use.
+1. Complete the vault through its separately authorized canonical sequence. After review of the Phase 02 normative documents, implement only a separately scoped part of their exact format/provider contract and validate it before integration. Harmless preferences and Monero integration-network/harness policy remain unresolved; the UI and quarantine passes add neither persistence nor network use.
 2. Select an engine and bridge only after Android/Linux packaging, lifecycle, licensing, maintenance, and native storage-isolation evidence. Embedding versus subprocess remains open.
 3. Decide whether Skald will ever bundle/manage `monerod`; the current default target only connects to user-selected infrastructure.
 4. Design canonical record/export or subordinate-blob ownership, segmentation, encryption, commit consistency, and crash recovery without bypassing the vault sequence.
@@ -185,7 +185,7 @@ Use deterministic offline tests first. Real protocol validation later needs expl
 7. Pin and review LWS protocol/version, scan-key scope, subaddresses, outgoing/spent completeness, key-image exchange, consent lifetime, and disclosure history.
 8. Select checked atomic-XMR representation/bounds/display parsing and Monero output-selection/privacy, review, offline-signing, and relay policies.
 
-These operational questions remain outside the removal and quarantine passes. Follow the [accepted sequence](MONERO_PIVOT_MIGRATION_MAP.md): preserve the two-screen presentation, review the prototype-isolation prerequisite, then separately scope canonical format/provider decisions and subsequent vault implementation. The completed classifications and inert shell do not authorize engine integration, new storage, provider promotion, or mainnet.
+These operational questions remain outside the removal and quarantine passes. Follow the [accepted sequence](MONERO_PIVOT_MIGRATION_MAP.md): preserve the two-screen presentation and completed prototype isolation, review the Phase 02 canonical specification, then separately scope bounded vault implementation and acceptance. The completed classifications and inert shell do not authorize engine integration, new storage, provider promotion, or mainnet.
 
 ## Evidence limits and source freshness
 
