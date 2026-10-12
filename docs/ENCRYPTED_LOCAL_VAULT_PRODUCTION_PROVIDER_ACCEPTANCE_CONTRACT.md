@@ -653,3 +653,14 @@ Current matrix evidence explicitly blocks every production/runtime capability. I
 ## Next Step
 
 The next focused step should remain implementation-safe only if it is additional still-disabled design/model/source-guard work. Provider selectability, calibrated production KDF execution, file-backed vault container read/write, platform root resolution, actual path construction, persistence, biometric wrapping, and unlock UI must remain out of scope until the acceptance gates above are reviewed and intentionally moved into an implementation branch.
+
+
+## 2026-10-11 — Decision revision 2 supersession appendix
+
+The original text above is preserved as dated evidence. Current normative status is `CANONICAL_V1_SPECIFIED_IMPLEMENTATION_BLOCKED`, decision revision **2**, persisted canonical format **1**. No supported canonical vault has shipped; this is not migration of canonical user data.
+
+The [security amendment](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_SECURITY_AMENDMENT.md), [single format registry](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_FORMAT_SPECIFICATION.md), [future provider contract](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_PROVIDER_CONTRACT.md) and [acceptance plan](ENCRYPTED_LOCAL_VAULT_CANONICAL_V1_ACCEPTANCE_PLAN.md) supersede only inconsistent earlier claims: no separate persisted header HMAC; undefined exact canonical framing/IDs/AAD/credential normalization; and older provider/root/keyset/nonce/AAD assumptions inconsistent with this profile.
+
+Canonical v1 now persists a full separated-key HMAC-SHA-256 commitment over the specified header authentication context and wrapped-root ciphertext/tag, verified before root AEAD open. Argon2id still produces a 32-byte KEK, and the independently random vault root remains 32 bytes. NFC/strict UTF-8 credential profile 1 is pinned to Unicode 15.0.0. Exact bytes, bounds and transcripts belong only to the format registry. This application commitment profile still requires dedicated cryptographic review and provider acceptance before production; earlier P0 or placeholder results do not prove it.
+
+The multi-artifact topology, encrypted authoritative manifest, separated content hierarchy, bounded fail-closed decoding, provider confinement, ownership/redaction, nondestructive storage and rollback limitations remain. The original historical status and production-compiled decision models (including the old no-HMAC label) stay byte-identical as inert compatibility evidence, not current format authority. Later reconciliation requires explicit implementation authorization. All source/tests/configuration, identifier admission, quarantine placement, UI and operational gates remain unchanged by Phase 02. P0 remains unsupported test-only evidence without a migration promise.
